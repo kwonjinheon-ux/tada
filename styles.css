@@ -1607,6 +1607,20 @@ a {
   margin-bottom: 23px;
 }
 
+.social-auth-block {
+  display: grid;
+  gap: 10px;
+}
+
+.social-error {
+  margin-top: -2px;
+}
+
+.social-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .social-button,
 .primary-button,
 .passkey-button,

@@ -38,6 +38,28 @@ export async function signUpWithEmail(email: string, password: string, fullName?
   return { error: error?.message ?? null, hasSession: Boolean(data.session) };
 }
 
+export async function signInWithGoogle() {
+  const supabase = createBrowserSupabaseClient();
+
+  if (!supabase) {
+    return { error: "Supabase environment variables are not configured." };
+  }
+
+  const redirectTo = `${window.location.origin}/auth/callback?next=/account`;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  return { error: error?.message ?? null };
+}
+
 export async function signOut() {
   const supabase = createBrowserSupabaseClient();
 
