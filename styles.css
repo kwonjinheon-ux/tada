@@ -1695,6 +1695,13 @@ a {
   font-weight: 500;
 }
 
+.field-hint {
+  margin: 1px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .label-row {
   display: flex;
   align-items: center;
