@@ -3,12 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
 
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user.email ?? null);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const isAndroidMobile =
@@ -71,9 +88,16 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link className="nav-signup" href="/login">
-            Sign-in
-          </Link>
+          {userEmail ? (
+            <Link className="nav-signup" href="/account" title={userEmail}>
+              Account
+            </Link>
+          ) : (
+            <>
+              <Link className="nav-signup" href="/login">Log in</Link>
+              <Link className="nav-signup" href="/signup">Sign up</Link>
+            </>
+          )}
           <Link className="nav-post" href="/post-ad" aria-current={isPostAd ? "page" : undefined}>
             Post Ad
           </Link>
@@ -88,10 +112,23 @@ export function Navbar() {
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
             Jobs
           </Link>
-          <Link href="/login" onClick={() => setIsOpen(false)}>
-            <i className="fa-solid fa-right-to-bracket" aria-hidden="true" />
-            Sign-in
-          </Link>
+          {userEmail ? (
+            <Link href="/account" onClick={() => setIsOpen(false)}>
+              <i className="fa-solid fa-user" aria-hidden="true" />
+              Account
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setIsOpen(false)}>
+                <i className="fa-solid fa-right-to-bracket" aria-hidden="true" />
+                Log in
+              </Link>
+              <Link href="/signup" onClick={() => setIsOpen(false)}>
+                <i className="fa-solid fa-user-plus" aria-hidden="true" />
+                Sign up
+              </Link>
+            </>
+          )}
           <Link className={isPostAd ? "is-active" : ""} href="/post-ad" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-circle-plus" aria-hidden="true" />
             Post Ad
@@ -101,4 +138,3 @@ export function Navbar() {
     </header>
   );
 }
-

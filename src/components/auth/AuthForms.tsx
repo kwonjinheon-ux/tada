@@ -42,7 +42,7 @@ function SocialActions({ mode }: { mode: "sign in" | "sign up" }) {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ redirectTo = "/market" }: { redirectTo?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +62,10 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/market");
+    const safeRedirect = redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : "/market";
+    router.replace(safeRedirect);
     router.refresh();
   };
 
@@ -132,10 +135,12 @@ export function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -151,8 +156,13 @@ export function SignupForm() {
       return;
     }
 
-    router.push("/login");
-    router.refresh();
+    if (result.hasSession) {
+      router.replace("/account");
+      router.refresh();
+      return;
+    }
+
+    setSuccess("Account created. Check your email and click the confirmation link to finish signing up.");
   };
 
   return (
@@ -187,7 +197,6 @@ export function SignupForm() {
               <div className="input-wrap has-action">
                 <i className="fa-regular fa-envelope" aria-hidden="true" />
                 <input id="signup-email" name="email" type="email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
-                <button className="verify-button" type="button">Verify</button>
               </div>
             </div>
 
@@ -195,7 +204,7 @@ export function SignupForm() {
               <label htmlFor="signup-password">Password</label>
               <div className="input-wrap">
                 <i className="fa-regular fa-lock" aria-hidden="true" />
-                <input id="signup-password" name="password" type={showPassword ? "text" : "password"} placeholder="********" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                <input id="signup-password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="At least 8 characters" value={password} onChange={(event) => setPassword(event.target.value)} required />
                 <button className="icon-button" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
                 </button>
@@ -206,7 +215,7 @@ export function SignupForm() {
               <label htmlFor="confirm-password">Confirm Password</label>
               <div className="input-wrap">
                 <i className="fa-regular fa-lock" aria-hidden="true" />
-                <input id="confirm-password" name="confirm-password" type={showConfirmPassword ? "text" : "password"} placeholder="********" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+                <input id="confirm-password" name="confirm-password" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="Repeat your password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
                 <button className="icon-button" type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)}>
                   <PasswordToggleIcon />
                 </button>
@@ -219,6 +228,7 @@ export function SignupForm() {
             </label>
 
             {error ? <p className="form-error" role="alert">{error}</p> : null}
+            {success ? <p className="form-success" role="status">{success}</p> : null}
             <button className="primary-button signup-submit" type="submit" disabled={isLoading}>{isLoading ? "Creating..." : "Create My Account"}</button>
           </form>
 
