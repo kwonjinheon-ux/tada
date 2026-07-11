@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Post Ad | Tada Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="post-ad-screen">
+  <header class="site-header">
+    <div class="site-nav">
+      <a class="site-logo" href="./index.html" aria-label="Tada home">
+        <img src="./assets/logo.png" alt="Tada">
+      </a>
+
+      <button class="nav-menu-button" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-nav-menu" data-nav-toggle>
+        <span></span><span></span><span></span>
+      </button>
+
+      <form class="nav-search" action="#" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="search" placeholder="Search for items...">
+      </form>
+
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="./market.html"><i class="fa-solid fa-store" aria-hidden="true"></i><span>Market</span></a>
+        <a href="#"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><span>Jobs</span></a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="nav-signup" href="./login.html">Sign-in</a>
+        <a class="nav-post" href="./post-ad.html" aria-current="page">Post Ad</a>
+      </div>
+
+      <nav class="mobile-nav-menu" id="mobile-nav-menu" aria-label="Mobile navigation" data-mobile-nav>
+        <a href="./market.html"><i class="fa-solid fa-store" aria-hidden="true"></i>Market</a>
+        <a href="#"><i class="fa-solid fa-briefcase" aria-hidden="true"></i>Jobs</a>
+        <a href="./login.html"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>Sign-in</a>
+        <a class="is-active" href="./post-ad.html"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i>Post Ad</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="post-ad-page">
+    <div class="post-ad-layout">
+      <section class="post-ad-card" aria-label="Create a new marketplace listing">
+        <form class="post-ad-form" action="#">
+          <div class="post-field post-field-full">
+            <label for="listing-title">Listing Title</label>
+            <input id="listing-title" type="text" placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium">
+            <p class="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
+          </div>
+
+          <div class="post-form-grid post-form-grid-four">
+            <div class="post-field">
+              <label for="main-category">Main Category</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><select id="main-category"><option>Select main category</option><option>Electronics</option><option>Home &amp; Furniture</option><option>Clothing</option><option>Entertainment</option></select></div>
+            </div>
+            <div class="post-field">
+              <label for="sub-category">Sub Category</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-tags" aria-hidden="true"></i><select id="sub-category"><option>Select sub category</option><option>Computers</option><option>Smartphones</option><option>Audio</option><option>Cameras</option></select></div>
+            </div>
+            <div class="post-field">
+              <label for="trade-method">Trade Method</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i><select id="trade-method"><option>Pickup &amp; delivery</option><option>Pickup only</option><option>Delivery only</option></select></div>
+            </div>
+            <div class="post-field">
+              <label for="item-condition">Item Condition</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-certificate" aria-hidden="true"></i><select id="item-condition"><option>Brand new</option><option>Like new</option><option>Good</option><option>Fair</option></select></div>
+            </div>
+          </div>
+
+          <fieldset class="photo-fieldset">
+            <div class="field-label-row"><legend>Photos</legend><span>Up to 10 photos</span></div>
+            <div class="post-photo-grid">
+              <div class="post-photo-slot is-main">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="Smart watch listing photo">
+                <span>Main</span>
+              </div>
+              <div class="post-photo-slot">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="Headphones listing photo">
+              </div>
+              <button class="post-photo-upload" type="button" aria-label="Add a photo"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Add</span></button>
+              <button class="post-photo-upload" type="button" aria-label="Add another photo"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Add</span></button>
+            </div>
+            <p class="post-upload-hint"><strong>Click to upload or drag and drop</strong><span>PNG, JPG or WebP (max. 5MB per image)</span></p>
+          </fieldset>
+
+          <div class="post-field post-field-full">
+            <label for="listing-description">Description</label>
+            <div class="post-editor">
+              <div class="post-editor-toolbar" aria-label="Description formatting">
+                <button type="button" aria-label="Bold"><strong>B</strong></button>
+                <button type="button" aria-label="Italic"><em>I</em></button>
+                <button type="button" aria-label="Underline"><u>U</u></button>
+                <button type="button" aria-label="Bulleted list"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
+                <button type="button" aria-label="Insert link"><i class="fa-solid fa-link" aria-hidden="true"></i></button>
+                <button type="button" aria-label="Insert image"><i class="fa-regular fa-image" aria-hidden="true"></i></button>
+              </div>
+              <textarea id="listing-description" placeholder="Tell buyers about your item's condition, features, and why you're selling..."></textarea>
+            </div>
+          </div>
+
+          <div class="post-field post-field-full">
+            <label for="listing-price">Price (NZD)</label>
+            <div class="post-price-input"><span>$</span><input id="listing-price" type="text" inputmode="decimal" placeholder="0.00"></div>
+          </div>
+
+          <div class="post-form-grid post-location-grid">
+            <div class="post-field">
+              <label for="listing-region">Region</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><select id="listing-region"><option>Select region</option><option>Auckland</option><option>Wellington</option><option>Canterbury</option></select></div>
+            </div>
+            <div class="post-field">
+              <label for="listing-area">Area</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-solid fa-map-pin" aria-hidden="true"></i><select id="listing-area"><option>Select area</option><option>CBD</option><option>North Shore</option><option>Mount Eden</option><option>Newmarket</option></select></div>
+            </div>
+            <div class="post-field">
+              <label for="meeting-place">Meeting Place</label>
+              <div class="post-select-wrap has-leading-icon"><i class="fa-regular fa-building" aria-hidden="true"></i><select id="meeting-place"><option>Select a safe meeting place</option><option>Public location</option><option>Pickup from home</option></select></div>
+            </div>
+          </div>
+
+          <div class="post-submit-row">
+            <p>By posting, you agree to our <a href="#">Terms of Service</a>.</p>
+            <button class="post-submit-button" type="submit">Post Now</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="post-ad-tips" aria-label="Posting tips">
+        <article><i class="fa-regular fa-lightbulb" aria-hidden="true"></i><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
+        <article><i class="fa-regular fa-circle-check" aria-hidden="true"></i><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
+        <article><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
+      </section>
+    </div>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./post-ad.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up | Tada Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-shell" aria-labelledby="signup-title">
+      <div class="auth-card signup-card">
+        <header class="brand-area compact-brand">
+          <a class="brand-logo" href="./index.html" aria-label="Tada home">
+            <img src="./assets/logo.png" alt="Tada">
+          </a>
+        </header>
+
+        <div class="auth-intro">
+          <h1 id="signup-title">Create Account</h1>
+          <p>Join thousands of sellers and buyers today.</p>
+        </div>
+
+        <div class="social-actions" aria-label="Social sign up options">
+          <button class="social-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285f4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34a853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fbbc05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#ea4335"/>
+            </svg>
+            Google
+          </button>
+          <button class="social-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M17.13 12.89c-.02-2.15 1.76-3.18 1.84-3.23-1.01-1.48-2.57-1.68-3.12-1.7-1.32-.13-2.6.78-3.27.78-.69 0-1.72-.76-2.83-.74-1.45.02-2.8.85-3.55 2.16-1.52 2.64-.39 6.52 1.07 8.65.73 1.04 1.58 2.2 2.7 2.16 1.09-.04 1.5-.69 2.81-.69 1.3 0 1.68.69 2.83.67 1.18-.02 1.92-1.05 2.62-2.1.84-1.2 1.17-2.38 1.19-2.44-.03-.01-2.27-.87-2.29-3.52zM15 6.56c.59-.73 1-1.72.88-2.72-.85.04-1.9.59-2.51 1.31-.55.64-1.03 1.67-.9 2.65.96.07 1.93-.49 2.53-1.24z" fill="currentColor"/>
+            </svg>
+            Apple
+          </button>
+        </div>
+
+        <div class="divider"><span>Or continue with email</span></div>
+
+        <form class="login-form signup-form" action="#" method="post">
+          <div class="field-group">
+            <label for="full-name">Full Name</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M5.5 19.2c.8-3.5 3-5.2 6.5-5.2s5.7 1.7 6.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              <input id="full-name" name="full-name" type="text" placeholder="John Doe">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="signup-email">Email Address</label>
+            <div class="input-wrap has-action">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6.5h16v11H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                <path d="m4.5 7 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input id="signup-email" name="email" type="email" placeholder="you@example.com">
+              <button class="verify-button" type="button">Verify</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="signup-password">Password</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5.5" y="10.2" width="13" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M8.3 10.2V7.7a3.7 3.7 0 0 1 7.4 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              <input id="signup-password" name="password" type="password" placeholder="********">
+              <button class="icon-button" type="button" aria-label="Show password" aria-controls="signup-password" data-toggle-password>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2.7 12s3.4-5 9.3-5 9.3 5 9.3 5-3.4 5-9.3 5-9.3-5-9.3-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="confirm-password">Confirm Password</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5.5" y="10.2" width="13" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M8.3 10.2V7.7a3.7 3.7 0 0 1 7.4 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              <input id="confirm-password" name="confirm-password" type="password" placeholder="********">
+              <button class="icon-button" type="button" aria-label="Show confirm password" aria-controls="confirm-password" data-toggle-password>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2.7 12s3.4-5 9.3-5 9.3 5 9.3 5-3.4 5-9.3 5-9.3-5-9.3-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <label class="terms-row">
+            <input type="checkbox" name="terms">
+            <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
+          </label>
+
+          <button class="primary-button signup-submit" type="button">Create My Account</button>
+        </form>
+
+        <p class="signup-copy signin-copy">Already have an account? <a href="./login.html">Sign In</a></p>
+      </div>
+
+      <footer class="auth-footer-links" aria-label="Helpful links">
+        <a href="#">About Us</a>
+        <a href="#">Safety Tips</a>
+        <a href="#">Support</a>
+        <a href="#">Press</a>
+      </footer>
+    </section>
+  </main>
+  <script src="./auth.js"></script>
+</body>
+</html>

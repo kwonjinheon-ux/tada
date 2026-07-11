@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market | Tada Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-nav">
+      <a class="site-logo" href="./index.html" aria-label="Tada home">
+        <img src="./assets/logo.png" alt="Tada">
+      </a>
+
+      <button class="nav-menu-button" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-nav-menu" data-nav-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <form class="nav-search" action="#" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="search" placeholder="Search for items...">
+      </form>
+
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a class="is-active" href="./market.html">
+          <i class="fa-solid fa-store" aria-hidden="true"></i>
+          <span>Market</span>
+        </a>
+        <a href="#">
+          <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+          <span>Jobs</span>
+        </a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="nav-signup" href="./login.html">Sign-in</a>
+        <a class="nav-post" href="./post-ad.html">Post Ad</a>
+      </div>
+
+      <nav class="mobile-nav-menu" id="mobile-nav-menu" aria-label="Mobile navigation" data-mobile-nav>
+        <a class="is-active" href="./market.html"><i class="fa-solid fa-store" aria-hidden="true"></i>Market</a>
+        <a href="#"><i class="fa-solid fa-briefcase" aria-hidden="true"></i>Jobs</a>
+        <a href="./login.html"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>Sign-in</a>
+        <a href="./post-ad.html"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i>Post Ad</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="marketplace-page">
+    <button class="floating-filter-button" type="button" aria-label="Open marketplace filters" aria-expanded="false" data-filter-toggle>
+      <i class="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true"></i>
+      <i class="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true"></i>
+    </button>
+
+    <div class="filter-backdrop" data-filter-backdrop></div>
+
+    <aside class="market-filter-panel" aria-label="Marketplace filters" data-filter-panel>
+      <button class="filter-close-button" type="button" aria-label="Close marketplace filters" data-filter-close>
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+      <section class="filter-block location-block">
+        <h2>My Location</h2>
+        <button class="location-select" type="button">
+          <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+          <span>Auckland, NZ</span>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </section>
+
+      <section class="filter-block category-filter">
+        <h2>Category</h2>
+        <div class="filter-list">
+          <button type="button"><i class="fa-solid fa-warehouse" aria-hidden="true"></i>Garage Sale</button>
+          <button class="is-selected" type="button"><i class="fa-solid fa-border-all" aria-hidden="true"></i>All</button>
+          <button type="button"><i class="fa-solid fa-laptop" aria-hidden="true"></i>Electronics</button>
+          <button type="button"><i class="fa-solid fa-couch" aria-hidden="true"></i>Home & Furniture</button>
+          <button type="button"><i class="fa-solid fa-shirt" aria-hidden="true"></i>Clothing</button>
+          <button type="button"><i class="fa-solid fa-film" aria-hidden="true"></i>Entertainment</button>
+          <button type="button"><i class="fa-solid fa-baby" aria-hidden="true"></i>Baby & Kids</button>
+          <button type="button"><i class="fa-solid fa-paw" aria-hidden="true"></i>Pets</button>
+          <button type="button"><i class="fa-solid fa-book-open" aria-hidden="true"></i>Books</button>
+          <button type="button"><i class="fa-solid fa-gamepad" aria-hidden="true"></i>Hobbies</button>
+          <button type="button"><i class="fa-solid fa-seedling" aria-hidden="true"></i>Garden & Outdoors</button>
+          <button type="button"><i class="fa-solid fa-futbol" aria-hidden="true"></i>Sporting Goods</button>
+        </div>
+      </section>
+
+      <section class="filter-block price-filter">
+        <h2>Max Price (NZD)</h2>
+        <input type="range" min="50" max="5000" value="5000">
+        <div class="price-range">
+          <span>$50</span>
+          <span>$5,000</span>
+        </div>
+      </section>
+
+      <section class="filter-block condition-filter">
+        <h2>Condition</h2>
+        <div class="condition-chips">
+          <button class="is-selected" type="button">Any</button>
+          <button type="button">New</button>
+          <button type="button">Like New</button>
+          <button type="button">Excellent</button>
+          <button type="button">Good</button>
+          <button type="button">Fair</button>
+        </div>
+      </section>
+
+      <button class="apply-filter-button" type="button">Apply Filters</button>
+    </aside>
+
+    <section class="market-results" aria-label="Fresh finds">
+      <div class="market-toolbar">
+        <div class="view-toggle" aria-label="View mode">
+          <button type="button" aria-label="List view" aria-pressed="false" data-view-mode="list"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
+          <button class="is-selected" type="button" aria-label="Grid view" aria-pressed="true" data-view-mode="grid"><i class="fa-solid fa-border-all" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="market-chip-row" aria-label="Quick categories">
+          <button class="is-selected" type="button">All</button>
+          <button type="button">Smartphones</button>
+          <button type="button">Computers</button>
+          <button type="button">Laptops</button>
+          <button type="button">Tablets</button>
+          <button type="button">Audio</button>
+          <button type="button">Cameras</button>
+        </div>
+
+        <div class="market-tools">
+          <label class="sort-control" aria-label="Sort listings">
+            <select>
+              <option>Newest</option>
+              <option>Low to High</option>
+              <option>High to Low</option>
+              <option>Recommended</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="product-grid" data-product-grid>
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?auto=format&fit=crop&w=700&q=80" alt="Specialized mountain bike">
+            <button class="save-button" type="button" aria-label="Save Specialized mountain bike"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+            <span class="product-badge promo">Promotion</span>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$2,450</strong><span class="listing-status status-available">Available</span></div>
+            <h2>Specialized Stumpjumper Carbon</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Boulder, CO</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=700&q=80" alt="MacBook laptop on a desk">
+            <button class="save-button" type="button" aria-label="Save MacBook Pro"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$1,899</strong><span class="listing-status status-pending">Pending</span></div>
+            <h2>MacBook Pro 16&quot; M2 Max</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>San Francisco, CA</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=80" alt="Vintage Canon camera on books">
+            <button class="save-button" type="button" aria-label="Save Canon camera"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+            <span class="product-badge new">Newly Listed</span>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$320</strong><span class="listing-status status-available">Available</span></div>
+            <h2>Canon AE-1 Program Vintage Kit</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Brooklyn, NY</p>
+          </div>
+        </article>
+
+        <article class="product-card is-sold">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1580480055273-228ff5388ef8?auto=format&fit=crop&w=700&q=80" alt="Ergonomic office chair in modern office">
+            <button class="save-button" type="button" aria-label="Save Herman Miller chair"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$850</strong><span class="listing-status status-sold">Sold</span></div>
+            <h2>Herman Miller Aeron Chair</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Austin, TX</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?auto=format&fit=crop&w=700&q=80" alt="Red electric guitar in a living room">
+            <button class="save-button" type="button" aria-label="Save Gibson guitar"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$1,200</strong><span class="listing-status status-available">Available</span></div>
+            <h2>Gibson Les Paul Standard</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Nashville, TN</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1545127398-14699f92334b?auto=format&fit=crop&w=700&q=80" alt="White wireless headphones on a desk">
+            <button class="save-button" type="button" aria-label="Save Sony headphones"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$280</strong><span class="listing-status status-available">Available</span></div>
+            <h2>Sony WH-1000XM5 Headphones</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Chicago, IL</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=700&q=80" alt="Drone flying above forest">
+            <button class="save-button" type="button" aria-label="Save DJI drone"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$1,150</strong><span class="listing-status status-pending">Pending</span></div>
+            <h2>DJI Mavic 3 Pro Cine</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Portland, OR</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-media">
+            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=700&q=80" alt="Custom mechanical keyboard">
+            <button class="save-button" type="button" aria-label="Save mechanical keyboard"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+          </div>
+          <div class="product-body">
+            <div class="price-row"><strong>$210</strong><span class="listing-status status-available">Available</span></div>
+            <h2>Custom Mechanical Keyboard</h2>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Seattle, WA</p>
+          </div>
+        </article>
+      </div>
+
+      <button class="load-more-button" type="button">Load More Items</button>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./market.js"></script>
+</body>
+</html>

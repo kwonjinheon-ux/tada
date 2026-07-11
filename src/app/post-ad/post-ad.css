@@ -1,0 +1,6 @@
+.form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.form-field { display: grid; gap: 8px; color: var(--color-ink); font-weight: 700; }
+.form-field input, .form-field select, .form-field textarea { width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-ui); padding: 12px 14px; background: #fff; color: var(--color-ink); outline: none; font-weight: 400; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgb(16 185 129 / 14%); }
+.form-field small { color: var(--color-muted); font-size: 12px; font-weight: 400; }
+@media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form-grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

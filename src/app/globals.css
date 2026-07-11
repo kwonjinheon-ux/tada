@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-app: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-background: #f7f9ff;
+  --color-surface: #ffffff;
+  --color-surface-soft: #eef4ff;
+  --color-ink: #07172d;
+  --color-muted: #617184;
+  --color-line: #cbd8d7;
+  --color-primary: #10b981;
+  --color-primary-dark: #007a54;
+  --color-brand: #2546c7;
+  --radius-ui: 8px;
+  --radius-card: 12px;
+  --shadow-card: 0 18px 40px rgb(16 33 62 / 11%), 0 2px 8px rgb(16 33 62 / 8%);
+  --space-page: clamp(16px, 3vw, 40px);
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; background: var(--color-background); }
+body { min-height: 100vh; margin: 0; color: var(--color-ink); background: var(--color-background); font-family: var(--font-app); }
+button, input, select, textarea { font: inherit; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; }
+
+.page-shell { width: min(1180px, 100% - (var(--space-page) * 2)); margin: 0 auto; }
+.site-header { position: sticky; z-index: 30; top: 0; border-bottom: 1px solid var(--color-line); background: rgb(247 249 255 / 92%); backdrop-filter: blur(16px); }
+.site-nav { min-height: 72px; display: flex; align-items: center; gap: 16px; }
+.brand { display: flex; width: 92px; height: 44px; align-items: center; color: var(--color-brand); }
+.brand img { width: 100%; height: 100%; object-fit: contain; }
+.nav-search { flex: 1; display: flex; align-items: center; min-width: 0; max-width: 580px; border: 1px solid var(--color-line); border-radius: 999px; background: #fff; padding: 0 16px; }
+.nav-search input { width: 100%; min-height: 42px; border: 0; outline: 0; background: transparent; }
+.nav-links, .nav-actions { display: flex; align-items: center; gap: 12px; }
+.nav-link { padding: 10px 6px; color: var(--color-muted); font-weight: 600; }
+.button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 16px; border: 0; border-radius: var(--radius-ui); font-weight: 700; transition: transform 160ms ease, background 160ms ease; }
+.button:hover { transform: translateY(-1px); }
+.button-primary { color: #fff; background: var(--color-primary); }
+.button-secondary { color: var(--color-primary-dark); border: 1px solid var(--color-primary); background: #fff; }
+.mobile-menu { display: none; }
+
+@media (max-width: 767px) {
+  .site-nav { min-height: 64px; gap: 10px; }
+  .brand { width: 82px; height: 40px; }
+  .nav-links, .nav-actions .button-secondary { display: none; }
+  .nav-search { order: 2; }
+  .nav-search input { min-height: 40px; font-size: 16px; }
+  .nav-actions { order: 3; }
+  .nav-actions .button { min-height: 40px; padding: 0 12px; }
+}

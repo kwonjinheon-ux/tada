@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tada Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-nav">
+      <a class="site-logo" href="./index.html" aria-label="Tada home">
+        <img src="./assets/logo.png" alt="Tada">
+      </a>
+
+      <button class="nav-menu-button" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-nav-menu" data-nav-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <form class="nav-search" action="#" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="search" placeholder="Search for items...">
+      </form>
+
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="./market.html">
+          <i class="fa-solid fa-store" aria-hidden="true"></i>
+          <span>Market</span>
+        </a>
+        <a href="#">
+          <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+          <span>Jobs</span>
+        </a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="nav-signup" href="./login.html">Sign-in</a>
+        <a class="nav-post" href="./post-ad.html">Post Ad</a>
+      </div>
+
+      <nav class="mobile-nav-menu" id="mobile-nav-menu" aria-label="Mobile navigation" data-mobile-nav>
+        <a href="./market.html"><i class="fa-solid fa-store" aria-hidden="true"></i>Market</a>
+        <a href="#"><i class="fa-solid fa-briefcase" aria-hidden="true"></i>Jobs</a>
+        <a href="./login.html"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>Sign-in</a>
+        <a href="./post-ad.html"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i>Post Ad</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="market-home">
+    <section class="market-hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">Ta-da! Here it is!</h1>
+      <p>The modern marketplace for second-hand treasures, dream careers, and luxury living. Discover what's next for you today.</p>
+
+      <form class="hero-search" action="#" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="search" placeholder="Search for anything...">
+        <button type="button">Search</button>
+      </form>
+
+      <div class="hero-quick-links">
+        <a href="./market.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 6h10M7 12h10M7 18h10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            <path d="M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          Listings
+        </a>
+        <a href="./post-ad.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 8v8M8 12h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          Post Ad
+        </a>
+      </div>
+    </section>
+
+    <section class="categories-section" aria-labelledby="categories-title">
+      <div class="section-heading">
+        <h2 id="categories-title">Explore Categories</h2>
+        <p>Find exactly what you're looking for across our diverse marketplace</p>
+      </div>
+
+      <div class="category-grid">
+        <a class="category-card category-blue" href="#">
+          <i class="fa-solid fa-microchip category-icon" aria-hidden="true"></i>
+          <span>Electronics</span>
+        </a>
+        <a class="category-card category-purple" href="#">
+          <i class="fa-solid fa-couch category-icon" aria-hidden="true"></i>
+          <span>Furniture</span>
+        </a>
+        <a class="category-card category-pink" href="#">
+          <i class="fa-solid fa-shirt category-icon" aria-hidden="true"></i>
+          <span>Clothing</span>
+        </a>
+        <a class="category-card category-orange" href="#">
+          <i class="fa-solid fa-car-side category-icon" aria-hidden="true"></i>
+          <span>Cars</span>
+        </a>
+        <a class="category-card category-green" href="#">
+          <i class="fa-solid fa-building category-icon" aria-hidden="true"></i>
+          <span>Property</span>
+        </a>
+        <a class="category-card category-indigo" href="#">
+          <i class="fa-solid fa-book-open category-icon" aria-hidden="true"></i>
+          <span>Books</span>
+        </a>
+        <a class="category-card category-red" href="#">
+          <i class="fa-solid fa-basketball category-icon" aria-hidden="true"></i>
+          <span>Sports</span>
+        </a>
+        <a class="category-card category-mint" href="#">
+          <i class="fa-solid fa-seedling category-icon" aria-hidden="true"></i>
+          <span>Garden</span>
+        </a>
+        <a class="category-card category-amber" href="#">
+          <i class="fa-solid fa-baby category-icon" aria-hidden="true"></i>
+          <span>Baby & Kids</span>
+        </a>
+        <a class="category-card category-slate" href="#">
+          <i class="fa-solid fa-screwdriver-wrench category-icon" aria-hidden="true"></i>
+          <span>Tools</span>
+        </a>
+        <a class="category-card category-violet" href="#">
+          <i class="fa-solid fa-briefcase category-icon" aria-hidden="true"></i>
+          <span>Services</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="promo-band" aria-label="Sponsored promotion">
+      <div class="promo-visual" aria-hidden="true">
+        <div class="promo-browser">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <div class="promo-copy">
+        <span>Sponsored</span>
+        <h2>Upgrade Your Workspace Today</h2>
+        <p>Experience ultimate productivity with our new ergonomic collection. Designed for comfort, built for performance.</p>
+        <a href="#">Learn More</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <img src="./assets/logo.png" alt="Tada">
+      <strong>The heartbeat of modern marketplace</strong>
+      <p>Empowering local trade and discovery with high-speed digital tools for the modern era.</p>
+    </div>
+
+    <div class="footer-links">
+      <div>
+        <h2>Platform</h2>
+        <a href="#">Categories</a>
+        <a href="#">How it Works</a>
+        <a href="#">Premium Listings</a>
+        <a href="#">Safety Tips</a>
+      </div>
+      <div>
+        <h2>Company</h2>
+        <a href="#">About Us</a>
+        <a href="#">Careers</a>
+        <a href="#">Press Kit</a>
+        <a href="#">Contact</a>
+      </div>
+      <div>
+        <h2>Download Our App</h2>
+        <p>Get the fastest experience on your mobile device.</p>
+        <a class="store-button" href="#">App Store</a>
+        <a class="store-button" href="#">Google Play</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Tada. All rights reserved.</span>
+      <nav aria-label="Legal links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookies</a>
+      </nav>
+    </div>
+  </footer>
+  <script src="./nav.js"></script>
+  <script src="./home.js"></script>
+</body>
+</html>
