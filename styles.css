@@ -995,7 +995,7 @@ a {
   margin: 0;
   color: #6b7a78;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1025,7 +1025,7 @@ a {
   background: #edf3ff;
   color: #203149;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   text-align: left;
 }
 
@@ -1049,7 +1049,7 @@ a {
   background: transparent;
   color: #36454a;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   text-align: left;
   transition: background-color 160ms ease, color 160ms ease;
 }
@@ -1075,7 +1075,7 @@ a {
   justify-content: space-between;
   color: #5e6d73;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .condition-chips {
@@ -1092,7 +1092,7 @@ a {
   background: #dce9ff;
   color: #26394d;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .apply-filter-button {
@@ -2881,9 +2881,55 @@ a {
     grid-template-columns: minmax(0, 0.74fr) minmax(0, 0.74fr) minmax(0, 1.52fr);
   }
 
-  .post-location-grid .post-field:last-child {
+.post-location-grid .post-field:last-child {
     grid-column: auto;
   }
+}
+
+.input-wrap > i {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: currentColor;
+}
+
+.form-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.account-page {
+  padding-block: 54px;
+}
+
+.account-card {
+  max-width: 560px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.account-eyebrow {
+  margin: 0 0 8px;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.account-actions {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin-top: 22px;
 }
 
 @media (prefers-reduced-motion: reduce) {

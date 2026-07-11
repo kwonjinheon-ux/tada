@@ -1,4 +1,7 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { MarketPage } from "@/features/market/components/market-page";
+import { MarketPageClient } from "@/components/market/MarketPageClient";
 
-export default function MarketRoute() { return <><SiteHeader /><MarketPage /></>; }
+export const metadata = { title: "Market" };
+
+export default function MarketRoute() {
+  return <MarketPageClient />;
+}
