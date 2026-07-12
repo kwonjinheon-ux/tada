@@ -130,6 +130,10 @@ export function Navbar() {
             </Link>
           ) : (
             <>
+              <button className="nav-notifications" type="button" aria-label="5 unread notifications">
+                <i className="fa-regular fa-bell" aria-hidden="true" />
+                <span>5</span>
+              </button>
               <Link className="nav-signup" href="/login">Log in</Link>
             </>
           )}
