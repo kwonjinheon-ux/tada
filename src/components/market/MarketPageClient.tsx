@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { listings, quickCategories } from "@/data/listings";
@@ -69,6 +70,11 @@ export function MarketPageClient() {
         <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
+        <Link className="dashboard-link" href="/account" onClick={() => setIsFilterOpen(false)}>
+          <i className="fa-solid fa-chart-line" aria-hidden="true" />
+          <span>My Dashboard</span>
+          <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+        </Link>
         <section className="filter-block location-block">
           <h2>My Location</h2>
           <button className="location-select" type="button">
@@ -159,4 +165,3 @@ export function MarketPageClient() {
     </main>
   );
 }
-
