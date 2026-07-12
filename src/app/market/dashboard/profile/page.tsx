@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
 import { getServerUser } from "@/lib/auth-server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Profile Settings" };
 
@@ -8,6 +10,8 @@ export default async function ProfileSettingsPage() {
   const user = await getServerUser();
   if (!user) redirect("/login");
   const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
+  const supabase = await createServerSupabaseClient();
+  const { data: profile } = supabase ? await supabase.from("profiles").select("avatar_path").eq("id", user.id).maybeSingle() : { data: null };
 
   return (
     <main className="marketplace-page dashboard-page profile-settings-page">
@@ -18,7 +22,7 @@ export default async function ProfileSettingsPage() {
           <div className="profile-main-column">
             <section className="profile-panel profile-photo-panel">
               <h2>Profile Photo</h2>
-              <div className="profile-photo-row"><div className="profile-avatar"><i className="fa-regular fa-user" /></div><div><button className="profile-primary-button" type="button"><i className="fa-solid fa-upload" /> Upload New Photo</button><p>JPG, GIF or PNG. Max size of 800K</p></div></div>
+              <ProfilePhotoUploader initialPath={profile?.avatar_path} />
             </section>
             <section className="profile-panel">
               <h2><i className="fa-regular fa-id-badge" /> Personal Information</h2>
