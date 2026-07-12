@@ -76,7 +76,6 @@ export function MarketPageClient() {
           <i className="fa-solid fa-chevron-right" aria-hidden="true" />
         </Link>
         <section className="filter-block location-block">
-          <h2>My Location</h2>
           <button className="location-select" type="button">
             <i className="fa-solid fa-location-dot" aria-hidden="true" />
             <span>Auckland, NZ</span>
