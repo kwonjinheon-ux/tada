@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { listings } from "@/data/listings";
 import { getServerUser } from "@/lib/auth-server";
 
 export const metadata = { title: "My Dashboard" };
 
-const dashboardNav = [["fa-border-all", "Dashboard", true], ["fa-circle-user", "Profile Settings", false], ["fa-message", "Messages", false], ["fa-heart", "Wishlist", false], ["fa-key", "Keywords", false], ["fa-rectangle-list", "Manage Listings", false], ["fa-map", "Nearby Map", false]] as const;
 const listingStats = [["fa-circle-exclamation", "Action Required", "0"], ["fa-tag", "In Progress & Pending", "2"], ["fa-ban", "Sold & Out of Stock", "0"], ["fa-envelope-open", "Drafts", "0"], ["fa-arrows-rotate", "Renewable Listings", "0"], ["fa-rotate", "Deletable & Repostable", "0"]] as const;
 
 export async function SellerDashboard({ context = "market" }: { context?: "market" | "jobs" }) {
@@ -17,16 +17,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
 
   return (
     <main className="marketplace-page dashboard-page">
-      <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
-        <nav className="dashboard-nav">
-          {dashboardNav.map(([icon, label, active]) => (
-            <a className={active ? "is-active" : ""} href={`#${label.toLowerCase().replaceAll(" ", "-")}`} key={label}>
-              <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{label}</span>{label === "Messages" && <b>24</b>}
-            </a>
-          ))}
-        </nav>
-        <Link className="dashboard-sell-button" href="/post-ad"><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
-      </aside>
+      <DashboardSidebar context={context} active="Dashboard" />
 
       <div className="dashboard-content">
         <div className="dashboard-welcome">
