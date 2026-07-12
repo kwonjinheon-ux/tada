@@ -45,7 +45,8 @@ export function Navbar() {
     event.preventDefault();
   };
 
-  const isMarket = pathname === "/market";
+  const isMarket = pathname.startsWith("/market");
+  const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname === "/post-ad";
 
   return (
@@ -81,7 +82,7 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             <span>Market</span>
           </Link>
-          <Link href="/jobs">
+          <Link className={isJobs ? "is-active" : ""} href="/jobs">
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
             <span>Jobs</span>
           </Link>
@@ -89,7 +90,7 @@ export function Navbar() {
 
         <div className="nav-actions">
           {userEmail ? (
-            <Link className="nav-signup" href="/account" title={userEmail}>
+            <Link className="nav-signup" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail}>
               Account
             </Link>
           ) : (
@@ -108,12 +109,12 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             Market
           </Link>
-          <Link href="/jobs" onClick={() => setIsOpen(false)}>
+          <Link className={isJobs ? "is-active" : ""} href="/jobs" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
             Jobs
           </Link>
           {userEmail ? (
-            <Link href="/account" onClick={() => setIsOpen(false)}>
+            <Link href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} onClick={() => setIsOpen(false)}>
               <i className="fa-solid fa-user" aria-hidden="true" />
               Account
             </Link>

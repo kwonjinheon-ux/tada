@@ -9,14 +9,15 @@ export const metadata = { title: "My Dashboard" };
 const dashboardNav = [["fa-border-all", "Dashboard", true], ["fa-circle-user", "Profile Settings", false], ["fa-message", "Messages", false], ["fa-heart", "Wishlist", false], ["fa-key", "Keywords", false], ["fa-rectangle-list", "Manage Listings", false], ["fa-map", "Nearby Map", false]] as const;
 const listingStats = [["fa-circle-exclamation", "Action Required", "0"], ["fa-tag", "In Progress & Pending", "2"], ["fa-ban", "Sold & Out of Stock", "0"], ["fa-envelope-open", "Drafts", "0"], ["fa-arrows-rotate", "Renewable Listings", "0"], ["fa-rotate", "Deletable & Repostable", "0"]] as const;
 
-export default async function AccountPage() {
+export async function SellerDashboard({ context = "market" }: { context?: "market" | "jobs" }) {
   const user = await getServerUser();
   if (!user) redirect("/login");
   const myListings = [listings[4], listings[2]];
+  const isJobsDashboard = context === "jobs";
 
   return (
-    <main className="dashboard-page">
-      <aside className="dashboard-sidebar" aria-label="Dashboard navigation">
+    <main className="marketplace-page dashboard-page">
+      <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
         <nav className="dashboard-nav">
           {dashboardNav.map(([icon, label, active]) => (
             <a className={active ? "is-active" : ""} href={`#${label.toLowerCase().replaceAll(" ", "-")}`} key={label}>
@@ -29,7 +30,7 @@ export default async function AccountPage() {
 
       <div className="dashboard-content">
         <div className="dashboard-welcome">
-          <div><p>Seller dashboard</p><h1>Welcome back</h1><span>{user.email}</span></div>
+          <div><p>{context === "market" ? "Marketplace dashboard" : "Jobs dashboard"}</p><h1>Welcome back</h1><span>{user.email}</span></div>
           <LogoutButton />
         </div>
 
@@ -43,8 +44,8 @@ export default async function AccountPage() {
 
         <section className="dashboard-section" id="manage-listings">
           <div className="dashboard-section-heading">
-            <h2>My Listings</h2>
-            <div><button className="dashboard-button is-soft" type="button"><i className="fa-solid fa-rocket" /> Promote Listing</button><Link className="dashboard-button" href="/post-ad"><i className="fa-solid fa-pen-to-square" /> Create New Listing</Link></div>
+            <h2>{isJobsDashboard ? "My Job Posts" : "My Listings"}</h2>
+            <div><button className="dashboard-button is-soft" type="button"><i className="fa-solid fa-rocket" /> {isJobsDashboard ? "Promote Job" : "Promote Listing"}</button><Link className="dashboard-button" href="/post-ad"><i className="fa-solid fa-pen-to-square" /> {isJobsDashboard ? "Create New Job" : "Create New Listing"}</Link></div>
           </div>
           <div className="listing-stat-grid">
             {listingStats.map(([icon, label, value]) => <article className="listing-stat-card" key={label}><div><i className={`fa-solid ${icon}`} /><span>{label}</span></div><strong>{value}</strong></article>)}
@@ -64,4 +65,8 @@ export default async function AccountPage() {
       </div>
     </main>
   );
+}
+
+export default async function AccountPage() {
+  redirect("/market/dashboard");
 }
