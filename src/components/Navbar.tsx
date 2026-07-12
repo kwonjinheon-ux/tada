@@ -120,6 +120,10 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
+          <Link className="nav-post" href="/post-ad" aria-current={isPostAd ? "page" : undefined}>
+            <i className="fa-solid fa-plus" aria-hidden="true" />
+            <span>Create</span>
+          </Link>
           {userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
@@ -130,9 +134,6 @@ export function Navbar() {
               <Link className="nav-signup" href="/signup">Sign up</Link>
             </>
           )}
-          <Link className="nav-post" href="/post-ad" aria-current={isPostAd ? "page" : undefined}>
-            Post Ad
-          </Link>
         </div>
 
         <button className={`mobile-menu-backdrop ${isOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => setIsOpen(false)} />
@@ -164,8 +165,8 @@ export function Navbar() {
             </>
           )}
           <Link className={isPostAd ? "is-active" : ""} href="/post-ad" onClick={() => setIsOpen(false)}>
-            <i className="fa-solid fa-circle-plus" aria-hidden="true" />
-            Post Ad
+            <i className="fa-solid fa-plus" aria-hidden="true" />
+            Create
           </Link>
         </nav>
       </div>
