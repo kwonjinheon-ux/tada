@@ -1,5 +1,5 @@
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('profile-avatars', 'profile-avatars', false, 819200, array['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+values ('profile-avatars', 'profile-avatars', false, 2097152, array['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
 on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,

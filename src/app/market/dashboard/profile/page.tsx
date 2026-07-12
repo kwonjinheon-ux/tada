@@ -15,12 +15,11 @@ export default async function ProfileSettingsPage() {
     <main className="marketplace-page dashboard-page profile-settings-page">
       <DashboardSidebar context="market" active="Profile Settings" />
       <div className="dashboard-content profile-settings-content">
-        <header className="profile-heading"><h1>Profile Settings</h1><p>Manage your personal information and account security.</p></header>
         <div className="profile-settings-grid">
           <div className="profile-main-column">
             <section className="profile-panel profile-photo-panel">
               <h2>Profile Photo</h2>
-              <ProfilePhotoUploader initialPath={avatarPath} />
+              <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} />
             </section>
             <section className="profile-panel">
               <h2><i className="fa-regular fa-id-badge" /> Personal Information</h2>

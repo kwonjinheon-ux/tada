@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
@@ -11,6 +12,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,6 +23,7 @@ export function Navbar() {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       setUserEmail(user?.email ?? null);
+      setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
       if (!user) { setAvatarUrl(null); return; }
       const avatarPath = user.user_metadata?.avatar_path;
       if (avatarPath) {
@@ -69,6 +72,7 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname === "/post-ad";
+  const avatarFallback = getAvatarFallback(displayName);
 
   return (
     <header className="site-header">
@@ -100,7 +104,7 @@ export function Navbar() {
 
         {userEmail && (
           <Link className="mobile-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} aria-label="Open my dashboard" title={userEmail}>
-            {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <i className="fa-regular fa-user" aria-hidden="true" />}
+            {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
           </Link>
         )}
 
@@ -118,7 +122,7 @@ export function Navbar() {
         <div className="nav-actions">
           {userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
-              {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <i className="fa-regular fa-user" aria-hidden="true" />}
+              {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
             </Link>
           ) : (
             <>

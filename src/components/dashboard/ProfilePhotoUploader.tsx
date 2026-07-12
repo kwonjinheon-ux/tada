@@ -2,16 +2,18 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { getAvatarFallback } from "@/lib/avatar-fallback";
 
-const MAX_FILE_SIZE = 800 * 1024;
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
-export function ProfilePhotoUploader({ initialPath }: { initialPath?: string | null }) {
+export function ProfilePhotoUploader({ initialPath, displayName }: { initialPath?: string | null; displayName?: string | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editorUrl, setEditorUrl] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const avatarFallback = getAvatarFallback(displayName);
 
   useEffect(() => {
     if (!initialPath) return;
@@ -30,7 +32,7 @@ export function ProfilePhotoUploader({ initialPath }: { initialPath?: string | n
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { setStatus("Please select an image file."); return; }
-    if (file.size > MAX_FILE_SIZE) { setStatus("The photo must be 800KB or smaller."); return; }
+    if (file.size > MAX_FILE_SIZE) { setStatus("The photo must be 2MB or smaller."); return; }
     openEditor(URL.createObjectURL(file));
     event.target.value = "";
   };
@@ -76,12 +78,12 @@ export function ProfilePhotoUploader({ initialPath }: { initialPath?: string | n
   return (
     <div className="profile-photo-row">
       <button className="profile-avatar" type="button" aria-label="Adjust profile photo" onClick={() => avatarUrl && openEditor(avatarUrl)}>
-        {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <i className="fa-regular fa-user" aria-hidden="true" />}
+        {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <span className="profile-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
       </button>
       <div>
         <input ref={inputRef} className="profile-photo-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={selectPhoto} />
         <button className="profile-primary-button" type="button" disabled={isUploading} onClick={() => inputRef.current?.click()}><i className="fa-solid fa-upload" /> Upload New Photo</button>
-        <p>JPG, GIF, PNG or WEBP. Max size of 800KB</p>
+        <p>JPG, GIF, PNG or WEBP. Max size of 2MB</p>
         {status && <p className="profile-upload-status" role="status">{status}</p>}
       </div>
       {editorUrl && (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from "@/lib/auth";
 
 function PasswordToggleIcon() {
@@ -72,6 +72,7 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -117,7 +118,21 @@ export function LoginForm({
               <label htmlFor="email">Email Address</label>
               <div className="input-wrap">
                 <i className="fa-regular fa-envelope" aria-hidden="true" />
-                <input id="email" name="email" type="email" placeholder="name@example.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Tab" && !event.shiftKey) {
+                      event.preventDefault();
+                      passwordInputRef.current?.focus();
+                    }
+                  }}
+                  required
+                />
               </div>
             </div>
 
@@ -128,7 +143,7 @@ export function LoginForm({
               </div>
               <div className="input-wrap">
                 <i className="fa-solid fa-lock" aria-hidden="true" />
-                <input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                <input ref={passwordInputRef} id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
                 <button className="icon-button" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
                 </button>
