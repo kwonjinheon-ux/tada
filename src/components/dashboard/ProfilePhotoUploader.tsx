@@ -65,7 +65,9 @@ export function ProfilePhotoUploader({ initialPath }: { initialPath?: string | n
     const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, avatar_path: path, updated_at: new Date().toISOString() }, { onConflict: "id" });
     if (profileError) { setStatus(profileError.message); setIsUploading(false); return; }
     const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(path, 3600);
-    setAvatarUrl(signed?.signedUrl ? `${signed.signedUrl}&v=${Date.now()}` : null);
+    const updatedUrl = signed?.signedUrl ? `${signed.signedUrl}&v=${Date.now()}` : null;
+    setAvatarUrl(updatedUrl);
+    window.dispatchEvent(new CustomEvent("profile-avatar-updated", { detail: updatedUrl }));
     setEditorUrl(null);
     setStatus("Photo updated successfully.");
     setIsUploading(false);

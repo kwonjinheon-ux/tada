@@ -37,7 +37,15 @@ export function Navbar() {
       void syncUser();
     });
 
-    return () => listener.subscription.unsubscribe();
+    const updateAvatar = (event: Event) => {
+      setAvatarUrl((event as CustomEvent<string | null>).detail ?? null);
+    };
+    window.addEventListener("profile-avatar-updated", updateAvatar);
+
+    return () => {
+      listener.subscription.unsubscribe();
+      window.removeEventListener("profile-avatar-updated", updateAvatar);
+    };
   }, []);
 
   useEffect(() => {
