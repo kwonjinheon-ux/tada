@@ -117,8 +117,8 @@ export function Navbar() {
 
         <div className="nav-actions">
           {userEmail ? (
-            <Link className="nav-signup" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail}>
-              Account
+            <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
+              {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <i className="fa-regular fa-user" aria-hidden="true" />}
             </Link>
           ) : (
             <>
