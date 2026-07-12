@@ -131,7 +131,6 @@ export function Navbar() {
           ) : (
             <>
               <Link className="nav-signup" href="/login">Log in</Link>
-              <Link className="nav-signup" href="/signup">Sign up</Link>
             </>
           )}
         </div>
