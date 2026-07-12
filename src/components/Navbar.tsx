@@ -124,16 +124,16 @@ export function Navbar() {
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>Create</span>
           </Link>
+          <button className="nav-notifications" type="button" aria-label="5 unread notifications">
+            <i className="fa-regular fa-bell" aria-hidden="true" />
+            <span>5</span>
+          </button>
           {userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
             </Link>
           ) : (
             <>
-              <button className="nav-notifications" type="button" aria-label="5 unread notifications">
-                <i className="fa-regular fa-bell" aria-hidden="true" />
-                <span>5</span>
-              </button>
               <Link className="nav-signup" href="/login">Log in</Link>
             </>
           )}

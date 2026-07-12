@@ -2957,7 +2957,7 @@ a {
   .site-nav {
     grid-template-columns: auto minmax(220px, 1fr) auto auto;
     gap: 10px;
-    padding: 5px 18px;
+    padding: 2.5px 18px;
   }
 
   .site-logo {
