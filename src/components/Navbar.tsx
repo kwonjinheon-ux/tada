@@ -22,9 +22,9 @@ export function Navbar() {
       const user = data.user;
       setUserEmail(user?.email ?? null);
       if (!user) { setAvatarUrl(null); return; }
-      const { data: profile } = await supabase.from("profiles").select("avatar_path").eq("id", user.id).maybeSingle();
-      if (profile?.avatar_path) {
-        const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(profile.avatar_path, 3600);
+      const avatarPath = user.user_metadata?.avatar_path;
+      if (avatarPath) {
+        const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
         setAvatarUrl(signed?.signedUrl ?? null);
       } else {
         setAvatarUrl(null);

@@ -62,8 +62,8 @@ export function ProfilePhotoUploader({ initialPath }: { initialPath?: string | n
     const path = `${userData.user.id}/avatar.jpg`;
     const { error: uploadError } = await supabase.storage.from("profile-avatars").upload(path, blob, { cacheControl: "3600", contentType: "image/jpeg", upsert: true });
     if (uploadError) { setStatus(uploadError.message); setIsUploading(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, avatar_path: path, updated_at: new Date().toISOString() }, { onConflict: "id" });
-    if (profileError) { setStatus(profileError.message); setIsUploading(false); return; }
+    const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
+    if (metadataError) { setStatus(metadataError.message); setIsUploading(false); return; }
     const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(path, 3600);
     const updatedUrl = signed?.signedUrl ? `${signed.signedUrl}&v=${Date.now()}` : null;
     setAvatarUrl(updatedUrl);
