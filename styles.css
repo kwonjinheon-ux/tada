@@ -221,11 +221,11 @@ a {
   transform: scale(0.96);
 }
 
-.nav-menu-button.is-open {
-  border-color: rgba(0, 132, 93, 0.5);
-  background: #e9fbf4;
-  color: var(--primary-dark);
-}
+  .nav-menu-button.is-open {
+    border-color: rgba(0, 132, 93, 0.5);
+    background: #e9fbf4;
+    color: var(--primary-dark);
+  }
 
 .nav-menu-button span {
   width: 17px;
@@ -236,17 +236,17 @@ a {
   transition: transform 180ms ease, opacity 180ms ease;
 }
 
-.nav-menu-button.is-open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
+  .nav-menu-button.is-open span:nth-child(1) {
+    transform: none;
+  }
 
-.nav-menu-button.is-open span:nth-child(2) {
-  opacity: 0;
-}
+  .nav-menu-button.is-open span:nth-child(2) {
+    opacity: 0;
+  }
 
-.nav-menu-button.is-open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
+  .nav-menu-button.is-open span:nth-child(3) {
+    transform: none;
+  }
 
 .primary-nav a {
   display: inline-flex;
@@ -335,6 +335,10 @@ a {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 14px 30px rgba(16, 33, 62, 0.1);
+}
+
+.mobile-menu-backdrop {
+  display: none;
 }
 
 .mobile-nav-menu.is-open {
@@ -2693,11 +2697,50 @@ a {
   }
 
   .nav-menu-button.is-open span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: rotate(45deg);
   }
 
   .nav-menu-button.is-open span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: rotate(-45deg);
+  }
+
+  .nav-menu-button.is-open {
+    position: relative;
+    z-index: 31;
+    gap: 0;
+  }
+
+  .nav-menu-button.is-open span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    transform-origin: center;
+  }
+
+  .nav-menu-button.is-open span:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .nav-menu-button.is-open span:nth-child(3) {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    display: block;
+    border: 0;
+    background: rgba(8, 22, 40, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .mobile-menu-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .mobile-profile-link {
@@ -2754,6 +2797,7 @@ a {
 
   .mobile-nav-menu a {
     min-height: 42px;
+    font-weight: 400;
   }
 
   .mobile-nav-menu.is-open a {

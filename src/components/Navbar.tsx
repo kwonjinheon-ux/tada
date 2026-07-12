@@ -131,6 +131,8 @@ export function Navbar() {
           </Link>
         </div>
 
+        <button className={`mobile-menu-backdrop ${isOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => setIsOpen(false)} />
+
         <nav className={`mobile-nav-menu ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-store" aria-hidden="true" />
