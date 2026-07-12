@@ -11,17 +11,30 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
     if (!supabase) return;
 
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserEmail(data.user?.email ?? null);
-    });
+    const syncUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      setUserEmail(user?.email ?? null);
+      if (!user) { setAvatarUrl(null); return; }
+      const { data: profile } = await supabase.from("profiles").select("avatar_path").eq("id", user.id).maybeSingle();
+      if (profile?.avatar_path) {
+        const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(profile.avatar_path, 3600);
+        setAvatarUrl(signed?.signedUrl ?? null);
+      } else {
+        setAvatarUrl(null);
+      }
+    };
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user.email ?? null);
+    void syncUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      void syncUser();
     });
 
     return () => listener.subscription.unsubscribe();
@@ -76,6 +89,12 @@ export function Navbar() {
           <span />
           <span />
         </button>
+
+        {userEmail && (
+          <Link className="mobile-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} aria-label="Open my dashboard" title={userEmail}>
+            {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <i className="fa-regular fa-user" aria-hidden="true" />}
+          </Link>
+        )}
 
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
