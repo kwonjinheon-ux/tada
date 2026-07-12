@@ -3007,11 +3007,22 @@ a {
 .profile-panel h2 { display: flex; align-items: center; gap: 9px; margin: 0 0 20px; color: #182a40; font-size: 19px; }
 .profile-panel h2 i { color: #10b981; }
 .profile-photo-row { display: flex; align-items: center; gap: 28px; }
-.profile-avatar { width: 112px; height: 112px; flex: 0 0 112px; display: grid; place-items: center; border: 5px solid #fff; border-radius: 50%; background: #eef5ff; color: #10b981; font-size: 40px; box-shadow: 0 4px 12px rgba(15,35,60,.16); }
+.profile-avatar { width: 112px; height: 112px; flex: 0 0 112px; display: grid; place-items: center; padding: 0; overflow: hidden; border: 5px solid #fff; border-radius: 50%; background: #eef5ff; color: #10b981; font-size: 40px; box-shadow: 0 4px 12px rgba(15,35,60,.16); cursor: pointer; }
 .profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .profile-photo-input { display: none; }
 .profile-primary-button:disabled { cursor: wait; opacity: .65; }
 .profile-photo-row .profile-upload-status { color: #07966a; }
+.avatar-editor-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(9, 24, 43, .58); backdrop-filter: blur(5px); }
+.avatar-editor { width: min(100%, 420px); padding: 22px; border-radius: 14px; background: #fff; box-shadow: 0 20px 50px rgba(7, 22, 42, .3); }
+.avatar-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.avatar-editor-heading h2 { margin: 0; font-size: 19px; }
+.avatar-editor-heading button { width: 34px; height: 34px; border: 0; border-radius: 50%; background: #edf3ff; color: #24364f; cursor: pointer; }
+.avatar-editor-preview { width: min(72vw, 280px); height: min(72vw, 280px); display: grid; place-items: center; margin: 0 auto 18px; overflow: hidden; border-radius: 50%; background: #e9f0fb; }
+.avatar-editor-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 100ms ease-out; }
+.avatar-zoom-control { display: grid; gap: 8px; color: #34455d; font-size: 13px; font-weight: 700; }
+.avatar-zoom-control input { width: 100%; accent-color: #10b981; }
+.avatar-editor-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.avatar-editor-actions .profile-outline-button { width: auto; }
 .profile-photo-row p { margin: 9px 0 0; color: #758197; font-size: 11px; font-weight: 600; }
 .profile-primary-button, .profile-outline-button, .profile-verify-button, .profile-danger-button, .profile-save-bar button { min-height: 40px; padding: 0 18px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .profile-primary-button { border: 0; background: #10b981; color: #fff; }
