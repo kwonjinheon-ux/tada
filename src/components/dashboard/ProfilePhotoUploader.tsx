@@ -17,7 +17,7 @@ const angle = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 const centre = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export function ProfilePhotoUploader({ initialPath, displayName, memberSince, nicknameDraft, isEditingNickname, isSavingNickname, onNicknameChange, onEditNickname, onCancelNickname, onSaveNickname }: { initialPath?: string | null; displayName?: string | null; memberSince?: string | null; nicknameDraft: string; isEditingNickname: boolean; isSavingNickname: boolean; onNicknameChange: (value: string) => void; onEditNickname: () => void; onCancelNickname: () => void; onSaveNickname: () => void }) {
+export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, nicknameDraft, isEditingNickname, isSavingNickname, onNicknameChange, onEditNickname, onCancelNickname, onSaveNickname }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; nicknameDraft: string; isEditingNickname: boolean; isSavingNickname: boolean; onNicknameChange: (value: string) => void; onEditNickname: () => void; onCancelNickname: () => void; onSaveNickname: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorImageRef = useRef<HTMLImageElement>(null);
@@ -195,6 +195,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, memberSince, ni
           <button type="button" aria-label="Edit nickname" onClick={onEditNickname}><i className="fa-solid fa-pen" /></button>
         </div>
       )}
+      {email && <p className="profile-photo-email">{email}</p>}
       {memberSince && <p className="profile-member-since">Member since {memberSince}</p>}
       <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 2MB</p>
       {status && <p className="profile-upload-status" role="status">{status}</p>}

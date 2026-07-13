@@ -24,23 +24,30 @@ export function Navbar() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
+    if (!supabase) { setIsAuthReady(true); return; }
+    let isMounted = true;
 
     const syncUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
-      setUserEmail(user?.email ?? null);
-      setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
-      if (!user) { setAvatarUrl(null); return; }
-      const avatarPath = user.user_metadata?.avatar_path;
-      if (avatarPath) {
-        const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
-        setAvatarUrl(signed?.signedUrl ?? null);
-      } else {
-        setAvatarUrl(null);
+      try {
+        const { data } = await supabase.auth.getUser();
+        const user = data.user;
+        if (!isMounted) return;
+        setUserEmail(user?.email ?? null);
+        setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
+        if (!user) { setAvatarUrl(null); return; }
+        const avatarPath = user.user_metadata?.avatar_path;
+        if (avatarPath) {
+          const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
+          if (isMounted) setAvatarUrl(signed?.signedUrl ?? null);
+        } else {
+          setAvatarUrl(null);
+        }
+      } finally {
+        if (isMounted) setIsAuthReady(true);
       }
     };
 
@@ -56,6 +63,7 @@ export function Navbar() {
     window.addEventListener("profile-avatar-updated", updateAvatar);
 
     return () => {
+      isMounted = false;
       listener.subscription.unsubscribe();
       window.removeEventListener("profile-avatar-updated", updateAvatar);
     };
@@ -118,7 +126,7 @@ export function Navbar() {
           <span />
         </button>
 
-        {userEmail && (
+        {isAuthReady && userEmail && (
           <button className={`mobile-profile-link ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close dashboard menu" : "Open my dashboard menu"} aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" title={userEmail} onClick={() => { setIsOpen(false); setIsDashboardMenuOpen((current) => !current); }}>
             {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
           </button>
@@ -148,15 +156,15 @@ export function Navbar() {
             <i className="fa-regular fa-bell" aria-hidden="true" />
             <span>5</span>
           </button>
-          {userEmail ? (
+          {isAuthReady && userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
             </Link>
-          ) : (
+          ) : isAuthReady ? (
             <>
               <Link className="nav-signup" href="/login">Log in</Link>
             </>
-          )}
+          ) : null}
         </div>
 
         <button className={`mobile-menu-backdrop ${isOpen || isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); }} />
