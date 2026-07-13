@@ -14,8 +14,8 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [phone, setPhone] = useState(initialProfile.phone ?? "");
   const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
-  const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city! : "Hamilton");
-  const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "Flagstaff");
+  const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city! : "");
+  const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -23,21 +23,23 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const changedAt = initialProfile.nickname_changed_at ? new Date(initialProfile.nickname_changed_at) : null;
   const nextNicknameChange = changedAt ? new Date(changedAt.getTime() + 30 * 24 * 60 * 60 * 1000) : null;
   const nicknameLocked = Boolean(nextNicknameChange && nextNicknameChange > new Date());
-  const selectedCity = NZ_CITIES.find(([name]) => name === city) ?? NZ_CITIES[2];
-  const availableSuburbs = selectedCity[3];
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${suburb}, ${city}, New Zealand`)}&output=embed`;
+  const selectedCity = NZ_CITIES.find(([name]) => name === city);
+  const availableSuburbs = selectedCity?.[3] ?? [];
+  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent([suburb, city, "New Zealand"].filter(Boolean).join(", ") || "New Zealand")}&output=embed`;
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) { setStatus("Location services are not available in this browser."); return; }
+    setIsLocating(true); setStatus("Finding your current location…");
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       setLocationMode("current");
       setCoordinates({ latitude: coords.latitude, longitude: coords.longitude });
       const nearest = NZ_CITIES.reduce((closest, location) => ((location[1] - coords.latitude) ** 2 + (location[2] - coords.longitude) ** 2) < ((closest[1] - coords.latitude) ** 2 + (closest[2] - coords.longitude) ** 2) ? location : closest);
-      setCity(nearest[0]); setSuburb(nearest[3][0]);
-    }, () => setStatus("Location permission was not granted. Enter your region manually."));
+      setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`Current location set to ${nearest[0]}.`); setIsLocating(false);
+    }, () => { setStatus("Location permission was not granted. Choose a city below."); setIsLocating(false); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
   };
 
   const saveChanges = async () => {
@@ -80,7 +82,7 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
         <section className="profile-panel"><div className="profile-panel-title"><h2>Email Address</h2><span><i className="fa-solid fa-circle-check" /> Verified</span></div><p className="profile-email">{email}</p></section>
         <section className="profile-panel"><h2>Phone Number</h2><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div></section>
       </div>
-      <section className="profile-panel profile-region-panel"><h2>Trading Region</h2><div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" /> Use current location</button></div><div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity)!; setLocationMode("manual"); setCity(nextCity); setSuburb(next[3][0]); }}><>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</></select></label><label className="profile-field"><span>Suburb / Area</span><select value={availableSuburbs.includes(suburb as never) ? suburb : availableSuburbs[0]} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</></select></label></div><div className="profile-map profile-google-map"><iframe title={`${city} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city} / {suburb}</span></div></section>
+      <section className="profile-panel profile-region-panel"><h2>Trading Region</h2><div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={isLocating} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" /> {isLocating ? "Finding location…" : "Use current location"}</button></div><div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div><div className="profile-map profile-google-map"><iframe title={`${city || "New Zealand"} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city && suburb ? `${city} / ${suburb}` : "Choose a city and suburb"}</span></div></section>
     </div>
     <div className="profile-save-bar"><span className="profile-form-status" role="status">{status}</span><button className="profile-primary-button" type="button" disabled={isSaving} onClick={() => void saveChanges()}>{isSaving ? "Saving…" : "Save Changes"}</button></div>
   </>;
