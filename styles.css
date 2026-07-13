@@ -338,6 +338,8 @@ a {
   line-height: 1;
 }
 
+.nav-notifications.mobile-notifications { display: none; }
+
 .nav-signup,
 .nav-post {
   background: var(--primary);
@@ -2832,7 +2834,7 @@ a {
     text-decoration: none;
   }
 
-  .mobile-notifications {
+  .nav-notifications.mobile-notifications {
     grid-area: notification;
     justify-self: end;
     display: inline-grid;
