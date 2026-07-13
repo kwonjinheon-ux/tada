@@ -97,6 +97,25 @@ export function Navbar() {
   const isPostAd = pathname === "/post-ad";
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
+  const isSignedIn = Boolean(userEmail);
+
+  const handleMobileProfileClick = () => {
+    setIsOpen(false);
+    setIsDashboardMenuOpen((current) => !current);
+  };
+
+  const handleMobileSignOut = async () => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+
+    const { error } = await supabase.auth.signOut({ scope: "local" });
+    if (error) return;
+
+    setUserEmail(null);
+    setDisplayName(null);
+    setAvatarUrl(null);
+    setIsDashboardMenuOpen(false);
+  };
 
   return (
     <header className="site-header">
@@ -126,9 +145,9 @@ export function Navbar() {
           <span />
         </button>
 
-        {isAuthReady && userEmail && (
-          <button className={`mobile-profile-link ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close dashboard menu" : "Open my dashboard menu"} aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" title={userEmail} onClick={() => { setIsOpen(false); setIsDashboardMenuOpen((current) => !current); }}>
-            {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
+        {isAuthReady && (
+          <button className={`mobile-profile-link ${!isSignedIn ? "is-guest" : ""} ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close account menu" : isSignedIn ? "Open my dashboard menu" : "Open account menu"} aria-expanded={isDashboardMenuOpen} aria-controls={isSignedIn ? "mobile-dashboard-menu" : "mobile-account-menu"} title={userEmail ?? "Account"} onClick={handleMobileProfileClick}>
+            {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
           </button>
         )}
         <button className="mobile-notifications nav-notifications" type="button" aria-label="5 unread notifications">
@@ -212,6 +231,14 @@ export function Navbar() {
               </Link>
             ))}
             <Link className="mobile-dashboard-sell" href="/post-ad" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
+            <button className="mobile-dashboard-logout" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+          </nav>
+        )}
+        {isAuthReady && !userEmail && (
+          <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
+            <p>Account</p>
+            <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-right-to-bracket" aria-hidden="true" /> Log in</Link>
+            <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> Sign up</Link>
           </nav>
         )}
       </div>
