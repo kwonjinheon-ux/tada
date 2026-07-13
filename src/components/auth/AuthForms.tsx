@@ -178,6 +178,7 @@ export function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const passwordsMatch = Boolean(confirmPassword) && password === confirmPassword;
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -250,9 +251,10 @@ export function SignupForm() {
 
             <div className="field-group">
               <label htmlFor="confirm-password">Confirm Password</label>
-              <div className="input-wrap">
+              <div className={`input-wrap password-confirm-wrap ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}>
                 <i className="fa-solid fa-lock" aria-hidden="true" />
                 <input id="confirm-password" name="confirm-password" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="Repeat your password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+                {confirmPassword ? <i className={`password-confirm-status fa-solid ${passwordsMatch ? "fa-check" : "fa-xmark"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} /> : null}
                 <button className="icon-button" type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)}>
                   <PasswordToggleIcon />
                 </button>

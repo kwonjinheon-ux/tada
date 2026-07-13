@@ -1939,6 +1939,13 @@ a {
   height: 18px;
 }
 
+.password-confirm-wrap { grid-template-columns: 23px 1fr auto auto; }
+.password-confirm-wrap.is-valid { border-color: #10b981; }
+.password-confirm-wrap.is-invalid { border-color: #e04a54; }
+.password-confirm-status { align-self: center; padding-right: 3px; font-size: 14px; }
+.password-confirm-wrap.is-valid .password-confirm-status { color: #10b981; }
+.password-confirm-wrap.is-invalid .password-confirm-status { color: #e04a54; }
+
 .check-row {
   display: inline-flex;
   align-items: center;
