@@ -7,10 +7,20 @@ import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
+const dashboardMenuItems = [
+  ["fa-border-all", "Dashboard", ""],
+  ["fa-circle-user", "Profile Settings", "/profile"],
+  ["fa-message", "Messages", "/messages"],
+  ["fa-heart", "Wishlist", "/wishlist"],
+  ["fa-key", "Keywords", "/keywords"],
+  ["fa-rectangle-list", "Manage Listings", "/listings"],
+  ["fa-map", "Nearby Map", "/map"],
+] as const;
 
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -61,6 +71,11 @@ export function Navbar() {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    setIsOpen(false);
+    setIsDashboardMenuOpen(false);
+  }, [pathname]);
+
   if (authlessRoutes.has(pathname)) {
     return null;
   }
@@ -72,6 +87,7 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname === "/post-ad";
+  const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
 
   return (
@@ -103,9 +119,9 @@ export function Navbar() {
         </button>
 
         {userEmail && (
-          <Link className="mobile-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} aria-label="Open my dashboard" title={userEmail}>
+          <button className={`mobile-profile-link ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close dashboard menu" : "Open my dashboard menu"} aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" title={userEmail} onClick={() => { setIsOpen(false); setIsDashboardMenuOpen((current) => !current); }}>
             {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
-          </Link>
+          </button>
         )}
         <button className="mobile-notifications nav-notifications" type="button" aria-label="5 unread notifications">
           <i className="fa-regular fa-bell" aria-hidden="true" />
@@ -143,7 +159,7 @@ export function Navbar() {
           )}
         </div>
 
-        <button className={`mobile-menu-backdrop ${isOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => setIsOpen(false)} />
+        <button className={`mobile-menu-backdrop ${isOpen || isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); }} />
 
         <nav className={`mobile-nav-menu ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>
@@ -176,6 +192,20 @@ export function Navbar() {
             Create
           </Link>
         </nav>
+
+        {userEmail && (
+          <nav className={`mobile-dashboard-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
+            <p>My dashboard</p>
+            {dashboardMenuItems.map(([icon, label, suffix]) => (
+              <Link className={pathname === `${dashboardBase}${suffix}` ? "is-active" : ""} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
+                <i className={`fa-solid ${icon}`} aria-hidden="true" />
+                <span>{label}</span>
+                {label === "Messages" && <b>24</b>}
+              </Link>
+            ))}
+            <Link className="mobile-dashboard-sell" href="/post-ad" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
+          </nav>
+        )}
       </div>
     </header>
   );

@@ -27,7 +27,7 @@
 
 html {
   min-width: 320px;
-  background: var(--bg);
+  background: #fff;
   scrollbar-gutter: stable;
 }
 
@@ -35,9 +35,7 @@ body {
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
-  background:
-    linear-gradient(180deg, rgba(243, 246, 255, 0.95), rgba(249, 251, 255, 0.98)),
-    var(--bg);
+  background: #fff;
 }
 
 button,
@@ -403,6 +401,10 @@ a {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 14px 30px rgba(16, 33, 62, 0.1);
+}
+
+.mobile-dashboard-menu {
+  display: none;
 }
 
 .mobile-menu-backdrop {
@@ -2834,6 +2836,14 @@ a {
     color: #5967f2;
     font-size: 18px;
     text-decoration: none;
+    cursor: pointer;
+    appearance: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .mobile-profile-link.is-open {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, .22), 0 8px 18px rgba(16, 185, 129, .18);
+    transform: scale(1.06);
   }
 
   .nav-notifications.mobile-notifications {
@@ -2902,6 +2912,102 @@ a {
   .mobile-nav-menu.is-open a:nth-child(2) { animation-delay: 35ms; }
   .mobile-nav-menu.is-open a:nth-child(3) { animation-delay: 70ms; }
   .mobile-nav-menu.is-open a:nth-child(4) { animation-delay: 105ms; }
+
+  .mobile-dashboard-menu {
+    position: absolute;
+    top: 50px;
+    right: 8px;
+    z-index: 30;
+    width: min(276px, calc(100vw - 24px));
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid rgba(187, 202, 191, .9);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 20px 42px rgba(16, 33, 62, .22);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-12px) scale(.94);
+    transform-origin: top right;
+    transition: opacity 180ms ease, transform 260ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 260ms;
+  }
+
+  .mobile-dashboard-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition-delay: 0s;
+  }
+
+  .mobile-dashboard-menu p {
+    margin: 2px 8px 7px;
+    color: #617184;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .mobile-dashboard-menu a {
+    min-height: 40px;
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    border-radius: 9px;
+    color: #35465a;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mobile-dashboard-menu a.is-active,
+  .mobile-dashboard-menu a:hover {
+    background: #e6f9f2;
+    color: #00865d;
+  }
+
+  .mobile-dashboard-menu b {
+    min-width: 23px;
+    padding: 2px 6px;
+    border-radius: 99px;
+    background: #c91f2d;
+    color: #fff;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .mobile-dashboard-menu .mobile-dashboard-sell {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 5px;
+    background: #10b981;
+    color: #fff;
+  }
+
+  .mobile-dashboard-menu.is-open > * {
+    animation: mobile-dashboard-item-in 330ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  .mobile-dashboard-menu.is-open > :nth-child(2) { animation-delay: 35ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(3) { animation-delay: 70ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(4) { animation-delay: 105ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(5) { animation-delay: 140ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(6) { animation-delay: 175ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(7) { animation-delay: 210ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(8) { animation-delay: 245ms; }
+  .mobile-dashboard-menu.is-open > :nth-child(9) { animation-delay: 280ms; }
+
+  @keyframes mobile-dashboard-item-in {
+    from { opacity: 0; transform: translateY(-7px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @keyframes mobile-menu-item-in {
     from { opacity: 0; transform: translateX(-8px); }
@@ -3208,7 +3314,7 @@ a {
 .profile-panel h2 i { color: #10b981; }
 .profile-photo-panel { min-height: 300px; display: grid; place-items: center; }
 .profile-photo-card { width: 100%; display: grid; justify-items: center; padding: 14px 12px 10px; text-align: center; }
-.profile-avatar-wrap { position: relative; width: 142px; height: 142px; margin-bottom: 24px; }
+.profile-avatar-wrap { position: relative; width: 142px; height: 142px; margin-bottom: 11px; }
 .profile-avatar { width: 142px; height: 142px; display: grid; place-items: center; padding: 0; overflow: hidden; border: 5px solid #fff; border-radius: 50%; background: #eef3fb; color: #10b981; font-size: 40px; box-shadow: 0 5px 12px rgba(15,35,60,.16); cursor: pointer; }
 .profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .profile-avatar-placeholder { width: 100%; height: 100%; display: grid; place-items: center; color: #10b981; font-size: 45px; }
@@ -3217,6 +3323,11 @@ a {
 .profile-photo-identity { display: flex; align-items: center; justify-content: center; gap: 9px; color: #12233a; }
 .profile-photo-identity strong { font-size: 24px; line-height: 1.2; }
 .profile-photo-identity button { width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #50627b; font-size: 15px; cursor: pointer; }
+.profile-nickname-form { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.profile-nickname-form input { width: min(52vw, 210px); min-height: 38px; padding: 0 10px; border: 1px solid #10b981; border-radius: 8px; color: #12233a; font: inherit; font-size: 21px; font-weight: 800; text-align: center; outline: none; }
+.profile-nickname-form button { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: #e9f8f3; color: #07895f; cursor: pointer; }
+.profile-nickname-form button[type="button"] { background: #f1f4f8; color: #64748a; }
+.profile-nickname-form button:disabled { cursor: wait; opacity: .65; }
 .profile-member-since { margin: 7px 0 0; color: #53647c; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
 .profile-photo-help { margin: 11px 0 0; color: #8995a8; font-size: 10px; font-weight: 600; }
 .profile-photo-input { display: none; }

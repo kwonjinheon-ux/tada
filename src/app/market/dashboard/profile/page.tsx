@@ -11,7 +11,7 @@ export default async function ProfileSettingsPage() {
   if (!user) redirect("/login");
   const supabase = await createServerSupabaseClient();
   const { data: profile } = supabase
-    ? await supabase.from("profiles").select("display_name, nickname_changed_at, phone, location_mode, region_city, region_suburb, latitude, longitude").eq("id", user.id).maybeSingle()
+    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude").eq("id", user.id).maybeSingle()
     : { data: null };
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
 
@@ -25,7 +25,6 @@ export default async function ProfileSettingsPage() {
           memberSince={new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at))}
           initialProfile={{
             display_name: displayName,
-            nickname_changed_at: profile?.nickname_changed_at ?? null,
             phone: profile?.phone ?? null,
             location_mode: profile?.location_mode === "current" ? "current" : "manual",
             region_city: profile?.region_city ?? null,
