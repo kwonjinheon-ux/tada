@@ -42,6 +42,7 @@ export function ProfilePhotoUploader({ initialPath, displayName }: { initialPath
     setIsUploading(true);
     setStatus("Saving photo…");
     const image = new Image();
+    image.crossOrigin = "anonymous";
     image.src = editorUrl;
     await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error("Unable to read this image.")); });
 

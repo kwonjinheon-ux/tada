@@ -283,6 +283,8 @@ a {
   display: none;
 }
 
+.mobile-notifications { display: none; }
+
 .nav-actions a {
   min-height: 34px;
   display: inline-flex;
@@ -2707,11 +2709,11 @@ a {
   }
 
   .site-nav {
-    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    grid-template-columns: 38px minmax(0, 1fr) 34px 34px;
     grid-template-areas:
-      "menu logo profile"
-      "search search search"
-      "mobile mobile mobile";
+      "menu logo notification profile"
+      "search search search search"
+      "mobile mobile mobile mobile";
     row-gap: 4px;
     column-gap: 8px;
     padding: 3px 9px 5px;
@@ -2828,6 +2830,20 @@ a {
     color: #5967f2;
     font-size: 18px;
     text-decoration: none;
+  }
+
+  .mobile-notifications {
+    grid-area: notification;
+    justify-self: end;
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    font-size: 20px;
+  }
+
+  .mobile-notifications span {
+    top: -4px;
+    right: -3px;
   }
 
   .mobile-profile-link img {
@@ -3180,6 +3196,9 @@ a {
 .profile-heading p { margin: 0; color: #637086; font-size: 15px; }
 .profile-settings-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, .95fr); gap: 24px; align-items: start; }
 .profile-main-column, .profile-side-column { display: grid; gap: 18px; }
+.profile-main-column { gap: 0; overflow: hidden; border: 1px solid #dbe5f2; border-radius: 11px; background: rgba(255,255,255,.94); box-shadow: 0 4px 14px rgba(20,44,68,.04); }
+.profile-main-column .profile-panel { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.profile-main-column .profile-panel + .profile-panel { border-top: 1px solid #dbe5f2; }
 .profile-panel { padding: 22px; border: 1px solid #dbe5f2; border-radius: 11px; background: rgba(255,255,255,.94); box-shadow: 0 4px 14px rgba(20,44,68,.04); }
 .profile-panel h2 { display: flex; align-items: center; gap: 9px; margin: 0 0 20px; color: #182a40; font-size: 19px; }
 .profile-panel h2 i { color: #10b981; }
@@ -3226,6 +3245,8 @@ a {
 .profile-outline-button { width: 100%; border: 1px solid #10b981; background: #fff; color: #0aaa76; }
 .profile-phone { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px; margin-bottom: 12px; }
 .profile-phone > span { min-height: 46px; display: grid; place-items: center; padding: 0 11px; border: 1px solid #bdccc4; border-radius: 7px; background: #e8f0ff; font-size: 13px; font-weight: 700; }
+.phone-verification { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 10px; }
+.phone-verification input { min-width: 0; min-height: 40px; padding: 0 12px; border: 1px solid #bdccc4; border-radius: 7px; font: inherit; }
 .profile-verify-button { width: 100%; border: 0; background: #fff4df; color: #df9200; }
 .profile-select { appearance: auto; margin-bottom: 12px; }
 .profile-location-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
@@ -3468,7 +3489,7 @@ a {
 .dashboard-page .dashboard-content {
   width: 100%;
   min-width: 0;
-  padding: 4px 0 28px;
+  padding: 0 0 28px;
 }
 
 /* Mobile: stacked canvas, compact two-column navigation and touch-friendly cards. */

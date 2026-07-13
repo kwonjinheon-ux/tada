@@ -27,6 +27,10 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
+  const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
+  const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const changedAt = initialProfile.nickname_changed_at ? new Date(initialProfile.nickname_changed_at) : null;
   const nextNicknameChange = changedAt ? new Date(changedAt.getTime() + 30 * 24 * 60 * 60 * 1000) : null;
   const nicknameLocked = Boolean(nextNicknameChange && nextNicknameChange > new Date());
@@ -50,6 +54,27 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
         applyNearestLocation(data.latitude, data.longitude, "Approximate location");
       }).catch(() => setStatus("Allow location access in your browser settings, then try again.")).finally(() => setIsLocating(false));
     }, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+  };
+
+  const normalisedPhone = () => {
+    const digits = phone.replace(/\D/g, "");
+    return digits ? (digits.startsWith("64") ? `+${digits}` : `+64${digits.replace(/^0/, "")}`) : "";
+  };
+
+  const sendPhoneCode = async () => {
+    const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
+    if (!supabase || !targetPhone) { setStatus("Enter a valid New Zealand phone number first."); return; }
+    setIsSendingPhoneCode(true);
+    const { error } = await supabase.auth.updateUser({ phone: targetPhone });
+    setStatus(error ? error.message : "A 6-digit verification code was sent by SMS."); setPhoneVerificationSent(!error); setIsSendingPhoneCode(false);
+  };
+
+  const verifyPhoneCode = async () => {
+    const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
+    if (!supabase || phoneOtp.length !== 6) { setStatus("Enter the 6-digit SMS code."); return; }
+    setIsVerifyingPhoneCode(true);
+    const { error } = await supabase.auth.verifyOtp({ phone: targetPhone, token: phoneOtp, type: "phone_change" });
+    setStatus(error ? error.message : "Phone number verified successfully."); if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); } setIsVerifyingPhoneCode(false);
   };
 
   const saveChanges = async () => {
@@ -90,7 +115,7 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
       </div>
       <div className="profile-side-column">
         <section className="profile-panel"><div className="profile-panel-title"><h2>Email Address</h2><span><i className="fa-solid fa-circle-check" /> Verified</span></div><p className="profile-email">{email}</p></section>
-        <section className="profile-panel"><h2>Phone Number</h2><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div></section>
+        <section className="profile-panel"><h2>Phone Number</h2><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? "Verifying…" : "Verify code"}</button></div> : <button className="profile-verify-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}><i className="fa-regular fa-message" /> {isSendingPhoneCode ? "Sending…" : "Verify via SMS"}</button>}</section>
       </div>
       <section className="profile-panel profile-region-panel"><h2>Trading Region</h2><div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={isLocating} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" /> {isLocating ? "Finding location…" : "Use current location"}</button></div><div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div><div className="profile-map profile-google-map"><iframe title={`${city || "New Zealand"} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city && suburb ? `${city} / ${suburb}` : "Choose a city and suburb"}</span></div></section>
     </div>

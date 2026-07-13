@@ -107,6 +107,10 @@ export function Navbar() {
             {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
           </Link>
         )}
+        <button className="mobile-notifications nav-notifications" type="button" aria-label="5 unread notifications">
+          <i className="fa-regular fa-bell" aria-hidden="true" />
+          <span>5</span>
+        </button>
 
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
