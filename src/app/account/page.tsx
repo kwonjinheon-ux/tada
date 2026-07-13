@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { listings } from "@/data/listings";
 import { getServerUser } from "@/lib/auth-server";
 
@@ -17,8 +16,6 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
 
   return (
     <main className="marketplace-page dashboard-page">
-      <DashboardSidebar context={context} active="Dashboard" />
-
       <div className="dashboard-content">
         <div className="dashboard-welcome">
           <div><p>{context === "market" ? "Marketplace dashboard" : "Jobs dashboard"}</p><h1>Welcome back</h1><span>{user.email}</span></div>

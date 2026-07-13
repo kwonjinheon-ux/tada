@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -17,7 +16,6 @@ export default async function ProfileSettingsPage() {
 
   return (
     <main className="marketplace-page dashboard-page profile-settings-page">
-      <DashboardSidebar context="market" active="Profile Settings" />
       <div className="dashboard-content profile-settings-content">
         <ProfileSettingsForm
           email={user.email ?? ""}

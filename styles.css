@@ -2947,7 +2947,7 @@ a {
     margin: 2px 8px 7px;
     color: #617184;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 400;
     letter-spacing: .08em;
     text-transform: uppercase;
   }
@@ -2962,7 +2962,7 @@ a {
     border-radius: 9px;
     color: #35465a;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 400;
     text-decoration: none;
   }
 
@@ -3323,9 +3323,10 @@ a {
 .profile-photo-identity { display: flex; align-items: center; justify-content: center; gap: 9px; color: #12233a; }
 .profile-photo-identity strong { font-size: 24px; line-height: 1.2; }
 .profile-photo-identity button { width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #50627b; font-size: 15px; cursor: pointer; }
-.profile-nickname-form { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.profile-nickname-form input { width: min(52vw, 210px); min-height: 38px; padding: 0 10px; border: 1px solid #10b981; border-radius: 8px; color: #12233a; font: inherit; font-size: 21px; font-weight: 800; text-align: center; outline: none; }
-.profile-nickname-form button { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: #e9f8f3; color: #07895f; cursor: pointer; }
+.profile-nickname-form { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 210px) minmax(0, 1fr); align-items: center; }
+.profile-nickname-form input { grid-column: 2; width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid #10b981; border-radius: 8px; color: #12233a; font: inherit; font-size: 21px; font-weight: 800; text-align: center; outline: none; }
+.profile-nickname-form button { grid-column: 3; justify-self: start; width: 34px; height: 34px; margin-left: 8px; padding: 0; border: 0; border-radius: 50%; background: #e9f8f3; color: #07895f; cursor: pointer; }
+.profile-nickname-form button + button { transform: translateX(42px); }
 .profile-nickname-form button[type="button"] { background: #f1f4f8; color: #64748a; }
 .profile-nickname-form button:disabled { cursor: wait; opacity: .65; }
 .profile-member-since { margin: 7px 0 0; color: #53647c; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
@@ -3552,6 +3553,7 @@ a {
 /* Dashboard uses the same sidebar geometry and typography as Marketplace filters. */
 .marketplace-page.dashboard-page {
   min-height: calc(100vh - 70px);
+  display: block;
   background: #f6f8ff;
   color: #0b1c30;
 }
