@@ -6,8 +6,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { listings, quickCategories } from "@/data/listings";
 
 const filters = [
-  ["fa-warehouse", "Garage Sale"],
   ["fa-border-all", "All"],
+  ["fa-warehouse", "Garage Sale"],
   ["fa-laptop", "Electronics"],
   ["fa-couch", "Home & Furniture"],
   ["fa-shirt", "Clothing"],

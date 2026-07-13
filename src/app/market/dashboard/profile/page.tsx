@@ -22,6 +22,7 @@ export default async function ProfileSettingsPage() {
         <ProfileSettingsForm
           email={user.email ?? ""}
           avatarPath={user.user_metadata?.avatar_path}
+          memberSince={new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at))}
           initialProfile={{
             display_name: displayName,
             nickname_changed_at: profile?.nickname_changed_at ?? null,
