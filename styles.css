@@ -3199,6 +3199,14 @@ a {
 .profile-primary-button { border: 0; background: #10b981; color: #fff; }
 .profile-field { display: grid; gap: 7px; color: #34455d; font-size: 13px; font-weight: 600; }
 .profile-field input, .profile-phone input, .profile-select { width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid #bdccc4; border-radius: 7px; background: #fff; color: #26384e; font: inherit; outline: none; }
+.profile-password-input { position: relative; }
+.profile-password-input input { padding-right: 78px; }
+.profile-password-input > button { position: absolute; top: 50%; right: 11px; width: 28px; height: 28px; padding: 0; border: 0; transform: translateY(-50%); background: transparent; color: #68778b; font-size: 17px; cursor: pointer; }
+.profile-password-input.is-valid input { border-color: #10b981; }
+.profile-password-input.is-invalid input { border-color: #e04a54; }
+.password-match-icon { position: absolute; top: 50%; right: 43px; transform: translateY(-50%); font-size: 14px; }
+.is-valid .password-match-icon { color: #10b981; }
+.is-invalid .password-match-icon { color: #e04a54; }
 .profile-field input:focus, .profile-phone input:focus, .profile-select:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.13); }
 .profile-field small { color: #7b879a; font-size: 10px; font-style: italic; }
 .profile-password-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }

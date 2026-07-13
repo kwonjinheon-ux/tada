@@ -20,6 +20,9 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
@@ -30,16 +33,23 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
   const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent([suburb, city, "New Zealand"].filter(Boolean).join(", ") || "New Zealand")}&output=embed`;
+  const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
+  const applyNearestLocation = (latitude: number, longitude: number, source: string) => {
+    const nearest = NZ_CITIES.reduce((closest, location) => ((location[1] - latitude) ** 2 + (location[2] - longitude) ** 2) < ((closest[1] - latitude) ** 2 + (closest[2] - longitude) ** 2) ? location : closest);
+    setLocationMode("current"); setCoordinates({ latitude, longitude }); setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`${source} set to ${nearest[0]}.`);
+  };
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) { setStatus("Location services are not available in this browser."); return; }
     setIsLocating(true); setStatus("Finding your current location…");
     navigator.geolocation.getCurrentPosition(({ coords }) => {
-      setLocationMode("current");
-      setCoordinates({ latitude: coords.latitude, longitude: coords.longitude });
-      const nearest = NZ_CITIES.reduce((closest, location) => ((location[1] - coords.latitude) ** 2 + (location[2] - coords.longitude) ** 2) < ((closest[1] - coords.latitude) ** 2 + (closest[2] - coords.longitude) ** 2) ? location : closest);
-      setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`Current location set to ${nearest[0]}.`); setIsLocating(false);
-    }, () => { setStatus("Location permission was not granted. Choose a city below."); setIsLocating(false); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+      applyNearestLocation(coords.latitude, coords.longitude, "Current location"); setIsLocating(false);
+    }, () => {
+      void fetch("https://ipapi.co/json/").then((response) => response.json()).then((data) => {
+        if (typeof data.latitude !== "number" || typeof data.longitude !== "number") throw new Error("No IP location");
+        applyNearestLocation(data.latitude, data.longitude, "Approximate location");
+      }).catch(() => setStatus("Allow location access in your browser settings, then try again.")).finally(() => setIsLocating(false));
+    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
   };
 
   const saveChanges = async () => {
@@ -75,8 +85,8 @@ export function ProfileSettingsForm({ email, avatarPath, initialProfile }: { ema
     <div className="profile-settings-grid">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><h2>Profile Photo</h2><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} /></section>
-        <section className="profile-panel"><h2><i className="fa-regular fa-id-badge" /> Personal Information</h2><label className="profile-field"><span>Display Name / Nickname</span><input value={displayName} disabled={nicknameLocked} onChange={(event) => setDisplayName(event.target.value)} /><small>{nicknameLocked ? `Nickname can be changed again on ${nextNicknameChange?.toLocaleDateString()}.` : "This is how your name will appear to other buyers and sellers."}</small></label></section>
-        <section className="profile-panel"><h2><i className="fa-solid fa-lock" /> Security</h2><div className="profile-password-grid"><label className="profile-field is-wide"><span>Current Password</span><input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /></label><label className="profile-field"><span>New Password</span><input type="password" minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label><label className="profile-field"><span>Confirm New Password</span><input type="password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></label></div><div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isUpdatingPassword} onClick={() => void updatePassword()}>{isUpdatingPassword ? "Updating…" : "Update Password"}</button></div></section>
+        <section className="profile-panel"><h2><i className="fa-regular fa-id-badge" /> Personal Information</h2><label className="profile-field"><span>Display Name / Nickname</span><input value={displayName} disabled={nicknameLocked} onChange={(event) => setDisplayName(event.target.value)} /><small>{nicknameLocked ? `Nickname can be changed again on ${nextNicknameChange?.toLocaleDateString()}.` : "Changing your nickname locks further changes for 30 days."}</small></label></section>
+        <section className="profile-panel"><h2><i className="fa-solid fa-lock" /> Security</h2><div className="profile-password-grid"><label className="profile-field is-wide"><span>Current Password</span><div className="profile-password-input"><input type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={showCurrentPassword ? "Hide current password" : "Show current password"} onClick={() => setShowCurrentPassword((value) => !value)}><i className={`fa-regular ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>New Password</span><div className="profile-password-input"><input type={showNewPassword ? "text" : "password"} minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={showNewPassword ? "Hide new password" : "Show new password"} onClick={() => setShowNewPassword((value) => !value)}><i className={`fa-regular ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>Confirm New Password</span><div className={`profile-password-input ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}><input type={showConfirmPassword ? "text" : "password"} minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} onClick={() => setShowConfirmPassword((value) => !value)}><i className={`fa-regular ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`} /></button>{confirmPassword && <i className={`password-match-icon fa-solid ${passwordsMatch ? "fa-check" : "fa-xmark"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} />}</div></label></div><div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isUpdatingPassword} onClick={() => void updatePassword()}>{isUpdatingPassword ? "Updating…" : "Update Password"}</button></div></section>
       </div>
       <div className="profile-side-column">
         <section className="profile-panel"><div className="profile-panel-title"><h2>Email Address</h2><span><i className="fa-solid fa-circle-check" /> Verified</span></div><p className="profile-email">{email}</p></section>
