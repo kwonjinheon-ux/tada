@@ -24,7 +24,6 @@ export function Navbar() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [dockScrollMode, setDockScrollMode] = useState<"" | "is-compact" | "is-expanded">("");
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -80,22 +79,6 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
-    let previousScrollY = window.scrollY;
-
-    const updateDockScale = () => {
-      if (!window.matchMedia("(max-width: 767.98px)").matches) return;
-      const currentScrollY = window.scrollY;
-      const distance = currentScrollY - previousScrollY;
-      if (Math.abs(distance) < 6) return;
-      setDockScrollMode(distance > 0 ? "is-compact" : "is-expanded");
-      previousScrollY = currentScrollY;
-    };
-
-    window.addEventListener("scroll", updateDockScale, { passive: true });
-    return () => window.removeEventListener("scroll", updateDockScale);
-  }, []);
-
-  useEffect(() => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
   }, [pathname]);
@@ -103,12 +86,17 @@ export function Navbar() {
   useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
-    return () => window.removeEventListener("mobile-category-menu-request", closeDashboardDrawer);
+    window.addEventListener("mobile-dashboard-menu-close", closeDashboardDrawer);
+    return () => {
+      window.removeEventListener("mobile-category-menu-request", closeDashboardDrawer);
+      window.removeEventListener("mobile-dashboard-menu-close", closeDashboardDrawer);
+    };
   }, []);
 
   useEffect(() => {
     const isMobileDrawerOpen = isDashboardMenuOpen && Boolean(userEmail) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("has-mobile-dashboard-drawer", isMobileDrawerOpen);
+    window.dispatchEvent(new CustomEvent("mobile-dashboard-menu-state", { detail: isMobileDrawerOpen }));
     return () => document.body.classList.remove("has-mobile-dashboard-drawer");
   }, [isDashboardMenuOpen, userEmail]);
 
@@ -261,7 +249,7 @@ export function Navbar() {
           </nav>
         )}
 
-        <nav className={`mobile-bottom-dock ${dockScrollMode}`} aria-label="Quick actions">
+        <nav className="mobile-bottom-dock" aria-label="Quick actions">
           <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
           <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
           <Link className="mobile-dock-create" href="/post-ad" aria-label="Create listing"><i className="fa-regular fa-square-plus" aria-hidden="true" /></Link>
