@@ -225,6 +225,7 @@ export function Navbar() {
         {userEmail && (
           <nav className={`mobile-dashboard-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
             <p>My dashboard</p>
+            <button className="mobile-dashboard-close" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={pathname === `${dashboardBase}${suffix}` ? "is-active" : ""} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
@@ -244,11 +245,11 @@ export function Navbar() {
         )}
 
         <nav className="mobile-bottom-dock" aria-label="Quick actions">
-          <Link href="/market" aria-label="Market home"><i className="fa-solid fa-house" aria-hidden="true" /></Link>
-          <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-solid fa-message" aria-hidden="true" /></Link>
-          <Link className="mobile-dock-create" href="/post-ad" aria-label="Create listing"><i className="fa-solid fa-plus" aria-hidden="true" /></Link>
-          <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-solid fa-shapes" aria-hidden="true" /></button>
-          <button type="button" aria-label="Open dashboard" onClick={openMobileDashboard}><i className="fa-solid fa-table-cells-large" aria-hidden="true" /></button>
+          <Link href="/market" aria-label="Market home"><i className="fa-regular fa-compass" aria-hidden="true" /></Link>
+          <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
+          <Link className="mobile-dock-create" href="/post-ad" aria-label="Create listing"><i className="fa-regular fa-square-plus" aria-hidden="true" /></Link>
+          <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /></button>
+          <button type="button" aria-label="Open dashboard" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /></button>
         </nav>
       </div>
     </header>
