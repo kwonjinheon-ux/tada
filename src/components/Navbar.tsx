@@ -24,6 +24,7 @@ export function Navbar() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [dockScrollMode, setDockScrollMode] = useState<"" | "is-compact" | "is-expanded">("");
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -77,6 +78,22 @@ export function Navbar() {
       document.body.classList.remove("post-ad-screen");
     };
   }, [pathname]);
+
+  useEffect(() => {
+    let previousScrollY = window.scrollY;
+
+    const updateDockScale = () => {
+      if (!window.matchMedia("(max-width: 767.98px)").matches) return;
+      const currentScrollY = window.scrollY;
+      const distance = currentScrollY - previousScrollY;
+      if (Math.abs(distance) < 6) return;
+      setDockScrollMode(distance > 0 ? "is-compact" : "is-expanded");
+      previousScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", updateDockScale, { passive: true });
+    return () => window.removeEventListener("scroll", updateDockScale);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);
@@ -244,8 +261,8 @@ export function Navbar() {
           </nav>
         )}
 
-        <nav className="mobile-bottom-dock" aria-label="Quick actions">
-          <Link href="/market" aria-label="Market home"><i className="fa-regular fa-compass" aria-hidden="true" /></Link>
+        <nav className={`mobile-bottom-dock ${dockScrollMode}`} aria-label="Quick actions">
+          <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
           <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
           <Link className="mobile-dock-create" href="/post-ad" aria-label="Create listing"><i className="fa-regular fa-square-plus" aria-hidden="true" /></Link>
           <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /></button>

@@ -3158,10 +3158,11 @@ a {
   }
 
   .mobile-dashboard-menu {
-    top: 0;
+    top: -3px;
     right: auto;
     bottom: 0;
-    left: 0;
+    left: calc(var(--mobile-drawer-width) * -1);
+    position: absolute;
     z-index: 121;
     width: var(--mobile-drawer-width);
     min-height: 100dvh;
@@ -3213,14 +3214,19 @@ a {
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, .16);
-    border-radius: 18px;
-    background: linear-gradient(135deg, rgba(7, 10, 14, .82), rgba(25, 30, 37, .64));
-    box-shadow: 0 12px 30px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .11), inset 0 -1px rgba(0, 0, 0, .35);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    transform: translateX(50%);
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, .32), rgba(55, 72, 92, .32));
+    box-shadow: 0 10px 26px rgba(16, 33, 62, .2), inset 0 1px rgba(255, 255, 255, .28), inset 0 -1px rgba(20, 35, 52, .12);
+    backdrop-filter: blur(26px) saturate(175%);
+    -webkit-backdrop-filter: blur(26px) saturate(175%);
+    transform: translateX(50%) scale(1);
+    transform-origin: bottom center;
+    transition: transform 220ms cubic-bezier(.22, 1, .36, 1), background 220ms ease;
   }
+
+  .mobile-bottom-dock.is-compact { transform: translateX(50%) scale(.8); }
+  .mobile-bottom-dock.is-expanded { transform: translateX(50%) scale(1.2); }
 
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
@@ -3237,6 +3243,16 @@ a {
     font-size: 16px;
     text-decoration: none;
     cursor: pointer;
+  }
+
+  .mobile-bottom-dock svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
   }
 
   .mobile-bottom-dock a:hover,
