@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
+import type { Listing } from "@/data/listings";
 import { listings, quickCategories } from "@/data/listings";
 
 const filters = [
@@ -20,7 +21,7 @@ const filters = [
   ["fa-futbol", "Sporting Goods"],
 ];
 
-export function MarketPageClient() {
+export function MarketPageClient({ postedListings = [] }: { postedListings?: Listing[] }) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -70,6 +71,7 @@ export function MarketPageClient() {
     setHasManualViewChoice(true);
     setViewMode(mode);
   };
+  const visibleListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
 
   return (
     <main className="marketplace-page">
@@ -173,7 +175,7 @@ export function MarketPageClient() {
         </div>
 
         <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {listings.map((listing) => (
+          {visibleListings.map((listing) => (
             <ProductCard key={listing.id} listing={listing} />
           ))}
         </div>

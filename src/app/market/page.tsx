@@ -1,7 +1,88 @@
 import { MarketPageClient } from "@/components/market/MarketPageClient";
+import type { Listing } from "@/data/listings";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Market" };
 
-export default function MarketRoute() {
-  return <MarketPageClient />;
+type ContentPostPhotoRow = {
+  storage_path: string | null;
+  original_name: string | null;
+  is_primary: boolean;
+  display_order: number;
+};
+
+type ContentPostRow = {
+  id: string;
+  title: string;
+  region_city: string | null;
+  region_suburb: string | null;
+  created_at: string;
+  payload: {
+    price?: string | null;
+  } | null;
+  content_post_photos?: ContentPostPhotoRow[];
+};
+
+function formatPrice(value: string | null | undefined) {
+  if (!value) return "$0";
+  const parsed = Number(value.replace(/[^0-9.]/g, ""));
+  if (!Number.isFinite(parsed) || parsed <= 0) return "$0";
+  return new Intl.NumberFormat("en-NZ", {
+    style: "currency",
+    currency: "NZD",
+    maximumFractionDigits: parsed % 1 === 0 ? 0 : 2,
+  }).format(parsed);
+}
+
+function formatLocation(city: string | null, suburb: string | null) {
+  const parts = [suburb, city].filter(Boolean);
+  return parts.length ? parts.join(", ") : "New Zealand";
+}
+
+async function getPostedListings(): Promise<Listing[]> {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("content_posts")
+    .select("id,title,region_city,region_suburb,created_at,payload,content_post_photos(storage_path,original_name,is_primary,display_order)")
+    .eq("status", "published")
+    .eq("post_type", "listing")
+    .order("created_at", { ascending: false })
+    .limit(48);
+
+  if (error || !data) return [];
+
+  const listings = await Promise.all(
+    (data as ContentPostRow[]).map(async (post) => {
+      const photo = [...(post.content_post_photos ?? [])].sort((a, b) => {
+        if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
+        return a.display_order - b.display_order;
+      })[0];
+
+      let image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
+      if (photo?.storage_path) {
+        const { data: signed } = await supabase.storage.from("listing-images").createSignedUrl(photo.storage_path, 3600);
+        image = signed?.signedUrl ?? image;
+      }
+
+      return {
+        id: post.id,
+        title: post.title,
+        price: formatPrice(post.payload?.price),
+        location: formatLocation(post.region_city, post.region_suburb),
+        image,
+        imageAlt: photo?.original_name ?? post.title,
+        badge: "Newly Listed",
+        status: "available",
+      } satisfies Listing;
+    }),
+  );
+
+  return listings;
+}
+
+export default async function MarketRoute() {
+  const postedListings = await getPostedListings();
+  return <MarketPageClient postedListings={postedListings} />;
 }
