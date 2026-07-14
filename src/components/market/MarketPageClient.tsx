@@ -42,9 +42,25 @@ export function MarketPageClient() {
   }, [hasManualViewChoice]);
 
   useEffect(() => {
+    const isMobileDrawerOpen = isFilterOpen && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("has-open-filter", isFilterOpen);
-    return () => document.body.classList.remove("has-open-filter");
+    document.body.classList.toggle("has-mobile-category-drawer", isMobileDrawerOpen);
+    return () => {
+      document.body.classList.remove("has-open-filter");
+      document.body.classList.remove("has-mobile-category-drawer");
+    };
   }, [isFilterOpen]);
+
+  useEffect(() => {
+    const openCategories = () => setIsFilterOpen(true);
+    const closeCategories = () => setIsFilterOpen(false);
+    window.addEventListener("mobile-category-menu-request", openCategories);
+    window.addEventListener("mobile-category-menu-close", closeCategories);
+    return () => {
+      window.removeEventListener("mobile-category-menu-request", openCategories);
+      window.removeEventListener("mobile-category-menu-close", closeCategories);
+    };
+  }, []);
 
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
@@ -87,7 +103,7 @@ export function MarketPageClient() {
           <h2>Category</h2>
           <div className="filter-list">
             {filters.map(([icon, label]) => (
-              <button key={label} className={label === "All" ? "is-selected" : ""} type="button">
+              <button key={label} className={label === "All" ? "is-selected" : ""} type="button" onClick={() => setIsFilterOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 {label}
               </button>

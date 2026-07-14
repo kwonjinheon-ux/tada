@@ -14,7 +14,6 @@ const dashboardMenuItems = [
   ["fa-heart", "Wishlist", "/wishlist"],
   ["fa-key", "Keywords", "/keywords"],
   ["fa-rectangle-list", "Manage Listings", "/listings"],
-  ["fa-map", "Nearby Map", "/map"],
 ] as const;
 
 export function Navbar() {
@@ -84,6 +83,18 @@ export function Navbar() {
     setIsDashboardMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
+    window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
+    return () => window.removeEventListener("mobile-category-menu-request", closeDashboardDrawer);
+  }, []);
+
+  useEffect(() => {
+    const isMobileDrawerOpen = isDashboardMenuOpen && Boolean(userEmail) && window.matchMedia("(max-width: 767.98px)").matches;
+    document.body.classList.toggle("has-mobile-dashboard-drawer", isMobileDrawerOpen);
+    return () => document.body.classList.remove("has-mobile-dashboard-drawer");
+  }, [isDashboardMenuOpen, userEmail]);
+
   if (authlessRoutes.has(pathname)) {
     return null;
   }
@@ -115,6 +126,18 @@ export function Navbar() {
     setDisplayName(null);
     setAvatarUrl(null);
     setIsDashboardMenuOpen(false);
+  };
+
+  const openMobileCategories = () => {
+    setIsOpen(false);
+    setIsDashboardMenuOpen(false);
+    window.dispatchEvent(new Event("mobile-category-menu-request"));
+  };
+
+  const openMobileDashboard = () => {
+    setIsOpen(false);
+    window.dispatchEvent(new Event("mobile-category-menu-close"));
+    setIsDashboardMenuOpen(true);
   };
 
   return (
@@ -197,27 +220,6 @@ export function Navbar() {
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
             Jobs
           </Link>
-          {userEmail ? (
-            <Link href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} onClick={() => setIsOpen(false)}>
-              <i className="fa-solid fa-user" aria-hidden="true" />
-              Account
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" onClick={() => setIsOpen(false)}>
-                <i className="fa-solid fa-right-to-bracket" aria-hidden="true" />
-                Log in
-              </Link>
-              <Link href="/signup" onClick={() => setIsOpen(false)}>
-                <i className="fa-solid fa-user-plus" aria-hidden="true" />
-                Sign up
-              </Link>
-            </>
-          )}
-          <Link className={isPostAd ? "is-active" : ""} href="/post-ad" onClick={() => setIsOpen(false)}>
-            <i className="fa-solid fa-plus" aria-hidden="true" />
-            Create
-          </Link>
         </nav>
 
         {userEmail && (
@@ -230,7 +232,6 @@ export function Navbar() {
                 {label === "Messages" && <b>24</b>}
               </Link>
             ))}
-            <Link className="mobile-dashboard-sell" href="/post-ad" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
             <button className="mobile-dashboard-logout" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
           </nav>
         )}
@@ -241,6 +242,14 @@ export function Navbar() {
             <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> Sign up</Link>
           </nav>
         )}
+
+        <nav className="mobile-bottom-dock" aria-label="Quick actions">
+          <Link href="/market" aria-label="Market home"><i className="fa-solid fa-house" aria-hidden="true" /></Link>
+          <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-solid fa-message" aria-hidden="true" /></Link>
+          <Link className="mobile-dock-create" href="/post-ad" aria-label="Create listing"><i className="fa-solid fa-plus" aria-hidden="true" /></Link>
+          <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-solid fa-shapes" aria-hidden="true" /></button>
+          <button type="button" aria-label="Open dashboard" onClick={openMobileDashboard}><i className="fa-solid fa-table-cells-large" aria-hidden="true" /></button>
+        </nav>
       </div>
     </header>
   );
