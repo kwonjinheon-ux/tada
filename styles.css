@@ -2819,12 +2819,17 @@ a {
   }
 
   .mobile-menu-backdrop {
-    position: fixed;
-    inset: 0;
+    position: absolute;
+    top: -3px;
+    left: -9px;
+    width: 100vw;
+    height: 100dvh;
     z-index: 29;
     display: block;
     border: 0;
-    background: rgba(8, 22, 40, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 180ms ease;
