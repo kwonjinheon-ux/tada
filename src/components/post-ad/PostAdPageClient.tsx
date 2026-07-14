@@ -10,30 +10,31 @@ type SelectOption = {
   value: string;
 };
 
-const serviceOptions: SelectOption[] = [
-  { label: "General", value: "general" },
-  { label: "Jobs", value: "jobs" },
-  { label: "Cars", value: "cars" },
-  { label: "Community", value: "community" },
-  { label: "Market", value: "market" },
+const mainCategories: SelectOption[] = [
+  { label: "Electronics", value: "electronics" },
+  { label: "Home & Furniture", value: "home-furniture" },
+  { label: "Clothing", value: "clothing" },
+  { label: "Entertainment", value: "entertainment" },
 ];
 
-const postTypes: SelectOption[] = [
-  { label: "Offer", value: "offer" },
-  { label: "Request", value: "request" },
-  { label: "Update", value: "update" },
-  { label: "Event", value: "event" },
+const subCategories: SelectOption[] = [
+  { label: "Computers", value: "computers" },
+  { label: "Smartphones", value: "smartphones" },
+  { label: "Audio", value: "audio" },
+  { label: "Cameras", value: "cameras" },
 ];
 
-const visibilityOptions: SelectOption[] = [
-  { label: "Publish now", value: "published" },
-  { label: "Save draft", value: "draft" },
+const tradeMethods: SelectOption[] = [
+  { label: "Pickup & delivery", value: "pickup_delivery" },
+  { label: "Pickup only", value: "pickup" },
+  { label: "Delivery only", value: "delivery" },
 ];
 
-const contactMethods: SelectOption[] = [
-  { label: "In-app messages", value: "in_app" },
-  { label: "Email", value: "email" },
-  { label: "Phone", value: "phone" },
+const conditions: SelectOption[] = [
+  { label: "Brand new", value: "brand_new" },
+  { label: "Like new", value: "like_new" },
+  { label: "Good", value: "good" },
+  { label: "Fair", value: "fair" },
 ];
 
 const regions: SelectOption[] = [
@@ -49,9 +50,9 @@ const areas: SelectOption[] = [
   { label: "Newmarket", value: "Newmarket" },
 ];
 
-const detailModes: SelectOption[] = [
-  { label: "Flexible details", value: "flexible" },
-  { label: "Service-specific later", value: "service_specific" },
+const meetingPlaces: SelectOption[] = [
+  { label: "Public location", value: "public" },
+  { label: "Pickup from home", value: "home" },
 ];
 
 function CustomSelect({
@@ -158,13 +159,13 @@ function CustomSelect({
 export function PostAdPageClient() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [serviceKey, setServiceKey] = useState("general");
-  const [postType, setPostType] = useState("offer");
-  const [status, setStatus] = useState("published");
-  const [contactMethod, setContactMethod] = useState("in_app");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
+  const [itemCondition, setItemCondition] = useState("brand_new");
   const [region, setRegion] = useState("");
   const [area, setArea] = useState("");
-  const [detailMode, setDetailMode] = useState("flexible");
+  const [meetingPlace, setMeetingPlace] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -196,21 +197,25 @@ export function PostAdPageClient() {
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
     const body = String(form.get("body") ?? "").trim();
-    const referencePrice = String(form.get("reference_price") ?? "").trim();
+    const price = String(form.get("price") ?? "").trim();
 
     const { error: insertError } = await supabase.from("content_posts").insert({
       author_id: user.id,
-      service_key: serviceKey,
-      post_type: postType,
-      status,
+      service_key: "general",
+      post_type: "listing",
+      status: "published",
       title,
       body,
       region_city: region || null,
       region_suburb: area || null,
-      contact_method: contactMethod,
+      contact_method: "in_app",
       payload: {
-        detail_mode: detailMode,
-        reference_price: referencePrice || null,
+        main_category: mainCategory || null,
+        sub_category: subCategory || null,
+        trade_method: tradeMethod,
+        item_condition: itemCondition,
+        meeting_place: meetingPlace || null,
+        price: price || null,
       },
     });
 
@@ -220,48 +225,48 @@ export function PostAdPageClient() {
       return;
     }
 
-    setNotice(status === "published" ? "Created successfully." : "Draft saved.");
+    setNotice("Posted successfully.");
     formRef.current?.reset();
-    setServiceKey("general");
-    setPostType("offer");
-    setStatus("published");
-    setContactMethod("in_app");
+    setMainCategory("");
+    setSubCategory("");
+    setTradeMethod("pickup_delivery");
+    setItemCondition("brand_new");
     setRegion("");
     setArea("");
-    setDetailMode("flexible");
+    setMeetingPlace("");
     setIsSubmitting(false);
   };
 
   return (
     <main className="post-ad-page">
       <div className="post-ad-layout">
-        <section className="post-ad-card" aria-label="Create a new Tada post">
+        <section className="post-ad-card" aria-label="Create a new marketplace listing">
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full">
-              <label htmlFor="post-title">Title</label>
-              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder="e.g. Part-time barista needed in Newmarket" required />
-              <p className="post-field-hint">Your post can later connect to jobs, cars, community, market, or another Tada service.</p>
+              <label htmlFor="post-title">Listing Title</label>
+              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" required />
+              <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
             <div className="post-form-grid post-form-grid-four">
-              <CustomSelect id="service-key" name="service_key" label="Service" icon="fa-layer-group" placeholder="Select service" options={serviceOptions} value={serviceKey} onChange={setServiceKey} />
-              <CustomSelect id="post-type" name="post_type" label="Post Type" icon="fa-tags" placeholder="Select post type" options={postTypes} value={postType} onChange={setPostType} />
-              <CustomSelect id="post-status" name="status" label="Visibility" icon="fa-eye" placeholder="Publish now" options={visibilityOptions} value={status} onChange={setStatus} />
-              <CustomSelect id="contact-method" name="contact_method" label="Contact Method" icon="fa-message" placeholder="In-app messages" options={contactMethods} value={contactMethod} onChange={setContactMethod} />
+              <CustomSelect id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
+              <CustomSelect id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategories} value={subCategory} onChange={setSubCategory} />
+              <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
+              <CustomSelect id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>
 
             <fieldset className="photo-fieldset">
               <div className="field-label-row">
                 <legend>Photos</legend>
-                <span>Optional</span>
+                <span>Up to 10 photos</span>
               </div>
               <div className="post-photo-grid">
                 <div className="post-photo-slot is-main">
-                  <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="Example post photo" />
+                  <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="Smart watch listing photo" />
                   <span>Main</span>
                 </div>
                 <div className="post-photo-slot">
-                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="Example supporting photo" />
+                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="Headphones listing photo" />
                 </div>
                 <button className="post-photo-upload" type="button" aria-label="Add a photo">
                   <i className="fa-solid fa-camera" aria-hidden="true" />
@@ -273,8 +278,8 @@ export function PostAdPageClient() {
                 </button>
               </div>
               <p className="post-upload-hint">
-                <strong>Image upload will attach to this shared create flow later</strong>
-                <span>For now, the post core is saved to the database.</span>
+                <strong>Click to upload or drag and drop</strong>
+                <span>PNG, JPG or WebP (max. 5MB per image)</span>
               </p>
             </fieldset>
 
@@ -289,22 +294,22 @@ export function PostAdPageClient() {
                   <button type="button" aria-label="Insert link"><i className="fa-solid fa-link" aria-hidden="true" /></button>
                   <button type="button" aria-label="Insert image"><i className="fa-regular fa-image" aria-hidden="true" /></button>
                 </div>
-                <textarea id="post-description" name="body" minLength={20} maxLength={5000} placeholder="Describe the post clearly so the right people can respond..." required />
+                <textarea id="post-description" name="body" minLength={20} maxLength={5000} placeholder="Tell buyers about your item's condition, features, and why you're selling..." required />
               </div>
             </div>
 
             <div className="post-field post-field-full">
-              <label htmlFor="reference-price">Reference Value (NZD)</label>
+              <label htmlFor="listing-price">Price (NZD)</label>
               <div className="post-price-input">
                 <span>$</span>
-                <input id="reference-price" name="reference_price" type="text" inputMode="decimal" placeholder="0.00" />
+                <input id="listing-price" name="price" type="text" inputMode="decimal" placeholder="0.00" />
               </div>
             </div>
 
             <div className="post-form-grid post-location-grid">
-              <CustomSelect id="post-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regions} value={region} onChange={setRegion} />
-              <CustomSelect id="post-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areas} value={area} onChange={setArea} />
-              <CustomSelect id="detail-mode" name="detail_mode" label="Details" icon="fa-building" placeholder="Choose detail mode" options={detailModes} value={detailMode} onChange={setDetailMode} />
+              <CustomSelect id="listing-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regions} value={region} onChange={setRegion} />
+              <CustomSelect id="listing-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areas} value={area} onChange={setArea} />
+              <CustomSelect id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>
 
             {(notice || error) && (
@@ -316,16 +321,16 @@ export function PostAdPageClient() {
             <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
               <button className="post-submit-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : status === "published" ? "Create Now" : "Save Draft"}
+                {isSubmitting ? "Posting..." : "Post Now"}
               </button>
             </div>
           </form>
         </section>
 
         <section className="post-ad-tips" aria-label="Posting tips">
-          <article><i className="fa-regular fa-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Use clear photos when the service needs visual context.</p></div></article>
-          <article><i className="fa-regular fa-circle-check" aria-hidden="true" /><div><h2>Clear Details</h2><p>Write enough detail for jobs, cars, community, or future services.</p></div></article>
-          <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>Safety First</h2><p>Keep contact and location details appropriate for the service.</p></div></article>
+          <article><i className="fa-regular fa-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
+          <article><i className="fa-regular fa-circle-check" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
+          <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
         </section>
       </div>
     </main>
