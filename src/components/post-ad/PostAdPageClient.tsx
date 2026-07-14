@@ -1,256 +1,234 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type SelectOption = {
   label: string;
   value: string;
 };
 
-const mainCategories: SelectOption[] = [
-  { label: "Electronics", value: "electronics" },
-  { label: "Home & Furniture", value: "home-furniture" },
-  { label: "Clothing", value: "clothing" },
-  { label: "Entertainment", value: "entertainment" },
+const serviceOptions: SelectOption[] = [
+  { label: "General", value: "general" },
+  { label: "Jobs", value: "jobs" },
+  { label: "Cars", value: "cars" },
+  { label: "Community", value: "community" },
+  { label: "Market", value: "market" },
 ];
 
-const subCategories: SelectOption[] = [
-  { label: "Computers", value: "computers" },
-  { label: "Smartphones", value: "smartphones" },
-  { label: "Audio", value: "audio" },
-  { label: "Cameras", value: "cameras" },
+const postTypeOptions: SelectOption[] = [
+  { label: "Offer", value: "offer" },
+  { label: "Request", value: "request" },
+  { label: "Update", value: "update" },
+  { label: "Event", value: "event" },
 ];
 
-const tradeMethods: SelectOption[] = [
-  { label: "Pickup & delivery", value: "pickup-delivery" },
-  { label: "Pickup only", value: "pickup" },
-  { label: "Delivery only", value: "delivery" },
+const statusOptions: SelectOption[] = [
+  { label: "Publish now", value: "published" },
+  { label: "Save draft", value: "draft" },
 ];
 
-const conditions: SelectOption[] = [
-  { label: "Brand new", value: "brand-new" },
-  { label: "Like new", value: "like-new" },
-  { label: "Good", value: "good" },
-  { label: "Fair", value: "fair" },
+const contactOptions: SelectOption[] = [
+  { label: "In-app messages", value: "in_app" },
+  { label: "Email", value: "email" },
+  { label: "Phone", value: "phone" },
 ];
 
-const regions: SelectOption[] = [
-  { label: "Auckland", value: "auckland" },
-  { label: "Wellington", value: "wellington" },
-  { label: "Canterbury", value: "canterbury" },
-];
-
-const areas: SelectOption[] = [
-  { label: "CBD", value: "cbd" },
-  { label: "North Shore", value: "north-shore" },
-  { label: "Mount Eden", value: "mount-eden" },
-  { label: "Newmarket", value: "newmarket" },
-];
-
-const meetingPlaces: SelectOption[] = [
-  { label: "Public location", value: "public" },
-  { label: "Pickup from home", value: "home" },
-];
-
-function CustomSelect({
+function FieldSelect({
   id,
+  name,
   label,
-  icon,
-  placeholder,
   options,
-  defaultValue,
+  value,
+  onChange,
 }: {
   id: string;
+  name: string;
   label: string;
-  icon: string;
-  placeholder: string;
   options: SelectOption[];
-  defaultValue?: string;
+  value: string;
+  onChange: (value: string) => void;
 }) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState(defaultValue ?? "");
-  const selected = options.find((option) => option.value === value);
-
-  useEffect(() => {
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("click", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("click", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
-
   return (
     <div className="post-field">
       <label htmlFor={id}>{label}</label>
-      <div ref={wrapperRef} className={`post-select-wrap has-leading-icon is-enhanced ${isOpen ? "is-open" : ""}`}>
-        <i className={`fa-solid ${icon}`} aria-hidden="true" />
-        <select id={id} value={value} onChange={(event) => setValue(event.target.value)}>
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button
-          className="post-select-trigger"
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          aria-controls={`${id}-menu`}
-          onClick={() => setIsOpen((current) => !current)}
-        >
-          <span>{selected?.label ?? placeholder}</span>
-        </button>
-        <div className="post-select-menu" id={`${id}-menu`} role="listbox">
-          <button
-            className="post-select-option"
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => {
-              setValue("");
-              setIsOpen(false);
-            }}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className="post-select-option"
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={value === option.value}
-              onClick={() => {
-                setValue(option.value);
-                setIsOpen(false);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <select id={id} name={name} value={value} onChange={(event) => onChange(event.target.value)} required>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
 
 export function PostAdPageClient() {
+  const router = useRouter();
+  const [serviceKey, setServiceKey] = useState("general");
+  const [postType, setPostType] = useState("offer");
+  const [status, setStatus] = useState("published");
+  const [contactMethod, setContactMethod] = useState("in_app");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const selectedServiceLabel = useMemo(
+    () => serviceOptions.find((option) => option.value === serviceKey)?.label ?? "General",
+    [serviceKey],
+  );
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
-    window.setTimeout(() => setIsSubmitting(false), 600);
+    setMessage(null);
+    setError(null);
+
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setError("Supabase environment variables are not configured.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setError("Please log in before creating a post.");
+      setIsSubmitting(false);
+      router.push("/login");
+      return;
+    }
+
+    const form = new FormData(event.currentTarget);
+    const title = String(form.get("title") ?? "").trim();
+    const body = String(form.get("body") ?? "").trim();
+    const regionCity = String(form.get("region_city") ?? "").trim();
+    const regionSuburb = String(form.get("region_suburb") ?? "").trim();
+    const details = String(form.get("details") ?? "").trim();
+
+    const { error: insertError } = await supabase.from("content_posts").insert({
+      author_id: user.id,
+      service_key: serviceKey,
+      post_type: postType,
+      status,
+      title,
+      body,
+      region_city: regionCity || null,
+      region_suburb: regionSuburb || null,
+      contact_method: contactMethod,
+      payload: details ? { details } : {},
+    });
+
+    if (insertError) {
+      setError(insertError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setMessage(status === "published" ? "Your post is live." : "Draft saved.");
+    event.currentTarget.reset();
+    setServiceKey("general");
+    setPostType("offer");
+    setStatus("published");
+    setContactMethod("in_app");
+    setIsSubmitting(false);
   };
 
   return (
     <main className="post-ad-page">
       <div className="post-ad-layout">
-        <section className="post-ad-card" aria-label="Create a new marketplace listing">
-          <form className="post-ad-form" action="#" onSubmit={submit}>
-            <div className="post-field post-field-full">
-              <label htmlFor="listing-title">Listing Title</label>
-              <input id="listing-title" type="text" placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" />
-              <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
+        <section className="post-ad-card" aria-label="Create a post">
+          <form className="post-ad-form" onSubmit={submit}>
+            <div className="post-ad-intro">
+              <p>Tada Create</p>
+              <h1>Create a post for any Tada service</h1>
+              <span>
+                Start with a shared post structure. Jobs, cars, community and market services can add their own details later.
+              </span>
             </div>
 
             <div className="post-form-grid post-form-grid-four">
-              <CustomSelect id="main-category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} />
-              <CustomSelect id="sub-category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategories} />
-              <CustomSelect id="trade-method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} defaultValue="pickup-delivery" />
-              <CustomSelect id="item-condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} defaultValue="brand-new" />
+              <FieldSelect id="service-key" name="service_key" label="Service" options={serviceOptions} value={serviceKey} onChange={setServiceKey} />
+              <FieldSelect id="post-type" name="post_type" label="Post type" options={postTypeOptions} value={postType} onChange={setPostType} />
+              <FieldSelect id="post-status" name="status" label="Visibility" options={statusOptions} value={status} onChange={setStatus} />
+              <FieldSelect id="contact-method" name="contact_method" label="Contact" options={contactOptions} value={contactMethod} onChange={setContactMethod} />
             </div>
 
-            <fieldset className="photo-fieldset">
-              <div className="field-label-row">
-                <legend>Photos</legend>
-                <span>Up to 10 photos</span>
+            <div className="post-field post-field-full">
+              <label htmlFor="post-title">Title</label>
+              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder={`${selectedServiceLabel} post title`} required />
+              <p className="post-field-hint">Keep this broad enough to work across Tada services, not only marketplace listings.</p>
+            </div>
+
+            <div className="post-field post-field-full">
+              <label htmlFor="post-body">Description</label>
+              <textarea id="post-body" name="body" minLength={20} maxLength={5000} placeholder="Describe what you are offering, requesting, announcing, or organizing." required />
+            </div>
+
+            <div className="post-form-grid">
+              <div className="post-field">
+                <label htmlFor="region-city">City or region</label>
+                <input id="region-city" name="region_city" type="text" maxLength={80} placeholder="Auckland" />
               </div>
-              <div className="post-photo-grid">
-                <div className="post-photo-slot is-main">
-                  <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="Smart watch listing photo" />
-                  <span>Main</span>
-                </div>
-                <div className="post-photo-slot">
-                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="Headphones listing photo" />
-                </div>
-                <button className="post-photo-upload" type="button" aria-label="Add a photo">
-                  <i className="fa-solid fa-camera" aria-hidden="true" />
-                  <span>Add</span>
-                </button>
-                <button className="post-photo-upload" type="button" aria-label="Add another photo">
-                  <i className="fa-solid fa-camera" aria-hidden="true" />
-                  <span>Add</span>
-                </button>
+              <div className="post-field">
+                <label htmlFor="region-suburb">Suburb or area</label>
+                <input id="region-suburb" name="region_suburb" type="text" maxLength={80} placeholder="Newmarket" />
               </div>
-              <p className="post-upload-hint">
-                <strong>Click to upload or drag and drop</strong>
-                <span>PNG, JPG or WebP (max. 5MB per image)</span>
+            </div>
+
+            <div className="post-field post-field-full">
+              <label htmlFor="post-details">Service-specific details</label>
+              <textarea id="post-details" name="details" maxLength={3000} placeholder="Optional details for a future service module, such as salary range, vehicle specs, event time, or item condition." />
+              <p className="post-field-hint">Stored as flexible JSON so each future service can evolve without rebuilding Create.</p>
+            </div>
+
+            {(message || error) && (
+              <p className={`post-create-status ${error ? "is-error" : "is-success"}`} role="status">
+                {error ?? message}
               </p>
-            </fieldset>
-
-            <div className="post-field post-field-full">
-              <label htmlFor="listing-description">Description</label>
-              <div className="post-editor">
-                <div className="post-editor-toolbar" aria-label="Description formatting">
-                  <button type="button" aria-label="Bold"><strong>B</strong></button>
-                  <button type="button" aria-label="Italic"><em>I</em></button>
-                  <button type="button" aria-label="Underline"><u>U</u></button>
-                  <button type="button" aria-label="Bulleted list"><i className="fa-solid fa-list" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert link"><i className="fa-solid fa-link" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert image"><i className="fa-regular fa-image" aria-hidden="true" /></button>
-                </div>
-                <textarea id="listing-description" placeholder="Tell buyers about your item's condition, features, and why you're selling..." />
-              </div>
-            </div>
-
-            <div className="post-field post-field-full">
-              <label htmlFor="listing-price">Price (NZD)</label>
-              <div className="post-price-input">
-                <span>$</span>
-                <input id="listing-price" type="text" inputMode="decimal" placeholder="0.00" />
-              </div>
-            </div>
-
-            <div className="post-form-grid post-location-grid">
-              <CustomSelect id="listing-region" label="Region" icon="fa-location-dot" placeholder="Select region" options={regions} />
-              <CustomSelect id="listing-area" label="Area" icon="fa-map-pin" placeholder="Select area" options={areas} />
-              <CustomSelect id="meeting-place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} />
-            </div>
+            )}
 
             <div className="post-submit-row">
-              <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
+              <p>
+                By creating a post, you agree to Tada&apos;s <Link href="#">Terms of Service</Link>.
+              </p>
               <button className="post-submit-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Posting..." : "Post Now"}
+                {isSubmitting ? "Creating..." : status === "published" ? "Create post" : "Save draft"}
               </button>
             </div>
           </form>
         </section>
 
-        <section className="post-ad-tips" aria-label="Posting tips">
-          <article><i className="fa-regular fa-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
-          <article><i className="fa-regular fa-circle-check" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
-          <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
+        <section className="post-ad-tips" aria-label="Create structure">
+          <article>
+            <i className="fa-solid fa-layer-group" aria-hidden="true" />
+            <div>
+              <h2>Shared Core</h2>
+              <p>Every service starts from title, description, location, status and ownership.</p>
+            </div>
+          </article>
+          <article>
+            <i className="fa-solid fa-diagram-project" aria-hidden="true" />
+            <div>
+              <h2>Service Ready</h2>
+              <p>Use service and post type fields to connect jobs, cars, community or market later.</p>
+            </div>
+          </article>
+          <article>
+            <i className="fa-solid fa-shield-halved" aria-hidden="true" />
+            <div>
+              <h2>Owner Protected</h2>
+              <p>Posts are saved with row-level security so users can only manage their own work.</p>
+            </div>
+          </article>
         </section>
       </div>
     </main>
   );
 }
-

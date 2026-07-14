@@ -35,7 +35,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
         <section className="dashboard-section" id="manage-listings">
           <div className="dashboard-section-heading">
             <h2>{isJobsDashboard ? "My Job Posts" : "My Listings"}</h2>
-            <div><button className="dashboard-button is-soft" type="button"><i className="fa-solid fa-rocket" /> {isJobsDashboard ? "Promote Job" : "Promote Listing"}</button><Link className="dashboard-button" href="/post-ad"><i className="fa-solid fa-pen-to-square" /> {isJobsDashboard ? "Create New Job" : "Create New Listing"}</Link></div>
+            <div><button className="dashboard-button is-soft" type="button"><i className="fa-solid fa-rocket" /> {isJobsDashboard ? "Promote Job" : "Promote Listing"}</button><Link className="dashboard-button" href="/create"><i className="fa-solid fa-pen-to-square" /> {isJobsDashboard ? "Create New Job" : "Create New Post"}</Link></div>
           </div>
           <div className="listing-stat-grid">
             {listingStats.map(([icon, label, value]) => <article className="listing-stat-card" key={label}><div><i className={`fa-solid ${icon}`} /><span>{label}</span></div><strong>{value}</strong></article>)}

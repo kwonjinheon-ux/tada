@@ -2184,6 +2184,14 @@ a {
   font-size: 14px;
 }
 
+.post-ad-intro span {
+  display: block;
+  margin-top: 10px;
+  color: #526274;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .post-ad-card {
   padding: 20px;
   border: 1px solid #e3e9e7;
@@ -2218,6 +2226,8 @@ a {
 }
 
 .post-field input,
+.post-field select,
+.post-field textarea,
 .post-select-wrap,
 .post-price-input {
   min-height: 46px;
@@ -2229,13 +2239,33 @@ a {
 }
 
 .post-field input,
+.post-field select,
+.post-field textarea,
 .post-price-input input {
   padding: 0 13px;
   outline: none;
   font-size: 16px;
 }
 
+.post-field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #4f6070 50%), linear-gradient(135deg, #4f6070 50%, transparent 50%);
+  background-position: calc(100% - 18px) 20px, calc(100% - 13px) 20px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: #314254;
+}
+
+.post-field textarea {
+  min-height: 132px;
+  resize: vertical;
+  padding: 13px;
+  line-height: 1.5;
+}
+
 .post-field input:focus,
+.post-field select:focus,
+.post-field textarea:focus,
 .post-price-input:focus-within,
 .post-select-wrap:focus-within,
 .post-editor:focus-within {
@@ -2614,6 +2644,26 @@ a {
   align-items: stretch;
   padding-top: 4px;
   border-top: 1px solid #edf1f0;
+}
+
+.post-create-status {
+  margin: 0;
+  padding: 12px 13px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.post-create-status.is-success {
+  border: 1px solid #bce7d5;
+  background: #ecfdf5;
+  color: #007a54;
+}
+
+.post-create-status.is-error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b42318;
 }
 
 .post-submit-row p {
