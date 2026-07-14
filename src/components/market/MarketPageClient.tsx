@@ -43,12 +43,9 @@ export function MarketPageClient() {
   }, [hasManualViewChoice]);
 
   useEffect(() => {
-    const isMobileDrawerOpen = isFilterOpen && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("has-open-filter", isFilterOpen);
-    document.body.classList.toggle("has-mobile-category-drawer", isMobileDrawerOpen);
     return () => {
       document.body.classList.remove("has-open-filter");
-      document.body.classList.remove("has-mobile-category-drawer");
     };
   }, [isFilterOpen]);
 
