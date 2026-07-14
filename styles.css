@@ -2471,10 +2471,23 @@ a {
 .post-photo-slot {
   border: 1px solid #d8e1df;
   background: #f1f5f5;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .post-photo-slot.is-main {
   border-color: var(--primary);
+}
+
+.photo-fieldset.is-dragging .post-photo-upload,
+.photo-fieldset.is-dragging .post-photo-slot {
+  border-color: var(--primary);
+  background: #f4fffa;
+}
+
+.post-photo-input {
+  display: none;
 }
 
 .post-photo-slot img {

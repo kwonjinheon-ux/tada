@@ -4,25 +4,20 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 
 type SelectOption = {
   label: string;
   value: string;
 };
 
-const mainCategories: SelectOption[] = [
-  { label: "Electronics", value: "electronics" },
-  { label: "Home & Furniture", value: "home-furniture" },
-  { label: "Clothing", value: "clothing" },
-  { label: "Entertainment", value: "entertainment" },
-];
+type PhotoPreview = {
+  id: string;
+  file: File;
+  url: string;
+};
 
-const subCategories: SelectOption[] = [
-  { label: "Computers", value: "computers" },
-  { label: "Smartphones", value: "smartphones" },
-  { label: "Audio", value: "audio" },
-  { label: "Cameras", value: "cameras" },
-];
+const mainCategories: SelectOption[] = marketplaceCategories.map(({ label, value }) => ({ label, value }));
 
 const tradeMethods: SelectOption[] = [
   { label: "Pickup & delivery", value: "pickup_delivery" },
@@ -54,6 +49,21 @@ const meetingPlaces: SelectOption[] = [
   { label: "Public location", value: "public" },
   { label: "Pickup from home", value: "home" },
 ];
+
+const demoPhotos = [
+  {
+    src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+    alt: "Smart watch listing photo",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+    alt: "Headphones listing photo",
+  },
+];
+
+const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxPhotoCount = 10;
+const maxPhotoSize = 5 * 1024 * 1024;
 
 function CustomSelect({
   id,
@@ -159,6 +169,7 @@ function CustomSelect({
 export function PostAdPageClient() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
@@ -166,9 +177,114 @@ export function PostAdPageClient() {
   const [region, setRegion] = useState("");
   const [area, setArea] = useState("");
   const [meetingPlace, setMeetingPlace] = useState("");
+  const [photos, setPhotos] = useState<PhotoPreview[]>([]);
+  const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
+  const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const subCategoryOptions = mainCategory
+    ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
+    : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
+
+  useEffect(() => {
+    if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
+      setSubCategory("");
+    }
+  }, [subCategory, subCategoryOptions]);
+
+  useEffect(() => {
+    return () => {
+      photos.forEach((photo) => URL.revokeObjectURL(photo.url));
+    };
+  }, [photos]);
+
+  const handleTitleChange = (title: string) => {
+    const suggestion = suggestCategoryFromTitle(title);
+    if (!suggestion) return;
+
+    setMainCategory(suggestion.mainCategory);
+    setSubCategory(suggestion.subCategory);
+  };
+
+  const addPhotos = (fileList: FileList | File[]) => {
+    const incomingFiles = Array.from(fileList);
+    const validFiles = incomingFiles.filter((file) => acceptedPhotoTypes.has(file.type) && file.size <= maxPhotoSize);
+
+    if (validFiles.length !== incomingFiles.length) {
+      setError("Only PNG, JPG or WebP images up to 5MB can be added.");
+    } else {
+      setError(null);
+    }
+
+    if (!validFiles.length) return;
+
+    setPhotos((currentPhotos) => {
+      const availableSlots = maxPhotoCount - currentPhotos.length;
+      const nextPhotos = validFiles.slice(0, availableSlots).map((file) => ({
+        id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      const updatedPhotos = [...currentPhotos, ...nextPhotos];
+
+      if (!primaryPhotoId && updatedPhotos[0]) {
+        setPrimaryPhotoId(updatedPhotos[0].id);
+      }
+
+      if (validFiles.length > availableSlots) {
+        setError("You can add up to 10 photos.");
+      }
+
+      return updatedPhotos;
+    });
+  };
+
+  const openPhotoPicker = () => {
+    photoInputRef.current?.click();
+  };
+
+  const uploadPhotos = async ({
+    postId,
+    userId,
+  }: {
+    postId: string;
+    userId: string;
+  }) => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase || !photos.length) return null;
+
+    const rows = [];
+
+    for (const [index, photo] of photos.entries()) {
+      const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${userId}/${postId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("listing-images").upload(path, photo.file, {
+        cacheControl: "3600",
+        contentType: photo.file.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        return uploadError.message;
+      }
+
+      rows.push({
+        post_id: postId,
+        owner_id: userId,
+        storage_bucket: "listing-images",
+        storage_path: path,
+        original_name: photo.file.name,
+        mime_type: photo.file.type,
+        size_bytes: photo.file.size,
+        display_order: index,
+        is_primary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
+      });
+    }
+
+    const { error: photoInsertError } = await supabase.from("content_post_photos").insert(rows);
+    return photoInsertError?.message ?? null;
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -199,7 +315,7 @@ export function PostAdPageClient() {
     const body = String(form.get("body") ?? "").trim();
     const price = String(form.get("price") ?? "").trim();
 
-    const { error: insertError } = await supabase.from("content_posts").insert({
+    const { data: createdPost, error: insertError } = await supabase.from("content_posts").insert({
       author_id: user.id,
       service_key: "general",
       post_type: "listing",
@@ -216,13 +332,23 @@ export function PostAdPageClient() {
         item_condition: itemCondition,
         meeting_place: meetingPlace || null,
         price: price || null,
+        photo_count: photos.length,
       },
-    });
+    }).select("id").single();
 
     if (insertError) {
       setError(insertError.message);
       setIsSubmitting(false);
       return;
+    }
+
+    if (createdPost?.id) {
+      const photoError = await uploadPhotos({ postId: createdPost.id, userId: user.id });
+      if (photoError) {
+        setError(photoError);
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     setNotice("Posted successfully.");
@@ -234,6 +360,9 @@ export function PostAdPageClient() {
     setRegion("");
     setArea("");
     setMeetingPlace("");
+    photos.forEach((photo) => URL.revokeObjectURL(photo.url));
+    setPhotos([]);
+    setPrimaryPhotoId(null);
     setIsSubmitting(false);
   };
 
@@ -244,38 +373,67 @@ export function PostAdPageClient() {
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full">
               <label htmlFor="post-title">Listing Title</label>
-              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" required />
+              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
               <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
             <div className="post-form-grid post-form-grid-four">
               <CustomSelect id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
-              <CustomSelect id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategories} value={subCategory} onChange={setSubCategory} />
+              <CustomSelect id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
               <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <CustomSelect id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>
 
-            <fieldset className="photo-fieldset">
+            <fieldset
+              className={`photo-fieldset ${isDraggingPhotos ? "is-dragging" : ""}`}
+              onDragOver={(event) => {
+                event.preventDefault();
+                setIsDraggingPhotos(true);
+              }}
+              onDragLeave={() => setIsDraggingPhotos(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setIsDraggingPhotos(false);
+                addPhotos(event.dataTransfer.files);
+              }}
+            >
               <div className="field-label-row">
                 <legend>Photos</legend>
                 <span>Up to 10 photos</span>
               </div>
+              <input
+                ref={photoInputRef}
+                className="post-photo-input"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                onChange={(event) => {
+                  if (event.target.files) {
+                    addPhotos(event.target.files);
+                    event.target.value = "";
+                  }
+                }}
+              />
               <div className="post-photo-grid">
-                <div className="post-photo-slot is-main">
-                  <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="Smart watch listing photo" />
-                  <span>Main</span>
-                </div>
-                <div className="post-photo-slot">
-                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="Headphones listing photo" />
-                </div>
-                <button className="post-photo-upload" type="button" aria-label="Add a photo">
-                  <i className="fa-solid fa-camera" aria-hidden="true" />
-                  <span>Add</span>
-                </button>
-                <button className="post-photo-upload" type="button" aria-label="Add another photo">
-                  <i className="fa-solid fa-camera" aria-hidden="true" />
-                  <span>Add</span>
-                </button>
+                {photos.length
+                  ? photos.map((photo, index) => (
+                      <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} key={photo.id} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
+                        <img src={photo.url} alt={photo.file.name} />
+                        {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>Main</span>}
+                      </button>
+                    ))
+                  : demoPhotos.map((photo, index) => (
+                      <button className={`post-photo-slot ${index === 0 ? "is-main" : ""}`} key={photo.src} type="button" aria-label={index === 0 ? "Main example photo" : "Example photo"} onClick={openPhotoPicker}>
+                        <img src={photo.src} alt={photo.alt} />
+                        {index === 0 && <span>Main</span>}
+                      </button>
+                    ))}
+                {Array.from({ length: Math.min(2, Math.max(0, maxPhotoCount - photos.length)) }).map((_, index) => (
+                  <button className="post-photo-upload" key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
+                    <i className="fa-solid fa-camera" aria-hidden="true" />
+                    <span>Add</span>
+                  </button>
+                ))}
               </div>
               <p className="post-upload-hint">
                 <strong>Click to upload or drag and drop</strong>
