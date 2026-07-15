@@ -1374,43 +1374,12 @@ a {
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
-  transition: opacity 110ms ease, transform 110ms ease;
-}
-
-.product-grid.is-view-leaving {
-  opacity: 0;
-  transform: translateY(6px) scale(0.992);
-  pointer-events: none;
-}
-
-.product-grid.is-view-entering .product-card {
-  animation: market-view-card-in 260ms ease both;
-}
-
-@keyframes market-view-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .product-grid.is-list-view {
   grid-template-columns: 1fr;
   gap: 0;
   padding-top: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .product-grid,
-  .product-grid.is-view-entering .product-card {
-    animation: none;
-    transition: none;
-  }
 }
 
 .product-card {
