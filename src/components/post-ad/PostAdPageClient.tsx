@@ -330,6 +330,7 @@ export function PostAdPageClient() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setIsSubmitting(true);
     setNotice(null);
     setError(null);
@@ -352,7 +353,7 @@ export function PostAdPageClient() {
       return;
     }
 
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const title = String(form.get("title") ?? "").trim();
     const body = String(form.get("body") ?? "").trim();
     const price = String(form.get("price") ?? "").trim();
