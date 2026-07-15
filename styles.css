@@ -3397,16 +3397,16 @@ a {
     right: 50%;
     bottom: auto;
     z-index: 130;
-    width: min(288px, calc(100vw - 24px));
-    min-height: 46px;
+    width: min(317px, calc(100vw - 24px));
+    min-height: 51px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, .42);
+    border: 1px solid rgba(67, 93, 120, .25);
     border-radius: 999px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, .32), rgba(55, 72, 92, .32));
-    box-shadow: inset 0 1px rgba(255, 255, 255, .28), inset 0 -1px rgba(20, 35, 52, .12);
+    background: rgba(238, 245, 252, .52);
+    box-shadow: 0 10px 28px rgba(41, 61, 83, .17), inset 0 1px rgba(255, 255, 255, .42);
     backdrop-filter: blur(26px) saturate(175%);
     -webkit-backdrop-filter: blur(26px) saturate(175%);
     transform: translateX(50%) scale(1.2);
@@ -3416,24 +3416,24 @@ a {
 
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
-    width: 37px;
-    height: 37px;
+    width: 41px;
+    height: 41px;
     display: grid;
     place-items: center;
     justify-self: center;
     border: 0;
     border-radius: 12px;
     background: transparent;
-    color: rgba(255, 255, 255, .94);
+    color: #36536f;
     font: inherit;
-    font-size: 16px;
+    font-size: 18px;
     text-decoration: none;
     cursor: pointer;
   }
 
   .mobile-bottom-dock svg {
-    width: 19px;
-    height: 19px;
+    width: 21px;
+    height: 21px;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -3445,19 +3445,29 @@ a {
   .mobile-bottom-dock button:hover,
   .mobile-bottom-dock a:focus-visible,
   .mobile-bottom-dock button:focus-visible {
-    background: rgba(255, 255, 255, .18);
+    background: rgba(52, 86, 116, .13);
     outline: none;
   }
 
+  .mobile-bottom-dock a.is-active {
+    background: rgba(0, 135, 90, .16);
+    color: #007a54;
+  }
+
   .mobile-bottom-dock .mobile-dock-create {
-    width: 37px;
-    height: 37px;
-    margin-top: 0;
+    width: 43px;
+    height: 43px;
+    margin-top: -5px;
     border: 0;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .12);
-    box-shadow: inset 0 1px rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    background: #00875a;
+    box-shadow: 0 8px 16px rgba(0, 135, 90, .3), inset 0 1px rgba(255, 255, 255, .28);
     color: #fff;
+  }
+
+  .mobile-bottom-dock .mobile-dock-create:hover,
+  .mobile-bottom-dock .mobile-dock-create:focus-visible {
+    background: #006f4a;
   }
 
   .marketplace-page {

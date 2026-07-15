@@ -250,9 +250,9 @@ export function Navbar() {
         )}
 
         <nav className="mobile-bottom-dock" aria-label="Quick actions">
-          <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
+          <Link className={isMarket ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
           <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
-          <Link className="mobile-dock-create" href="/create" aria-label="Create post"><i className="fa-regular fa-square-plus" aria-hidden="true" /></Link>
+          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /></Link>
           <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /></button>
           <button type="button" aria-label="Open dashboard" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /></button>
         </nav>
