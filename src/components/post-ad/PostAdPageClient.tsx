@@ -160,6 +160,7 @@ export function PostAdPageClient() {
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PhotoPreview[]>([]);
+  const editorRef = useRef<HTMLDivElement>(null);
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
@@ -171,6 +172,8 @@ export function PostAdPageClient() {
   const [meetingPlace, setMeetingPlace] = useState("");
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -190,6 +193,12 @@ export function PostAdPageClient() {
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
+
+  useEffect(() => {
+    if (!isHtmlMode && editorRef.current && editorRef.current.innerHTML !== description) {
+      editorRef.current.innerHTML = description;
+    }
+  }, [description, isHtmlMode]);
 
   useEffect(() => {
     return () => {
@@ -289,6 +298,34 @@ export function PostAdPageClient() {
     );
   };
 
+  const runEditorCommand = (command: string, value?: string) => {
+    if (isHtmlMode || !editorRef.current) return;
+
+    editorRef.current.focus();
+    document.execCommand(command, false, value);
+    setDescription(editorRef.current.innerHTML);
+  };
+
+  const addEditorLink = () => {
+    const url = window.prompt("Enter a URL");
+    if (!url) return;
+
+    const safeUrl = url.trim();
+    if (!/^(https?:\/\/|mailto:)/i.test(safeUrl)) {
+      setError("Links must start with http://, https://, or mailto:.");
+      return;
+    }
+
+    runEditorCommand("createLink", safeUrl);
+  };
+
+  const toggleHtmlMode = () => {
+    if (!isHtmlMode && editorRef.current) {
+      setDescription(editorRef.current.innerHTML);
+    }
+    setIsHtmlMode((current) => !current);
+  };
+
   const uploadPhotos = async ({
     listingId,
     userId,
@@ -363,6 +400,13 @@ export function PostAdPageClient() {
     const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
     const priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
 
+    const plainDescription = body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    if (plainDescription.length < 20 || body.length > 5000) {
+      setError("Description must contain 20 to 5,000 characters.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const { data: createdListing, error: insertError } = await supabase.from("market_listings").insert({
       owner_id: user.id,
       status: "published",
@@ -404,6 +448,8 @@ export function PostAdPageClient() {
     setRegion(defaultRegion);
     setArea(defaultArea);
     setMeetingPlace("");
+    setDescription("");
+    setIsHtmlMode(false);
     photos.forEach((photo) => URL.revokeObjectURL(photo.url));
     setPhotos([]);
     setPrimaryPhotoId(null);
@@ -472,15 +518,15 @@ export function PostAdPageClient() {
                       </button>
                     </div>
                   ))}
-                {Array.from({ length: Math.min(2, Math.max(0, maxPhotoCount - photos.length)) }).map((_, index) => (
-                  <button className="post-photo-upload" key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
+                {Array.from({ length: photos.length ? Math.min(2, Math.max(0, maxPhotoCount - photos.length)) : 1 }).map((_, index) => (
+                  <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
                     <span>Add</span>
                   </button>
                 ))}
               </div>
               <p className="post-upload-hint">
-                <strong>Click to upload or drag and drop</strong>
+                <strong>Click to upload or drag and drop multiple photos at once</strong>
                 <span>PNG, JPG or WebP (max. 5MB per image)</span>
               </p>
             </fieldset>
@@ -489,14 +535,33 @@ export function PostAdPageClient() {
               <label htmlFor="post-description">Description</label>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
-                  <button type="button" aria-label="Bold"><strong>B</strong></button>
-                  <button type="button" aria-label="Italic"><em>I</em></button>
-                  <button type="button" aria-label="Underline"><u>U</u></button>
-                  <button type="button" aria-label="Bulleted list"><i className="fa-solid fa-list" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert link"><i className="fa-solid fa-link" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert image"><i className="fa-regular fa-image" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="fa-solid fa-rotate-left" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Redo" title="Redo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("redo")}><i className="fa-solid fa-rotate-right" aria-hidden="true" /></button>
+                  <select aria-label="Text style" title="Text style" defaultValue="p" disabled={isHtmlMode} onChange={(event) => runEditorCommand("formatBlock", `<${event.target.value}>`)}>
+                    <option value="p">Paragraph</option>
+                    <option value="h2">Heading</option>
+                    <option value="h3">Subheading</option>
+                    <option value="blockquote">Quote</option>
+                  </select>
+                  <span className="post-editor-divider" aria-hidden="true" />
+                  <button type="button" aria-label="Bold" title="Bold" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("bold")}><strong>B</strong></button>
+                  <button type="button" aria-label="Italic" title="Italic" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("italic")}><em>I</em></button>
+                  <button type="button" aria-label="Underline" title="Underline" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("underline")}><u>U</u></button>
+                  <button type="button" aria-label="Strikethrough" title="Strikethrough" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("strikeThrough")}><s>S</s></button>
+                  <span className="post-editor-divider" aria-hidden="true" />
+                  <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="fa-solid fa-list" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="fa-solid fa-list-ol" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Insert link" title="Insert link" onMouseDown={(event) => event.preventDefault()} onClick={addEditorLink}><i className="fa-solid fa-link" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Remove formatting" title="Remove formatting" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("removeFormat")}><i className="fa-solid fa-eraser" aria-hidden="true" /></button>
+                  <span className="post-editor-divider" aria-hidden="true" />
+                  <button className={isHtmlMode ? "is-active" : ""} type="button" aria-label="Edit HTML source" title="Edit HTML source" onClick={toggleHtmlMode}><i className="fa-solid fa-code" aria-hidden="true" /></button>
                 </div>
-                <textarea id="post-description" name="body" minLength={20} maxLength={5000} placeholder="Tell buyers about your item's condition, features, and why you're selling..." required />
+                <input type="hidden" name="body" value={description} />
+                {isHtmlMode ? (
+                  <textarea className="post-editor-source" id="post-description" value={description} onChange={(event) => setDescription(event.target.value)} spellCheck={false} aria-label="HTML source" />
+                ) : (
+                  <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Tell buyers about your item's condition, features, and why you're selling..." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
+                )}
               </div>
             </div>
 

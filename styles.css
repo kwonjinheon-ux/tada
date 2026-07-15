@@ -2559,6 +2559,10 @@ a {
   color: var(--primary-dark);
 }
 
+.post-photo-upload.is-initial {
+  grid-column: 1 / -1;
+}
+
 .post-photo-upload i {
   font-size: 18px;
 }
@@ -2613,7 +2617,42 @@ a {
   color: var(--primary-dark);
 }
 
-.post-editor textarea {
+.post-editor-toolbar button.is-active {
+  background: #dbe9ff;
+  color: #1b4e92;
+}
+
+.post-editor-toolbar select {
+  height: 28px;
+  min-width: 100px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #405064;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.post-editor-toolbar select:hover,
+.post-editor-toolbar select:focus-visible {
+  background: #e6eefb;
+  outline: 0;
+}
+
+.post-editor-toolbar select:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.post-editor-divider {
+  width: 1px;
+  height: 18px;
+  background: #d7e0e9;
+}
+
+.post-editor-content,
+.post-editor-source {
   min-height: 146px;
   width: 100%;
   resize: vertical;
@@ -2625,6 +2664,36 @@ a {
   font: inherit;
   font-size: 16px;
   line-height: 1.5;
+}
+
+.post-editor-content {
+  overflow-y: auto;
+  outline: 0;
+}
+
+.post-editor-content:empty::before {
+  content: attr(data-placeholder);
+  color: #98a4b5;
+  pointer-events: none;
+}
+
+.post-editor-content a {
+  color: #007a54;
+  text-decoration: underline;
+}
+
+.post-editor-content blockquote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid #b7c7d8;
+  color: #617387;
+}
+
+.post-editor-source {
+  display: block;
+  resize: vertical;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
 }
 
 .post-price-input {
