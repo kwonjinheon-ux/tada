@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { listings, quickCategories } from "@/data/listings";
@@ -24,8 +24,10 @@ const filters = [
 export function MarketPageClient({ postedListings = [] }: { postedListings?: Listing[] }) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
+  const [viewTransition, setViewTransition] = useState<"idle" | "leaving" | "entering">("idle");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
+  const viewTransitionTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -67,9 +69,29 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
     return () => window.removeEventListener("mobile-dashboard-menu-state", syncDashboardDrawer);
   }, []);
 
+  useEffect(() => () => {
+    if (viewTransitionTimerRef.current) {
+      window.clearTimeout(viewTransitionTimerRef.current);
+    }
+  }, []);
+
   const chooseView = (mode: "grid" | "list") => {
+    if (mode === viewMode) return;
+
     setHasManualViewChoice(true);
-    setViewMode(mode);
+    if (viewTransitionTimerRef.current) {
+      window.clearTimeout(viewTransitionTimerRef.current);
+    }
+
+    setViewTransition("leaving");
+    viewTransitionTimerRef.current = window.setTimeout(() => {
+      setViewMode(mode);
+      setViewTransition("entering");
+      viewTransitionTimerRef.current = window.setTimeout(() => {
+        setViewTransition("idle");
+        viewTransitionTimerRef.current = null;
+      }, 260);
+    }, 110);
   };
   const visibleListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
 
@@ -174,7 +196,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
           </div>
         </div>
 
-        <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+        <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""} is-view-${viewTransition}`}>
           {visibleListings.map((listing) => (
             <ProductCard key={listing.id} listing={listing} />
           ))}
