@@ -170,12 +170,15 @@ export function PostAdPageClient() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const photosRef = useRef<PhotoPreview[]>([]);
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
   const [itemCondition, setItemCondition] = useState("brand_new");
   const [region, setRegion] = useState("");
   const [area, setArea] = useState("");
+  const [defaultRegion, setDefaultRegion] = useState("");
+  const [defaultArea, setDefaultArea] = useState("");
   const [meetingPlace, setMeetingPlace] = useState("");
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
@@ -186,6 +189,8 @@ export function PostAdPageClient() {
   const subCategoryOptions = mainCategory
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
+  const regionOptions = region && !regions.some((option) => option.value === region) ? [...regions, { label: region, value: region }] : regions;
+  const areaOptions = area && !areas.some((option) => option.value === area) ? [...areas, { label: area, value: area }] : areas;
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -194,10 +199,47 @@ export function PostAdPageClient() {
   }, [subCategory, subCategoryOptions]);
 
   useEffect(() => {
-    return () => {
-      photos.forEach((photo) => URL.revokeObjectURL(photo.url));
-    };
+    photosRef.current = photos;
   }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.url));
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadProfileLocation = async () => {
+      const supabase = createBrowserSupabaseClient();
+      if (!supabase) return;
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("region_city, region_suburb")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const profileRegion = typeof data?.region_city === "string" ? data.region_city.trim() : "";
+      const profileArea = typeof data?.region_suburb === "string" ? data.region_suburb.trim() : "";
+
+      if (profileRegion) {
+        setDefaultRegion(profileRegion);
+        setRegion((current) => current || profileRegion);
+      }
+
+      if (profileArea) {
+        setDefaultArea(profileArea);
+        setArea((current) => current || profileArea);
+      }
+    };
+
+    void loadProfileLocation();
+  }, []);
 
   const handleTitleChange = (title: string) => {
     const suggestion = suggestCategoryFromTitle(title);
@@ -317,7 +359,7 @@ export function PostAdPageClient() {
 
     const { data: createdPost, error: insertError } = await supabase.from("content_posts").insert({
       author_id: user.id,
-      service_key: "general",
+      service_key: "market",
       post_type: "listing",
       status: "published",
       title,
@@ -345,8 +387,10 @@ export function PostAdPageClient() {
     if (createdPost?.id) {
       const photoError = await uploadPhotos({ postId: createdPost.id, userId: user.id });
       if (photoError) {
-        setError(photoError);
+        setNotice("Posted successfully. Photos could not be attached yet.");
         setIsSubmitting(false);
+        router.push("/market");
+        router.refresh();
         return;
       }
     }
@@ -357,13 +401,15 @@ export function PostAdPageClient() {
     setSubCategory("");
     setTradeMethod("pickup_delivery");
     setItemCondition("brand_new");
-    setRegion("");
-    setArea("");
+    setRegion(defaultRegion);
+    setArea(defaultArea);
     setMeetingPlace("");
     photos.forEach((photo) => URL.revokeObjectURL(photo.url));
     setPhotos([]);
     setPrimaryPhotoId(null);
     setIsSubmitting(false);
+    router.push("/market");
+    router.refresh();
   };
 
   return (
@@ -465,8 +511,8 @@ export function PostAdPageClient() {
             </div>
 
             <div className="post-form-grid post-location-grid">
-              <CustomSelect id="listing-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regions} value={region} onChange={setRegion} />
-              <CustomSelect id="listing-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areas} value={area} onChange={setArea} />
+              <CustomSelect id="listing-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regionOptions} value={region} onChange={setRegion} />
+              <CustomSelect id="listing-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areaOptions} value={area} onChange={setArea} />
               <CustomSelect id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>
 

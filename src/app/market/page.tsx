@@ -3,8 +3,11 @@ import type { Listing } from "@/data/listings";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Market" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type ContentPostPhotoRow = {
+  post_id: string;
   storage_path: string | null;
   original_name: string | null;
   is_primary: boolean;
@@ -20,7 +23,6 @@ type ContentPostRow = {
   payload: {
     price?: string | null;
   } | null;
-  content_post_photos?: ContentPostPhotoRow[];
 };
 
 function formatPrice(value: string | null | undefined) {
@@ -45,17 +47,36 @@ async function getPostedListings(): Promise<Listing[]> {
 
   const { data, error } = await supabase
     .from("content_posts")
-    .select("id,title,region_city,region_suburb,created_at,payload,content_post_photos(storage_path,original_name,is_primary,display_order)")
+    .select("id,title,region_city,region_suburb,created_at,payload")
     .eq("status", "published")
     .eq("post_type", "listing")
+    .in("service_key", ["general", "market"])
     .order("created_at", { ascending: false })
     .limit(48);
 
   if (error || !data) return [];
+  const posts = data as ContentPostRow[];
+  const postIds = posts.map((post) => post.id);
+  let photosByPostId = new Map<string, ContentPostPhotoRow[]>();
+
+  if (postIds.length) {
+    const { data: photoRows } = await supabase
+      .from("content_post_photos")
+      .select("post_id,storage_path,original_name,is_primary,display_order")
+      .in("post_id", postIds)
+      .order("display_order", { ascending: true });
+
+    photosByPostId = (photoRows as ContentPostPhotoRow[] | null ?? []).reduce((map, photo) => {
+      const currentPhotos = map.get(photo.post_id) ?? [];
+      currentPhotos.push(photo);
+      map.set(photo.post_id, currentPhotos);
+      return map;
+    }, new Map<string, ContentPostPhotoRow[]>());
+  }
 
   const listings = await Promise.all(
-    (data as ContentPostRow[]).map(async (post) => {
-      const photo = [...(post.content_post_photos ?? [])].sort((a, b) => {
+    posts.map(async (post) => {
+      const photo = [...(photosByPostId.get(post.id) ?? [])].sort((a, b) => {
         if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
         return a.display_order - b.display_order;
       })[0];
