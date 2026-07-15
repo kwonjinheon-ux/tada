@@ -287,10 +287,10 @@ export function PostAdPageClient() {
   };
 
   const uploadPhotos = async ({
-    postId,
+    listingId,
     userId,
   }: {
-    postId: string;
+    listingId: string;
     userId: string;
   }) => {
     const supabase = createBrowserSupabaseClient();
@@ -300,8 +300,8 @@ export function PostAdPageClient() {
 
     for (const [index, photo] of photos.entries()) {
       const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `${userId}/${postId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("listing-images").upload(path, photo.file, {
+      const path = `${userId}/${listingId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(path, photo.file, {
         cacheControl: "3600",
         contentType: photo.file.type,
         upsert: false,
@@ -312,9 +312,9 @@ export function PostAdPageClient() {
       }
 
       rows.push({
-        post_id: postId,
+        listing_id: listingId,
         owner_id: userId,
-        storage_bucket: "listing-images",
+        storage_bucket: "market-listing-images",
         storage_path: path,
         original_name: photo.file.name,
         mime_type: photo.file.type,
@@ -324,7 +324,7 @@ export function PostAdPageClient() {
       });
     }
 
-    const { error: photoInsertError } = await supabase.from("content_post_photos").insert(rows);
+    const { error: photoInsertError } = await supabase.from("market_listing_photos").insert(rows);
     return photoInsertError?.message ?? null;
   };
 
@@ -356,26 +356,22 @@ export function PostAdPageClient() {
     const title = String(form.get("title") ?? "").trim();
     const body = String(form.get("body") ?? "").trim();
     const price = String(form.get("price") ?? "").trim();
+    const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
+    const priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
 
-    const { data: createdPost, error: insertError } = await supabase.from("content_posts").insert({
-      author_id: user.id,
-      service_key: "market",
-      post_type: "listing",
+    const { data: createdListing, error: insertError } = await supabase.from("market_listings").insert({
+      owner_id: user.id,
       status: "published",
       title,
-      body,
+      description: body,
+      category_slug: mainCategory || null,
+      subcategory_slug: subCategory || null,
+      trade_method: tradeMethod,
+      item_condition: itemCondition,
+      price_cents: priceCents,
       region_city: region || null,
       region_suburb: area || null,
-      contact_method: "in_app",
-      payload: {
-        main_category: mainCategory || null,
-        sub_category: subCategory || null,
-        trade_method: tradeMethod,
-        item_condition: itemCondition,
-        meeting_place: meetingPlace || null,
-        price: price || null,
-        photo_count: photos.length,
-      },
+      meeting_place: meetingPlace || null,
     }).select("id").single();
 
     if (insertError) {
@@ -384,8 +380,8 @@ export function PostAdPageClient() {
       return;
     }
 
-    if (createdPost?.id) {
-      const photoError = await uploadPhotos({ postId: createdPost.id, userId: user.id });
+    if (createdListing?.id) {
+      const photoError = await uploadPhotos({ listingId: createdListing.id, userId: user.id });
       if (photoError) {
         setNotice("Posted successfully. Photos could not be attached yet.");
         setIsSubmitting(false);
