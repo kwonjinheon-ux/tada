@@ -174,6 +174,7 @@ export function PostAdPageClient() {
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const [textColor, setTextColor] = useState("#314254");
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -518,7 +519,7 @@ export function PostAdPageClient() {
                       </button>
                     </div>
                   ))}
-                {Array.from({ length: photos.length ? Math.min(2, Math.max(0, maxPhotoCount - photos.length)) : 1 }).map((_, index) => (
+                {Array.from({ length: Math.min(1, Math.max(0, maxPhotoCount - photos.length)) }).map((_, index) => (
                   <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
                     <span>Add</span>
@@ -548,6 +549,12 @@ export function PostAdPageClient() {
                   <button type="button" aria-label="Italic" title="Italic" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("italic")}><em>I</em></button>
                   <button type="button" aria-label="Underline" title="Underline" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("underline")}><u>U</u></button>
                   <button type="button" aria-label="Strikethrough" title="Strikethrough" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("strikeThrough")}><s>S</s></button>
+                  <label className="post-editor-color" title="Text color">
+                    <input type="color" aria-label="Text color" value={textColor} disabled={isHtmlMode} onChange={(event) => {
+                      setTextColor(event.target.value);
+                      runEditorCommand("foreColor", event.target.value);
+                    }} />
+                  </label>
                   <span className="post-editor-divider" aria-hidden="true" />
                   <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="fa-solid fa-list" aria-hidden="true" /></button>
                   <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="fa-solid fa-list-ol" aria-hidden="true" /></button>

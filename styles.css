@@ -2676,6 +2676,34 @@ a {
   opacity: 0.48;
 }
 
+.post-editor-color {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.post-editor-color:hover {
+  background: #e6eefb;
+}
+
+.post-editor-color input {
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.post-editor-color input:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .post-editor-divider {
   width: 1px;
   height: 18px;
