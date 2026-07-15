@@ -2235,12 +2235,6 @@ a {
   font-size: 16px;
 }
 
-#post-title,
-.post-price-input #listing-price,
-.post-price-input span {
-  font-size: 24px;
-}
-
 .post-field input:focus,
 .post-price-input:focus-within,
 .post-select-wrap:focus-within,
