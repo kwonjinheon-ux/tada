@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -184,6 +184,7 @@ export function PostAdPageClient() {
   const [textColor, setTextColor] = useState("#314254");
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const subCategoryOptions = mainCategory
@@ -336,30 +337,23 @@ export function PostAdPageClient() {
 
   const uploadPhotos = async ({
     listingId,
+    supabase,
     userId,
+    onProgress,
   }: {
     listingId: string;
+    supabase: NonNullable<ReturnType<typeof createBrowserSupabaseClient>>;
     userId: string;
+    onProgress: (completedCount: number, totalCount: number) => void;
   }) => {
-    const supabase = createBrowserSupabaseClient();
     if (!supabase || !photos.length) return null;
 
-    const rows = [];
-
-    for (const [index, photo] of photos.entries()) {
+    let completedCount = 0;
+    const rows = photos.map((photo, index) => {
       const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${userId}/${listingId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(path, photo.file, {
-        cacheControl: "3600",
-        contentType: photo.file.type,
-        upsert: false,
-      });
 
-      if (uploadError) {
-        return uploadError.message;
-      }
-
-      rows.push({
+      return {
         listing_id: listingId,
         owner_id: userId,
         storage_bucket: "market-listing-images",
@@ -369,7 +363,27 @@ export function PostAdPageClient() {
         size_bytes: photo.file.size,
         display_order: index,
         is_primary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
-      });
+      };
+    });
+
+    const uploadResults = await Promise.all(
+      photos.map(async (photo, index) => {
+        const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
+          cacheControl: "3600",
+          contentType: photo.file.type,
+          upsert: false,
+        });
+
+        completedCount += 1;
+        onProgress(completedCount, photos.length);
+
+        return uploadError?.message ?? null;
+      }),
+    );
+
+    const uploadError = uploadResults.find(Boolean);
+    if (uploadError) {
+      return uploadError;
     }
 
     const { error: photoInsertError } = await supabase.from("market_listing_photos").insert(rows);
@@ -380,15 +394,18 @@ export function PostAdPageClient() {
     event.preventDefault();
     const formElement = event.currentTarget;
     setIsSubmitting(true);
+    setSubmitProgress(6);
     setNotice(null);
     setError(null);
 
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
       setError("Supabase environment variables are not configured.");
+      setSubmitProgress(0);
       setIsSubmitting(false);
       return;
     }
+    setSubmitProgress(12);
 
     const {
       data: { user },
@@ -396,10 +413,12 @@ export function PostAdPageClient() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
+      setSubmitProgress(0);
       setIsSubmitting(false);
       router.push("/login");
       return;
     }
+    setSubmitProgress(20);
 
     const form = new FormData(formElement);
     const title = String(form.get("title") ?? "").trim();
@@ -411,9 +430,11 @@ export function PostAdPageClient() {
     const plainDescription = body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     if (plainDescription.length < 20 || body.length > 5000) {
       setError("Description must contain 20 to 5,000 characters.");
+      setSubmitProgress(0);
       setIsSubmitting(false);
       return;
     }
+    setSubmitProgress(28);
 
     const { data: createdListing, error: insertError } = await supabase.from("market_listings").insert({
       owner_id: user.id,
@@ -432,22 +453,33 @@ export function PostAdPageClient() {
 
     if (insertError) {
       setError(insertError.message);
+      setSubmitProgress(0);
       setIsSubmitting(false);
       return;
     }
+    setSubmitProgress(44);
 
     if (createdListing?.id) {
-      const photoError = await uploadPhotos({ listingId: createdListing.id, userId: user.id });
+      const photoError = await uploadPhotos({
+        listingId: createdListing.id,
+        supabase,
+        userId: user.id,
+        onProgress: (completedCount, totalCount) => {
+          setSubmitProgress(44 + Math.round((completedCount / totalCount) * 44));
+        },
+      });
+      setSubmitProgress(94);
       if (photoError) {
         setNotice("Posted successfully. Photos could not be attached yet.");
+        setSubmitProgress(100);
         setIsSubmitting(false);
         router.push("/market");
-        router.refresh();
         return;
       }
     }
 
     setNotice("Posted successfully.");
+    setSubmitProgress(100);
     formRef.current?.reset();
     setMainCategory("");
     setSubCategory("");
@@ -463,8 +495,9 @@ export function PostAdPageClient() {
     setPrimaryPhotoId(null);
     setIsSubmitting(false);
     router.push("/market");
-    router.refresh();
   };
+
+  const submitButtonProgress = isSubmitting ? Math.max(6, submitProgress) : 0;
 
   return (
     <main className="post-ad-page">
@@ -603,8 +636,18 @@ export function PostAdPageClient() {
 
             <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
-              <button className="post-submit-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Posting..." : "Post Now"}
+              <button
+                className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`}
+                type="submit"
+                disabled={isSubmitting}
+                aria-busy={isSubmitting}
+                aria-valuemin={isSubmitting ? 0 : undefined}
+                aria-valuemax={isSubmitting ? 100 : undefined}
+                aria-valuenow={isSubmitting ? submitButtonProgress : undefined}
+                role={isSubmitting ? "progressbar" : undefined}
+                style={{ "--post-submit-progress": `${submitButtonProgress}%` } as CSSProperties}
+              >
+                <span>{isSubmitting ? `Posting ${submitButtonProgress}%` : "Post Now"}</span>
               </button>
             </div>
           </form>
