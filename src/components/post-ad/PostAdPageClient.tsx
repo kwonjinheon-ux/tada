@@ -50,17 +50,6 @@ const meetingPlaces: SelectOption[] = [
   { label: "Pickup from home", value: "home" },
 ];
 
-const demoPhotos = [
-  {
-    src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-    alt: "Smart watch listing photo",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-    alt: "Headphones listing photo",
-  },
-];
-
 const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxPhotoCount = 10;
 const maxPhotoSize = 5 * 1024 * 1024;
@@ -286,6 +275,20 @@ export function PostAdPageClient() {
     photoInputRef.current?.click();
   };
 
+  const removePhoto = (photoId: string) => {
+    const removedPhoto = photos.find((photo) => photo.id === photoId);
+    const remainingPhotos = photos.filter((photo) => photo.id !== photoId);
+
+    if (removedPhoto) {
+      URL.revokeObjectURL(removedPhoto.url);
+    }
+
+    setPhotos(remainingPhotos);
+    setPrimaryPhotoId((currentPrimaryPhotoId) =>
+      currentPrimaryPhotoId === photoId ? remainingPhotos[0]?.id ?? null : currentPrimaryPhotoId,
+    );
+  };
+
   const uploadPhotos = async ({
     listingId,
     userId,
@@ -458,19 +461,17 @@ export function PostAdPageClient() {
                 }}
               />
               <div className="post-photo-grid">
-                {photos.length
-                  ? photos.map((photo, index) => (
-                      <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} key={photo.id} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
+                {photos.map((photo, index) => (
+                    <div className="post-photo-card" key={photo.id}>
+                      <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
                         <img src={photo.url} alt={photo.file.name} />
                         {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>Main</span>}
                       </button>
-                    ))
-                  : demoPhotos.map((photo, index) => (
-                      <button className={`post-photo-slot ${index === 0 ? "is-main" : ""}`} key={photo.src} type="button" aria-label={index === 0 ? "Main example photo" : "Example photo"} onClick={openPhotoPicker}>
-                        <img src={photo.src} alt={photo.alt} />
-                        {index === 0 && <span>Main</span>}
+                      <button className="post-photo-remove" type="button" aria-label={`Remove ${photo.file.name}`} onClick={() => removePhoto(photo.id)}>
+                        <i className="fa-solid fa-xmark" aria-hidden="true" />
                       </button>
-                    ))}
+                    </div>
+                  ))}
                 {Array.from({ length: Math.min(2, Math.max(0, maxPhotoCount - photos.length)) }).map((_, index) => (
                   <button className="post-photo-upload" key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
