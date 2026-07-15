@@ -3465,6 +3465,7 @@ a {
     color: #fff;
   }
 
+  .mobile-bottom-dock .mobile-dock-create.is-active,
   .mobile-bottom-dock .mobile-dock-create:hover,
   .mobile-bottom-dock .mobile-dock-create:focus-visible {
     background: #006f4a;
