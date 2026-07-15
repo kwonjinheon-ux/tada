@@ -13,8 +13,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/sign/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     ],
+    formats: ["image/avif", "image/webp"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

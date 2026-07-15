@@ -1,13 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { Listing } from "@/data/listings";
 
 type ProductCardProps = {
   listing: Listing;
+  priority?: boolean;
 };
 
-export function ProductCard({ listing }: ProductCardProps) {
+export function ProductCard({ listing, priority = false }: ProductCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const statusLabel = listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
@@ -21,7 +23,14 @@ export function ProductCard({ listing }: ProductCardProps) {
   return (
     <article className={`product-card ${listing.status === "sold" ? "is-sold" : ""}`}>
       <div className="product-media">
-        <img src={listing.image} alt={listing.imageAlt} />
+        <Image
+          src={listing.image}
+          alt={listing.imageAlt}
+          fill
+          priority={priority}
+          quality={70}
+          sizes="(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw"
+        />
         {listing.badge ? (
           <span className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}>
             {listing.badge}

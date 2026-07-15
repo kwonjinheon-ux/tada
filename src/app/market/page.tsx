@@ -52,7 +52,7 @@ async function getPostedListings(): Promise<Listing[]> {
   if (error || !data) return [];
   const marketListings = data as MarketListingRow[];
   const listingIds = marketListings.map((listing) => listing.id);
-  let photosByListingId = new Map<string, MarketListingPhotoRow[]>();
+  const primaryPhotosByListingId = new Map<string, MarketListingPhotoRow>();
 
   if (listingIds.length) {
     const { data: photoRows } = await supabase
@@ -61,25 +61,33 @@ async function getPostedListings(): Promise<Listing[]> {
       .in("listing_id", listingIds)
       .order("display_order", { ascending: true });
 
-    photosByListingId = (photoRows as MarketListingPhotoRow[] | null ?? []).reduce((map, photo) => {
-      const currentPhotos = map.get(photo.listing_id) ?? [];
-      currentPhotos.push(photo);
-      map.set(photo.listing_id, currentPhotos);
-      return map;
-    }, new Map<string, MarketListingPhotoRow[]>());
+    for (const photo of (photoRows as MarketListingPhotoRow[] | null ?? [])) {
+      const currentPhoto = primaryPhotosByListingId.get(photo.listing_id);
+      if (!currentPhoto || photo.is_primary || (!currentPhoto.is_primary && photo.display_order < currentPhoto.display_order)) {
+        primaryPhotosByListingId.set(photo.listing_id, photo);
+      }
+    }
   }
+
+  const storagePaths = [...new Set([...primaryPhotosByListingId.values()]
+    .map((photo) => photo.storage_path)
+    .filter((path): path is string => Boolean(path)))];
+  const { data: signedPhotos } = storagePaths.length
+    ? await supabase.storage.from("market-listing-images").createSignedUrls(storagePaths, 3600)
+    : { data: [] };
+  const signedImageByPath = new Map(
+    (signedPhotos ?? [])
+      .filter((photo) => photo.path && photo.signedUrl)
+      .map((photo) => [photo.path as string, photo.signedUrl as string]),
+  );
 
   const listings = await Promise.all(
     marketListings.map(async (marketListing) => {
-      const photo = [...(photosByListingId.get(marketListing.id) ?? [])].sort((a, b) => {
-        if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
-        return a.display_order - b.display_order;
-      })[0];
+      const photo = primaryPhotosByListingId.get(marketListing.id);
 
       let image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
       if (photo?.storage_path) {
-        const { data: signed } = await supabase.storage.from("market-listing-images").createSignedUrl(photo.storage_path, 3600);
-        image = signed?.signedUrl ?? image;
+        image = signedImageByPath.get(photo.storage_path) ?? image;
       }
 
       return {

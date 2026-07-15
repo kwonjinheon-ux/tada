@@ -175,8 +175,8 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
         </div>
 
         <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {visibleListings.map((listing) => (
-            <ProductCard key={listing.id} listing={listing} />
+          {visibleListings.map((listing, index) => (
+            <ProductCard key={listing.id} listing={listing} priority={index === 0} />
           ))}
         </div>
 
