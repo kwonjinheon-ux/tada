@@ -53,6 +53,13 @@ const meetingPlaces: SelectOption[] = [
 const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxPhotoCount = 10;
 const maxPhotoSize = 5 * 1024 * 1024;
+const editorColors = [
+  { label: "Charcoal", value: "#314254" },
+  { label: "Red", value: "#dc2626" },
+  { label: "Orange", value: "#d97706" },
+  { label: "Green", value: "#00875a" },
+  { label: "Blue", value: "#2563eb" },
+];
 
 function CustomSelect({
   id,
@@ -549,12 +556,14 @@ export function PostAdPageClient() {
                   <button type="button" aria-label="Italic" title="Italic" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("italic")}><em>I</em></button>
                   <button type="button" aria-label="Underline" title="Underline" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("underline")}><u>U</u></button>
                   <button type="button" aria-label="Strikethrough" title="Strikethrough" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("strikeThrough")}><s>S</s></button>
-                  <label className="post-editor-color" title="Text color">
-                    <input type="color" aria-label="Text color" value={textColor} disabled={isHtmlMode} onChange={(event) => {
-                      setTextColor(event.target.value);
-                      runEditorCommand("foreColor", event.target.value);
-                    }} />
-                  </label>
+                  <div className="post-editor-color-palette" role="group" aria-label="Text color">
+                    {editorColors.map((color) => (
+                      <button className={`post-editor-color-swatch ${textColor === color.value ? "is-selected" : ""}`} key={color.value} type="button" aria-label={`Set text color to ${color.label}`} title={color.label} disabled={isHtmlMode} style={{ backgroundColor: color.value }} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        setTextColor(color.value);
+                        runEditorCommand("foreColor", color.value);
+                      }} />
+                    ))}
+                  </div>
                   <span className="post-editor-divider" aria-hidden="true" />
                   <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="fa-solid fa-list" aria-hidden="true" /></button>
                   <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="fa-solid fa-list-ol" aria-hidden="true" /></button>
