@@ -91,7 +91,7 @@ a {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid rgba(187, 202, 191, 0.72);
-  background: #ffffff;
+  background: linear-gradient(180deg, rgba(248, 249, 255, 0.92) 0%, rgba(248, 249, 255, 0.92) 62%, #ffffff 100%);
   backdrop-filter: blur(16px);
 }
 
@@ -2926,7 +2926,7 @@ a {
 
   .site-header {
     border-bottom: 0;
-    background: #ffffff;
+    background: linear-gradient(180deg, rgba(248, 249, 255, 0.92) 0%, rgba(248, 249, 255, 0.92) 58%, #ffffff 100%);
   }
 
   .site-nav {
