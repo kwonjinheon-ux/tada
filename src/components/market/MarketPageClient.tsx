@@ -25,7 +25,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -61,12 +60,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
     };
   }, []);
 
-  useEffect(() => {
-    const syncDashboardDrawer = (event: Event) => setIsDashboardDrawerOpen(Boolean((event as CustomEvent<boolean>).detail));
-    window.addEventListener("mobile-dashboard-menu-state", syncDashboardDrawer);
-    return () => window.removeEventListener("mobile-dashboard-menu-state", syncDashboardDrawer);
-  }, []);
-
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
     setViewMode(mode);
@@ -87,8 +80,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
       </button>
 
       <div className={`filter-backdrop ${isFilterOpen ? "is-open" : ""}`} onClick={() => setIsFilterOpen(false)} />
-      {isDashboardDrawerOpen && <button className="mobile-dashboard-backdrop" type="button" aria-label="Close dashboard menu" onClick={() => window.dispatchEvent(new Event("mobile-dashboard-menu-close"))} />}
-
       <aside className={`market-filter-panel ${isFilterOpen ? "is-open" : ""}`} aria-label="Marketplace filters">
         <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
