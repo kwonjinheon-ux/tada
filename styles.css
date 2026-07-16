@@ -1429,42 +1429,36 @@ a {
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
-.save-burst,
-.save-burst span {
+.save-heart-particles,
+.save-heart-particle {
   position: absolute;
   pointer-events: none;
 }
 
-.save-burst {
-  inset: 50%;
-  width: 0;
-  height: 0;
+.save-heart-particles {
+  inset: 0;
+  overflow: visible;
 }
 
-.save-burst span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ef476f;
+.save-heart-particle {
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--heart-color);
+  font-size: var(--heart-size);
+  line-height: 1;
   opacity: 0;
   transform: translate(-50%, -50%) scale(0);
+  filter: drop-shadow(0 3px 4px rgb(116 26 57 / .25));
+  animation: save-heart-scatter var(--heart-duration) cubic-bezier(.16, .84, .28, 1) var(--heart-delay) both;
 }
 
-.save-burst span:nth-child(1) { --burst-x: -21px; --burst-y: -17px; background: #ef476f; }
-.save-burst span:nth-child(2) { --burst-x: 22px; --burst-y: -15px; background: #ff9f1c; }
-.save-burst span:nth-child(3) { --burst-x: 23px; --burst-y: 18px; background: #ef476f; }
-.save-burst span:nth-child(4) { --burst-x: -20px; --burst-y: 19px; background: #ff9f1c; }
-.save-burst span:nth-child(5) { --burst-x: 0; --burst-y: -28px; background: #f15bb5; }
-
-.save-button.is-popping .save-burst span {
-  animation: save-heart-burst 540ms cubic-bezier(.2, .8, .3, 1) both;
-}
-
-@keyframes save-heart-burst {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
-  22% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-  72% { opacity: .9; transform: translate(calc(-50% + var(--burst-x)), calc(-50% + var(--burst-y))) scale(.75); }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--burst-x)), calc(-50% + var(--burst-y))) scale(.2); }
+@keyframes save-heart-scatter {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.25) rotate(0deg); }
+  16% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(calc(var(--heart-rotation) * .16)); }
+  64% { opacity: .95; transform: translate(calc(-50% + var(--heart-x)), calc(-50% + var(--heart-y))) scale(.92) rotate(calc(var(--heart-rotation) * .72)); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--heart-x)), calc(-50% + var(--heart-y) - 14px)) scale(.38) rotate(var(--heart-rotation)); }
 }
 
 .save-button i {
