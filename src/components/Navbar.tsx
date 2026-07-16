@@ -228,7 +228,13 @@ export function Navbar() {
         </nav>
 
         {userEmail && (
-          <nav className={`mobile-dashboard-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
+          <>
+            {isDashboardMenuOpen && <button className="mobile-dashboard-backdrop" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)} />}
+            <nav className={`mobile-dashboard-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
+            <div className="mobile-dashboard-heading">
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
+              <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
+            </div>
             <p>My dashboard</p>
             <button className="mobile-dashboard-close" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
@@ -239,7 +245,8 @@ export function Navbar() {
               </Link>
             ))}
             <button className="mobile-dashboard-logout" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
-          </nav>
+            </nav>
+          </>
         )}
         {isAuthReady && !userEmail && (
           <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
