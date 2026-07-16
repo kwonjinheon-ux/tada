@@ -53,10 +53,14 @@ function buildListingPrompt(input: ListingAiRequest) {
 
   return [
     "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
-    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan.",
+    "Write in the seller's own warm, natural first-person voice, as though they wrote the polished listing themselves.",
+    "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
+    "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
+    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan without sounding like an advertisement or a formal report.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
     "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
     "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
+    "For conditionSummary, write a brief neutral summary of the provided condition only; do not attribute it to the seller or speculate about anything they did not mention.",
     "Do not repeat phone numbers, emails, addresses, or other sensitive personal information.",
     "Return a draft only. Never claim the listing has been published.",
     localeInstruction,
