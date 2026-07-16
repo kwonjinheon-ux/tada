@@ -2903,110 +2903,11 @@ a {
   border-top: 1px solid #edf1f0;
 }
 
-.post-ai-keyword-field {
-  display: grid;
-  gap: 7px;
-}
-
-.post-ai-keyword-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  color: #405064;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.post-ai-keyword-heading span {
-  color: #7c8998;
-  font-weight: 500;
-}
-
-.post-ai-keyword-input {
-  min-height: 46px;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px;
-  border: 1px solid #d8e1df;
-  border-radius: 7px;
-  background: #ffffff;
-  cursor: text;
-}
-
-.post-ai-keyword-input input {
-  min-width: 150px;
-  flex: 1 1 150px;
-  min-height: 30px;
-  padding: 0 3px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 14px;
-}
-
-.post-ai-keyword-input:focus-within,
 .post-ai-generate-button:focus-visible,
-.post-ai-choice button:focus-visible,
 .post-ai-preview-heading button:focus-visible {
   outline: none;
   border-color: rgba(0, 122, 84, .58);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, .14);
-}
-
-.post-ai-keyword-input input:focus {
-  outline: none;
-}
-
-.post-ai-keyword-input input:disabled {
-  cursor: not-allowed;
-}
-
-.post-ai-keyword-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  max-width: 100%;
-  padding: 4px 6px 4px 8px;
-  border-radius: 999px;
-  background: #d8f5e8;
-  color: #007a54;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.post-ai-keyword-chip button {
-  width: 18px;
-  height: 18px;
-  display: inline-grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #007a54;
-  cursor: pointer;
-}
-
-.post-ai-keyword-chip button:hover,
-.post-ai-keyword-chip button:focus-visible {
-  background: rgba(0, 122, 84, .14);
-}
-
-.post-ai-keyword-chip button:focus-visible {
-  outline: 2px solid #007a54;
-  outline-offset: 1px;
-}
-
-.post-ai-keyword-field > p {
-  margin: 0;
-  color: #6e7d8e;
-  font-size: 12px;
-  line-height: 1.45;
 }
 
 .post-ai-action-row {
@@ -3121,8 +3022,7 @@ a {
   font-weight: 800;
 }
 
-.post-ai-preview-heading button,
-.post-ai-choice button {
+.post-ai-preview-heading button {
   min-height: 34px;
   border: 1px solid #a8d9c5;
   border-radius: 6px;
@@ -3146,8 +3046,7 @@ a {
   line-height: 1.45;
 }
 
-.post-ai-tags,
-.post-ai-choice {
+.post-ai-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -3169,24 +3068,6 @@ a {
   color: #8b5e00;
 }
 
-.post-ai-choice {
-  align-items: center;
-  padding-top: 4px;
-}
-
-.post-ai-choice p {
-  width: 100%;
-}
-
-.post-ai-choice button {
-  padding: 6px 9px;
-}
-
-.post-ai-choice button:nth-of-type(2) {
-  border-color: #10b981;
-  background: #10b981;
-  color: #ffffff;
-}
 
 .post-price-input {
   display: flex;

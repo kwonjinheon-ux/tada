@@ -7,12 +7,12 @@ import { z } from "zod";
 
 export const listingAiRequestSchema = z
   .object({
-    title: z.string().trim().min(2).max(100),
-    category: z.string().trim().min(1).max(100),
+    title: z.string().trim().max(100).optional().default(""),
+    category: z.string().trim().max(100).optional().default(""),
     price: z.number().finite().min(0).max(100_000_000).optional(),
-    condition: z.string().trim().min(1).max(100),
-    location: z.string().trim().min(1).max(160),
-    keywords: z.array(z.string().trim().min(1).max(64)).max(10).optional().default([]),
+    condition: z.string().trim().max(100).optional().default(""),
+    location: z.string().trim().max(160).optional().default(""),
+    description: z.string().trim().min(1).max(6_000),
     imagePaths: z.array(z.string().trim().min(1).max(260)).max(3).optional().default([]),
     language: z.enum(["ko", "en"]).optional(),
   })
@@ -40,7 +40,7 @@ export class ListingAiError extends Error {
 
 function includesKorean(input: ListingAiRequest) {
   return /[\u3131-\uD79D]/.test(
-    [input.title, input.category, input.condition, input.location, ...input.keywords]
+    [input.title, input.category, input.condition, input.location, input.description]
       .join(" "),
   );
 }
@@ -52,9 +52,9 @@ function buildListingPrompt(input: ListingAiRequest) {
     : "Write in natural New Zealand English and keep the description to about 80–150 words.";
 
   return [
-    "Create a marketplace listing draft for Tada, a New Zealand second-hand marketplace.",
+    "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
+    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
-    "Prioritize the user-provided keywords when drafting the description, but do not treat them as proof of facts not otherwise supplied.",
     "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
     "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
     "Do not repeat phone numbers, emails, addresses, or other sensitive personal information.",
@@ -67,7 +67,7 @@ function buildListingPrompt(input: ListingAiRequest) {
       price: input.price,
       condition: input.condition,
       location: input.location,
-      keywords: input.keywords,
+      description: input.description,
     }),
   ].join("\n");
 }

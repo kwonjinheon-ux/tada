@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   const parsed = listingAiRequestSchema.safeParse(body);
   if (!parsed.success) {
     const message = parsed.error instanceof ZodError
-      ? "Please complete the title, category, condition, and location before generating a description."
+      ? "Please add a description before asking AI to refine it."
       : "Please check the listing details and try again.";
     return failure("INVALID_REQUEST", message, 400);
   }
