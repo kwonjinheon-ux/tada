@@ -235,13 +235,11 @@ export function Navbar() {
               {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
             </div>
-            <p>My dashboard</p>
             <button className="mobile-dashboard-close" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={pathname === `${dashboardBase}${suffix}` ? "is-active" : ""} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span>{label}</span>
-                {label === "Messages" && <b>24</b>}
+                <span className="mobile-dashboard-link-label">{label}{label === "Messages" && <b>24</b>}</span>
               </Link>
             ))}
             <button className="mobile-dashboard-logout" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>

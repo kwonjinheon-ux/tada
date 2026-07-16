@@ -3522,7 +3522,7 @@ a {
   .mobile-dashboard-menu a {
     min-height: 40px;
     display: grid;
-    grid-template-columns: 20px 1fr auto;
+    grid-template-columns: 20px 1fr;
     align-items: center;
     gap: 10px;
     padding: 0 10px;
@@ -3531,6 +3531,13 @@ a {
     font-size: 13px;
     font-weight: 400;
     text-decoration: none;
+  }
+
+  .mobile-dashboard-link-label {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 6px;
   }
 
   .mobile-dashboard-menu a.is-active,
@@ -3550,18 +3557,20 @@ a {
   }
 
   .mobile-dashboard-menu .mobile-dashboard-logout {
-    min-height: 40px;
+    width: 70%;
+    min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    justify-self: center;
+    gap: 5px;
     margin-top: 1px;
     border: 0;
     border-radius: 9px;
     background: #f1f4f8;
     color: #53657a;
     font: inherit;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 400;
     cursor: pointer;
   }
