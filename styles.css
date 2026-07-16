@@ -2895,6 +2895,204 @@ a {
   font-size: 13px;
 }
 
+.post-ai-generator {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf1f0;
+}
+
+.post-ai-details {
+  display: grid;
+  gap: 10px;
+}
+
+.post-ai-details label {
+  display: grid;
+  gap: 5px;
+  color: #405064;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.post-ai-details label span {
+  color: #7c8998;
+  font-weight: 500;
+}
+
+.post-ai-details input {
+  min-height: 42px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #d8e1df;
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.post-ai-details input:focus,
+.post-ai-generate-button:focus-visible,
+.post-ai-choice button:focus-visible,
+.post-ai-preview-heading button:focus-visible {
+  outline: none;
+  border-color: rgba(0, 122, 84, .58);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .14);
+}
+
+.post-ai-action-row {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+}
+
+.post-ai-generate-button {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: #10b981;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.post-ai-generate-button:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.post-ai-generate-button:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+.post-ai-action-row p,
+.post-ai-status,
+.post-ai-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.post-ai-action-row p {
+  color: #6e7d8e;
+}
+
+.post-ai-live-region {
+  display: grid;
+  gap: 7px;
+}
+
+.post-ai-status {
+  color: #007a54;
+  font-weight: 700;
+}
+
+.post-ai-error {
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #b42318;
+  font-weight: 700;
+}
+
+.post-ai-preview {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #bce7d5;
+  border-radius: 7px;
+  background: #f3fcf7;
+}
+
+.post-ai-preview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #007a54;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.post-ai-preview-heading button,
+.post-ai-choice button {
+  min-height: 34px;
+  border: 1px solid #a8d9c5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #007a54;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.post-ai-preview-heading button {
+  padding: 5px 8px;
+}
+
+.post-ai-preview p,
+.post-ai-warnings {
+  margin: 0;
+  color: #405064;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.post-ai-tags,
+.post-ai-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.post-ai-tags span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #d8f5e8;
+  color: #007a54;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.post-ai-warnings {
+  display: grid;
+  gap: 4px;
+  padding-left: 18px;
+  color: #8b5e00;
+}
+
+.post-ai-choice {
+  align-items: center;
+  padding-top: 4px;
+}
+
+.post-ai-choice p {
+  width: 100%;
+}
+
+.post-ai-choice button {
+  padding: 6px 9px;
+}
+
+.post-ai-choice button:nth-of-type(2) {
+  border-color: #10b981;
+  background: #10b981;
+  color: #ffffff;
+}
+
 .post-price-input {
   display: flex;
   align-items: center;
@@ -3679,20 +3877,19 @@ a {
   }
 
   .mobile-bottom-dock .mobile-dock-create {
-    width: 39px;
-    height: 39px;
-    margin-top: 0;
-    border: 0;
-    border-radius: 50%;
-    background: #151515;
+    width: 37px;
+    height: 37px;
+    background: transparent;
     box-shadow: none;
-    color: #fff;
+    color: #151515;
+    font-size: 25px;
   }
 
   .mobile-bottom-dock .mobile-dock-create.is-active,
   .mobile-bottom-dock .mobile-dock-create:hover,
   .mobile-bottom-dock .mobile-dock-create:focus-visible {
-    background: #2a2a2a;
+    background: transparent;
+    color: #151515;
   }
 
   .marketplace-page {

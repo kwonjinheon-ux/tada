@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
+import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
 
 type SelectOption = {
   label: string;
@@ -60,6 +61,14 @@ const editorColors = [
   { label: "Green", value: "#00875a" },
   { label: "Blue", value: "#2563eb" },
 ];
+
+function aiDescriptionToHtml(description: string) {
+  return description
+    .trim()
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
 
 function CustomSelect({
   id,
@@ -168,6 +177,8 @@ export function PostAdPageClient() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PhotoPreview[]>([]);
   const editorRef = useRef<HTMLDivElement>(null);
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
@@ -180,6 +191,7 @@ export function PostAdPageClient() {
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [previousDescription, setPreviousDescription] = useState<string | null>(null);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [textColor, setTextColor] = useState("#314254");
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
@@ -333,6 +345,18 @@ export function PostAdPageClient() {
       setDescription(editorRef.current.innerHTML);
     }
     setIsHtmlMode((current) => !current);
+  };
+
+  const useAiDraft = (draft: string, mode: "append" | "replace") => {
+    setPreviousDescription(description);
+    const nextDraft = aiDescriptionToHtml(draft);
+    setDescription((current) => mode === "append" && current.trim() ? `${current}<br />${nextDraft}` : nextDraft);
+  };
+
+  const restorePreviousDescription = () => {
+    if (previousDescription === null) return;
+    setDescription(previousDescription);
+    setPreviousDescription(null);
   };
 
   const uploadPhotos = async ({
@@ -489,6 +513,9 @@ export function PostAdPageClient() {
     setArea(defaultArea);
     setMeetingPlace("");
     setDescription("");
+    setPreviousDescription(null);
+    setTitle("");
+    setPrice("");
     setIsHtmlMode(false);
     photos.forEach((photo) => URL.revokeObjectURL(photo.url));
     setPhotos([]);
@@ -506,7 +533,7 @@ export function PostAdPageClient() {
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full">
               <label htmlFor="post-title">Listing Title</label>
-              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
+              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => { setTitle(event.target.value); handleTitleChange(event.target.value); }} required />
               <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
@@ -612,13 +639,25 @@ export function PostAdPageClient() {
                   <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Tell buyers about your item's condition, features, and why you're selling..." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
                 )}
               </div>
+              <AiListingGenerator
+                title={title}
+                category={mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory}
+                price={price}
+                condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
+                location={[region, area].filter(Boolean).join(", ")}
+                photos={photos}
+                currentDescription={description}
+                hasPreviousDescription={Boolean(previousDescription)}
+                onUseDraft={useAiDraft}
+                onRestorePreviousDescription={restorePreviousDescription}
+              />
             </div>
 
             <div className="post-field post-field-full">
               <label htmlFor="listing-price">Price (NZD)</label>
               <div className="post-price-input">
                 <span>$</span>
-                <input id="listing-price" name="price" type="text" inputMode="decimal" placeholder="0.00" />
+                <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
               </div>
             </div>
 
