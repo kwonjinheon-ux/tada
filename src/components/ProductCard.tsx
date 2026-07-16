@@ -57,6 +57,13 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
         onAnimationEnd={() => setIsPopping(false)}
       >
         <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
+        <span className="save-burst" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </span>
       </button>
     </article>
   );

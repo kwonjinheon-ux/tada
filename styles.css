@@ -1429,6 +1429,44 @@ a {
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
+.save-burst,
+.save-burst span {
+  position: absolute;
+  pointer-events: none;
+}
+
+.save-burst {
+  inset: 50%;
+  width: 0;
+  height: 0;
+}
+
+.save-burst span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef476f;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.save-burst span:nth-child(1) { --burst-x: -21px; --burst-y: -17px; background: #ef476f; }
+.save-burst span:nth-child(2) { --burst-x: 22px; --burst-y: -15px; background: #ff9f1c; }
+.save-burst span:nth-child(3) { --burst-x: 23px; --burst-y: 18px; background: #ef476f; }
+.save-burst span:nth-child(4) { --burst-x: -20px; --burst-y: 19px; background: #ff9f1c; }
+.save-burst span:nth-child(5) { --burst-x: 0; --burst-y: -28px; background: #f15bb5; }
+
+.save-button.is-popping .save-burst span {
+  animation: save-heart-burst 540ms cubic-bezier(.2, .8, .3, 1) both;
+}
+
+@keyframes save-heart-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+  22% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  72% { opacity: .9; transform: translate(calc(-50% + var(--burst-x)), calc(-50% + var(--burst-y))) scale(.75); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--burst-x)), calc(-50% + var(--burst-y))) scale(.2); }
+}
+
 .save-button i {
   pointer-events: none;
   transform-origin: center;
@@ -1605,7 +1643,7 @@ a {
 }
 
 .product-grid.is-list-view .save-button {
-  position: static;
+  position: relative;
   justify-self: end;
   width: 36px;
   height: 36px;
@@ -3604,7 +3642,7 @@ a {
     place-items: center;
     justify-self: center;
     border: 0;
-    border-radius: 12px;
+    border-radius: 50%;
     background: transparent;
     color: #36536f;
     font: inherit;
@@ -3632,17 +3670,17 @@ a {
   }
 
   .mobile-bottom-dock a.is-active {
-    background: rgba(21, 151, 244, .18);
-    color: #087ed4;
+    background: #e3e6e8;
+    color: #46515c;
   }
 
   .mobile-bottom-dock .mobile-dock-create {
-    width: 43px;
-    height: 43px;
+    width: 45px;
+    height: 45px;
     margin-top: 0;
     border: 0;
-    border-radius: 14px;
-    background: #1597f4;
+    border-radius: 50%;
+    background: #151515;
     box-shadow: none;
     color: #fff;
   }
@@ -3650,7 +3688,7 @@ a {
   .mobile-bottom-dock .mobile-dock-create.is-active,
   .mobile-bottom-dock .mobile-dock-create:hover,
   .mobile-bottom-dock .mobile-dock-create:focus-visible {
-    background: #087ed4;
+    background: #2a2a2a;
   }
 
   .marketplace-page {
