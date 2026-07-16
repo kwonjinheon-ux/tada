@@ -72,7 +72,7 @@ export function Navbar() {
     const isAndroidMobile =
       /Android/i.test(navigator.userAgent) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("is-android-mobile", isAndroidMobile);
-    document.body.classList.toggle("post-ad-screen", pathname === "/post-ad" || pathname === "/create");
+    document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create"));
     return () => {
       document.body.classList.remove("post-ad-screen");
     };
@@ -110,7 +110,7 @@ export function Navbar() {
 
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
-  const isPostAd = pathname === "/post-ad" || pathname === "/create";
+  const isPostAd = pathname.startsWith("/market/create");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
@@ -195,7 +195,7 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link className="nav-post" href="/create" aria-current={isPostAd ? "page" : undefined}>
+          <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>Create</span>
           </Link>
@@ -252,7 +252,7 @@ export function Navbar() {
         <nav className="mobile-bottom-dock" aria-label="Quick actions">
           <Link className={isMarket ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
           <Link href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
-          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /></Link>
+          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /></Link>
           <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /></button>
           <button type="button" aria-label="Open dashboard" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /></button>
         </nav>

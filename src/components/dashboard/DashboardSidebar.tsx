@@ -21,7 +21,7 @@ export function DashboardSidebar({ context = "market", active = "Dashboard" }: {
           </Link>
         ))}
       </nav>
-      <Link className="dashboard-sell-button" href="/post-ad"><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
+      <Link className="dashboard-sell-button" href="/market/create"><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
     </aside>
   );
 }

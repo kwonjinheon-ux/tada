@@ -53,7 +53,7 @@ export function HomePageClient() {
               </svg>
               Listings
             </Link>
-            <Link href="/post-ad">
+            <Link href="/market/create">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
                 <path d="M12 8v8M8 12h8" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />

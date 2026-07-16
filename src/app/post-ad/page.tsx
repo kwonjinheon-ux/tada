@@ -1,7 +1,5 @@
-import { PostAdPageClient } from "@/components/post-ad/PostAdPageClient";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Create" };
-
-export default function PostAdRoute() {
-  return <PostAdPageClient />;
+export default function LegacyPostAdRoute() {
+  redirect("/market/create");
 }
