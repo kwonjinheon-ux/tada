@@ -4005,6 +4005,15 @@ a {
     padding: 14px 16px 34px;
   }
 
+  .product-grid.is-list-view .product-card {
+    grid-template-columns: 110px minmax(0, 1fr) 44px;
+    padding-right: 8px;
+  }
+
+  .product-grid.is-list-view .save-button {
+    justify-self: end;
+  }
+
   .market-toolbar {
     gap: 12px;
     padding: 4px 0;
