@@ -910,10 +910,6 @@ a {
   padding: 16px;
 }
 
-.mobile-category-drawer-heading {
-  display: none;
-}
-
 .floating-filter-button,
 .filter-close-button {
   border: 0;
@@ -3682,10 +3678,7 @@ a {
   }
 
   .market-filter-panel.is-open .dashboard-link,
-  .market-filter-panel.is-open .location-block,
-  .market-filter-panel.is-open .price-filter,
-  .market-filter-panel.is-open .condition-filter,
-  .market-filter-panel.is-open .apply-filter-button {
+  .market-filter-panel.is-open .location-block {
     display: none;
   }
 
@@ -3705,33 +3698,10 @@ a {
     font-size: 16px;
   }
 
-  .mobile-category-drawer-heading {
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 44px 22px 4px;
-    color: #1d2e45;
-  }
-
-  .mobile-category-drawer-heading i {
-    width: 46px;
-    height: 46px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #e6f9f2;
-    color: #00865d;
-    font-size: 18px;
-  }
-
-  .mobile-category-drawer-heading strong {
-    font-size: 15px;
-  }
-
   .market-filter-panel.is-open .category-filter {
     gap: 8px;
-    padding: 0;
+    padding: 2px 0 12px;
+    border-bottom: 1px solid #e7edf2;
   }
 
   .market-filter-panel.is-open .category-filter h2 {
@@ -3739,14 +3709,69 @@ a {
   }
 
   .market-filter-panel.is-open .filter-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 
   .market-filter-panel.is-open .filter-list button {
-    min-height: 46px;
+    min-height: 38px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .market-filter-panel.is-open .filter-list button i {
+    font-size: 12px;
+  }
+
+  .market-filter-panel.is-open .price-filter,
+  .market-filter-panel.is-open .condition-filter {
+    display: grid;
+    gap: 8px;
+    padding: 0;
+  }
+
+  .market-filter-panel.is-open .price-filter {
+    padding-top: 2px;
+  }
+
+  .market-filter-panel.is-open .filter-block h2 {
+    margin: 0;
+    color: #25384f;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .market-filter-panel.is-open .price-filter input {
+    margin: 0;
+  }
+
+  .market-filter-panel.is-open .price-range {
+    margin-top: -3px;
+    font-size: 10px;
+  }
+
+  .market-filter-panel.is-open .condition-chips {
+    gap: 6px;
+  }
+
+  .market-filter-panel.is-open .condition-chips button {
+    min-height: 30px;
     padding: 0 10px;
-    border-radius: 9px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .market-filter-panel.is-open .apply-filter-button {
+    width: 100%;
+    min-height: 40px;
+    margin-top: 2px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 13px;
   }
 
   .mobile-dashboard-menu {

@@ -14,8 +14,9 @@ The Market category menu is the reference implementation. It lives in `src/compo
 - Surface: solid white background, no rounded corners, and a right-facing shadow.
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
 - Close control: 36px square at the upper-right of the drawer, with no rounded corners.
-- Header: 46px circular icon surface followed by a compact title.
-- Menu rows: icon first, label second, 46px minimum height, and a light selected state.
+- Header: reserve the top-right for the close control only. Do not add a redundant drawer title when the content is self-evident.
+- Category rows: use a compact two-column grid (38px minimum height) so supporting filters remain visible without excessive scrolling.
+- Supporting filters: keep price and item condition directly below the category grid, separated by a subtle divider.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.
 
 ## Required Structure
@@ -34,11 +35,7 @@ Use a button for the backdrop, an `aside` for the drawer, and a real button for 
   <button type="button" aria-label="Close categories" onClick={closeDrawer}>
     <i className="fa-solid fa-xmark" aria-hidden="true" />
   </button>
-  <div className="mobile-category-drawer-heading">
-    <i className="fa-solid fa-rectangle-list" aria-hidden="true" />
-    <strong>Categories</strong>
-  </div>
-  {/* Menu rows */}
+  {/* Category rows, then price and condition filters */}
 </aside>
 ```
 
@@ -76,7 +73,7 @@ Do not add a second page-level backdrop without reviewing these values. A duplic
 3. Use `overflow-y: auto` on the drawer, not on the document body.
 4. Respect `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)` in padding and close-control placement.
 5. Use the left-to-right `mobile-category-drawer-in` animation for category drawers and the existing dashboard drawer transition for profile navigation.
-6. Hide unrelated filters in a category-only drawer rather than rendering a second copy of category data.
+6. Keep the price and condition controls in the same drawer when they are part of the Market filtering workflow; compact the category grid before hiding useful controls.
 
 ## Accessibility Checklist
 
@@ -92,10 +89,10 @@ Do not add a second page-level backdrop without reviewing these values. A duplic
 Test at a 455px-wide viewport and on a real mobile device.
 
 1. Open the category drawer from the bottom dock.
-2. Confirm it matches the profile drawer width, left placement, white surface, close control, and blurred backdrop.
-3. Tap a category row and confirm the drawer closes.
-4. Tap the blurred content area and confirm the drawer closes.
-5. Confirm the bottom dock cannot be clicked while the drawer is open.
-6. Open the profile drawer after categories and confirm only one overlay is visible.
-7. Check a device with a display cutout to confirm safe-area spacing remains intact.
-
+2. Confirm it matches the profile drawer width, left placement, white surface, close control, and blurred backdrop, without a redundant title.
+3. Confirm the two-column category grid, max-price control, and item-condition chips are all visible before scrolling.
+4. Tap a category row and confirm the drawer closes.
+5. Tap the blurred content area and confirm the drawer closes.
+6. Confirm the bottom dock cannot be clicked while the drawer is open.
+7. Open the profile drawer after categories and confirm only one overlay is visible.
+8. Check a device with a display cutout to confirm safe-area spacing remains intact.
