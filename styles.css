@@ -3728,12 +3728,16 @@ a {
   .market-filter-panel.is-open .price-filter,
   .market-filter-panel.is-open .condition-filter {
     display: grid;
-    gap: 8px;
+    gap: 6px;
     padding: 0;
   }
 
   .market-filter-panel.is-open .price-filter {
     padding-top: 2px;
+  }
+
+  .market-filter-panel.is-open .price-filter h2 {
+    display: none;
   }
 
   .market-filter-panel.is-open .filter-block h2 {
@@ -3755,23 +3759,23 @@ a {
   }
 
   .market-filter-panel.is-open .condition-chips {
-    gap: 6px;
+    gap: 4px;
   }
 
   .market-filter-panel.is-open .condition-chips button {
-    min-height: 30px;
-    padding: 0 10px;
-    border-radius: 8px;
-    font-size: 11px;
+    min-height: 26px;
+    padding: 0 8px;
+    border-radius: 7px;
+    font-size: 10px;
   }
 
   .market-filter-panel.is-open .apply-filter-button {
     width: 100%;
-    min-height: 40px;
-    margin-top: 2px;
+    min-height: 28px;
+    margin-top: 0;
     padding: 0 14px;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: 7px;
+    font-size: 11px;
   }
 
   .mobile-dashboard-menu {
