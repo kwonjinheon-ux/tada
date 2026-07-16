@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import OpenAI from "openai";
+import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 const MAX_INPUT_LENGTH = 1_000;
@@ -43,26 +44,6 @@ export class ListingAiError extends Error {
     super(code);
   }
 }
-
-const generatedListingJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    description: { type: "string", minLength: 1, maxLength: 1800 },
-    conditionSummary: { type: "string", minLength: 1, maxLength: 400 },
-    suggestedTags: {
-      type: "array",
-      maxItems: 5,
-      items: { type: "string", minLength: 1, maxLength: 64 },
-    },
-    warnings: {
-      type: "array",
-      maxItems: 6,
-      items: { type: "string", minLength: 1, maxLength: 300 },
-    },
-  },
-  required: ["description", "conditionSummary", "suggestedTags", "warnings"],
-} as const;
 
 function includesKorean(input: ListingAiRequest) {
   return /[\u3131-\uD79D]/.test(
@@ -132,7 +113,7 @@ export async function generateListingDraft({
   }
 
   const openai = new OpenAI({ apiKey, timeout: 25_000, maxRetries: 1 });
-  const response = await openai.responses.create({
+  const response = await openai.responses.parse({
     model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
     safety_identifier: safetyIdentifier,
     max_output_tokens: 900,
@@ -150,22 +131,26 @@ export async function generateListingDraft({
       },
     ],
     text: {
-      format: {
-        type: "json_schema",
-        name: "tada_listing_draft",
-        strict: true,
-        schema: generatedListingJsonSchema,
-      },
+      format: zodTextFormat(generatedListingSchema, "tada_listing_draft"),
     },
   });
 
-  if (!response.output_text) {
+  if (!response.output_parsed) {
+    console.error("AI listing response could not be parsed", {
+      status: response.status,
+      incompleteReason: response.incomplete_details?.reason,
+      outputCount: response.output.length,
+      hasRefusal: response.output.some(
+        (item) => item.type === "message" && item.content.some((content) => content.type === "refusal"),
+      ),
+    });
     throw new ListingAiError("AI_RESPONSE_INVALID");
   }
 
   try {
-    return generatedListingSchema.parse(JSON.parse(response.output_text));
+    return generatedListingSchema.parse(response.output_parsed);
   } catch {
+    console.error("AI listing parsed response did not match the expected shape");
     throw new ListingAiError("AI_RESPONSE_INVALID");
   }
 }
