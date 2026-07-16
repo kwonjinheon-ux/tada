@@ -5,6 +5,17 @@ import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploade
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null };
+type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
+type LocationRequestState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; coordinates: LocationCoordinates }
+  | { status: "error"; message: string };
+const GEOLOCATION_ERROR_CODES = {
+  PERMISSION_DENIED: 1,
+  POSITION_UNAVAILABLE: 2,
+  TIMEOUT: 3,
+} as const;
 
 const NZ_CITIES = [
   ["Whangārei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotahā", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Gisborne", -38.662, 178.018, ["Kaiti", "Elgin", "Whataupoko", "Te Hapara"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Hastings", -39.638, 176.844, ["Havelock North", "Flaxmere", "Mahora", "Parkvale"]], ["New Plymouth", -39.056, 174.075, ["Fitzroy", "Bell Block", "Vogeltown", "Westown"]], ["Whanganui", -39.933, 175.052, ["Gonville", "Durie Hill", "Castlecliff", "Springvale"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Porirua", -41.133, 174.84, ["Aotea", "Cannons Creek", "Paremata", "Whitby"]], ["Lower Hutt", -41.212, 174.903, ["Petone", "Wainuiomata", "Stokes Valley", "Eastbourne"]], ["Upper Hutt", -41.125, 175.07, ["Trentham", "Silverstream", "Maoribank", "Pinehaven"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
@@ -20,6 +31,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city! : "");
   const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
+  const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,22 +50,37 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const availableSuburbs = selectedCity?.[3] ?? [];
   const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent([suburb, city, "New Zealand"].filter(Boolean).join(", ") || "New Zealand")}&output=embed`;
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
-  const applyNearestLocation = (latitude: number, longitude: number, source: string) => {
+  const applyNearestLocation = ({ latitude, longitude, accuracy }: LocationCoordinates) => {
     const nearest = NZ_CITIES.reduce((closest, location) => ((location[1] - latitude) ** 2 + (location[2] - longitude) ** 2) < ((closest[1] - latitude) ** 2 + (closest[2] - longitude) ** 2) ? location : closest);
-    setLocationMode("current"); setCoordinates({ latitude, longitude }); setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`${source} set to ${nearest[0]}.`);
+    setLocationMode("current"); setCoordinates({ latitude, longitude }); setCurrentLocation({ status: "success", coordinates: { latitude, longitude, accuracy } }); setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`현재 위치가 ${nearest[0]}로 설정되었습니다.`);
+  };
+
+  const getGeolocationErrorMessage = (code: number) => {
+    switch (code) {
+      case GEOLOCATION_ERROR_CODES.PERMISSION_DENIED:
+        return "위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용한 뒤 다시 시도해 주세요.";
+      case GEOLOCATION_ERROR_CODES.POSITION_UNAVAILABLE:
+        return "현재 위치 정보를 가져올 수 없습니다. GPS 또는 네트워크 상태를 확인해 주세요.";
+      case GEOLOCATION_ERROR_CODES.TIMEOUT:
+        return "위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.";
+      default:
+        return "위치를 확인하는 중 알 수 없는 오류가 발생했습니다.";
+    }
   };
 
   const useCurrentLocation = () => {
-    if (!navigator.geolocation) { setStatus("Location services are not available in this browser."); return; }
-    setIsLocating(true); setStatus("Finding your current location…");
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      const message = "이 브라우저는 위치 서비스를 지원하지 않습니다.";
+      setCurrentLocation({ status: "error", message }); setStatus(message); return;
+    }
+
+    setIsLocating(true); setCurrentLocation({ status: "loading" }); setStatus("현재 위치를 확인하는 중입니다.");
     navigator.geolocation.getCurrentPosition(({ coords }) => {
-      applyNearestLocation(coords.latitude, coords.longitude, "Current location"); setIsLocating(false);
-    }, () => {
-      void fetch("https://ipapi.co/json/").then((response) => response.json()).then((data) => {
-        if (typeof data.latitude !== "number" || typeof data.longitude !== "number") throw new Error("No IP location");
-        applyNearestLocation(data.latitude, data.longitude, "Approximate location");
-      }).catch(() => setStatus("Allow location access in your browser settings, then try again.")).finally(() => setIsLocating(false));
-    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+      applyNearestLocation({ latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy }); setIsLocating(false);
+    }, (locationError) => {
+      const message = getGeolocationErrorMessage(locationError.code);
+      setCurrentLocation({ status: "error", message }); setStatus(message); setIsLocating(false);
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   };
 
   const normalisedPhone = () => {
@@ -132,7 +159,35 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         <section className="profile-panel"><div className="profile-panel-title"><h2>Email Address</h2><span><i className="fa-solid fa-circle-check" /> Verified</span></div><p className="profile-email">{email}</p></section>
         <section className="profile-panel"><h2>Phone Number</h2><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? "Verifying…" : "Verify code"}</button></div> : <button className="profile-verify-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}><i className="fa-regular fa-message" /> {isSendingPhoneCode ? "Sending…" : "Verify via SMS"}</button>}</section>
       </div>
-      <section className="profile-panel profile-region-panel"><h2>Trading Region</h2><div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={isLocating} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" /> {isLocating ? "Finding location…" : "Use current location"}</button></div><div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div><div className="profile-map profile-google-map"><iframe title={`${city || "New Zealand"} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city && suburb ? `${city} / ${suburb}` : "Choose a city and suburb"}</span></div></section>
+      <section className="profile-panel profile-region-panel">
+        <h2>Trading Region</h2>
+        <div className="profile-location-actions">
+          <button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={isLocating} onClick={useCurrentLocation}>
+            <i className="fa-solid fa-location-crosshairs" /> {isLocating ? "현재 위치 확인 중..." : "현재 위치 사용"}
+          </button>
+        </div>
+        {currentLocation.status !== "idle" && (
+          <div className={`profile-location-status is-${currentLocation.status}`} role="status" aria-live="polite">
+            {currentLocation.status === "loading" && "브라우저에서 현재 위치를 확인하고 있습니다."}
+            {currentLocation.status === "error" && currentLocation.message}
+            {currentLocation.status === "success" && (
+              <>
+                <span>위치 확인 완료</span>
+                <dl>
+                  <div><dt>위도</dt><dd>{currentLocation.coordinates.latitude.toFixed(6)}</dd></div>
+                  <div><dt>경도</dt><dd>{currentLocation.coordinates.longitude.toFixed(6)}</dd></div>
+                  <div><dt>정확도</dt><dd>{Math.round(currentLocation.coordinates.accuracy)}m</dd></div>
+                </dl>
+              </>
+            )}
+          </div>
+        )}
+        <div className="profile-region-fields">
+          <label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label>
+          <label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label>
+        </div>
+        <div className="profile-map profile-google-map"><iframe title={`${city || "New Zealand"} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city && suburb ? `${city} / ${suburb}` : "Choose a city and suburb"}</span></div>
+      </section>
     </div>
     <div className="profile-save-bar"><span className="profile-form-status" role="status">{status}</span><button className="profile-primary-button" type="button" disabled={isSaving} onClick={() => void saveChanges()}>{isSaving ? "Saving…" : "Save Changes"}</button></div>
   </>;
