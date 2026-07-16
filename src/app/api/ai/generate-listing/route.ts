@@ -18,6 +18,7 @@ const MAX_GENERATIONS_PER_WINDOW = 3;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
 const DUPLICATE_WINDOW_MS = 45 * 1_000;
 const IMAGE_BUCKET = "market-listing-images";
+const isRateLimitEnabled = process.env.AI_LISTING_RATE_LIMIT_ENABLED !== "false";
 
 function failure(code: string, message: string, status = 500) {
   return NextResponse.json({ success: false, error: { code, message } }, { status });
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
     return failure("AI_GENERATION_FAILED", "Unable to prepare AI generation right now. Please try again shortly.");
   }
 
-  if (recentUsage.length >= MAX_GENERATIONS_PER_WINDOW) {
+  if (isRateLimitEnabled && recentUsage.length >= MAX_GENERATIONS_PER_WINDOW) {
     return failure("RATE_LIMITED", "You can generate up to 3 drafts every 10 minutes. Please try again shortly.", 429);
   }
 
