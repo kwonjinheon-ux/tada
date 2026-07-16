@@ -3604,23 +3604,23 @@ a {
     position: absolute;
     isolation: isolate;
     overflow: hidden;
-    top: calc(100dvh - 58px - env(safe-area-inset-bottom));
+    top: calc(100dvh - 52px - env(safe-area-inset-bottom));
     right: 50%;
     bottom: auto;
     z-index: 130;
     width: min(317px, calc(100vw - 24px));
-    min-height: 51px;
+    min-height: 43px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
-    padding: 4px;
-    border: 1px solid rgba(67, 93, 120, .25);
+    padding: 3px;
+    border: 1px solid rgba(67, 93, 120, .3);
     border-radius: 999px;
     background: rgba(244, 249, 255, .42);
     box-shadow: 0 10px 28px rgba(41, 61, 83, .17), inset 0 1px rgba(255, 255, 255, .5);
     backdrop-filter: blur(28px) saturate(170%);
     -webkit-backdrop-filter: blur(28px) saturate(170%);
-    transform: translateX(50%) scale(1.2);
+    transform: translateX(50%) scale(1.15);
     transform-origin: bottom center;
     transition: transform 220ms cubic-bezier(.22, 1, .36, 1), background 220ms ease;
   }
@@ -3636,8 +3636,8 @@ a {
 
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
-    width: 41px;
-    height: 41px;
+    width: 37px;
+    height: 37px;
     display: grid;
     place-items: center;
     justify-self: center;
@@ -3649,6 +3649,7 @@ a {
     font-size: 18px;
     text-decoration: none;
     cursor: pointer;
+    transition: width 180ms cubic-bezier(.22, 1, .36, 1), background-color 180ms ease, color 180ms ease, transform 180ms cubic-bezier(.22, 1, .36, 1);
   }
 
   .mobile-bottom-dock svg {
@@ -3670,13 +3671,16 @@ a {
   }
 
   .mobile-bottom-dock a.is-active {
+    width: 54px;
+    border-radius: 999px;
     background: #e3e6e8;
     color: #46515c;
+    box-shadow: inset 0 0 0 1px rgba(46, 58, 68, .13);
   }
 
   .mobile-bottom-dock .mobile-dock-create {
-    width: 45px;
-    height: 45px;
+    width: 39px;
+    height: 39px;
     margin-top: 0;
     border: 0;
     border-radius: 50%;
