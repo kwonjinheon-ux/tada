@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type PhotoForAi = { file: File };
@@ -27,6 +27,7 @@ type AiListingGeneratorProps = {
 
 const MAX_AI_IMAGE_DIMENSION = 1280;
 const MAX_AI_IMAGES = 3;
+const MAX_KEYWORDS = 10;
 
 function plainText(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -90,14 +91,55 @@ export function AiListingGenerator({
   onUseDraft,
   onRestorePreviousDescription,
 }: AiListingGeneratorProps) {
-  const [purchasePeriod, setPurchasePeriod] = useState("");
-  const [defects, setDefects] = useState("");
-  const [includedItems, setIncludedItems] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [draft, setDraft] = useState<GeneratedListing | null>(null);
   const [needsChoice, setNeedsChoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isGenerating) {
+      setProgress(0);
+      return;
+    }
+
+    setProgress(8);
+    const progressTimer = window.setInterval(() => {
+      setProgress((current) => Math.min(92, current + Math.max(3, Math.ceil((92 - current) * 0.18))));
+    }, 850);
+
+    return () => window.clearInterval(progressTimer);
+  }, [isGenerating]);
+
+  const addKeywords = (values: string[]) => {
+    const nextKeywords = values
+      .map((value) => value.trim().replace(/^#/, "").replace(/\s+/g, " "))
+      .filter(Boolean)
+      .filter((value, index, all) => all.indexOf(value) === index);
+
+    if (!nextKeywords.length) return;
+
+    setKeywords((current) => {
+      const availableSlots = MAX_KEYWORDS - current.length;
+      const additions = nextKeywords.filter((value) => !current.includes(value)).slice(0, availableSlots);
+      if (nextKeywords.length > additions.length) {
+        setError(`You can add up to ${MAX_KEYWORDS} keywords.`);
+      }
+      return [...current, ...additions];
+    });
+  };
+
+  const commitKeywordInput = () => {
+    addKeywords(keywordInput.split(/[,\n]/));
+    setKeywordInput("");
+  };
+
+  const removeKeyword = (keyword: string) => {
+    setKeywords((current) => current.filter((item) => item !== keyword));
+  };
 
   const generate = async () => {
     const missingFields = [
@@ -112,6 +154,11 @@ export function AiListingGenerator({
       return;
     }
 
+    if (!keywords.length) {
+      setError("Add at least one important keyword before creating a description.");
+      return;
+    }
+
     const numericPrice = Number(price.replace(/[^0-9.]/g, ""));
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
@@ -121,7 +168,7 @@ export function AiListingGenerator({
 
     setIsGenerating(true);
     setError(null);
-    setStatus("상품 정보를 바탕으로 설명을 작성하고 있어요...");
+    setStatus("AI is using your keywords to prepare the listing description...");
     setNeedsChoice(false);
 
     const uploadedPaths: string[] = [];
@@ -160,9 +207,7 @@ export function AiListingGenerator({
           price: Number.isFinite(numericPrice) ? numericPrice : undefined,
           condition: condition.trim(),
           location: location.trim(),
-          purchasePeriod,
-          defects,
-          includedItems,
+          keywords,
           imagePaths: uploadedPaths,
           language: /[\u3131-\uD79D]/.test(`${title} ${category} ${condition} ${location}`) ? "ko" : "en",
         }),
@@ -176,12 +221,14 @@ export function AiListingGenerator({
       }
 
       setDraft(generated);
+      setProgress(100);
       setStatus("AI draft is ready. Review and edit it before posting.");
       if (plainText(currentDescription)) {
         setNeedsChoice(true);
       } else {
         onUseDraft(generated.description, "replace");
       }
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
     } catch (generationError) {
       setStatus(null);
       setError(generationError instanceof Error && generationError.name === "AbortError"
@@ -199,25 +246,63 @@ export function AiListingGenerator({
 
   return (
     <section className="post-ai-generator" aria-label="AI listing description generator">
-      <div className="post-ai-details">
-        <label>
-          Purchase period or usage <span>Optional</span>
-          <input value={purchasePeriod} maxLength={160} onChange={(event) => setPurchasePeriod(event.target.value)} placeholder="e.g. Purchased in 2023, used for one year" />
-        </label>
-        <label>
-          Known marks or issues <span>Optional</span>
-          <input value={defects} maxLength={1000} onChange={(event) => setDefects(event.target.value)} placeholder="Describe any marks, faults, or repairs" />
-        </label>
-        <label>
-          Included items <span>Optional</span>
-          <input value={includedItems} maxLength={600} onChange={(event) => setIncludedItems(event.target.value)} placeholder="e.g. Charger, box, spare parts" />
-        </label>
+      <div className="post-ai-keyword-field">
+        <div className="post-ai-keyword-heading">
+          <label htmlFor="ai-listing-keywords">Important keywords</label>
+          <span>{keywords.length}/{MAX_KEYWORDS}</span>
+        </div>
+        <div className="post-ai-keyword-input" onClick={(event) => event.currentTarget.querySelector("input")?.focus()}>
+          {keywords.map((keyword) => (
+            <span className="post-ai-keyword-chip" key={keyword}>
+              {keyword}
+              <button type="button" onClick={() => removeKeyword(keyword)} aria-label={`Remove keyword ${keyword}`}>
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+          <input
+            id="ai-listing-keywords"
+            value={keywordInput}
+            maxLength={64}
+            disabled={keywords.length >= MAX_KEYWORDS}
+            onChange={(event) => {
+              const entries = event.target.value.split(/[,\n]/);
+              if (entries.length > 1) {
+                addKeywords(entries.slice(0, -1));
+                setKeywordInput(entries.at(-1) ?? "");
+                return;
+              }
+              setKeywordInput(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.nativeEvent.isComposing) return;
+              if (event.key === "Enter" || event.key === ",") {
+                event.preventDefault();
+                commitKeywordInput();
+              }
+              if (event.key === "Backspace" && !keywordInput && keywords.length) {
+                removeKeyword(keywords[keywords.length - 1]);
+              }
+            }}
+            onBlur={commitKeywordInput}
+            placeholder={keywords.length ? "Add another keyword" : "Type a keyword and press Enter"}
+            aria-describedby="ai-keyword-help"
+          />
+        </div>
+        <p id="ai-keyword-help">Add up to 10 important keywords. AI uses them to create a focused, editable description.</p>
       </div>
       <div className="post-ai-action-row">
-        <button className="post-ai-generate-button" type="button" disabled={isGenerating} aria-busy={isGenerating} onClick={() => void generate()}>
-          <i className={`fa-solid ${isGenerating ? "fa-spinner fa-spin" : "fa-wand-magic-sparkles"}`} aria-hidden="true" />
-          <span>{isGenerating ? "Creating draft..." : "AI로 설명 만들기"}</span>
-        </button>
+        {isGenerating ? (
+          <div className="post-ai-progress" role="progressbar" aria-label="Creating AI description" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+            <span className="post-ai-progress-fill" style={{ width: `${progress}%` }} />
+            <span className="post-ai-progress-label">Creating AI draft {progress}%</span>
+          </div>
+        ) : (
+          <button className="post-ai-generate-button" type="button" onClick={() => void generate()}>
+            <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
+            <span>AI로 설명 만들기</span>
+          </button>
+        )}
         <p>AI creates an editable draft only. It never posts your listing automatically.</p>
       </div>
 

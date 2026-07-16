@@ -2903,43 +2903,110 @@ a {
   border-top: 1px solid #edf1f0;
 }
 
-.post-ai-details {
+.post-ai-keyword-field {
   display: grid;
-  gap: 10px;
+  gap: 7px;
 }
 
-.post-ai-details label {
-  display: grid;
-  gap: 5px;
+.post-ai-keyword-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   color: #405064;
   font-size: 12px;
   font-weight: 700;
 }
 
-.post-ai-details label span {
+.post-ai-keyword-heading span {
   color: #7c8998;
   font-weight: 500;
 }
 
-.post-ai-details input {
-  min-height: 42px;
+.post-ai-keyword-input {
+  min-height: 46px;
   width: 100%;
-  padding: 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
   border: 1px solid #d8e1df;
   border-radius: 7px;
   background: #ffffff;
+  cursor: text;
+}
+
+.post-ai-keyword-input input {
+  min-width: 150px;
+  flex: 1 1 150px;
+  min-height: 30px;
+  padding: 0 3px;
+  border: 0;
+  background: transparent;
   color: var(--ink);
   font: inherit;
   font-size: 14px;
 }
 
-.post-ai-details input:focus,
+.post-ai-keyword-input:focus-within,
 .post-ai-generate-button:focus-visible,
 .post-ai-choice button:focus-visible,
 .post-ai-preview-heading button:focus-visible {
   outline: none;
   border-color: rgba(0, 122, 84, .58);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, .14);
+}
+
+.post-ai-keyword-input input:focus {
+  outline: none;
+}
+
+.post-ai-keyword-input input:disabled {
+  cursor: not-allowed;
+}
+
+.post-ai-keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 4px 6px 4px 8px;
+  border-radius: 999px;
+  background: #d8f5e8;
+  color: #007a54;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.post-ai-keyword-chip button {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #007a54;
+  cursor: pointer;
+}
+
+.post-ai-keyword-chip button:hover,
+.post-ai-keyword-chip button:focus-visible {
+  background: rgba(0, 122, 84, .14);
+}
+
+.post-ai-keyword-chip button:focus-visible {
+  outline: 2px solid #007a54;
+  outline-offset: 1px;
+}
+
+.post-ai-keyword-field > p {
+  margin: 0;
+  color: #6e7d8e;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .post-ai-action-row {
@@ -2974,6 +3041,34 @@ a {
 .post-ai-generate-button:disabled {
   cursor: wait;
   opacity: .72;
+}
+
+.post-ai-progress {
+  position: relative;
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #10b981;
+  border-radius: 7px;
+  background: #e8f8f1;
+  color: #075c43;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.post-ai-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #10b981;
+  transition: width 650ms ease;
+}
+
+.post-ai-progress-label {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 70, 48, .26);
 }
 
 .post-ai-action-row p,

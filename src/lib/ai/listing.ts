@@ -5,11 +5,6 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
-const MAX_INPUT_LENGTH = 1_000;
-
-const optionalText = (maxLength: number) =>
-  z.string().max(maxLength).transform((value) => value.trim()).optional().default("");
-
 export const listingAiRequestSchema = z
   .object({
     title: z.string().trim().min(2).max(100),
@@ -17,9 +12,7 @@ export const listingAiRequestSchema = z
     price: z.number().finite().min(0).max(100_000_000).optional(),
     condition: z.string().trim().min(1).max(100),
     location: z.string().trim().min(1).max(160),
-    purchasePeriod: optionalText(160),
-    defects: optionalText(MAX_INPUT_LENGTH),
-    includedItems: optionalText(600),
+    keywords: z.array(z.string().trim().min(1).max(64)).max(10).optional().default([]),
     imagePaths: z.array(z.string().trim().min(1).max(260)).max(3).optional().default([]),
     language: z.enum(["ko", "en"]).optional(),
   })
@@ -47,7 +40,7 @@ export class ListingAiError extends Error {
 
 function includesKorean(input: ListingAiRequest) {
   return /[\u3131-\uD79D]/.test(
-    [input.title, input.category, input.condition, input.location, input.purchasePeriod, input.defects, input.includedItems]
+    [input.title, input.category, input.condition, input.location, ...input.keywords]
       .join(" "),
   );
 }
@@ -61,6 +54,7 @@ function buildListingPrompt(input: ListingAiRequest) {
   return [
     "Create a marketplace listing draft for Tada, a New Zealand second-hand marketplace.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
+    "Prioritize the user-provided keywords when drafting the description, but do not treat them as proof of facts not otherwise supplied.",
     "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
     "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
     "Do not repeat phone numbers, emails, addresses, or other sensitive personal information.",
@@ -73,9 +67,7 @@ function buildListingPrompt(input: ListingAiRequest) {
       price: input.price,
       condition: input.condition,
       location: input.location,
-      purchasePeriod: input.purchasePeriod || undefined,
-      defects: input.defects || undefined,
-      includedItems: input.includedItems || undefined,
+      keywords: input.keywords,
     }),
   ].join("\n");
 }
