@@ -116,7 +116,7 @@ export async function generateListingDraft({
   const response = await openai.responses.parse({
     model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
     safety_identifier: safetyIdentifier,
-    max_output_tokens: 900,
+    max_output_tokens: 2_000,
     input: [
       {
         role: "developer",
