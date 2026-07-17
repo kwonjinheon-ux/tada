@@ -3658,7 +3658,7 @@ a {
     z-index: 122;
     width: var(--mobile-drawer-width);
     max-height: none;
-    padding: calc(24px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
     border: 0;
     border-radius: 0;
     background: #fff;
@@ -3691,7 +3691,7 @@ a {
     display: grid;
     place-items: center;
     position: absolute;
-    top: calc(18px + env(safe-area-inset-top));
+    top: calc(10px + env(safe-area-inset-top));
     right: 12px;
     z-index: 1;
     margin: 0;
@@ -3702,17 +3702,17 @@ a {
   }
 
   .mobile-category-drawer-brand {
-    min-height: 42px;
+    min-height: 34px;
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 50px 22px 4px;
+    margin: 0 50px 12px 4px;
     color: #282f35;
   }
 
   .mobile-category-drawer-brand strong {
     margin-right: 2px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
   }
 
@@ -3734,13 +3734,13 @@ a {
   .market-filter-panel.is-open .filter-list {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 7px;
+    gap: 3px;
   }
 
   .market-filter-panel.is-open .filter-list button {
-    min-height: 52px;
-    gap: 13px;
-    padding: 0 12px;
+    min-height: 44px;
+    gap: 12px;
+    padding: 0 10px;
     border-radius: 8px;
     color: #2f3438;
     font-size: 16px;
@@ -3749,7 +3749,7 @@ a {
   .market-filter-panel.is-open .filter-list button i {
     width: 22px;
     color: #30363a;
-    font-size: 18px;
+    font-size: 17px;
     text-align: center;
   }
 
