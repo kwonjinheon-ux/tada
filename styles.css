@@ -3521,7 +3521,6 @@ a {
   }
 
   .mobile-dashboard-menu a {
-    min-height: 40px;
     display: grid;
     grid-template-columns: 20px 1fr;
     align-items: center;
@@ -3529,7 +3528,6 @@ a {
     padding: 0 10px;
     border-radius: 9px;
     color: #35465a;
-    font-size: 13px;
     font-weight: 400;
     text-decoration: none;
   }
@@ -3539,6 +3537,11 @@ a {
     align-items: center;
     justify-self: start;
     gap: 6px;
+  }
+
+  .mobile-drawer-menu-item {
+    min-height: 44px;
+    font-size: 16px;
   }
 
   .mobile-dashboard-menu a.is-active,
@@ -3776,12 +3779,10 @@ a {
   }
 
   .market-filter-panel.is-open .filter-list button {
-    min-height: 44px;
     gap: 12px;
     padding: 0 10px;
     border-radius: 8px;
     color: #2f3438;
-    font-size: 16px;
   }
 
   .market-filter-panel.is-open .filter-list button i {

@@ -114,7 +114,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
           <h2>Category</h2>
           <div className="filter-list">
             {filters.map(([icon, label]) => (
-              <button key={label} className={label === "All" ? "is-selected" : ""} type="button" onClick={() => setIsFilterOpen(false)}>
+              <button key={label} className={`mobile-drawer-menu-item ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 {label}
               </button>

@@ -237,7 +237,7 @@ export function Navbar() {
             </div>
             <button className="mobile-dashboard-close" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
-              <Link className={pathname === `${dashboardBase}${suffix}` ? "is-active" : ""} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
+              <Link className={`mobile-drawer-menu-item ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 <span className="mobile-dashboard-link-label">{label}{label === "Messages" && <b>24</b>}</span>
               </Link>
