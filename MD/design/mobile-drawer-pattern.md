@@ -2,9 +2,22 @@
 
 ## Purpose
 
+Use one mobile drawer system so category and account navigation retain the same layout, type scale, backdrop, motion, and closing behavior.
+
+## Shared Implementation
+
+Both the profile dashboard and category menu use `src/components/MobileDrawer.tsx`. Keep the panel shell, backdrop, state classes, close behavior, menu item typography, and stagger animation in that component's exported class map:
+
+- `mobile-side-drawer`
+- `mobile-drawer-backdrop`
+- `mobile-drawer-menu-item`
+- `mobile-drawer-stagger-item`
+
+Feature components should only supply their panel variant class and inner menu content. Do not add a separate drawer shell or a second menu-state event for a new mobile category.
+
 Use this pattern for mobile-only navigation or category surfaces that need the same interaction as the Market profile dashboard drawer. The drawer opens from the left, fills the viewport height, dims and blurs the remaining page, and closes when the user chooses an item, presses the close control, or taps outside the drawer.
 
-The Market category menu is the reference implementation. It lives in `src/components/market/MarketPageClient.tsx` and is styled in `styles.css`.
+The profile dashboard and Market category menu are the reference implementations. Their content lives in `src/components/Navbar.tsx` and `src/components/market/MarketPageClient.tsx`; shared behavior lives in `src/components/MobileDrawer.tsx` and shared presentation lives in `styles.css`.
 
 ## Visual Contract
 
@@ -15,32 +28,31 @@ The Market category menu is the reference implementation. It lives in `src/compo
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
 - Close control: 36px square at the upper-right of the drawer, with no rounded corners.
 - Header: use a compact brand row at the top-left and reserve the top-right for the close control. Do not add a redundant `Categories` title.
-- Category rows: present one vertical row per category with an icon and label, a 52px minimum height, and a muted selected state.
+- Category rows: present one vertical row per category with an icon and label, a 44px minimum height, and a muted selected state.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.
 
 ## Required Structure
 
-Use a button for the backdrop, an `aside` for the drawer, and a real button for closing it. Keep the backdrop adjacent to the drawer so their state is easy to review.
+Use `MobileDrawer` for the backdrop and panel. It renders either an `aside` or `nav` while keeping the shared state classes and close behavior adjacent.
 
 ```tsx
-<button
-  className="mobile-category-backdrop"
-  type="button"
-  aria-label="Close categories"
-  onClick={closeDrawer}
-/>
-
-<aside className="mobile-category-drawer" aria-label="Categories">
+<MobileDrawer
+  open={isOpen}
+  onClose={closeDrawer}
+  ariaLabel="Close categories"
+  className="filter-backdrop"
+  panelClassName="market-filter-panel"
+>
   <button type="button" aria-label="Close categories" onClick={closeDrawer}>
     <i className="fa-solid fa-xmark" aria-hidden="true" />
   </button>
   <div className="mobile-category-drawer-brand" aria-hidden="true">Tada</div>
   {/* Vertical category rows */}
-</aside>
+</MobileDrawer>
 ```
 
-The current Market implementation reuses `market-filter-panel`, `filter-backdrop`, and `filter-close-button` instead of introducing duplicate markup. Future category drawers may do the same when their desktop and mobile surfaces share data.
+Use `as="nav"` with `panelClassName="mobile-dashboard-menu"` for account navigation. Use `panelClassName="market-filter-panel"` for the Market category surface.
 
 ## State And Events
 
@@ -50,7 +62,7 @@ The Market category drawer is controlled by `isFilterOpen`.
 2. `MarketPageClient` listens for that event and sets `isFilterOpen` to `true`.
 3. The component toggles `has-open-filter` on `document.body` to lock page scrolling.
 4. The open backdrop closes the drawer with `setIsFilterOpen(false)`.
-5. Selecting a category, using the close control, or opening the dashboard drawer also closes the category drawer.
+5. Selecting a category or using the close control closes the drawer. Opening the dashboard also closes the category through the existing request event.
 
 When adding another drawer, do not leave two drawers open at once. Listen for the competing drawer's open event and close the current surface first.
 
@@ -65,7 +77,7 @@ The page contains independent stacking contexts, so z-index values are part of t
 | Active dashboard header | `123` | Keeps the dashboard drawer above the page-level backdrop. |
 | Bottom dock | `130` | Hide it with `opacity: 0` and `pointer-events: none` while any drawer is open. |
 
-Do not add a second page-level backdrop without reviewing these values. A duplicate backdrop can blur or block the drawer itself.
+Do not create a second drawer backdrop. Use `MobileDrawer`, which owns the backdrop and panel pair.
 
 ## Styling Checklist
 
@@ -73,7 +85,7 @@ Do not add a second page-level backdrop without reviewing these values. A duplic
 2. Keep desktop/tablet styling separate; only override the panel into a drawer inside the mobile media query.
 3. Use `overflow-y: auto` on the drawer, not on the document body.
 4. Respect `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)` in padding and close-control placement.
-5. Use the left-to-right `mobile-category-drawer-in` animation for category drawers and the existing dashboard drawer transition for profile navigation.
+5. Use the shared `mobile-side-drawer` transition and `mobile-drawer-stagger-item` sequence for every mobile drawer.
 6. Keep price and condition controls in the desktop filter panel. On mobile, the category drawer is navigation-first and should not include secondary filtering controls.
 
 ## Accessibility Checklist

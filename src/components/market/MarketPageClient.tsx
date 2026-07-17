@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MobileDrawer, mobileDrawerClasses } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { listings, quickCategories } from "@/data/listings";
@@ -25,7 +26,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -61,12 +61,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
     };
   }, []);
 
-  useEffect(() => {
-    const syncDashboardDrawer = (event: Event) => setIsDashboardDrawerOpen(Boolean((event as CustomEvent<boolean>).detail));
-    window.addEventListener("mobile-dashboard-menu-state", syncDashboardDrawer);
-    return () => window.removeEventListener("mobile-dashboard-menu-state", syncDashboardDrawer);
-  }, []);
-
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
     setViewMode(mode);
@@ -86,13 +80,11 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
         <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
       </button>
 
-      <button className={`filter-backdrop mobile-drawer-backdrop ${isFilterOpen ? "is-open" : ""}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)} />
-      {isDashboardDrawerOpen && <button className="mobile-dashboard-backdrop mobile-drawer-backdrop is-open" type="button" aria-label="Close dashboard menu" onClick={() => window.dispatchEvent(new Event("mobile-dashboard-menu-close"))} />}
-      <aside className={`market-filter-panel mobile-side-drawer ${isFilterOpen ? "is-open" : ""}`} aria-label="Marketplace filters">
-        <button className="filter-close-button mobile-drawer-stagger-item" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
+      <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel="Close marketplace filters" className="filter-backdrop" panelClassName="market-filter-panel">
+        <button className={`filter-close-button ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-        <div className="mobile-category-drawer-brand mobile-drawer-stagger-item" aria-hidden="true">
+        <div className={`mobile-category-drawer-brand ${mobileDrawerClasses.staggerItem}`} aria-hidden="true">
           <strong>Tada</strong>
           <i className="fa-solid fa-chevron-up" />
           <i className="fa-solid fa-chevron-down" />
@@ -114,7 +106,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
           <h2>Category</h2>
           <div className="filter-list">
             {filters.map(([icon, label]) => (
-              <button key={label} className={`mobile-drawer-menu-item mobile-drawer-stagger-item ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
+              <button key={label} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 {label}
               </button>
@@ -145,7 +137,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
         <button className="apply-filter-button" type="button" onClick={() => setIsFilterOpen(false)}>
           Apply Filters
         </button>
-      </aside>
+      </MobileDrawer>
 
       <section className="market-results" aria-label="Fresh finds">
         <div className="market-toolbar">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { MobileDrawer, mobileDrawerClasses } from "@/components/MobileDrawer";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -96,7 +97,6 @@ export function Navbar() {
   useEffect(() => {
     const isMobileDrawerOpen = isDashboardMenuOpen && Boolean(userEmail) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("has-mobile-dashboard-drawer", isMobileDrawerOpen);
-    window.dispatchEvent(new CustomEvent("mobile-dashboard-menu-state", { detail: isMobileDrawerOpen }));
     return () => document.body.classList.remove("has-mobile-dashboard-drawer");
   }, [isDashboardMenuOpen, userEmail]);
 
@@ -229,21 +229,20 @@ export function Navbar() {
 
         {userEmail && (
           <>
-            <button className={`mobile-dashboard-backdrop mobile-drawer-backdrop ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)} />
-            <nav className={`mobile-dashboard-menu mobile-side-drawer ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
-            <div className="mobile-dashboard-heading mobile-drawer-stagger-item">
+            <MobileDrawer open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop" panelClassName="mobile-dashboard-menu" as="nav" id="mobile-dashboard-menu">
+            <div className={`mobile-dashboard-heading ${mobileDrawerClasses.staggerItem}`}>
               {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
             </div>
-            <button className="mobile-dashboard-close mobile-drawer-stagger-item" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+            <button className={`mobile-dashboard-close ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
-              <Link className={`mobile-drawer-menu-item mobile-drawer-stagger-item ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
+              <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 <span className="mobile-dashboard-link-label">{label}{label === "Messages" && <b>24</b>}</span>
               </Link>
             ))}
-            <button className="mobile-dashboard-logout mobile-drawer-stagger-item" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
-            </nav>
+            <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+            </MobileDrawer>
           </>
         )}
         {isAuthReady && !userEmail && (
