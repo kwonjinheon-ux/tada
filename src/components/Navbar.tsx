@@ -230,10 +230,6 @@ export function Navbar() {
         {userEmail && (
           <>
             <MobileDrawer open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop" panelClassName="mobile-dashboard-menu" as="nav" id="mobile-dashboard-menu">
-            <div className={`mobile-dashboard-heading ${mobileDrawerClasses.staggerItem}`}>
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
-              <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
-            </div>
             <button className={`mobile-dashboard-close ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
