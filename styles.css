@@ -3742,26 +3742,6 @@ a {
     font-size: 16px;
   }
 
-  .mobile-category-drawer-brand {
-    min-height: 34px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 50px 12px 4px;
-    color: #282f35;
-  }
-
-  .mobile-category-drawer-brand strong {
-    margin-right: 2px;
-    font-size: 16px;
-    font-weight: 700;
-  }
-
-  .mobile-category-drawer-brand i {
-    color: #838a90;
-    font-size: 9px;
-  }
-
   .market-filter-panel.is-open .category-filter {
     gap: 0;
     padding: 0;

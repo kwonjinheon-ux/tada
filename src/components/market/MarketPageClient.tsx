@@ -84,11 +84,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
         <button className={`filter-close-button ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-        <div className={`mobile-category-drawer-brand ${mobileDrawerClasses.staggerItem}`} aria-hidden="true">
-          <strong>Tada</strong>
-          <i className="fa-solid fa-chevron-up" />
-          <i className="fa-solid fa-chevron-down" />
-        </div>
         <Link className="dashboard-link" href="/market/dashboard" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-chart-line" aria-hidden="true" />
           <span>My Dashboard</span>

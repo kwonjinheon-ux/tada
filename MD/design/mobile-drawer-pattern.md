@@ -27,7 +27,7 @@ The profile dashboard and Market category menu are the reference implementations
 - Surface: solid white background, no rounded corners, and a right-facing shadow.
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
 - Close control: 36px square at the upper-right of the drawer, with no rounded corners.
-- Header: use a compact brand row at the top-left and reserve the top-right for the close control. Do not add a redundant `Categories` title.
+- Header: reserve the top-right for the close control. Do not add a redundant brand row or `Categories` title.
 - Category rows: present one vertical row per category with an icon and label, a 44px minimum height, and a muted selected state.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.
@@ -47,7 +47,6 @@ Use `MobileDrawer` for the backdrop and panel. It renders either an `aside` or `
   <button type="button" aria-label="Close categories" onClick={closeDrawer}>
     <i className="fa-solid fa-xmark" aria-hidden="true" />
   </button>
-  <div className="mobile-category-drawer-brand" aria-hidden="true">Tada</div>
   {/* Vertical category rows */}
 </MobileDrawer>
 ```
