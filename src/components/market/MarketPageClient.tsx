@@ -86,9 +86,9 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
         <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
       </button>
 
-      <button className={`filter-backdrop ${isFilterOpen ? "is-open" : ""}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)} />
-      {isDashboardDrawerOpen && <button className="mobile-dashboard-backdrop" type="button" aria-label="Close dashboard menu" onClick={() => window.dispatchEvent(new Event("mobile-dashboard-menu-close"))} />}
-      <aside className={`market-filter-panel ${isFilterOpen ? "is-open" : ""}`} aria-label="Marketplace filters">
+      <button className={`filter-backdrop mobile-drawer-backdrop ${isFilterOpen ? "is-open" : ""}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)} />
+      {isDashboardDrawerOpen && <button className="mobile-dashboard-backdrop mobile-drawer-backdrop is-open" type="button" aria-label="Close dashboard menu" onClick={() => window.dispatchEvent(new Event("mobile-dashboard-menu-close"))} />}
+      <aside className={`market-filter-panel mobile-side-drawer ${isFilterOpen ? "is-open" : ""}`} aria-label="Marketplace filters">
         <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>

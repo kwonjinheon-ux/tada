@@ -229,8 +229,8 @@ export function Navbar() {
 
         {userEmail && (
           <>
-            {isDashboardMenuOpen && <button className="mobile-dashboard-backdrop" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)} />}
-            <nav className={`mobile-dashboard-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
+            <button className={`mobile-dashboard-backdrop mobile-drawer-backdrop ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)} />
+            <nav className={`mobile-dashboard-menu mobile-side-drawer ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
             <div className="mobile-dashboard-heading">
               {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
