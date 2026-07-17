@@ -231,18 +231,18 @@ export function Navbar() {
           <>
             <button className={`mobile-dashboard-backdrop mobile-drawer-backdrop ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)} />
             <nav className={`mobile-dashboard-menu mobile-side-drawer ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-dashboard-menu" aria-label="Dashboard menu">
-            <div className="mobile-dashboard-heading">
+            <div className="mobile-dashboard-heading mobile-drawer-stagger-item">
               {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               <div><strong>{displayName ?? "Tada User"}</strong><span>{userEmail}</span></div>
             </div>
-            <button className="mobile-dashboard-close" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+            <button className="mobile-dashboard-close mobile-drawer-stagger-item" type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
-              <Link className={`mobile-drawer-menu-item ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
+              <Link className={`mobile-drawer-menu-item mobile-drawer-stagger-item ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 <span className="mobile-dashboard-link-label">{label}{label === "Messages" && <b>24</b>}</span>
               </Link>
             ))}
-            <button className="mobile-dashboard-logout" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+            <button className="mobile-dashboard-logout mobile-drawer-stagger-item" type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
             </nav>
           </>
         )}

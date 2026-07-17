@@ -89,10 +89,10 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
       <button className={`filter-backdrop mobile-drawer-backdrop ${isFilterOpen ? "is-open" : ""}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)} />
       {isDashboardDrawerOpen && <button className="mobile-dashboard-backdrop mobile-drawer-backdrop is-open" type="button" aria-label="Close dashboard menu" onClick={() => window.dispatchEvent(new Event("mobile-dashboard-menu-close"))} />}
       <aside className={`market-filter-panel mobile-side-drawer ${isFilterOpen ? "is-open" : ""}`} aria-label="Marketplace filters">
-        <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
+        <button className="filter-close-button mobile-drawer-stagger-item" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-        <div className="mobile-category-drawer-brand" aria-hidden="true">
+        <div className="mobile-category-drawer-brand mobile-drawer-stagger-item" aria-hidden="true">
           <strong>Tada</strong>
           <i className="fa-solid fa-chevron-up" />
           <i className="fa-solid fa-chevron-down" />
@@ -114,7 +114,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
           <h2>Category</h2>
           <div className="filter-list">
             {filters.map(([icon, label]) => (
-              <button key={label} className={`mobile-drawer-menu-item ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
+              <button key={label} className={`mobile-drawer-menu-item mobile-drawer-stagger-item ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 {label}
               </button>
