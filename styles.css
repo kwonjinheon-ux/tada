@@ -1647,6 +1647,8 @@ a {
 
 .product-grid.is-list-view .save-button {
   position: relative;
+  top: auto;
+  right: auto;
   justify-self: end;
   width: 36px;
   height: 36px;
@@ -4322,11 +4324,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .product-grid.is-list-view .product-card {
     grid-template-columns: 110px minmax(0, 1fr) 44px;
     padding-right: 8px;
+    overflow: visible;
   }
 
   .product-grid.is-list-view .save-button {
+    align-self: center;
     justify-self: end;
   }
+
+  .product-grid.is-list-view .save-button.is-popping { z-index: 3; }
 
   .market-toolbar {
     gap: 12px;
