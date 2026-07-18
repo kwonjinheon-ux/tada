@@ -87,7 +87,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </Link>
 
       <div className="listing-detail-layout">
-        <section className="listing-detail-gallery" aria-label={`${listing.title} photos`}>
+        <section className={`listing-detail-gallery ${listing.images.length > 1 ? "has-mobile-photo-grid" : ""}`} aria-label={`${listing.title} photos`}>
           <div className="listing-detail-main-image" onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => {
             if (swipeStartX.current === null || listing.images.length < 2) return;
             const distance = event.clientX - swipeStartX.current;
@@ -97,14 +97,10 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
             <Image src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
             <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
-            <Link className="listing-detail-mobile-gallery-back listing-detail-mobile-only" href="/market" aria-label="Back to listings"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link>
-            <div className="listing-detail-mobile-image-actions listing-detail-mobile-only">
-              <button type="button" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
-              <button className={`save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>
-            </div>
             {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
+          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-grid listing-detail-mobile-only">{listing.images.map((photo, index) => <div key={photo.src}><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 50vw, 360px" />{index === 0 ? <span className="listing-detail-mobile-badge">Newly listed</span> : null}</div>)}</div> : null}
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
@@ -147,7 +143,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
         </aside>
       </div>
 
-      <section className="listing-detail-mobile-meta listing-detail-mobile-only">
+      <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-grid" : ""}`}>
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
@@ -164,7 +160,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </section>
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer"><i className="fa-regular fa-message" aria-hidden="true" /> Message</button><button type="button" className="listing-detail-message">Make an offer</button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer"><i className="fa-regular fa-message" aria-hidden="true" /> Message</button><button type="button" className="listing-detail-message">Make an offer</button><Link className="listing-detail-mobile-action-icon" href="/market" aria-label="Back to listings"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }

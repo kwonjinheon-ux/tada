@@ -5048,17 +5048,18 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-main-image { margin: 0 16px; border-radius: 9px; touch-action: pan-y; }
   .listing-detail-thumbnails { display: none; }
   .listing-detail-mobile-badge { position: absolute; bottom: 14px; left: 14px; min-height: 30px; align-items: center; padding: 0 9px; border-radius: 4px; background: #08ae78; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-  .listing-detail-mobile-gallery-back { position: absolute; top: 14px; left: 14px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 16px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
-  .listing-detail-mobile-image-actions { position: absolute; top: 14px; right: 14px; gap: 10px; }
-  .listing-detail-mobile-image-actions button { width: 42px; height: 42px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 18px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
-  .listing-detail-mobile-image-actions button.is-saved { color: #e94683; }
-  .listing-detail-mobile-image-actions .save-button { position: relative; top: auto; right: auto; overflow: visible; }
+  .listing-detail-mobile-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 0 16px; }
+  .listing-detail-mobile-photo-grid > div { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px; }
+  .listing-detail-mobile-photo-grid img { object-fit: cover; }
+  .listing-detail-mobile-photo-grid .listing-detail-mobile-badge { position: absolute; bottom: 10px; left: 10px; display: flex; }
+  .listing-detail-gallery.has-mobile-photo-grid .listing-detail-main-image { display: none; }
   .listing-detail-gallery-arrow { width: 36px; height: 36px; opacity: .92; }
   .listing-detail-gallery-arrow.is-previous { left: 26px; }
   .listing-detail-gallery-arrow.is-next { right: 26px; }
 
   .listing-detail-mobile-meta { display: block; margin: 17px 20px 0; padding-bottom: 20px; border-bottom: 1px solid #cbd5d5; }
   .listing-detail-mobile-dots { display: flex; justify-content: center; gap: 12px; margin: 0 0 23px; }
+  .listing-detail-mobile-meta.has-photo-grid .listing-detail-mobile-dots { display: none; }
   .listing-detail-mobile-dots span { width: 9px; height: 9px; border-radius: 50%; background: #d8e0ed; }
   .listing-detail-mobile-dots span.is-active { background: #214bce; }
   .listing-detail-mobile-meta h1 { margin: 0; color: #0b1c30; font-size: 26px; line-height: 1.2; }
@@ -5086,10 +5087,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-safety strong { font-size: 13px; }
   .listing-detail-mobile-safety small { color: #667689; font-size: 11px; line-height: 1.35; }
 
-  .listing-detail-mobile-actions { position: fixed; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); left: 0; z-index: 41; gap: 10px; padding: 10px 16px; border-top: 1px solid #dce4e5; background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); }
+  .listing-detail-mobile-actions { position: fixed; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); left: 0; z-index: 41; gap: 8px; padding: 10px 12px; border-top: 1px solid #dce4e5; background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); }
   body.listing-detail-screen .listing-detail-mobile-actions { bottom: 0; }
   .listing-detail-mobile-actions button { flex: 1; min-height: 48px; border-radius: 8px; font: inherit; font-size: 15px; font-weight: 800; }
   .listing-detail-mobile-actions .listing-detail-offer { border: 1px solid #08a875; background: #fff; color: #078961; }
+  .listing-detail-mobile-action-icon { width: 42px; height: 42px; display: grid; flex: 0 0 42px; place-items: center; align-self: center; border: 0; border-radius: 50%; background: #edf2f7; color: #1d3048; font-size: 16px; text-decoration: none; }
+  .listing-detail-mobile-actions button.listing-detail-mobile-action-icon { min-height: 42px; padding: 0; }
+  .listing-detail-mobile-action-icon.is-saved { color: #e94683; }
+  .listing-detail-mobile-action-icon.save-button { position: relative; overflow: visible; }
 }
 
 @media (prefers-reduced-motion: reduce) {
