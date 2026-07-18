@@ -3650,7 +3650,7 @@ a {
     --mobile-drawer-width: min(78vw, 320px);
   }
 
-  body.has-mobile-dashboard-drawer {
+  body.has-open-mobile-drawer {
     overflow: hidden;
   }
 
@@ -3699,12 +3699,13 @@ a {
     position: fixed;
     inset: 0;
     border: 0;
-    background: rgba(27, 42, 61, .18);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    background: rgba(27, 42, 61, .22);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    touch-action: none;
     transition: opacity 200ms ease, visibility 0s linear 200ms;
   }
 
@@ -3717,13 +3718,8 @@ a {
   }
 
   .market-filter-panel.mobile-side-drawer {
-    padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(64px + env(safe-area-inset-bottom));
     overflow-y: auto;
-  }
-
-  body.has-open-filter .mobile-bottom-dock {
-    opacity: 0;
-    pointer-events: none;
   }
 
   .market-filter-panel.is-open .dashboard-link,
@@ -3740,7 +3736,8 @@ a {
     display: grid;
     place-items: center;
     position: absolute;
-    top: calc(10px + env(safe-area-inset-top));
+    top: auto;
+    bottom: calc(12px + env(safe-area-inset-bottom));
     right: 12px;
     z-index: 1;
     margin: 0;
@@ -3785,7 +3782,7 @@ a {
     padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
   }
 
-  body.has-mobile-dashboard-drawer .mobile-bottom-dock {
+  body.has-open-mobile-drawer .mobile-bottom-dock {
     opacity: 0;
     pointer-events: none;
   }

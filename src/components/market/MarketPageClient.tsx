@@ -44,13 +44,6 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
   }, [hasManualViewChoice]);
 
   useEffect(() => {
-    document.body.classList.toggle("has-open-filter", isFilterOpen);
-    return () => {
-      document.body.classList.remove("has-open-filter");
-    };
-  }, [isFilterOpen]);
-
-  useEffect(() => {
     const openCategories = () => setIsFilterOpen(true);
     const closeCategories = () => setIsFilterOpen(false);
     window.addEventListener("mobile-category-menu-request", openCategories);

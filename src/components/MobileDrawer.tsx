@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 export const mobileDrawerClasses = {
   panel: "mobile-side-drawer",
@@ -46,6 +46,13 @@ export function MobileDrawer({
   id,
   children,
 }: MobileDrawerProps) {
+  useEffect(() => {
+    if (!open) return;
+
+    document.body.classList.add("has-open-mobile-drawer");
+    return () => document.body.classList.remove("has-open-mobile-drawer");
+  }, [open]);
+
   const panelClasses = joinClasses(panelClassName, mobileDrawerClasses.panel, open && "is-open");
   const backdrop = <MobileDrawerBackdrop open={open} onClose={onClose} ariaLabel={ariaLabel} className={className} />;
 

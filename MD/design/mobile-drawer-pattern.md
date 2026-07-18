@@ -26,8 +26,8 @@ The profile dashboard and Market category menu are the reference implementations
 - Width: use `--mobile-drawer-width` (`min(78vw, 320px)`).
 - Surface: solid white background, no rounded corners, and a right-facing shadow.
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
-- Close control: 36px square at the upper-right of the drawer, with no rounded corners.
-- Header: reserve the top-right for the close control. Do not add a redundant brand row or `Categories` title.
+- Close control: category drawers use a 36px square control at the bottom-right; profile drawers retain their own close-control placement.
+- Header: do not add a redundant brand row or `Categories` title.
 - Category rows: present one vertical row per category with an icon and label, a 44px minimum height, and a muted selected state.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.
@@ -59,11 +59,24 @@ The Market category drawer is controlled by `isFilterOpen`.
 
 1. The bottom dock dispatches `mobile-category-menu-request`.
 2. `MarketPageClient` listens for that event and sets `isFilterOpen` to `true`.
-3. The component toggles `has-open-filter` on `document.body` to lock page scrolling.
+3. `MobileDrawer` toggles `has-open-mobile-drawer` on `document.body` to lock page scrolling and hide the dock.
 4. The open backdrop closes the drawer with `setIsFilterOpen(false)`.
 5. Selecting a category or using the close control closes the drawer. Opening the dashboard also closes the category through the existing request event.
 
 When adding another drawer, do not leave two drawers open at once. Listen for the competing drawer's open event and close the current surface first.
+
+## Dock Overlay Behavior
+
+On mobile, every `MobileDrawer` instance controls the shared `has-open-mobile-drawer` body class while it is open. This is the single source of truth for the dock overlay state.
+
+1. The dock opens either the category or profile drawer.
+2. `MobileDrawer` adds `has-open-mobile-drawer` to `document.body`.
+3. The shared `mobile-drawer-backdrop` covers the remaining viewport with a dark tint and `4px` blur.
+4. The dock is hidden and page scrolling is locked while the backdrop is active.
+5. Tapping the blurred backdrop calls the drawer's supplied `onClose` handler.
+6. Closing the drawer removes the body class, restores the dock, and returns page scrolling.
+
+Do not add page-specific blur layers or separate dock-lock classes. Pass each drawer's close callback to `MobileDrawer` so the same backdrop handles category and profile menus.
 
 ## Layering Rules
 
