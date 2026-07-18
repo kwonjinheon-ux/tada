@@ -4406,6 +4406,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-nav {
     grid-template-columns: auto minmax(220px, 1fr) auto auto;
+    min-height: 56px;
     gap: 10px;
     padding: 1.25px 18px;
   }
