@@ -48,11 +48,6 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const image = listing.images[activeImage] ?? listing.images[0];
 
-  useEffect(() => {
-    document.body.classList.add("listing-detail-screen");
-    return () => document.body.classList.remove("listing-detail-screen");
-  }, []);
-
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
   }, []);
@@ -78,11 +73,6 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
 
   return (
     <main className="listing-detail-page">
-      <header className="listing-detail-mobile-header listing-detail-mobile-only">
-        <Link className="listing-detail-mobile-back" href="/market" aria-label="Back to listings"><i className="fa-solid fa-chevron-left" aria-hidden="true" /></Link>
-        <img src="/images/logo.png" alt="Tada" />
-        <div><button type="button" aria-label="Notifications" className="listing-detail-mobile-notification"><i className="fa-regular fa-bell" aria-hidden="true" /><b>5</b></button><span className="listing-detail-mobile-avatar">T</span></div>
-      </header>
       <Link className="listing-detail-back" href="/market">
         <i className="fa-solid fa-arrow-left" aria-hidden="true" />
         Back to listings
@@ -166,7 +156,6 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
       <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer"><i className="fa-regular fa-message" aria-hidden="true" /> Message</button><button type="button" className="listing-detail-message">Make an offer</button></div>
-      <nav className="listing-detail-mobile-dock listing-detail-mobile-only" aria-label="Quick actions"><Link href="/market" aria-label="Home"><i className="fa-solid fa-house" aria-hidden="true" /><span>Home</span></Link><Link href="/market/dashboard/messages" aria-label="Chats"><i className="fa-regular fa-comment" aria-hidden="true" /><span>Chats</span></Link><Link href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /></Link><Link href="/market" aria-label="My listings"><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>My listings</span></Link><Link href="/market/dashboard" aria-label="Profile"><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>Profile</span></Link></nav>
     </main>
   );
 }
