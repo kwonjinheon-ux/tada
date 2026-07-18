@@ -112,6 +112,7 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname.startsWith("/market/create");
+  const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
@@ -147,7 +148,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${isMessagesPage ? "is-messages-page" : ""}`}>
       <div className="site-nav">
         <Link className="site-logo" href="/" aria-label="Tada home">
           <img src="/images/logo.png" alt="Tada" />
