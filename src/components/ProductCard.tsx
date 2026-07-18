@@ -17,11 +17,13 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
   const burstTimer = useRef<number | null>(null);
+  const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
   }, []);
 
   const toggleSaved = () => {
@@ -30,6 +32,8 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
     setHeartParticles(createHeartParticles());
     window.requestAnimationFrame(() => setIsPopping(true));
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
+    popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
   };
 
