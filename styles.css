@@ -5175,6 +5175,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .messages-loading section:last-child span:first-child { height: 76px; }.messages-loading section:last-child span:nth-child(2) { width: 58%; height: 74px; margin-top: 72px; }.messages-loading section:last-child span:last-child { width: 42%; height: 54px; margin-left: auto; }
 
 @media (max-width: 767.98px) {
+  .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .messages-dashboard-page { display: block; min-height: calc(100vh - 112px); }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
