@@ -64,6 +64,10 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
   }, []);
 
+  useEffect(() => {
+    router.prefetch("/market/dashboard/messages");
+  }, [router]);
+
   const showImage = (index: number) => setActiveImage((index + listing.images.length) % listing.images.length);
   const saveListing = () => {
     setIsSaved((current) => !current);
@@ -87,23 +91,31 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
     if (isOpeningMessage) return;
     setIsOpeningMessage(true);
     setMessageError(null);
-    const response = await fetch("/api/market/conversations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId: listing.id }),
-    });
-    const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
-    if (response.status === 401) {
-      router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
-      return;
-    }
-    if (!response.ok || !payload?.conversationId) {
-      setMessageError(payload?.error ?? "Unable to open a conversation right now.");
+    try {
+      const response = await fetch("/api/market/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing.id }),
+      });
+      const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+      if (response.status === 401) {
+        router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
+        return;
+      }
+      if (!response.ok || !payload?.conversationId) {
+        setMessageError(payload?.error ?? "Unable to open a conversation right now.");
+        return;
+      }
+      router.prefetch(`/market/dashboard/messages?conversation=${payload.conversationId}`);
+      router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
+    } catch {
+      setMessageError("Unable to reach messaging right now. Please try again.");
+    } finally {
       setIsOpeningMessage(false);
-      return;
     }
-    router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
   };
+
+  const prepareMessaging = () => router.prefetch("/market/dashboard/messages");
 
   return (
     <main className="listing-detail-page">
@@ -152,7 +164,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
 
           <div className="listing-detail-actions">
-            <button type="button" className="listing-detail-message" onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message seller"}</button>
+            <button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message seller"}</button>
             <button type="button" className="listing-detail-offer">Make an offer</button>
           </div>
           {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
@@ -187,7 +199,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </section>
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }

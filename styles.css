@@ -5168,10 +5168,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .messages-composer button:disabled { cursor: not-allowed; opacity: .45; }
 .messages-composer > p { position: absolute; bottom: 1px; left: 24px; margin: 0; color: #b42318; font-size: 10px; }
 .messages-unavailable { min-height: calc(100vh - 70px); display: grid; place-items: center; color: #6f7e91; }
+.messages-loading { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 320px minmax(0, 1fr); background: #fff; }
+.messages-loading section { display: grid; align-content: start; gap: 16px; padding: 24px 20px; }
+.messages-loading section:first-child { border-right: 1px solid #dce4ed; }
+.messages-loading span { height: 55px; border-radius: 7px; background: linear-gradient(100deg, #edf2f7 30%, #f8fafc 46%, #edf2f7 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }
+.messages-loading section:last-child span:first-child { height: 76px; }.messages-loading section:last-child span:nth-child(2) { width: 58%; height: 74px; margin-top: 72px; }.messages-loading section:last-child span:last-child { width: 42%; height: 54px; margin-left: auto; }
 
 @media (max-width: 767.98px) {
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .messages-dashboard-page { display: block; min-height: calc(100vh - 112px); }
+  .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
   .messages-dashboard-page .dashboard-sidebar { display: none; }
   .messages-page { min-height: calc(100vh - 112px); display: block; }
   .messages-list-panel, .messages-thread-panel { min-height: calc(100vh - 112px); }

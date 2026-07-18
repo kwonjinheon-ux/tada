@@ -51,11 +51,13 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const primaryPhotos = new Map<string, string>();
   for (const photo of (rawPhotos ?? []) as PhotoRow[]) if (photo.storage_path && !primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.storage_path);
   const photoPaths = [...primaryPhotos.values()];
-  const { data: signedPhotos } = photoPaths.length ? await supabase.storage.from("market-listing-images").createSignedUrls(photoPaths, 3600) : { data: [] };
-  const signedPhotoUrls = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
   const profiles = new Map(((rawProfiles ?? []) as ProfileRow[]).map((profile) => [profile.id, profile]));
   const avatarPaths = [...new Set([...profiles.values()].map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path)))];
-  const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : { data: [] };
+  const [{ data: signedPhotos }, { data: signedAvatars }] = await Promise.all([
+    photoPaths.length ? supabase.storage.from("market-listing-images").createSignedUrls(photoPaths, 3600) : Promise.resolve({ data: [] }),
+    avatarPaths.length ? supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : Promise.resolve({ data: [] }),
+  ]);
+  const signedPhotoUrls = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
   const avatarUrls = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const unreadCounts = new Map<string, number>();
   for (const unread of (unreadRows ?? []) as Array<{ conversation_id: string }>) unreadCounts.set(unread.conversation_id, (unreadCounts.get(unread.conversation_id) ?? 0) + 1);

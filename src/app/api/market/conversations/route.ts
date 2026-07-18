@@ -13,21 +13,13 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as { listingId?: unknown } | null;
   if (!body || typeof body.listingId !== "string") return NextResponse.json({ error: "A valid listing is required." }, { status: 400 });
 
-  const { data: listing, error: listingError } = await supabase
-    .from("market_listings")
-    .select("owner_id")
-    .eq("id", body.listingId)
-    .maybeSingle();
+  const [{ data: listing, error: listingError }, { data: existing }] = await Promise.all([
+    supabase.from("market_listings").select("owner_id").eq("id", body.listingId).maybeSingle(),
+    supabase.from("market_conversations").select("id").eq("listing_id", body.listingId).eq("buyer_id", user.id).maybeSingle(),
+  ]);
   const sellerId = (listing as ListingRow | null)?.owner_id;
   if (listingError || !sellerId) return NextResponse.json({ error: "This listing is not available for messaging." }, { status: 404 });
   if (sellerId === user.id) return NextResponse.json({ error: "You cannot message yourself about this listing." }, { status: 400 });
-
-  const { data: existing } = await supabase
-    .from("market_conversations")
-    .select("id")
-    .eq("listing_id", body.listingId)
-    .eq("buyer_id", user.id)
-    .maybeSingle();
   if (existing?.id) return NextResponse.json({ conversationId: existing.id });
 
   const { data: conversation, error } = await supabase
