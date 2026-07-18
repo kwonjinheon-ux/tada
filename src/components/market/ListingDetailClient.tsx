@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 
@@ -39,10 +40,13 @@ function descriptionParagraphs(description: string) {
 }
 
 export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
+  const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const [isOpeningMessage, setIsOpeningMessage] = useState(false);
+  const [messageError, setMessageError] = useState<string | null>(null);
   const burstTimer = useRef<number | null>(null);
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
@@ -77,6 +81,28 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       return;
     }
     await navigator.clipboard?.writeText(window.location.href);
+  };
+
+  const openConversation = async () => {
+    if (isOpeningMessage) return;
+    setIsOpeningMessage(true);
+    setMessageError(null);
+    const response = await fetch("/api/market/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId: listing.id }),
+    });
+    const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+    if (response.status === 401) {
+      router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
+      return;
+    }
+    if (!response.ok || !payload?.conversationId) {
+      setMessageError(payload?.error ?? "Unable to open a conversation right now.");
+      setIsOpeningMessage(false);
+      return;
+    }
+    router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
   };
 
   return (
@@ -126,9 +152,10 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
 
           <div className="listing-detail-actions">
-            <button type="button" className="listing-detail-message"><i className="fa-regular fa-message" aria-hidden="true" /> Message seller</button>
+            <button type="button" className="listing-detail-message" onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message seller"}</button>
             <button type="button" className="listing-detail-offer">Make an offer</button>
           </div>
+          {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
 
           <dl className="listing-detail-facts">
             <div><dt>Condition</dt><dd>{listing.condition}</dd></div>
@@ -160,7 +187,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </section>
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer"><i className="fa-regular fa-message" aria-hidden="true" /> Message</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }
