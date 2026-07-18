@@ -17,6 +17,7 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
   const burstTimer = useRef<number | null>(null);
+  const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
 
   useEffect(() => () => {
@@ -32,7 +33,16 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
   };
 
-  const openListing = () => router.push(`/market/${listing.id}`);
+  const detailPath = `/market/${listing.id}`;
+  const prefetchListing = () => {
+    if (hasPrefetchedDetail.current) return;
+    hasPrefetchedDetail.current = true;
+    router.prefetch(detailPath);
+  };
+  const openListing = () => {
+    prefetchListing();
+    router.push(detailPath);
+  };
 
   return (
     <article
@@ -41,6 +51,9 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
       tabIndex={0}
       aria-label={`View ${listing.title}`}
       onClick={openListing}
+      onPointerEnter={prefetchListing}
+      onTouchStart={prefetchListing}
+      onFocus={prefetchListing}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();

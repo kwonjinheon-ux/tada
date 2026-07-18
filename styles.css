@@ -5099,6 +5099,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .listing-detail-message-error { margin: 9px 0 0; color: #b42318; font-size: 12px; font-weight: 700; }
 .listing-detail-actions button:disabled, .listing-detail-mobile-actions button:disabled { cursor: wait; opacity: .72; }
+.listing-detail-loading { width: min(1180px, calc(100% - 48px)); display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, .95fr); gap: 46px; margin: 40px auto 70px; }
+.listing-detail-loading-media, .listing-detail-loading-summary, .listing-detail-loading-description > * { background: linear-gradient(100deg, #edf2f7 30%, #f8fafc 46%, #edf2f7 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }
+.listing-detail-loading-media { min-height: 480px; border-radius: 10px; }
+.listing-detail-loading-summary { min-height: 390px; display: grid; align-content: start; gap: 18px; padding: 28px; border-radius: 10px; background-color: #f6f9fb; }
+.listing-detail-loading-summary > * { display: block; height: 16px; border-radius: 5px; background: #e7edf3; }
+.listing-detail-loading-summary strong { width: 74%; height: 35px; }.listing-detail-loading-summary b { width: 52%; height: 46px; }.listing-detail-loading-summary p { width: 63%; }.listing-detail-loading-summary div { display: flex; gap: 12px; margin-top: 20px; }.listing-detail-loading-summary i { width: 132px; height: 43px; border-radius: 7px; background: #e7edf3; }
+.listing-detail-loading-description { grid-column: 1 / -1; width: min(760px, 100%); display: grid; gap: 13px; }.listing-detail-loading-description strong { width: 180px; height: 30px; }.listing-detail-loading-description span { width: 100%; height: 18px; }.listing-detail-loading-description span:last-child { width: 63%; }
+@keyframes listing-loading-shimmer { to { background-position: -200% 0; } }
 
 /* Marketplace messages: a compact conversation rail paired with a focused thread. */
 .messages-dashboard-page { min-height: calc(100vh - 70px); align-items: stretch; background: #f6f8ff; }
@@ -5162,6 +5170,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .messages-unavailable { min-height: calc(100vh - 70px); display: grid; place-items: center; color: #6f7e91; }
 
 @media (max-width: 767.98px) {
+  .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .messages-dashboard-page { display: block; min-height: calc(100vh - 112px); }
   .messages-dashboard-page .dashboard-sidebar { display: none; }
   .messages-page { min-height: calc(100vh - 112px); display: block; }

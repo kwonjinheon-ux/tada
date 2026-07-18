@@ -71,26 +71,36 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
 
   if (error || !data) return fallbackListing(id);
   const listing = data as MarketListingRow;
-  const { data: photoRows } = await supabase
-    .from("market_listing_photos")
-    .select("storage_path,original_name,display_order")
-    .eq("listing_id", listing.id)
-    .order("display_order", { ascending: true });
+  const [{ data: photoRows }, { data: sellerData }, { data: profileData }] = await Promise.all([
+    supabase
+      .from("market_listing_photos")
+      .select("storage_path,original_name,display_order")
+      .eq("listing_id", listing.id)
+      .order("display_order", { ascending: true }),
+    supabase
+      .from("market_seller_profiles")
+      .select("id,display_name,avatar_path,rating_average,rating_count")
+      .eq("id", listing.owner_id)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id,display_name,avatar_path")
+      .eq("id", listing.owner_id)
+      .maybeSingle(),
+  ]);
   const photos = (photoRows as PhotoRow[] | null ?? []).filter((photo) => photo.storage_path);
   const paths = photos.map((photo) => photo.storage_path as string);
-  const { data: signedPhotos } = paths.length
-    ? await supabase.storage.from("market-listing-images").createSignedUrls(paths, 3600)
-    : { data: [] };
+  const seller = (sellerData ?? profileData) as SellerRow | null;
+  const [{ data: signedPhotos }, { data: signedAvatar }] = await Promise.all([
+    paths.length
+      ? supabase.storage.from("market-listing-images").createSignedUrls(paths, 3600)
+      : Promise.resolve({ data: [] }),
+    seller?.avatar_path
+      ? supabase.storage.from("profile-avatars").createSignedUrl(seller.avatar_path, 3600)
+      : Promise.resolve({ data: null }),
+  ]);
   const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
   const images = photos.map((photo) => ({ src: signedByPath.get(photo.storage_path as string), alt: photo.original_name || listing.title })).filter((photo): photo is { src: string; alt: string } => Boolean(photo.src));
-  const { data: sellerData } = await supabase.from("market_seller_profiles").select("id,display_name,avatar_path,rating_average,rating_count").eq("id", listing.owner_id).maybeSingle();
-  const { data: profileData } = sellerData
-    ? { data: null }
-    : await supabase.from("profiles").select("id,display_name,avatar_path").eq("id", listing.owner_id).maybeSingle();
-  const seller = (sellerData ?? profileData) as SellerRow | null;
-  const { data: signedAvatar } = seller?.avatar_path
-    ? await supabase.storage.from("profile-avatars").createSignedUrl(seller.avatar_path, 3600)
-    : { data: null };
 
   return {
     id: listing.id,
