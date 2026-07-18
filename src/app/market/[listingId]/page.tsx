@@ -8,6 +8,7 @@ export const revalidate = 0;
 
 type MarketListingRow = {
   id: string;
+  owner_id: string;
   title: string;
   description: string;
   price_cents: number;
@@ -21,6 +22,7 @@ type MarketListingRow = {
 };
 
 type PhotoRow = { storage_path: string | null; original_name: string | null; display_order: number };
+type SellerRow = { display_name: string; avatar_path: string | null };
 
 const conditionLabels = { brand_new: "Brand new", like_new: "Like new", good: "Good", fair: "Fair" } as const;
 const tradeMethodLabels = { pickup_delivery: "Pickup or delivery", pickup: "Pickup", delivery: "Delivery" } as const;
@@ -53,6 +55,7 @@ function fallbackListing(id: string): ListingDetail | null {
     createdAt: "Listed recently",
     status: listing.status,
     images: [{ src: listing.image, alt: listing.imageAlt }],
+    seller: { name: "Tada seller", avatarUrl: null },
   };
 }
 
@@ -62,7 +65,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
 
   const { data, error } = await supabase
     .from("market_listings")
-    .select("id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at")
+    .select("id,owner_id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at")
     .eq("id", id)
     .maybeSingle();
 
@@ -80,6 +83,11 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
     : { data: [] };
   const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
   const images = photos.map((photo) => ({ src: signedByPath.get(photo.storage_path as string), alt: photo.original_name || listing.title })).filter((photo): photo is { src: string; alt: string } => Boolean(photo.src));
+  const { data: sellerData } = await supabase.from("market_seller_profiles").select("display_name,avatar_path").eq("id", listing.owner_id).maybeSingle();
+  const seller = sellerData as SellerRow | null;
+  const { data: signedAvatar } = seller?.avatar_path
+    ? await supabase.storage.from("profile-avatars").createSignedUrl(seller.avatar_path, 3600)
+    : { data: null };
 
   return {
     id: listing.id,
@@ -93,6 +101,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
     createdAt: formatDate(listing.created_at),
     status: listing.status === "sold" ? "sold" : listing.status === "pending" ? "pending" : "available",
     images: images.length ? images : [{ src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80", alt: listing.title }],
+    seller: { name: seller?.display_name || "Tada seller", avatarUrl: signedAvatar?.signedUrl || null },
   };
 }
 

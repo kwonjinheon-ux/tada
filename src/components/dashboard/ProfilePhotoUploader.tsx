@@ -159,6 +159,8 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
       const path = `${userData.user.id}/avatar.jpg`;
       const { error: uploadError } = await supabase.storage.from("profile-avatars").upload(path, blob, { cacheControl: "3600", contentType: "image/jpeg", upsert: true });
       if (uploadError) throw uploadError;
+      const { error: profileError } = await supabase.from("profiles").update({ avatar_path: path }).eq("id", userData.user.id);
+      if (profileError) throw profileError;
       const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
       if (metadataError) throw metadataError;
       const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(path, 3600);
