@@ -7,6 +7,7 @@ export const mobileDrawerClasses = {
   backdrop: "mobile-drawer-backdrop",
   closeButton: "mobile-drawer-close",
   menuItem: "mobile-drawer-menu-item",
+  menuLabel: "mobile-drawer-menu-label",
   staggerItem: "mobile-drawer-stagger-item",
 } as const;
 

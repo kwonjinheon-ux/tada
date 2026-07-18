@@ -3524,12 +3524,12 @@ a {
     text-decoration: none;
   }
 
-  .mobile-dashboard-link-label {
+  .mobile-side-drawer .mobile-drawer-menu-label {
     display: inline-flex;
     align-items: center;
     justify-self: start;
     gap: 6px;
-    font-size: 16px;
+    font: inherit;
     line-height: 1.25;
   }
 
@@ -3651,6 +3651,7 @@ a {
 
   :root {
     --mobile-drawer-width: min(78vw, 320px);
+    --mobile-drawer-transition: 240ms;
   }
 
   body.has-open-mobile-drawer {
@@ -3685,7 +3686,8 @@ a {
     transform: translateX(-105%);
     visibility: hidden;
     pointer-events: none;
-    transition: transform 300ms cubic-bezier(.22, 1, .36, 1), visibility 0s linear 300ms;
+    will-change: transform;
+    transition: transform var(--mobile-drawer-transition) cubic-bezier(.22, 1, .36, 1), visibility 0s linear var(--mobile-drawer-transition);
   }
 
   .mobile-side-drawer.is-open {

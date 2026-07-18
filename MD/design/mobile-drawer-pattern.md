@@ -28,7 +28,7 @@ The profile dashboard and Market category menu are the reference implementations
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
 - Close control: every drawer uses the shared 36px `mobile-drawer-close` control at the bottom-right.
 - Header: do not add a redundant brand row or `Categories` title.
-- Menu rows: profile and category items both use the 16px `mobile-drawer-menu-item` type scale, 44px minimum height, zero row margin, and 3px vertical gap. Category selection uses a muted selected state.
+- Menu rows: profile and category items both use the 16px `mobile-drawer-menu-item` and `mobile-drawer-menu-label` classes, 44px minimum height, zero row margin, and 3px vertical gap. Category selection uses a muted selected state.
 - Dashboard logout: keep it as a smaller secondary action, but make it span the full drawer content width.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.

@@ -235,7 +235,7 @@ export function Navbar() {
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span className="mobile-dashboard-link-label">{label}{label === "Messages" && <b>24</b>}</span>
+                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && <b>24</b>}</span>
               </Link>
             ))}
             <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
