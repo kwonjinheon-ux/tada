@@ -89,6 +89,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
             <Image src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
             <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
+            <Link className="listing-detail-mobile-gallery-back listing-detail-mobile-only" href="/market" aria-label="Back to listings"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link>
             <div className="listing-detail-mobile-image-actions listing-detail-mobile-only">
               <button type="button" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
               <button className={`save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>
@@ -142,7 +143,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
-        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><span>{listing.createdAt}</span><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span></div>
+        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span><time>{listing.createdAt}</time></div>
       </section>
 
       <section className="listing-detail-description">

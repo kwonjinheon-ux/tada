@@ -5009,8 +5009,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-main-image { margin: 0 16px; border-radius: 9px; touch-action: pan-y; }
   .listing-detail-thumbnails { display: none; }
   .listing-detail-mobile-badge { position: absolute; bottom: 14px; left: 14px; min-height: 30px; align-items: center; padding: 0 9px; border-radius: 4px; background: #08ae78; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+  .listing-detail-mobile-gallery-back { position: absolute; top: 14px; left: 14px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 16px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
   .listing-detail-mobile-image-actions { position: absolute; top: 14px; right: 14px; gap: 10px; }
-  .listing-detail-mobile-image-actions button { width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 20px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
+  .listing-detail-mobile-image-actions button { width: 42px; height: 42px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 18px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
   .listing-detail-mobile-image-actions button.is-saved { color: #e94683; }
   .listing-detail-mobile-image-actions .save-button { position: relative; top: auto; right: auto; overflow: visible; }
   .listing-detail-gallery-arrow { width: 36px; height: 36px; opacity: .92; }
@@ -5024,9 +5025,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-meta h1 { margin: 0; color: #0b1c30; font-size: 26px; line-height: 1.2; }
   .listing-detail-mobile-price-row { display: flex; align-items: center; gap: 12px; margin-top: 13px; }
   .listing-detail-mobile-price-row strong { color: #00845c; font-size: 31px; line-height: 1; }
-  .listing-detail-mobile-location-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; color: #607187; font-size: 12px; }
+  .listing-detail-mobile-location-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; color: #607187; font-size: 12px; }
   .listing-detail-mobile-location-row span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; white-space: nowrap; }
   .listing-detail-mobile-location-row span:first-child { overflow: hidden; text-overflow: ellipsis; }
+  .listing-detail-mobile-location-row time { margin-left: auto; white-space: nowrap; }
 
   .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
   .listing-detail-description h2 { font-size: 19px; }
