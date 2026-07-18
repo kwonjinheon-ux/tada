@@ -5048,7 +5048,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-main-image { margin: 0 16px; border-radius: 9px; touch-action: pan-y; }
   .listing-detail-thumbnails { display: none; }
   .listing-detail-mobile-badge { position: absolute; bottom: 14px; left: 14px; min-height: 30px; align-items: center; padding: 0 9px; border-radius: 4px; background: #08ae78; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-  .listing-detail-mobile-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 0 16px; }
+  .listing-detail-mobile-photo-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0 16px; }
   .listing-detail-mobile-photo-grid > div { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px; }
   .listing-detail-mobile-photo-grid img { object-fit: cover; }
   .listing-detail-mobile-photo-grid .listing-detail-mobile-badge { position: absolute; bottom: 10px; left: 10px; display: flex; }

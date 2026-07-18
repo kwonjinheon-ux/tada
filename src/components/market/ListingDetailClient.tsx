@@ -100,7 +100,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
             {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
-          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-grid listing-detail-mobile-only">{listing.images.map((photo, index) => <div key={photo.src}><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 50vw, 360px" />{index === 0 ? <span className="listing-detail-mobile-badge">Newly listed</span> : null}</div>)}</div> : null}
+          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-grid listing-detail-mobile-only">{listing.images.map((photo, index) => <div key={photo.src}><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 100vw, 360px" />{index === 0 ? <span className="listing-detail-mobile-badge">Newly listed</span> : null}</div>)}</div> : null}
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
