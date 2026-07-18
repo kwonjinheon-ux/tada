@@ -1699,6 +1699,8 @@ a {
   background: #fff;
 }
 
+.listing-detail-mobile-only { display: none; }
+
 .listing-detail-back {
   width: fit-content;
   display: inline-flex;
@@ -4974,6 +4976,66 @@ a {
   .dashboard-sidebar .dashboard-nav {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 767.98px) {
+  body.listing-detail-screen .site-header { display: none; }
+  .listing-detail-mobile-only { display: flex; }
+  .listing-detail-page { padding: 0 0 calc(164px + env(safe-area-inset-bottom)); }
+  .listing-detail-back, .listing-detail-summary { display: none; }
+
+  .listing-detail-mobile-header { height: 92px; align-items: center; justify-content: space-between; padding: max(12px, env(safe-area-inset-top)) 20px 10px; background: #fff; }
+  .listing-detail-mobile-header > img { width: 112px; height: 42px; object-fit: contain; }
+  .listing-detail-mobile-header > div { display: flex; align-items: center; gap: 11px; }
+  .listing-detail-mobile-back, .listing-detail-mobile-notification { width: 42px; height: 42px; display: grid; place-items: center; position: relative; border: 0; border-radius: 50%; background: #f0f3f8; color: #26384d; font-size: 19px; }
+  .listing-detail-mobile-notification { background: transparent; }
+  .listing-detail-mobile-notification b { position: absolute; top: 1px; right: 1px; min-width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: #dd2634; color: #fff; font-size: 9px; }
+  .listing-detail-mobile-avatar { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: #dff8ef; color: #05835c; font-size: 15px; font-weight: 800; }
+
+  .listing-detail-layout { display: block; }
+  .listing-detail-main-image { margin: 0 16px; border-radius: 9px; }
+  .listing-detail-thumbnails { display: none; }
+  .listing-detail-mobile-badge { position: absolute; bottom: 14px; left: 14px; min-height: 30px; align-items: center; padding: 0 9px; border-radius: 4px; background: #08ae78; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+  .listing-detail-mobile-image-actions { position: absolute; top: 14px; right: 14px; gap: 10px; }
+  .listing-detail-mobile-image-actions button { width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #1d3048; font-size: 20px; box-shadow: 0 4px 12px rgba(14, 33, 61, .12); }
+  .listing-detail-mobile-image-actions button.is-saved { color: #e94683; }
+
+  .listing-detail-mobile-meta { display: block; margin: 17px 20px 0; padding-bottom: 20px; border-bottom: 1px solid #cbd5d5; }
+  .listing-detail-mobile-dots { display: flex; justify-content: center; gap: 12px; margin: 0 0 23px; }
+  .listing-detail-mobile-dots span { width: 9px; height: 9px; border-radius: 50%; background: #d8e0ed; }
+  .listing-detail-mobile-dots span.is-active { background: #214bce; }
+  .listing-detail-mobile-meta h1 { margin: 0; color: #0b1c30; font-size: 26px; line-height: 1.2; }
+  .listing-detail-mobile-price-row { display: flex; align-items: center; gap: 12px; margin-top: 13px; }
+  .listing-detail-mobile-price-row strong { color: #00845c; font-size: 31px; line-height: 1; }
+  .listing-detail-mobile-location-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; color: #607187; font-size: 12px; }
+  .listing-detail-mobile-location-row span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; white-space: nowrap; }
+  .listing-detail-mobile-location-row span:first-child { overflow: hidden; text-overflow: ellipsis; }
+
+  .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
+  .listing-detail-description h2 { font-size: 19px; }
+  .listing-detail-description p { font-size: 14px; line-height: 1.75; }
+  .listing-detail-mobile-seller { align-items: center; gap: 12px; margin: 24px 20px 0; padding-top: 24px; border-top: 1px solid #cbd5d5; }
+  .listing-detail-mobile-seller-avatar { width: 56px; height: 56px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #dff8ef; color: #00845c; font-size: 21px; font-weight: 800; }
+  .listing-detail-mobile-seller div { display: grid; flex: 1; gap: 3px; min-width: 0; }
+  .listing-detail-mobile-seller strong { color: #10243d; font-size: 16px; }
+  .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 11px; }
+  .listing-detail-mobile-seller span i { color: #f6b600; }
+  .listing-detail-mobile-seller button { min-height: 36px; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 8px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 11px; font-weight: 700; }
+  .listing-detail-mobile-safety { align-items: center; gap: 12px; margin: 24px 20px 0; padding: 14px; border: 1px solid #d8e1e5; border-radius: 9px; color: #0f2845; }
+  .listing-detail-mobile-safety > i:first-child { color: #059a6a; font-size: 25px; }
+  .listing-detail-mobile-safety span { display: grid; flex: 1; gap: 4px; }
+  .listing-detail-mobile-safety strong { font-size: 13px; }
+  .listing-detail-mobile-safety small { color: #667689; font-size: 11px; line-height: 1.35; }
+
+  .listing-detail-mobile-actions { position: fixed; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); left: 0; z-index: 41; gap: 10px; padding: 10px 16px; border-top: 1px solid #dce4e5; background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); }
+  .listing-detail-mobile-actions button { flex: 1; min-height: 48px; border-radius: 8px; font: inherit; font-size: 15px; font-weight: 800; }
+  .listing-detail-mobile-actions .listing-detail-offer { border: 1px solid #08a875; background: #fff; color: #078961; }
+  .listing-detail-mobile-dock { position: fixed; right: 0; bottom: 0; left: 0; z-index: 42; height: calc(58px + env(safe-area-inset-bottom)); align-items: flex-start; justify-content: space-around; padding: 8px 10px env(safe-area-inset-bottom); border-top: 1px solid #dce4e5; background: #fff; }
+  .listing-detail-mobile-dock a { min-width: 44px; display: grid; place-items: center; gap: 3px; color: #30445c; font-size: 10px; }
+  .listing-detail-mobile-dock a:first-child { color: #2146c8; }
+  .listing-detail-mobile-dock a i { font-size: 20px; }
+  .listing-detail-mobile-dock a:nth-child(3) { width: 40px; height: 40px; align-self: center; margin-top: -4px; border-radius: 50%; background: #e9edf4; color: #44556a; }
+  .listing-detail-mobile-dock a:nth-child(3) span { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

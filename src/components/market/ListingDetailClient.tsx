@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type ListingDetail = {
   id: string;
@@ -42,8 +42,27 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const image = listing.images[activeImage] ?? listing.images[0];
 
+  useEffect(() => {
+    document.body.classList.add("listing-detail-screen");
+    return () => document.body.classList.remove("listing-detail-screen");
+  }, []);
+
+  const shareListing = async () => {
+    const shareData = { title: listing.title, text: `${listing.title} - ${listing.price}`, url: window.location.href };
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    await navigator.clipboard?.writeText(window.location.href);
+  };
+
   return (
     <main className="listing-detail-page">
+      <header className="listing-detail-mobile-header listing-detail-mobile-only">
+        <Link className="listing-detail-mobile-back" href="/market" aria-label="Back to listings"><i className="fa-solid fa-chevron-left" aria-hidden="true" /></Link>
+        <img src="/images/logo.png" alt="Tada" />
+        <div><button type="button" aria-label="Notifications" className="listing-detail-mobile-notification"><i className="fa-regular fa-bell" aria-hidden="true" /><b>5</b></button><span className="listing-detail-mobile-avatar">T</span></div>
+      </header>
       <Link className="listing-detail-back" href="/market">
         <i className="fa-solid fa-arrow-left" aria-hidden="true" />
         Back to listings
@@ -53,6 +72,11 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
         <section className="listing-detail-gallery" aria-label={`${listing.title} photos`}>
           <div className="listing-detail-main-image">
             <Image src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
+            <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
+            <div className="listing-detail-mobile-image-actions listing-detail-mobile-only">
+              <button type="button" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
+              <button className={isSaved ? "is-saved" : ""} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => setIsSaved((current) => !current)}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /></button>
+            </div>
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
           {listing.images.length > 1 ? (
@@ -97,10 +121,25 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
         </aside>
       </div>
 
+      <section className="listing-detail-mobile-meta listing-detail-mobile-only">
+        <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
+        <h1>{listing.title}</h1>
+        <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
+        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><span>{listing.createdAt}</span><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span></div>
+      </section>
+
       <section className="listing-detail-description">
         <h2>About this item</h2>
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
+
+      <section className="listing-detail-mobile-seller listing-detail-mobile-only">
+        <span className="listing-detail-mobile-seller-avatar">T</span><div><strong>Tada seller</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> 5.0 seller rating</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div><button type="button">View profile</button>
+      </section>
+      <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
+
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer"><i className="fa-regular fa-message" aria-hidden="true" /> Message</button><button type="button" className="listing-detail-message">Make an offer</button></div>
+      <nav className="listing-detail-mobile-dock listing-detail-mobile-only" aria-label="Quick actions"><Link href="/market" aria-label="Home"><i className="fa-solid fa-house" aria-hidden="true" /><span>Home</span></Link><Link href="/market/dashboard/messages" aria-label="Chats"><i className="fa-regular fa-comment" aria-hidden="true" /><span>Chats</span></Link><Link href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /></Link><Link href="/market" aria-label="My listings"><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>My listings</span></Link><Link href="/market/dashboard" aria-label="Profile"><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>Profile</span></Link></nav>
     </main>
   );
 }
