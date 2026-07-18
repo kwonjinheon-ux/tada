@@ -1701,6 +1701,43 @@ a {
 
 .listing-detail-mobile-only { display: none; }
 
+.seller-public-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 620px;
+  padding: 28px;
+  border: 1px solid #d7e1e3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.seller-public-profile-card > img,
+.seller-public-profile-card > span {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff8ef;
+  color: #078961;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.seller-public-profile-card > img { object-fit: cover; }
+.seller-public-profile-card p,
+.seller-public-profile-card h1,
+.seller-public-profile-card strong,
+.seller-public-profile-card small { margin: 0; }
+.seller-public-profile-card p,
+.seller-public-profile-card small { color: #65758a; font-size: 14px; }
+.seller-public-profile-card h1 { margin: 4px 0 8px; color: #10243d; font-size: 28px; }
+.seller-public-profile-card strong { display: block; color: #506177; font-size: 15px; }
+.seller-public-profile-card strong i { color: #f6b600; }
+.seller-public-profile-card small { display: block; margin-top: 6px; }
+
 .listing-detail-back {
   width: fit-content;
   display: inline-flex;
@@ -5040,7 +5077,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller strong { color: #10243d; font-size: 16px; }
   .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 11px; }
   .listing-detail-mobile-seller span i { color: #f6b600; }
-  .listing-detail-mobile-seller button { min-height: 36px; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 8px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 11px; font-weight: 700; }
+  .listing-detail-mobile-seller button, .listing-detail-mobile-seller a { min-height: 36px; display: grid; place-items: center; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 8px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 11px; font-weight: 700; text-decoration: none; }
   .listing-detail-mobile-safety { align-items: center; gap: 12px; margin: 24px 20px 0; padding: 14px; border: 1px solid #d8e1e5; border-radius: 9px; color: #0f2845; }
   .listing-detail-mobile-safety > i:first-child { color: #059a6a; font-size: 25px; }
   .listing-detail-mobile-safety span { display: grid; flex: 1; gap: 4px; }

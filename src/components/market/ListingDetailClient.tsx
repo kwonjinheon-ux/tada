@@ -17,7 +17,7 @@ export type ListingDetail = {
   createdAt: string;
   status: "available" | "pending" | "sold";
   images: Array<{ src: string; alt: string }>;
-  seller: { name: string; avatarUrl: string | null };
+  seller: { id: string | null; name: string; avatarUrl: string | null; ratingAverage: number; ratingCount: number };
 };
 
 const statusLabel = {
@@ -47,6 +47,9 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const image = listing.images[activeImage] ?? listing.images[0];
+  const ratingLabel = listing.seller.ratingCount
+    ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
+    : "No ratings yet";
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
@@ -134,7 +137,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
 
           <div className="listing-detail-seller">
             {listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}
-            <div><strong>{listing.seller.name}</strong><span>Local marketplace member</span></div>
+            <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
           </div>
         </aside>
       </div>
@@ -152,7 +155,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </section>
 
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        {listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> 5.0 seller rating</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div><button type="button">View profile</button>
+        {listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div>{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}>View profile</Link> : null}
       </section>
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 

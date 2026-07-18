@@ -1,3 +1,6 @@
+alter table public.profiles
+  add column if not exists avatar_path text;
+
 create table if not exists public.market_seller_profiles (
   id uuid primary key references public.profiles(id) on delete cascade,
   display_name text not null check (char_length(trim(display_name)) between 2 and 80),
