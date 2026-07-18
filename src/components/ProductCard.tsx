@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Listing } from "@/data/listings";
 
@@ -40,6 +41,7 @@ function createHeartParticles() {
 }
 
 export function ProductCard({ listing, priority = false }: ProductCardProps) {
+  const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
@@ -59,8 +61,22 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
   };
 
+  const openListing = () => router.push(`/market/${listing.id}`);
+
   return (
-    <article className={`product-card ${listing.status === "sold" ? "is-sold" : ""}`}>
+    <article
+      className={`product-card product-card-link ${listing.status === "sold" ? "is-sold" : ""}`}
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${listing.title}`}
+      onClick={openListing}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openListing();
+        }
+      }}
+    >
       <div className="product-media">
         <Image
           src={listing.image}
@@ -92,7 +108,11 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
         type="button"
         aria-label={`Save ${listing.title}`}
         aria-pressed={isSaved}
-        onClick={toggleSaved}
+        onClick={(event) => {
+          event.stopPropagation();
+          toggleSaved();
+        }}
+        onKeyDown={(event) => event.stopPropagation()}
         onAnimationEnd={(event) => {
           if (event.currentTarget === event.target) {
             setIsPopping(false);
