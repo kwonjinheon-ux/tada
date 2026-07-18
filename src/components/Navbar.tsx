@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { MobileDrawer, mobileDrawerClasses } from "@/components/MobileDrawer";
+import { MobileDrawer, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -87,16 +87,17 @@ export function Navbar() {
   useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
-    window.addEventListener("mobile-dashboard-menu-close", closeDashboardDrawer);
+    window.addEventListener(mobileDrawerEvents.dashboardClose, closeDashboardDrawer);
     return () => {
       window.removeEventListener("mobile-category-menu-request", closeDashboardDrawer);
-      window.removeEventListener("mobile-dashboard-menu-close", closeDashboardDrawer);
+      window.removeEventListener(mobileDrawerEvents.dashboardClose, closeDashboardDrawer);
     };
   }, []);
 
   useEffect(() => {
     const isMobileDrawerOpen = isDashboardMenuOpen && Boolean(userEmail) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("has-mobile-dashboard-drawer", isMobileDrawerOpen);
+    window.dispatchEvent(new CustomEvent(mobileDrawerEvents.dashboardState, { detail: isMobileDrawerOpen }));
     return () => document.body.classList.remove("has-mobile-dashboard-drawer");
   }, [isDashboardMenuOpen, userEmail]);
 

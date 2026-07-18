@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MobileDrawer, mobileDrawerClasses } from "@/components/MobileDrawer";
+import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { listings, quickCategories } from "@/data/listings";
@@ -26,6 +26,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -52,6 +53,12 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
       window.removeEventListener("mobile-category-menu-request", openCategories);
       window.removeEventListener("mobile-category-menu-close", closeCategories);
     };
+  }, []);
+
+  useEffect(() => {
+    const syncDashboardDrawer = (event: Event) => setIsDashboardDrawerOpen(Boolean((event as CustomEvent<boolean>).detail));
+    window.addEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
+    return () => window.removeEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
   }, []);
 
   const chooseView = (mode: "grid" | "list") => {
@@ -126,6 +133,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
           Apply Filters
         </button>
       </MobileDrawer>
+      {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
       <section className="market-results" aria-label="Fresh finds">
         <div className="market-toolbar">

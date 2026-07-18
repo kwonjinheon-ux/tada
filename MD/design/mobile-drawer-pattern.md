@@ -76,6 +76,8 @@ On mobile, every `MobileDrawer` instance controls the shared `has-open-mobile-dr
 5. Tapping the blurred backdrop calls the drawer's supplied `onClose` handler.
 6. Closing the drawer removes the body class, restores the dock, and returns page scrolling.
 
+The profile drawer is rendered in the header stacking context. `MarketPageClient` listens to the shared dashboard state event and renders a second `MobileDrawerBackdrop` over the page content. It uses the same reference class and sends the shared close event, ensuring a tap anywhere on the blurred market content closes the profile drawer.
+
 Do not add page-specific blur layers or separate dock-lock classes. Pass each drawer's close callback to `MobileDrawer` so the same backdrop handles category and profile menus.
 
 ## Layering Rules

@@ -10,6 +10,11 @@ export const mobileDrawerClasses = {
   staggerItem: "mobile-drawer-stagger-item",
 } as const;
 
+export const mobileDrawerEvents = {
+  dashboardClose: "mobile-dashboard-menu-close",
+  dashboardState: "mobile-dashboard-menu-state",
+} as const;
+
 type MobileDrawerBackdropProps = {
   open: boolean;
   onClose: () => void;

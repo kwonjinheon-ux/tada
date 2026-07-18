@@ -3717,6 +3717,10 @@ a {
     transition-delay: 0s;
   }
 
+  .mobile-dashboard-content-backdrop {
+    z-index: 121;
+  }
+
   .market-filter-panel.mobile-side-drawer {
     padding: calc(14px + env(safe-area-inset-top)) 14px calc(64px + env(safe-area-inset-bottom));
     overflow-y: auto;
