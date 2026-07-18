@@ -64,22 +64,28 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
   useEffect(() => {
     if (!selectedConversationId) return;
-    void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" });
+    void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
     setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, unreadCount: 0 } : conversation));
 
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
-    const channel = supabase
-      .channel(`market-messages:${selectedConversationId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `conversation_id=eq.${selectedConversationId}` }, (payload) => {
-        const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
-        const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-        setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
-        setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId ? 0 : conversation.unreadCount + 1 } : conversation));
-        if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" });
-      })
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    try {
+      const supabase = createBrowserSupabaseClient();
+      if (!supabase) return;
+      const channel = supabase
+        .channel(`market-messages:${selectedConversationId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `conversation_id=eq.${selectedConversationId}` }, (payload) => {
+          const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+          if (!row.id || !row.body || !row.created_at) return;
+          const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
+          setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
+          setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId ? 0 : conversation.unreadCount + 1 } : conversation));
+          if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
+        })
+        .subscribe();
+      return () => { void supabase.removeChannel(channel).catch(() => undefined); };
+    } catch {
+      // Realtime is optional: the sent message is still appended from the API response.
+      return;
+    }
   }, [currentUserId, selectedConversationId]);
 
   const openConversation = (conversationId: string) => router.push(`/market/dashboard/messages?conversation=${conversationId}`);
@@ -89,18 +95,22 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     if (!body || !selectedConversationId || isSending) return;
     setIsSending(true);
     setSendError(null);
-    const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: selectedConversationId, body }) });
-    const payload = await response.json().catch(() => null) as { error?: string; message?: { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null } } | null;
-    if (!response.ok || !payload?.message) {
-      setSendError(payload?.error ?? "Unable to send your message.");
+    try {
+      const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: selectedConversationId, body }) });
+      const payload = await response.json().catch(() => null) as { error?: string; message?: { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null } } | null;
+      if (!response.ok || !payload?.message) {
+        setSendError(payload?.error ?? "Unable to send your message.");
+        return;
+      }
+      const message: MarketMessage = { id: payload.message.id, conversationId: payload.message.conversation_id, senderId: payload.message.sender_id, recipientId: payload.message.recipient_id, body: payload.message.body, createdAt: payload.message.created_at, readAt: payload.message.read_at };
+      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
+      setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: message.body, lastMessageAt: message.createdAt } : conversation));
+      setDraft("");
+    } catch {
+      setSendError("Unable to reach the messaging service. Please try again.");
+    } finally {
       setIsSending(false);
-      return;
     }
-    const message: MarketMessage = { id: payload.message.id, conversationId: payload.message.conversation_id, senderId: payload.message.sender_id, recipientId: payload.message.recipient_id, body: payload.message.body, createdAt: payload.message.created_at, readAt: payload.message.read_at };
-    setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
-    setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: message.body, lastMessageAt: message.createdAt } : conversation));
-    setDraft("");
-    setIsSending(false);
   };
 
   return (
