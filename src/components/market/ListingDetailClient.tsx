@@ -51,6 +51,11 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
     : "No ratings yet";
 
+  useEffect(() => {
+    document.body.classList.add("listing-detail-screen");
+    return () => document.body.classList.remove("listing-detail-screen");
+  }, []);
+
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
   }, []);

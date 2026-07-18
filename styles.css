@@ -5038,8 +5038,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 @media (max-width: 767.98px) {
+  body.listing-detail-screen .mobile-bottom-dock { display: none; }
   .listing-detail-mobile-only { display: flex; }
   .listing-detail-page { padding: 0 0 calc(164px + env(safe-area-inset-bottom)); }
+  body.listing-detail-screen .listing-detail-page { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
   .listing-detail-back, .listing-detail-summary { display: none; }
 
   .listing-detail-layout { display: block; }
@@ -5085,6 +5087,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-safety small { color: #667689; font-size: 11px; line-height: 1.35; }
 
   .listing-detail-mobile-actions { position: fixed; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); left: 0; z-index: 41; gap: 10px; padding: 10px 16px; border-top: 1px solid #dce4e5; background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); }
+  body.listing-detail-screen .listing-detail-mobile-actions { bottom: 0; }
   .listing-detail-mobile-actions button { flex: 1; min-height: 48px; border-radius: 8px; font: inherit; font-size: 15px; font-weight: 800; }
   .listing-detail-mobile-actions .listing-detail-offer { border: 1px solid #08a875; background: #fff; color: #078961; }
 }
