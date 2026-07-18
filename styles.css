@@ -5092,7 +5092,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-actions button { flex: 1; min-height: 48px; border-radius: 8px; font: inherit; font-size: 15px; font-weight: 800; }
   .listing-detail-mobile-actions .listing-detail-offer { border: 1px solid #08a875; background: #fff; color: #078961; }
   .listing-detail-mobile-action-icon { width: 42px; height: 42px; display: grid; flex: 0 0 42px; place-items: center; align-self: center; border: 0; border-radius: 50%; background: #edf2f7; color: #1d3048; font-size: 16px; text-decoration: none; }
-  .listing-detail-mobile-actions button.listing-detail-mobile-action-icon { min-height: 42px; padding: 0; }
+  .listing-detail-mobile-actions button.listing-detail-mobile-action-icon { width: 42px; height: 42px; min-height: 42px; display: grid; flex: 0 0 42px; place-items: center; align-self: center; padding: 0; border-radius: 50%; }
   .listing-detail-mobile-action-icon.is-saved { color: #e94683; }
   .listing-detail-mobile-action-icon.save-button { position: relative; overflow: visible; }
 }
