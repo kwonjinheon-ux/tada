@@ -26,7 +26,7 @@ The profile dashboard and Market category menu are the reference implementations
 - Width: use `--mobile-drawer-width` (`min(78vw, 320px)`).
 - Surface: solid white background, no rounded corners, and a right-facing shadow.
 - Backdrop: fixed full-screen layer with a subtle dark tint and blur.
-- Close control: category drawers use a 36px square control at the bottom-right; profile drawers retain their own close-control placement.
+- Close control: every drawer uses the shared 36px `mobile-drawer-close` control at the bottom-right.
 - Header: do not add a redundant brand row or `Categories` title.
 - Category rows: present one vertical row per category with an icon and label, a 44px minimum height, and a muted selected state.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.

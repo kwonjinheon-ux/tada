@@ -74,7 +74,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
       </button>
 
       <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel="Close marketplace filters" className="filter-backdrop" panelClassName="market-filter-panel">
-        <button className={`filter-close-button ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
+        <button className={`filter-close-button ${mobileDrawerClasses.closeButton} ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
         <Link className="dashboard-link" href="/market/dashboard" onClick={() => setIsFilterOpen(false)}>

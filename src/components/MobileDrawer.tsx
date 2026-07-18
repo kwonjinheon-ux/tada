@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 export const mobileDrawerClasses = {
   panel: "mobile-side-drawer",
   backdrop: "mobile-drawer-backdrop",
+  closeButton: "mobile-drawer-close",
   menuItem: "mobile-drawer-menu-item",
   staggerItem: "mobile-drawer-stagger-item",
 } as const;

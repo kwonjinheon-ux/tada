@@ -3730,13 +3730,12 @@ a {
     display: none;
   }
 
-  .market-filter-panel.is-open .filter-close-button {
+  .mobile-side-drawer .mobile-drawer-close {
     width: 36px;
     height: 36px;
     display: grid;
     place-items: center;
     position: absolute;
-    top: auto;
     bottom: calc(12px + env(safe-area-inset-bottom));
     right: 12px;
     z-index: 1;
@@ -3745,6 +3744,11 @@ a {
     background: #f1f4f8;
     color: #40536b;
     font-size: 16px;
+    cursor: pointer;
+  }
+
+  .market-filter-panel.is-open .mobile-drawer-close {
+    display: grid;
   }
 
   .market-filter-panel.is-open .category-filter {
@@ -3789,22 +3793,6 @@ a {
 
   .mobile-dashboard-menu p {
     margin: 0 8px 7px;
-  }
-
-  .mobile-dashboard-menu .mobile-dashboard-close {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    position: absolute;
-    top: calc(10px + env(safe-area-inset-top));
-    right: 12px;
-    border: 0;
-    border-radius: 0;
-    background: #f1f4f8;
-    color: #40536b;
-    font-size: 16px;
-    cursor: pointer;
   }
 
   .mobile-bottom-dock {
