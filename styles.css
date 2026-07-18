@@ -5028,7 +5028,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-location-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; color: #607187; font-size: 12px; }
   .listing-detail-mobile-location-row span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; white-space: nowrap; }
   .listing-detail-mobile-location-row span:first-child { overflow: hidden; text-overflow: ellipsis; }
-  .listing-detail-mobile-location-row time { margin-left: auto; white-space: nowrap; }
+  .listing-detail-mobile-stats { display: flex; align-items: center; gap: 12px; margin-left: auto; white-space: nowrap; }
 
   .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
   .listing-detail-description h2 { font-size: 19px; }

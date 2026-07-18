@@ -143,7 +143,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
-        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span><time>{listing.createdAt}</time></div>
+        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span><time>{listing.createdAt}</time></div></div>
       </section>
 
       <section className="listing-detail-description">
