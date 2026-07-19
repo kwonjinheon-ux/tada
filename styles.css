@@ -4410,9 +4410,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-nav {
     grid-template-columns: auto minmax(220px, 1fr) auto auto;
-    min-height: 56px;
+    min-height: 58px;
     gap: 10px;
-    padding: 1.25px 18px;
+    padding: 5px 10px;
   }
 
   .site-logo {
@@ -4620,7 +4620,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .site-nav {
-    padding-inline: 20px;
+    padding-inline: 10px;
   }
 
   .auth-page {
