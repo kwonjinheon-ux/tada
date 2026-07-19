@@ -15,6 +15,7 @@ type ListingComment = {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  isPending?: boolean;
 };
 
 type CommentsResponse = { comments: ListingComment[]; currentUserId: string | null; error?: string };
@@ -90,6 +91,32 @@ export function ListingComments({ listingId }: { listingId: string }) {
     event.preventDefault();
     const body = parentId ? replyDraft.trim() : draft.trim();
     if (!body || isSubmitting) return;
+
+    const parent = parentId ? comments.find((comment) => comment.id === parentId) : null;
+    const optimisticComment: ListingComment = {
+      id: `pending-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now()}`,
+      parentId,
+      authorId: currentUserId ?? "pending-user",
+      authorName: "You",
+      authorAvatarUrl: null,
+      depth: parent ? parent.depth + 1 : 0,
+      body,
+      score: 0,
+      myVote: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      isPending: true,
+    };
+
+    // Render immediately; the server response is reconciled in the background.
+    setComments((current) => [...current, optimisticComment]);
+    if (parentId) {
+      setReplyDraft("");
+      setReplyTo(null);
+    } else {
+      setDraft("");
+    }
     setIsSubmitting(true);
     setError(null);
     try {
@@ -97,12 +124,15 @@ export function ListingComments({ listingId }: { listingId: string }) {
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (response.status === 401) throw new Error("Please log in to post a comment.");
       if (!response.ok) throw new Error(payload?.error || "Unable to post your comment right now.");
-      if (parentId) {
-        setReplyDraft("");
-        setReplyTo(null);
-      } else setDraft("");
-      await loadComments();
+      void loadComments();
     } catch (submitError) {
+      setComments((current) => current.filter((comment) => comment.id !== optimisticComment.id));
+      if (parentId) {
+        setReplyTo(parent ?? null);
+        setReplyDraft(body);
+      } else {
+        setDraft(body);
+      }
       setError(submitError instanceof Error ? submitError.message : "Unable to post your comment right now.");
     } finally {
       setIsSubmitting(false);

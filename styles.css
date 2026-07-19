@@ -5259,7 +5259,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 @media (max-width: 767.98px) {
   .listing-comments { width: auto; margin: 0 20px; padding-top: 25px; }.listing-comments-heading h2 { font-size: 19px; }.listing-comments-heading span { font-size: 12px; }
-  .listing-comments-composer { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comments-composer-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comments-composer textarea { min-height: 72px; font-size: 13px; }
+  .listing-comments-composer { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comments-composer-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comments-composer textarea { min-height: 72px; font-size: 16px; }.listing-comment-edit textarea, .listing-comment-reply-form textarea { font-size: 16px; }
   .listing-comments-list { gap: 20px; margin-top: 22px; }.listing-comment { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comment-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comment-content > p { font-size: 13px; }
   .listing-comment-children { gap: 15px; margin-top: 15px; padding-left: 10px; }.listing-comment-children .listing-comment { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }.listing-comment-children .listing-comment-avatar { width: 30px; height: 30px; font-size: 9px; }.listing-comment-tools > button { padding-inline: 5px; font-size: 10px; }
 }
