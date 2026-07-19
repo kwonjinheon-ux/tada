@@ -5176,6 +5176,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .messages-composer textarea { min-height: 46px; max-height: 126px; flex: 1; padding: 12px 14px; border: 1px solid #cbd8df; border-radius: 7px; background: #f8fbfd; color: #1a304b; font: inherit; font-size: 13px; line-height: 1.45; resize: vertical; }
 .messages-composer textarea:focus { outline: 2px solid rgba(16,185,129,.23); border-color: #0ba875; }
 .messages-composer button { width: 46px; height: 46px; display: grid; flex: 0 0 46px; place-items: center; border: 0; border-radius: 50%; background: #0ba875; color: #fff; cursor: pointer; }
+.messages-composer .messages-offer-button { background: #edf2f7; color: #087e59; }
+.messages-composer .messages-offer-button:hover { background: #dff7ee; }
 .messages-composer button:disabled { cursor: not-allowed; opacity: .45; }
 .messages-composer > p { position: absolute; bottom: 1px; left: 24px; margin: 0; color: #b42318; font-size: 10px; }
 .messages-unavailable { min-height: calc(100vh - 70px); display: grid; place-items: center; color: #6f7e91; }
@@ -5189,7 +5191,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .site-header.is-messages-page .mobile-bottom-dock { display: none; }
-  .messages-dashboard-page { display: block; height: calc(100dvh - 112px); min-height: calc(100dvh - 112px); padding: 0; overflow: hidden; }
+  body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
+  .messages-dashboard-page { display: block; height: calc(100dvh - 118px); min-height: 0; max-height: calc(100dvh - 118px); padding: 0; overflow: hidden; }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
   .messages-dashboard-page .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }
@@ -5204,7 +5207,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .messages-thread-panel { display: none; }
   .messages-page.has-selected-conversation .messages-list-panel { display: none; }
   .messages-page.has-selected-conversation .messages-thread-panel { display: flex; overflow: hidden; }
-  .messages-thread-header { position: sticky; top: 0; z-index: 1; flex: 0 0 auto; min-height: 66px; gap: 9px; padding: 10px 14px; }
+  .messages-thread-header { position: relative; z-index: 1; flex: 0 0 auto; min-height: 66px; gap: 9px; padding: 10px 14px; }
   .messages-mobile-back { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border: 0; border-radius: 50%; background: #edf2f7; color: #263b55; }
   .messages-thread-header .messages-avatar { width: 36px; height: 36px; font-size: 12px; }
   .messages-listing-context { grid-template-columns: 31px auto; gap: 6px; margin-left: auto; padding: 3px; border: 0; background: transparent; }
@@ -5213,8 +5216,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .messages-thread-body { flex: 1 1 auto; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .message-bubble { max-width: 86%; }
   .message-bubble p { font-size: 14px; }
-  .messages-composer { position: sticky; bottom: 0; z-index: 1; flex: 0 0 auto; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
-  .messages-composer textarea { min-height: 44px; }
+  .messages-composer { position: relative; z-index: 1; flex: 0 0 auto; gap: 8px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+  .messages-composer textarea { min-height: 44px; font-size: 16px; resize: none; }
   .messages-composer button { width: 44px; height: 44px; flex-basis: 44px; }
 }
 
