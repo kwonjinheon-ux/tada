@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getServerUser } from "@/lib/auth-server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const items = [
   ["fa-border-all", "Dashboard", ""],
@@ -10,14 +12,20 @@ const items = [
   ["fa-map", "Nearby Map", "/map"],
 ] as const;
 
-export function DashboardSidebar({ context = "market", active = "Dashboard" }: { context?: "market" | "jobs"; active?: string }) {
+export async function DashboardSidebar({ context = "market", active = "Dashboard" }: { context?: "market" | "jobs"; active?: string }) {
   const base = `/${context}/dashboard`;
+  const user = await getServerUser();
+  const supabase = await createServerSupabaseClient();
+  const { count: unreadMessageCount } = context === "market" && user && supabase
+    ? await supabase.from("market_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null)
+    : { count: 0 };
+  const unreadBadge = (unreadMessageCount ?? 0) > 99 ? "99+" : String(unreadMessageCount ?? 0);
   return (
     <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
       <nav className="dashboard-nav">
         {items.map(([icon, label, suffix]) => (
           <Link className={active === label ? "is-active" : ""} href={`${base}${suffix}`} key={label}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{label}</span>{label === "Messages" && <b>24</b>}
+            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : null}
           </Link>
         ))}
       </nav>

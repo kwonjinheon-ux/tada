@@ -24,6 +24,7 @@ export function Navbar() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,13 @@ export function Navbar() {
         if (!isMounted) return;
         setUserEmail(user?.email ?? null);
         setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
-        if (!user) { setAvatarUrl(null); return; }
+        if (!user) { setAvatarUrl(null); setUnreadMessageCount(0); return; }
+        const { count } = await supabase
+          .from("market_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_id", user.id)
+          .is("read_at", null);
+        if (isMounted) setUnreadMessageCount(count ?? 0);
         const avatarPath = user.user_metadata?.avatar_path;
         if (avatarPath) {
           const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
@@ -116,6 +123,7 @@ export function Navbar() {
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
+  const unreadBadge = unreadMessageCount > 99 ? "99+" : String(unreadMessageCount);
 
   const handleMobileProfileClick = () => {
     setIsOpen(false);
@@ -180,9 +188,9 @@ export function Navbar() {
             {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
           </button>
         )}
-        <button className="mobile-notifications nav-notifications" type="button" aria-label="5 unread notifications">
+        <button className="mobile-notifications nav-notifications" type="button" aria-label={`${unreadMessageCount} unread messages`}>
           <i className="fa-regular fa-bell" aria-hidden="true" />
-          <span>5</span>
+          {unreadMessageCount ? <span>{unreadBadge}</span> : null}
         </button>
 
         <nav className="primary-nav" aria-label="Main navigation">
@@ -201,9 +209,9 @@ export function Navbar() {
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>Create</span>
           </Link>
-          <button className="nav-notifications" type="button" aria-label="5 unread notifications">
+          <button className="nav-notifications" type="button" aria-label={`${unreadMessageCount} unread messages`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />
-            <span>5</span>
+            {unreadMessageCount ? <span>{unreadBadge}</span> : null}
           </button>
           {isAuthReady && userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
@@ -236,7 +244,7 @@ export function Navbar() {
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === `${dashboardBase}${suffix}` ? "is-active" : ""}`} href={`${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && <b>24</b>}</span>
+                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : null}</span>
               </Link>
             ))}
             <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
