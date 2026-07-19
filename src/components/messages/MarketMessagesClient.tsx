@@ -23,6 +23,7 @@ export type MarketMessage = {
   body: string;
   createdAt: string;
   readAt: string | null;
+  isPending?: boolean;
 };
 
 type Props = {
@@ -79,7 +80,12 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
           const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
           if (!row.id || !row.body || !row.created_at) return;
           const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-          setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
+          setMessages((current) => {
+            if (current.some((message) => message.id === incoming.id)) return current;
+            const optimisticIndex = current.findIndex((message) => message.isPending && message.senderId === incoming.senderId && message.body === incoming.body);
+            if (optimisticIndex === -1) return [...current, incoming];
+            return current.map((message, index) => index === optimisticIndex ? incoming : message);
+          });
           setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId ? 0 : conversation.unreadCount + 1 } : conversation));
           if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
         })
@@ -100,6 +106,19 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     event.preventDefault();
     const body = draft.trim();
     if (!body || !selectedConversationId || isSending) return;
+    const optimisticMessage: MarketMessage = {
+      id: `pending-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now()}`,
+      conversationId: selectedConversationId,
+      senderId: currentUserId,
+      recipientId: selectedConversation?.counterpart.id ?? "",
+      body,
+      createdAt: new Date().toISOString(),
+      readAt: null,
+      isPending: true,
+    };
+    setMessages((current) => [...current, optimisticMessage]);
+    setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: body, lastMessageAt: optimisticMessage.createdAt } : conversation));
+    setDraft("");
     setIsSending(true);
     setSendError(null);
     try {
@@ -107,13 +126,19 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       const payload = await response.json().catch(() => null) as { error?: string; message?: { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null } } | null;
       if (!response.ok || !payload?.message) {
         setSendError(payload?.error ?? "Unable to send your message.");
+        setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
+        setDraft(body);
         return;
       }
       const message: MarketMessage = { id: payload.message.id, conversationId: payload.message.conversation_id, senderId: payload.message.sender_id, recipientId: payload.message.recipient_id, body: payload.message.body, createdAt: payload.message.created_at, readAt: payload.message.read_at };
-      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
+      setMessages((current) => {
+        const withoutOptimistic = current.filter((item) => item.id !== optimisticMessage.id);
+        return withoutOptimistic.some((item) => item.id === message.id) ? withoutOptimistic : [...withoutOptimistic, message];
+      });
       setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: message.body, lastMessageAt: message.createdAt } : conversation));
-      setDraft("");
     } catch {
+      setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
+      setDraft(body);
       setSendError("Unable to reach the messaging service. Please try again.");
     } finally {
       setIsSending(false);
