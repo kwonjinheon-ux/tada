@@ -184,6 +184,6 @@ export function ListingComments({ listingId }: { listingId: string }) {
     <div className="listing-comments-heading"><h2 id="listing-comments-title">Q&amp;A &amp; Comments</h2><span>{activeRootCount} {activeRootCount === 1 ? "comment" : "comments"}</span></div>
     <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
-    {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : <p className="listing-comments-empty">Be the first to ask a question about this item.</p>}
+    {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
   </section>;
 }

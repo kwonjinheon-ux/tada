@@ -5233,7 +5233,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .listing-comments-composer button:disabled, .listing-comment-post-button:disabled { cursor: not-allowed; opacity: .48; }
 .listing-comments-error { margin: 13px 0 0; padding: 10px 12px; border: 1px solid #fecaca; border-radius: 7px; background: #fff1f2; color: #b42318; font-size: 13px; }
 .listing-comments-list { display: grid; gap: 23px; margin-top: 27px; }
-.listing-comments-empty { margin: 28px 0 0; color: #66778c; font-size: 14px; }
 .listing-comment { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; min-width: 0; }
 .listing-comment-author-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; }
 .listing-comment-author-row strong { color: #122640; font-size: 14px; }
