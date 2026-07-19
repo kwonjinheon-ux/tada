@@ -35,9 +35,9 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
     .order("last_message_at", { ascending: false, nullsFirst: false });
   const conversationRows = (rawConversations ?? []) as ConversationRow[];
-  const selectedConversationId = conversationRows.some((conversation) => conversation.id === requestedConversationId)
-    ? requestedConversationId ?? null
-    : conversationRows[0]?.id ?? null;
+  const selectedConversationId = requestedConversationId && conversationRows.some((conversation) => conversation.id === requestedConversationId)
+    ? requestedConversationId
+    : null;
   const listingIds = [...new Set(conversationRows.map((conversation) => conversation.listing_id))];
   const participantIds = [...new Set(conversationRows.flatMap((conversation) => [conversation.buyer_id, conversation.seller_id]))];
   const [{ data: rawListings }, { data: rawPhotos }, { data: rawProfiles }, { data: unreadRows }, { data: rawMessages }] = await Promise.all([

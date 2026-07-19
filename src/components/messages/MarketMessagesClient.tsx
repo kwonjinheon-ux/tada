@@ -36,12 +36,13 @@ function formatListTime(value: string | null) {
   if (!value) return "";
   const date = new Date(value);
   const today = new Date();
-  if (date.toDateString() === today.toDateString()) return new Intl.DateTimeFormat("en-NZ", { hour: "numeric", minute: "2-digit" }).format(date);
-  return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short" }).format(date);
+  const dateKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Auckland", year: "numeric", month: "2-digit", day: "2-digit" });
+  if (dateKey.format(date) === dateKey.format(today)) return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", day: "numeric", month: "short" }).format(date);
 }
 
 function formatMessageTime(value: string) {
-  return new Intl.DateTimeFormat("en-NZ", { hour: "numeric", minute: "2-digit" }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
 function Avatar({ name, src, className }: { name: string; src: string | null; className: string }) {
@@ -62,6 +63,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   useEffect(() => setConversations(initialConversations), [initialConversations]);
   useEffect(() => setMessages(initialMessages), [initialMessages]);
   useEffect(() => bottomRef.current?.scrollIntoView({ block: "end" }), [messages]);
+  useEffect(() => { if (selectedConversationId) router.prefetch("/market/dashboard/messages"); }, [router, selectedConversationId]);
 
   useEffect(() => {
     if (!selectedConversationId) return;
@@ -134,7 +136,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
       <section className="messages-thread-panel" aria-label="Conversation">
         {selectedConversation ? <>
-          <header className="messages-thread-header"><button className="messages-mobile-back" type="button" aria-label="Back to conversations" onClick={() => router.push("/market/dashboard/messages")}><i className="fa-solid fa-arrow-left" aria-hidden="true" /></button><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
+          <header className="messages-thread-header"><button className="messages-mobile-back" type="button" aria-label="Back to conversations" onClick={() => router.replace("/market/dashboard/messages", { scroll: false })}><i className="fa-solid fa-arrow-left" aria-hidden="true" /></button><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
           <div className="messages-thread-body">
             {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span>{formatMessageTime(message.createdAt)}{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div>}
             <div ref={bottomRef} />
