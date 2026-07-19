@@ -4,7 +4,7 @@ const items = [
   ["fa-border-all", "Dashboard", ""],
   ["fa-circle-user", "Profile Settings", "/profile"],
   ["fa-message", "Messages", "/messages"],
-  ["fa-heart", "Wishlist", "/wishlist"],
+  ["fa-star", "Wishlist", "/wishlist"],
   ["fa-key", "Keywords", "/keywords"],
   ["fa-rectangle-list", "Manage Listings", "/listings"],
   ["fa-map", "Nearby Map", "/map"],

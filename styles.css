@@ -1438,36 +1438,36 @@ a {
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
-.save-heart-particles,
-.save-heart-particle {
+.save-star-particles,
+.save-star-particle {
   position: absolute;
   pointer-events: none;
 }
 
-.save-heart-particles {
+.save-star-particles {
   inset: 0;
   overflow: visible;
 }
 
-.save-heart-particle {
+.save-star-particle {
   top: 50%;
   left: 50%;
   display: grid;
   place-items: center;
-  color: var(--heart-color);
-  font-size: var(--heart-size);
+  color: var(--star-color);
+  font-size: var(--star-size);
   line-height: 1;
   opacity: 0;
   transform: translate(-50%, -50%) scale(0);
   filter: drop-shadow(0 3px 4px rgb(116 26 57 / .25));
-  animation: save-heart-scatter var(--heart-duration) cubic-bezier(.16, .84, .28, 1) var(--heart-delay) both;
+  animation: save-star-scatter var(--star-duration) cubic-bezier(.16, .84, .28, 1) var(--star-delay) both;
 }
 
-@keyframes save-heart-scatter {
+@keyframes save-star-scatter {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(.25) rotate(0deg); }
-  16% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(calc(var(--heart-rotation) * .16)); }
-  64% { opacity: .95; transform: translate(calc(-50% + var(--heart-x)), calc(-50% + var(--heart-y))) scale(.92) rotate(calc(var(--heart-rotation) * .72)); }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--heart-x)), calc(-50% + var(--heart-y) - 14px)) scale(.38) rotate(var(--heart-rotation)); }
+  16% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(calc(var(--star-rotation) * .16)); }
+  64% { opacity: .95; transform: translate(calc(-50% + var(--star-x)), calc(-50% + var(--star-y))) scale(.92) rotate(calc(var(--star-rotation) * .72)); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--star-x)), calc(-50% + var(--star-y) - 14px)) scale(.38) rotate(var(--star-rotation)); }
 }
 
 .save-button i {
@@ -1476,15 +1476,15 @@ a {
 }
 
 .save-button.is-saved {
-  background: #e9fff7;
-  color: #ef476f;
+  background: #fff7d6;
+  color: #f5a623;
 }
 
 .save-button.is-popping {
-  animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1);
+  animation: star-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1);
 }
 
-@keyframes heart-pop-wiggle {
+@keyframes star-pop-wiggle {
   0% {
     transform: scale(1) rotate(0deg);
   }
@@ -1884,8 +1884,8 @@ a {
 }
 
 .listing-detail-save.is-saved {
-  background: #fff0f4;
-  color: #e94683;
+  background: #fff7d6;
+  color: #f5a623;
 }
 
 .listing-detail-price {
@@ -4335,7 +4335,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .product-grid.is-list-view .save-button.is-popping { z-index: 3; animation: none; }
-  .product-grid.is-list-view .save-button.is-popping > i { display: block; animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1); }
+  .product-grid.is-list-view .save-button.is-popping > i { display: block; animation: star-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1); }
 
   .market-toolbar {
     gap: 12px;

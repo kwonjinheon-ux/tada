@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Listing } from "@/data/listings";
-import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { createStarParticles, SaveStarBurst, type StarParticle } from "@/components/SaveStarBurst";
 
 type ProductCardProps = {
   listing: Listing;
@@ -15,7 +15,7 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
-  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const [starParticles, setStarParticles] = useState<StarParticle[]>([]);
   const burstTimer = useRef<number | null>(null);
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
@@ -29,12 +29,12 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
   const toggleSaved = () => {
     setIsSaved((current) => !current);
     setIsPopping(false);
-    setHeartParticles(createHeartParticles());
+    setStarParticles(createStarParticles());
     window.requestAnimationFrame(() => setIsPopping(true));
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
     if (popTimer.current) window.clearTimeout(popTimer.current);
     popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
-    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    burstTimer.current = window.setTimeout(() => setStarParticles([]), 1_050);
   };
 
   const detailPath = `/market/${listing.id}`;
@@ -107,8 +107,8 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
           }
         }}
       >
-        <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
-        <SaveHeartBurst particles={heartParticles} />
+        <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-star`} aria-hidden="true" />
+        <SaveStarBurst particles={starParticles} />
       </button>
     </article>
   );
