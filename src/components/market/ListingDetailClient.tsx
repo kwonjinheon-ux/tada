@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createStarParticles, SaveStarBurst, type StarParticle } from "@/components/SaveStarBurst";
+import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 
 export type ListingDetail = {
   id: string;
@@ -44,7 +44,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const [activeImage, setActiveImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
-  const [starParticles, setStarParticles] = useState<StarParticle[]>([]);
+  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
   const [isOpeningMessage, setIsOpeningMessage] = useState(false);
   const [messageError, setMessageError] = useState<string | null>(null);
   const burstTimer = useRef<number | null>(null);
@@ -72,10 +72,10 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const saveListing = () => {
     setIsSaved((current) => !current);
     setIsPopping(false);
-    setStarParticles(createStarParticles());
+    setHeartParticles(createHeartParticles());
     window.requestAnimationFrame(() => setIsPopping(true));
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
-    burstTimer.current = window.setTimeout(() => setStarParticles([]), 1_050);
+    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
   };
 
   const shareListing = async () => {
@@ -157,7 +157,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
               <h1>{listing.title}</h1>
             </div>
             <button className={`listing-detail-save ${isSaved ? "is-saved" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing}>
-              <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-star`} aria-hidden="true" />
+              <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
             </button>
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>
@@ -199,7 +199,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
       </section>
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-star`} aria-hidden="true" /><SaveStarBurst particles={starParticles} /></button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }

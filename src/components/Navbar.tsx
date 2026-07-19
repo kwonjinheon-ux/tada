@@ -12,7 +12,7 @@ const dashboardMenuItems = [
   ["fa-border-all", "Dashboard", ""],
   ["fa-circle-user", "Profile Settings", "/profile"],
   ["fa-message", "Messages", "/messages"],
-  ["fa-star", "Wishlist", "/wishlist"],
+  ["fa-heart", "Wishlist", "/wishlist"],
   ["fa-key", "Keywords", "/keywords"],
   ["fa-rectangle-list", "Manage Listings", "/listings"],
 ] as const;
