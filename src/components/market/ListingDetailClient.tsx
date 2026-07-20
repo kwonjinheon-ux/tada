@@ -43,6 +43,7 @@ function descriptionParagraphs(description: string) {
 export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
+  const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
   const [isSaved, setIsSaved] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
@@ -69,7 +70,12 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
     router.prefetch("/market/dashboard/messages");
   }, [router]);
 
-  const showImage = (index: number) => setActiveImage((index + listing.images.length) % listing.images.length);
+  const showImage = (index: number) => {
+    const nextImage = (index + listing.images.length) % listing.images.length;
+    if (nextImage === activeImage) return;
+    setImageTransition(index > activeImage ? "next" : "previous");
+    setActiveImage(nextImage);
+  };
   const saveListing = () => {
     setIsSaved((current) => !current);
     setIsPopping(false);
@@ -134,7 +140,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
             if (Math.abs(distance) < 42) return;
             showImage(activeImage + (distance < 0 ? 1 : -1));
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
-            <Image src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
+            <Image key={`${image.src}-${activeImage}`} className={`listing-detail-main-photo is-entering-from-${imageTransition}`} src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
             <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
             {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
@@ -143,7 +149,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
-                <button className={index === activeImage ? "is-active" : ""} type="button" key={photo.src} onClick={() => setActiveImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={index === activeImage}>
+                <button className={index === activeImage ? "is-active" : ""} type="button" key={photo.src} onClick={() => showImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={index === activeImage}>
                   <Image src={photo.src} alt="" fill sizes="96px" />
                 </button>
               ))}
