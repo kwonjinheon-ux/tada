@@ -18,6 +18,15 @@ type PhotoPreview = {
   url: string;
 };
 
+type SmartphoneSpecs = {
+  brand: string;
+  model: string;
+  storage: string;
+  memory: string;
+  colour: string;
+  lcdScratch: string;
+};
+
 const mainCategories: SelectOption[] = marketplaceCategories.map(({ label, value }) => ({ label, value }));
 
 const tradeMethods: SelectOption[] = [
@@ -61,6 +70,29 @@ const editorColors = [
   { label: "Green", value: "#00875a" },
   { label: "Blue", value: "#2563eb" },
 ];
+const emptySmartphoneSpecs: SmartphoneSpecs = {
+  brand: "",
+  model: "",
+  storage: "",
+  memory: "",
+  colour: "",
+  lcdScratch: "",
+};
+const smartphoneScratchOptions: SelectOption[] = [
+  { label: "No visible scratches", value: "No visible scratches" },
+  { label: "Light scratches", value: "Light scratches" },
+  { label: "Deep scratches", value: "Deep scratches" },
+  { label: "Cracked or damaged", value: "Cracked or damaged" },
+  { label: "Not checked", value: "Not checked" },
+];
+const smartphoneSpecLabels: Array<{ key: keyof SmartphoneSpecs; label: string }> = [
+  { key: "brand", label: "Brand" },
+  { key: "model", label: "Model" },
+  { key: "storage", label: "Storage / HDD capacity" },
+  { key: "memory", label: "Memory" },
+  { key: "colour", label: "Colour" },
+  { key: "lcdScratch", label: "LCD scratch" },
+];
 
 function aiDescriptionToHtml(description: string) {
   return description
@@ -68,6 +100,29 @@ function aiDescriptionToHtml(description: string) {
     .split(/\n{2,}/)
     .map((paragraph) => `<p>${paragraph.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br />")}</p>`)
     .join("");
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function smartphoneSpecsToHtml(specs: SmartphoneSpecs) {
+  const rows = smartphoneSpecLabels
+    .map(({ key, label }) => ({ label, value: specs[key].trim() }))
+    .filter(({ value }) => value.length > 0);
+
+  if (!rows.length) return "";
+
+  return [
+    "<p><strong>Smartphone details</strong></p>",
+    `<p>${rows.map(({ label, value }) => `<strong>${label}:</strong> ${escapeHtml(value)}`).join("<br />")}</p>`,
+  ].join("");
+}
+
+function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
+  const specsHtml = smartphoneSpecsToHtml(specs);
+  if (!specsHtml) return description;
+  return `${description}${description ? "<br />" : ""}${specsHtml}`;
 }
 
 function CustomSelect({
@@ -191,6 +246,7 @@ export function PostAdPageClient() {
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [smartphoneSpecs, setSmartphoneSpecs] = useState<SmartphoneSpecs>(emptySmartphoneSpecs);
   const [previousDescription, setPreviousDescription] = useState<string | null>(null);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [textColor, setTextColor] = useState("#314254");
@@ -204,6 +260,7 @@ export function PostAdPageClient() {
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
   const regionOptions = region && !regions.some((option) => option.value === region) ? [...regions, { label: region, value: region }] : regions;
   const areaOptions = area && !areas.some((option) => option.value === area) ? [...areas, { label: area, value: area }] : areas;
+  const shouldShowSmartphoneTemplate = mainCategory === "electronics" && subCategory === "mobile-phones";
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -266,6 +323,10 @@ export function PostAdPageClient() {
 
     setMainCategory(suggestion.mainCategory);
     setSubCategory(suggestion.subCategory);
+  };
+
+  const updateSmartphoneSpec = (key: keyof SmartphoneSpecs, value: string) => {
+    setSmartphoneSpecs((current) => ({ ...current, [key]: value }));
   };
 
   const addPhotos = (fileList: FileList | File[]) => {
@@ -446,7 +507,8 @@ export function PostAdPageClient() {
 
     const form = new FormData(formElement);
     const title = String(form.get("title") ?? "").trim();
-    const body = String(form.get("body") ?? "").trim();
+    const baseBody = String(form.get("body") ?? "").trim();
+    const body = shouldShowSmartphoneTemplate ? appendSmartphoneSpecs(baseBody, smartphoneSpecs) : baseBody;
     const price = String(form.get("price") ?? "").trim();
     const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
     const priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
@@ -513,6 +575,7 @@ export function PostAdPageClient() {
     setArea(defaultArea);
     setMeetingPlace("");
     setDescription("");
+    setSmartphoneSpecs(emptySmartphoneSpecs);
     setPreviousDescription(null);
     setTitle("");
     setPrice("");
@@ -639,6 +702,40 @@ export function PostAdPageClient() {
                   <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Tell buyers about your item's condition, features, and why you're selling..." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
                 )}
               </div>
+              {shouldShowSmartphoneTemplate && (
+                <section className="category-template-panel" aria-label="Smartphone listing details">
+                  <div className="category-template-heading">
+                    <div>
+                      <h2>Smartphone details</h2>
+                      <p>These fields will be added to your listing description when you post.</p>
+                    </div>
+                    <span>Electronics / Mobile phones</span>
+                  </div>
+                  <div className="category-template-grid">
+                    <div className="post-field">
+                      <label htmlFor="smartphone-brand">Brand</label>
+                      <input id="smartphone-brand" type="text" value={smartphoneSpecs.brand} onChange={(event) => updateSmartphoneSpec("brand", event.target.value)} placeholder="e.g. Apple" />
+                    </div>
+                    <div className="post-field">
+                      <label htmlFor="smartphone-model">Model</label>
+                      <input id="smartphone-model" type="text" value={smartphoneSpecs.model} onChange={(event) => updateSmartphoneSpec("model", event.target.value)} placeholder="e.g. iPhone 15 Pro Max" />
+                    </div>
+                    <div className="post-field">
+                      <label htmlFor="smartphone-storage">Storage / HDD capacity</label>
+                      <input id="smartphone-storage" type="text" value={smartphoneSpecs.storage} onChange={(event) => updateSmartphoneSpec("storage", event.target.value)} placeholder="e.g. 256GB" />
+                    </div>
+                    <div className="post-field">
+                      <label htmlFor="smartphone-memory">Memory</label>
+                      <input id="smartphone-memory" type="text" value={smartphoneSpecs.memory} onChange={(event) => updateSmartphoneSpec("memory", event.target.value)} placeholder="e.g. 8GB RAM" />
+                    </div>
+                    <div className="post-field">
+                      <label htmlFor="smartphone-colour">Colour</label>
+                      <input id="smartphone-colour" type="text" value={smartphoneSpecs.colour} onChange={(event) => updateSmartphoneSpec("colour", event.target.value)} placeholder="e.g. Natural Titanium" />
+                    </div>
+                    <CustomSelect id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="fa-mobile-screen" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
+                  </div>
+                </section>
+              )}
               <AiListingGenerator
                 title={title}
                 category={mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory}
