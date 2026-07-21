@@ -3982,7 +3982,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     z-index: 30;
     width: min(276px, calc(100vw - 24px));
     display: grid;
-    gap: 4.4px;
+    gap: 4px;
     margin: 0;
     padding: 12px;
     border: 1px solid rgba(187, 202, 191, .9);
@@ -4073,7 +4073,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     align-items: center;
     justify-content: center;
     justify-self: center;
-    gap: 5.5px;
+    gap: 5px;
     margin-top: 1px;
     border: 0;
     border-radius: 9px;
@@ -4655,7 +4655,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 4px;
+    gap: 5.28px;
   }
 
   .infinite-market-grid {
@@ -4705,7 +4705,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 5px;
+    gap: 6.6px;
   }
 
   .infinite-market-grid {
