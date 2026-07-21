@@ -163,8 +163,9 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
               <div className="listing-detail-status-row"><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            <button className={`listing-detail-save ${isSaved ? "is-saved" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing}>
+            <button className={`listing-detail-save ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
               <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
+              <SaveHeartBurst particles={heartParticles} />
             </button>
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>

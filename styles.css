@@ -1481,7 +1481,8 @@ a {
   color: #ef476f;
 }
 
-.save-button.is-popping {
+.save-button.is-popping,
+.listing-detail-save.is-popping {
   animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1);
 }
 
@@ -1919,6 +1920,7 @@ a {
   width: 42px;
   height: 42px;
   display: grid;
+  position: relative;
   flex: 0 0 auto;
   place-items: center;
   border: 0;
