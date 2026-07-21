@@ -12,7 +12,7 @@ const listingStats = [["fa-circle-exclamation", "Action Required", "0"], ["fa-ta
 export async function SellerDashboard({ context = "market" }: { context?: "market" | "jobs" }) {
   const user = await getServerUser();
   if (!user) redirect("/login");
-  const myListings = [listings[4], listings[2]];
+  const myListings = listings.slice(0, 2);
   const isJobsDashboard = context === "jobs";
 
   return (
