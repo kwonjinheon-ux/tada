@@ -106,7 +106,16 @@ async function getPostedListings(): Promise<Listing[]> {
   return listings;
 }
 
+async function getSavedListingIds() {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return [];
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id);
+  return (data ?? []).map((row) => row.listing_id as string);
+}
+
 export default async function MarketRoute() {
-  const postedListings = await getPostedListings();
-  return <MarketPageClient postedListings={postedListings} />;
+  const [postedListings, savedListingIds] = await Promise.all([getPostedListings(), getSavedListingIds()]);
+  return <MarketPageClient postedListings={postedListings} savedListingIds={savedListingIds} />;
 }

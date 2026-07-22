@@ -22,7 +22,7 @@ const filters = [
   ["fa-futbol", "Sporting Goods"],
 ];
 
-export function MarketPageClient({ postedListings = [] }: { postedListings?: Listing[] }) {
+export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -168,7 +168,7 @@ export function MarketPageClient({ postedListings = [] }: { postedListings?: Lis
 
         <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
           {visibleListings.map((listing, index) => (
-            <ProductCard key={listing.id} listing={listing} priority={index === 0} />
+            <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIds.includes(listing.id)} />
           ))}
         </div>
 

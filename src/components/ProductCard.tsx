@@ -9,11 +9,12 @@ import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/comp
 type ProductCardProps = {
   listing: Listing;
   priority?: boolean;
+  initialIsSaved?: boolean;
 };
 
-export function ProductCard({ listing, priority = false }: ProductCardProps) {
+export function ProductCard({ listing, priority = false, initialIsSaved = false }: ProductCardProps) {
   const router = useRouter();
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
   const burstTimer = useRef<number | null>(null);
@@ -26,8 +27,13 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
     if (popTimer.current) window.clearTimeout(popTimer.current);
   }, []);
 
-  const toggleSaved = () => {
-    setIsSaved((current) => !current);
+  useEffect(() => {
+    setIsSaved(initialIsSaved);
+  }, [initialIsSaved]);
+
+  const toggleSaved = async () => {
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
     setIsPopping(false);
     setHeartParticles(createHeartParticles());
     window.requestAnimationFrame(() => setIsPopping(true));
@@ -35,6 +41,20 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
     if (popTimer.current) window.clearTimeout(popTimer.current);
     popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    try {
+      const response = await fetch("/api/market/wishlist", {
+        method: nextSaved ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing.id }),
+      });
+      if (response.status === 401) {
+        router.push(`/login?redirectTo=${encodeURIComponent("/market")}`);
+        return;
+      }
+      if (!response.ok) setIsSaved(!nextSaved);
+    } catch {
+      setIsSaved(!nextSaved);
+    }
   };
 
   const detailPath = `/market/${listing.id}`;
@@ -98,7 +118,7 @@ export function ProductCard({ listing, priority = false }: ProductCardProps) {
         aria-pressed={isSaved}
         onClick={(event) => {
           event.stopPropagation();
-          toggleSaved();
+          void toggleSaved();
         }}
         onKeyDown={(event) => event.stopPropagation()}
         onAnimationEnd={(event) => {
