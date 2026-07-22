@@ -5398,7 +5398,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-photo-grid .listing-detail-mobile-badge { position: absolute; bottom: 10px; left: 10px; display: flex; }
   .listing-detail-gallery.has-mobile-photo-stack .listing-detail-main-image { display: none; }
   .listing-detail-mobile-photo-stack { display: grid; gap: 10px; margin: 0 16px; }
-  .listing-detail-mobile-photo-stack > button { display: block; width: 100%; padding: 0; overflow: hidden; border: 0; border-radius: 9px; background: #eaf0f8; cursor: zoom-in; }
+  .listing-detail-mobile-photo-stack > button { display: block; width: 100%; padding: 0; overflow: hidden; border: 0; background: #eaf0f8; cursor: zoom-in; }
   .listing-detail-mobile-photo-stack img { width: 100%; height: auto; display: block; }
   .listing-detail-mobile-photo-stack > button:focus-visible { outline: 3px solid #19b985; outline-offset: 3px; }
   .listing-detail-gallery-arrow { width: 36px; height: 36px; opacity: .92; }
