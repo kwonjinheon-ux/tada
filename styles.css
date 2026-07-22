@@ -5451,7 +5451,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .messages-page.has-selected-conversation .messages-list-panel { display: none; }
   .messages-page.has-selected-conversation .messages-thread-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; overflow: hidden; }
   .messages-thread-header { position: relative; z-index: 3; min-height: 66px; gap: 9px; padding: 10px 14px; }
-  .messages-mobile-back { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border: 0; border-radius: 50%; background: #edf2f7; color: #263b55; }
+  .messages-mobile-back { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border: 0; border-radius: 50%; background: #edf2f7; color: #263b55; text-decoration: none; }
   .messages-thread-header .messages-avatar { width: 36px; height: 36px; font-size: 12px; }
   .messages-listing-context { grid-template-columns: 31px auto; gap: 6px; margin-left: auto; padding: 3px; border: 0; background: transparent; }
   .messages-listing-context img, .messages-listing-context > i:first-child { width: 31px; height: 31px; }

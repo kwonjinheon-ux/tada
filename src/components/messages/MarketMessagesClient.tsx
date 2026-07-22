@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -164,7 +165,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
       <section className="messages-thread-panel" aria-label="Conversation">
         {selectedConversation ? <>
-          <header className="messages-thread-header"><button className="messages-mobile-back" type="button" aria-label="Back to conversations" onClick={() => router.replace("/market/dashboard/messages", { scroll: false })}><i className="fa-solid fa-arrow-left" aria-hidden="true" /></button><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
+          <header className="messages-thread-header"><Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
           <div className="messages-thread-body">
             {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div>}
             <div ref={bottomRef} />
