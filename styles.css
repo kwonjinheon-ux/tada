@@ -4535,12 +4535,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .product-grid.is-list-view .save-button {
     align-self: center;
     justify-self: end;
-    contain: layout paint;
-    transform: translateZ(0);
   }
-
-  .product-grid.is-list-view .save-button.is-popping { z-index: 3; animation: none; }
-  .product-grid.is-list-view .save-button.is-popping > i { display: block; animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1); }
 
   .market-toolbar {
     gap: 12px;
