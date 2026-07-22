@@ -1800,11 +1800,25 @@ a {
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 8px;
-  background: #eaf0f8;
+  background: #142239;
+  cursor: zoom-in;
 }
 
-.listing-detail-main-image img {
+.listing-detail-main-backdrop {
   object-fit: cover;
+  filter: blur(20px);
+  opacity: .62;
+  transform: scale(1.12);
+}
+
+.listing-detail-main-photo {
+  z-index: 1;
+  object-fit: contain;
+}
+
+.listing-detail-main-image:focus-visible {
+  outline: 3px solid #19b985;
+  outline-offset: 3px;
 }
 
 .listing-detail-main-photo {
@@ -1857,6 +1871,7 @@ a {
 
 .listing-detail-image-count {
   position: absolute;
+  z-index: 2;
   right: 14px;
   bottom: 14px;
   display: inline-flex;
@@ -1897,6 +1912,86 @@ a {
 
 .listing-detail-thumbnails img {
   object-fit: cover;
+}
+
+body.listing-gallery-open { overflow: hidden; }
+
+.listing-gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgba(5, 14, 27, .92);
+}
+
+.listing-gallery-lightbox-backdrop {
+  object-fit: cover;
+  filter: blur(34px) brightness(.45);
+  opacity: .76;
+  transform: scale(1.12);
+}
+
+.listing-gallery-lightbox-stage {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 1320px);
+  height: min(84dvh, 860px);
+}
+
+.listing-gallery-lightbox-photo {
+  object-fit: contain;
+}
+
+.listing-gallery-lightbox-close,
+.listing-gallery-lightbox-arrow {
+  position: fixed;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+.listing-gallery-lightbox-close {
+  top: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(7, 22, 41, .72);
+  font-size: 20px;
+}
+
+.listing-gallery-lightbox-arrow {
+  top: 50%;
+  width: 48px;
+  height: 62px;
+  border-radius: 8px;
+  background: rgba(7, 22, 41, .62);
+  font-size: 20px;
+  transform: translateY(-50%);
+}
+
+.listing-gallery-lightbox-arrow.is-previous { left: 22px; }
+.listing-gallery-lightbox-arrow.is-next { right: 22px; }
+
+.listing-gallery-lightbox-count {
+  position: fixed;
+  right: 50%;
+  bottom: 24px;
+  z-index: 2;
+  min-width: 62px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(7, 22, 41, .72);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  transform: translateX(50%);
 }
 
 .listing-detail-summary {
@@ -5306,10 +5401,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-photo-grid > div { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px; }
   .listing-detail-mobile-photo-grid img { object-fit: cover; }
   .listing-detail-mobile-photo-grid .listing-detail-mobile-badge { position: absolute; bottom: 10px; left: 10px; display: flex; }
-  .listing-detail-gallery.has-mobile-photo-grid .listing-detail-main-image { display: none; }
   .listing-detail-gallery-arrow { width: 36px; height: 36px; opacity: .92; }
   .listing-detail-gallery-arrow.is-previous { left: 26px; }
   .listing-detail-gallery-arrow.is-next { right: 26px; }
+  .listing-gallery-lightbox-stage { width: 100vw; height: calc(100dvh - 116px); }
+  .listing-gallery-lightbox-close { top: 16px; right: 16px; width: 40px; height: 40px; }
+  .listing-gallery-lightbox-arrow { width: 38px; height: 54px; }
+  .listing-gallery-lightbox-arrow.is-previous { left: 12px; }
+  .listing-gallery-lightbox-arrow.is-next { right: 12px; }
+  .listing-gallery-lightbox-count { bottom: 18px; }
 
   .listing-detail-mobile-meta { display: block; margin: 17px 20px 0; padding-bottom: 20px; border-bottom: 1px solid #cbd5d5; }
   .listing-detail-mobile-dots { display: flex; justify-content: center; gap: 12px; margin: 0 0 23px; }

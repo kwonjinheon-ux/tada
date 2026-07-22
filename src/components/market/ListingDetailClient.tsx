@@ -44,6 +44,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
@@ -61,6 +62,27 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
     document.body.classList.add("listing-detail-screen");
     return () => document.body.classList.remove("listing-detail-screen");
   }, []);
+
+  useEffect(() => {
+    if (!isGalleryOpen) return;
+    document.body.classList.add("listing-gallery-open");
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsGalleryOpen(false);
+      if (event.key === "ArrowRight" && listing.images.length > 1) {
+        setImageTransition("next");
+        setActiveImage((current) => (current + 1) % listing.images.length);
+      }
+      if (event.key === "ArrowLeft" && listing.images.length > 1) {
+        setImageTransition("previous");
+        setActiveImage((current) => (current - 1 + listing.images.length) % listing.images.length);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.classList.remove("listing-gallery-open");
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isGalleryOpen, listing.images.length]);
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
@@ -160,20 +182,25 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
       </Link>
 
       <div className="listing-detail-layout">
-        <section className={`listing-detail-gallery ${listing.images.length > 1 ? "has-mobile-photo-grid" : ""}`} aria-label={`${listing.title} photos`}>
-          <div className="listing-detail-main-image" onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => {
-            if (swipeStartX.current === null || listing.images.length < 2) return;
+        <section className="listing-detail-gallery" aria-label={`${listing.title} photos`}>
+          <div className="listing-detail-main-image" role="button" tabIndex={0} aria-label={`Open photo ${activeImage + 1} of ${listing.images.length} in gallery`} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setIsGalleryOpen(true); } }} onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => {
+            if ((event.target as HTMLElement).closest("button")) return;
+            if (swipeStartX.current === null) return;
             const distance = event.clientX - swipeStartX.current;
             swipeStartX.current = null;
-            if (Math.abs(distance) < 42) return;
+            if (Math.abs(distance) < 12) {
+              setIsGalleryOpen(true);
+              return;
+            }
+            if (Math.abs(distance) < 42 || listing.images.length < 2) return;
             showImage(activeImage + (distance < 0 ? 1 : -1));
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
+            <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="(max-width: 900px) 100vw, 68vw" />
             <Image key={`${image.src}-${activeImage}`} className={`listing-detail-main-photo is-entering-from-${imageTransition}`} src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
             <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
-            {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
+            {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
-          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-grid listing-detail-mobile-only">{listing.images.map((photo, index) => <div key={photo.src}><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 100vw, 360px" />{index === 0 ? <span className="listing-detail-mobile-badge">Newly listed</span> : null}</div>)}</div> : null}
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
@@ -218,7 +245,17 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
         </aside>
       </div>
 
-      <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-grid" : ""}`}>
+      {isGalleryOpen ? <div className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`}>
+        <Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" />
+        <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+        <div className="listing-gallery-lightbox-stage">
+          <Image key={`lightbox-${image.src}-${activeImage}`} className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill priority sizes="100vw" />
+        </div>
+        {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
+        <span className="listing-gallery-lightbox-count">{activeImage + 1} / {listing.images.length}</span>
+      </div> : null}
+
+      <section className="listing-detail-mobile-meta listing-detail-mobile-only">
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
