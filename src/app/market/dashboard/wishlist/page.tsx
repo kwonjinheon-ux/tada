@@ -26,9 +26,9 @@ export default async function WishlistPage() {
   return (
     <main className="marketplace-page dashboard-page wishlist-page">
       <DashboardSidebar context="market" active="Wishlist" />
-      <div className="dashboard-content wishlist-content">
+      <div className="dashboard-content profile-settings-content wishlist-content">
         <header className="wishlist-heading">
-          <div><p>Saved for later</p><h1>Wishlist</h1><span>Manage your 12 saved items</span></div>
+          <div><span>Manage your 12 saved items</span></div>
           <div className="wishlist-tabs" aria-label="Wishlist categories">
             <button className="is-active" type="button">All items</button><button type="button">Goods</button><button type="button">Cars</button><button type="button">Real estate</button><button type="button">Articles</button>
           </div>

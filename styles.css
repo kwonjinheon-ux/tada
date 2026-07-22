@@ -4935,7 +4935,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .dashboard-nav b { min-width: 24px; padding: 2px 6px; border-radius: 99px; background: #c91f2d; color: #fff; font-size: 10px; text-align: center; }
 .dashboard-sell-button { min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: auto; border-radius: 9px; background: #10b981; color: #fff; font-weight: 800; text-decoration: none; box-shadow: 0 8px 18px rgba(16,185,129,.2); }
 .dashboard-content { width: min(100%, 1050px); padding: 28px 34px 48px; }
-.wishlist-content { max-width: 1120px; }
 .wishlist-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .wishlist-heading p { margin: 0 0 4px; color: #07895f; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .wishlist-heading h1 { margin: 0; color: #0b1c30; font-size: 28px; line-height: 1.1; }
@@ -5155,10 +5154,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     height: 210px;
   }
 
-  .dashboard-page .wishlist-content {
-    padding: 20px 16px 36px;
-  }
-
   .wishlist-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -5176,10 +5171,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .wishlist-item-side del { margin-top: 2px; }
   .wishlist-heart { display: none; }
   .wishlist-recently-viewed > div { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-}
-
-@media (min-width: 768px) {
-  .dashboard-page .wishlist-content { padding: 28px 34px 48px; }
 }
 
 /* Tablet: identical 220px Marketplace rail with a denser dashboard canvas. */
