@@ -128,5 +128,10 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const { listingId } = await params;
   const listing = await getListingDetail(listingId);
   if (!listing) notFound();
-  return <ListingDetailClient listing={listing} />;
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const { data: savedListing } = supabase && user
+    ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
+    : { data: null };
+  return <ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} />;
 }

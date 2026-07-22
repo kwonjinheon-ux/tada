@@ -40,11 +40,11 @@ function descriptionParagraphs(description: string) {
   return plainText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
 }
 
-export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
+export function ListingDetailClient({ listing, initialIsSaved = false }: { listing: ListingDetail; initialIsSaved?: boolean }) {
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
   const [isOpeningMessage, setIsOpeningMessage] = useState(false);
@@ -70,19 +70,38 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
     router.prefetch("/market/dashboard/messages");
   }, [router]);
 
+  useEffect(() => {
+    void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST" });
+  }, [listing.id]);
+
   const showImage = (index: number) => {
     const nextImage = (index + listing.images.length) % listing.images.length;
     if (nextImage === activeImage) return;
     setImageTransition(index > activeImage ? "next" : "previous");
     setActiveImage(nextImage);
   };
-  const saveListing = () => {
-    setIsSaved((current) => !current);
+  const saveListing = async () => {
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
     setIsPopping(false);
     setHeartParticles(createHeartParticles());
     window.requestAnimationFrame(() => setIsPopping(true));
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    try {
+      const response = await fetch("/api/market/wishlist", {
+        method: nextSaved ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing.id }),
+      });
+      if (response.status === 401) {
+        router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
+        return;
+      }
+      if (!response.ok) setIsSaved(!nextSaved);
+    } catch {
+      setIsSaved(!nextSaved);
+    }
   };
 
   const shareListing = async () => {
@@ -163,7 +182,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
               <div className="listing-detail-status-row"><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            <button className={`listing-detail-save ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
+            <button className={`listing-detail-save ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
               <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
               <SaveHeartBurst particles={heartParticles} />
             </button>
@@ -210,7 +229,7 @@ export function ListingDetailClient({ listing }: { listing: ListingDetail }) {
 
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={saveListing} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }

@@ -24,7 +24,7 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
     <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
       <nav className="dashboard-nav">
         {items.map(([icon, label, suffix]) => (
-          <Link className={active === label ? "is-active" : ""} href={`${base}${suffix}`} key={label}>
+          <Link className={active === label ? "is-active" : ""} href={context === "market" && label === "Wishlist" ? "/market/wishlist" : `${base}${suffix}`} key={label}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : null}
           </Link>
         ))}
