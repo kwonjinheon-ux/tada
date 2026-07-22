@@ -5161,10 +5161,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     margin-bottom: 18px;
   }
 
-  .wishlist-heading,
-  .wishlist-list,
-  .wishlist-discovery,
-  .wishlist-recently-viewed { margin-right: 16px; margin-left: 16px; }
   .wishlist-tabs { width: 100%; max-width: 100%; }
   .wishlist-item { position: relative; grid-template-columns: 104px minmax(0, 1fr); gap: 0; min-height: 128px; padding: 0; }
   .wishlist-item-image { grid-row: 1 / span 2; min-height: 128px; }
