@@ -18,6 +18,7 @@ export type ListingDetail = {
   meetingPlace: string | null;
   createdAt: string;
   status: "available" | "pending" | "sold";
+  viewCount: number;
   images: Array<{ src: string; alt: string }>;
   seller: { id: string | null; name: string; avatarUrl: string | null; ratingAverage: number; ratingCount: number };
 };
@@ -45,6 +46,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [viewCount, setViewCount] = useState(listing.viewCount);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
@@ -93,7 +95,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
   }, [router]);
 
   useEffect(() => {
-    void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST" });
+    void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST", cache: "no-store" })
+      .then((response) => response.ok ? response.json() as Promise<{ viewCount?: number }> : null)
+      .then((payload) => { if (typeof payload?.viewCount === "number") setViewCount(payload.viewCount); })
+      .catch(() => undefined);
   }, [listing.id]);
 
   useEffect(() => {
@@ -259,7 +264,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span></div>
-        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> 24</span><time>{listing.createdAt}</time></div></div>
+        <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
       <section className="listing-detail-description">
@@ -275,7 +280,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
 
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
+      <div className="listing-detail-mobile-actions listing-detail-mobile-only"><button type="button" className="listing-detail-message">Make an offer</button><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></div>
     </main>
   );
 }

@@ -18,6 +18,7 @@ type MarketListingRow = {
   trade_method: "pickup_delivery" | "pickup" | "delivery";
   meeting_place: string | null;
   status: "published" | "pending" | "sold";
+  view_count: number | null;
   created_at: string;
 };
 
@@ -54,6 +55,7 @@ function fallbackListing(id: string): ListingDetail | null {
     meetingPlace: null,
     createdAt: "Listed recently",
     status: listing.status,
+    viewCount: 0,
     images: [{ src: listing.image, alt: listing.imageAlt }],
     seller: { id: null, name: "Tada seller", avatarUrl: null, ratingAverage: 0, ratingCount: 0 },
   };
@@ -65,7 +67,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
 
   const { data, error } = await supabase
     .from("market_listings")
-    .select("id,owner_id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at")
+    .select("id,owner_id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at,view_count")
     .eq("id", id)
     .maybeSingle();
 
@@ -113,6 +115,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
     meetingPlace: listing.meeting_place,
     createdAt: formatDate(listing.created_at),
     status: listing.status === "sold" ? "sold" : listing.status === "pending" ? "pending" : "available",
+    viewCount: Number(listing.view_count ?? 0),
     images: images.length ? images : [{ src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80", alt: listing.title }],
     seller: {
       id: seller?.id ?? null,
