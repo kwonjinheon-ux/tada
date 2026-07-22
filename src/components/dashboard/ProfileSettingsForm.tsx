@@ -5,82 +5,71 @@ import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploade
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null };
-type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
-type LocationRequestState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "success"; coordinates: LocationCoordinates }
-  | { status: "error"; message: string };
-const GEOLOCATION_ERROR_CODES = {
-  PERMISSION_DENIED: 1,
-  POSITION_UNAVAILABLE: 2,
-  TIMEOUT: 3,
-} as const;
+type Preferences = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; newMessages: boolean; savedItems: boolean; priceUpdates: boolean; reviews: boolean };
 
-const NZ_CITIES = [
-  ["Whangārei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotahā", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Gisborne", -38.662, 178.018, ["Kaiti", "Elgin", "Whataupoko", "Te Hapara"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Hastings", -39.638, 176.844, ["Havelock North", "Flaxmere", "Mahora", "Parkvale"]], ["New Plymouth", -39.056, 174.075, ["Fitzroy", "Bell Block", "Vogeltown", "Westown"]], ["Whanganui", -39.933, 175.052, ["Gonville", "Durie Hill", "Castlecliff", "Springvale"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Porirua", -41.133, 174.84, ["Aotea", "Cannons Creek", "Paremata", "Whitby"]], ["Lower Hutt", -41.212, 174.903, ["Petone", "Wainuiomata", "Stokes Valley", "Eastbourne"]], ["Upper Hutt", -41.125, 175.07, ["Trentham", "Silverstream", "Maoribank", "Pinehaven"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
-] as const;
+const defaultPreferences: Preferences = { allowChat: true, showPhoneNumber: false, emailNotifications: true, newMessages: true, savedItems: true, priceUpdates: true, reviews: true };
 
-export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile }) {
+export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialPreferences }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialPreferences?: Partial<Preferences> }) {
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [isSavingNickname, setIsSavingNickname] = useState(false);
-  const [phone, setPhone] = useState(initialProfile.phone ?? "");
-  const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
-  const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city! : "");
-  const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
-  const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
-  const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [status, setStatus] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
+  const [emailDraft, setEmailDraft] = useState(email);
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  const [phone, setPhone] = useState(initialProfile.phone ?? "");
   const [phoneOtp, setPhoneOtp] = useState("");
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
-  const selectedCity = NZ_CITIES.find(([name]) => name === city);
-  const availableSuburbs = selectedCity?.[3] ?? [];
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent([suburb, city, "New Zealand"].filter(Boolean).join(", ") || "New Zealand")}&output=embed`;
+  const [preferences, setPreferences] = useState<Preferences>({ ...defaultPreferences, ...initialPreferences });
+  const [status, setStatus] = useState("");
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
-  const applyNearestLocation = ({ latitude, longitude, accuracy }: LocationCoordinates) => {
-    const nearest = NZ_CITIES.reduce((closest, location) => ((location[1] - latitude) ** 2 + (location[2] - longitude) ** 2) < ((closest[1] - latitude) ** 2 + (closest[2] - longitude) ** 2) ? location : closest);
-    setLocationMode("current"); setCoordinates({ latitude, longitude }); setCurrentLocation({ status: "success", coordinates: { latitude, longitude, accuracy } }); setCity(nearest[0]); setSuburb(nearest[3][0]); setStatus(`현재 위치가 ${nearest[0]}로 설정되었습니다.`);
+
+  const saveNickname = async () => {
+    const nickname = nicknameDraft.trim();
+    if (nickname.length < 2 || nickname.length > 40) { setStatus("Nickname must be between 2 and 40 characters."); return; }
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setStatus("Profile settings are unavailable right now."); return; }
+    setIsSavingNickname(true);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) { setStatus("Please sign in again."); setIsSavingNickname(false); return; }
+    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname });
+    if (!error) await supabase.auth.updateUser({ data: { full_name: nickname } });
+    setStatus(error ? error.message : "Nickname updated.");
+    if (!error) { setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false); }
+    setIsSavingNickname(false);
   };
 
-  const getGeolocationErrorMessage = (code: number) => {
-    switch (code) {
-      case GEOLOCATION_ERROR_CODES.PERMISSION_DENIED:
-        return "위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용한 뒤 다시 시도해 주세요.";
-      case GEOLOCATION_ERROR_CODES.POSITION_UNAVAILABLE:
-        return "현재 위치 정보를 가져올 수 없습니다. GPS 또는 네트워크 상태를 확인해 주세요.";
-      case GEOLOCATION_ERROR_CODES.TIMEOUT:
-        return "위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.";
-      default:
-        return "위치를 확인하는 중 알 수 없는 오류가 발생했습니다.";
-    }
+  const updatePassword = async () => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setStatus("Profile settings are unavailable right now."); return; }
+    if (!currentPassword || newPassword.length < 8) { setStatus("Enter your current password and a new password of at least 8 characters."); return; }
+    if (newPassword !== confirmPassword) { setStatus("New passwords do not match."); return; }
+    setIsUpdatingPassword(true);
+    const { error: verificationError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (verificationError) { setStatus("Your current password is incorrect."); setIsUpdatingPassword(false); return; }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setStatus(error ? error.message : "Password updated successfully.");
+    if (!error) { setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }
+    setIsUpdatingPassword(false);
   };
 
-  const useCurrentLocation = () => {
-    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
-      const message = "이 브라우저는 위치 서비스를 지원하지 않습니다.";
-      setCurrentLocation({ status: "error", message }); setStatus(message); return;
-    }
-
-    setIsLocating(true); setCurrentLocation({ status: "loading" }); setStatus("현재 위치를 확인하는 중입니다.");
-    navigator.geolocation.getCurrentPosition(({ coords }) => {
-      applyNearestLocation({ latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy }); setIsLocating(false);
-    }, (locationError) => {
-      const message = getGeolocationErrorMessage(locationError.code);
-      setCurrentLocation({ status: "error", message }); setStatus(message); setIsLocating(false);
-    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  const updateEmail = async () => {
+    const nextEmail = emailDraft.trim();
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase || !nextEmail) { setStatus("Enter a valid email address."); return; }
+    setIsUpdatingEmail(true);
+    const { error } = await supabase.auth.updateUser({ email: nextEmail });
+    setStatus(error ? error.message : "Check your email to confirm the new address.");
+    setIsUpdatingEmail(false);
   };
 
   const normalisedPhone = () => {
@@ -101,94 +90,41 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     if (!supabase || phoneOtp.length !== 6) { setStatus("Enter the 6-digit SMS code."); return; }
     setIsVerifyingPhoneCode(true);
     const { error } = await supabase.auth.verifyOtp({ phone: targetPhone, token: phoneOtp, type: "phone_change" });
-    setStatus(error ? error.message : "Phone number verified successfully."); if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); } setIsVerifyingPhoneCode(false);
+    setStatus(error ? error.message : "Phone number verified successfully.");
+    if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); }
+    setIsVerifyingPhoneCode(false);
   };
 
-  const saveNickname = async () => {
-    const nickname = nicknameDraft.trim();
-    if (nickname.length < 2 || nickname.length > 40) { setStatus("Nickname must be between 2 and 40 characters."); return; }
+  const updatePreference = async (key: keyof Preferences, value: boolean) => {
+    const nextPreferences = { ...preferences, [key]: value };
+    setPreferences(nextPreferences);
     const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setStatus("Supabase is not configured."); return; }
-    setIsSavingNickname(true);
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) { setStatus("Please sign in again."); setIsSavingNickname(false); return; }
-    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname });
-    if (error) { setStatus(error.message); setIsSavingNickname(false); return; }
-    const { error: metadataError } = await supabase.auth.updateUser({ data: { full_name: nickname } });
-    if (metadataError) { setStatus(metadataError.message); setIsSavingNickname(false); return; }
-    setDisplayName(nickname);
-    setNicknameDraft(nickname);
-    setIsEditingNickname(false);
-    setStatus("Nickname updated.");
-    setIsSavingNickname(false);
+    if (!supabase) return;
+    const { error } = await supabase.auth.updateUser({ data: { market_preferences: nextPreferences } });
+    if (error) { setPreferences(preferences); setStatus(error.message); }
   };
 
-  const saveChanges = async () => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setStatus("Supabase is not configured."); return; }
-    setIsSaving(true); setStatus("");
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) { setStatus("Please sign in again."); setIsSaving(false); return; }
-    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: displayName, phone: phone.trim() || null, location_mode: locationMode, region_city: city.trim() || null, region_suburb: suburb.trim() || null, latitude: coordinates.latitude, longitude: coordinates.longitude });
-    if (error) { setStatus(error.message); setIsSaving(false); return; }
-    const { error: metadataError } = await supabase.auth.updateUser({ data: { full_name: displayName } });
-    setStatus(metadataError ? metadataError.message : "Profile settings saved."); setIsSaving(false);
-  };
-
-  const updatePassword = async () => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setStatus("Supabase is not configured."); return; }
-    if (!currentPassword || newPassword.length < 8) { setStatus("Enter your current password and a new password of at least 8 characters."); return; }
-    if (newPassword !== confirmPassword) { setStatus("New passwords do not match."); return; }
-    setIsUpdatingPassword(true);
-    const { error: verificationError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
-    if (verificationError) { setStatus("Your current password is incorrect."); setIsUpdatingPassword(false); return; }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setStatus(error ? error.message : "Password updated successfully.");
-    if (!error) { setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }
-    setIsUpdatingPassword(false);
-  };
+  const preferenceToggle = (key: keyof Preferences, label: string) => <label className="profile-preference-toggle" key={key}><input type="checkbox" checked={preferences[key]} onChange={(event) => void updatePreference(key, event.target.checked)} /><span>{label}</span></label>;
 
   return <>
-    <div className="profile-settings-grid">
+    <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} nicknameDraft={nicknameDraft} isEditingNickname={isEditingNickname} isSavingNickname={isSavingNickname} onNicknameChange={setNicknameDraft} onEditNickname={() => { setNicknameDraft(displayName); setIsEditingNickname(true); }} onCancelNickname={() => { setNicknameDraft(displayName); setIsEditingNickname(false); }} onSaveNickname={() => void saveNickname()} /></section>
-        <section className="profile-panel"><h2><i className="fa-solid fa-lock" /> Security</h2><div className="profile-password-grid"><label className="profile-field is-wide"><span>Current Password</span><div className="profile-password-input"><input type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={showCurrentPassword ? "Hide current password" : "Show current password"} onClick={() => setShowCurrentPassword((value) => !value)}><i className={`fa-regular ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>New Password</span><div className="profile-password-input"><input type={showNewPassword ? "text" : "password"} minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={showNewPassword ? "Hide new password" : "Show new password"} onClick={() => setShowNewPassword((value) => !value)}><i className={`fa-regular ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>Confirm New Password</span><div className={`profile-password-input ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}><input type={showConfirmPassword ? "text" : "password"} minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} onClick={() => setShowConfirmPassword((value) => !value)}><i className={`fa-regular ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`} /></button>{confirmPassword && <i className={`password-match-icon fa-solid ${passwordsMatch ? "fa-check" : "fa-xmark"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} />}</div></label></div><div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isUpdatingPassword} onClick={() => void updatePassword()}>{isUpdatingPassword ? "Updating…" : "Update Password"}</button></div></section>
+        <section className={`profile-panel profile-security-panel ${isSecurityOpen ? "is-open" : ""}`}>
+          <button className="profile-security-toggle" type="button" aria-expanded={isSecurityOpen} onClick={() => setIsSecurityOpen((value) => !value)}><span><i className="fa-solid fa-lock" /> Security</span><i className={`fa-solid fa-chevron-${isSecurityOpen ? "up" : "down"}`} /></button>
+          {isSecurityOpen ? <div className="profile-security-content">
+            <section className="profile-security-section"><h3>Password</h3><div className="profile-password-grid"><label className="profile-field is-wide"><span>Current Password</span><div className="profile-password-input"><input type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={showCurrentPassword ? "Hide current password" : "Show current password"} onClick={() => setShowCurrentPassword((value) => !value)}><i className={`fa-regular ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>New Password</span><div className="profile-password-input"><input type={showNewPassword ? "text" : "password"} minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={showNewPassword ? "Hide new password" : "Show new password"} onClick={() => setShowNewPassword((value) => !value)}><i className={`fa-regular ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label><label className="profile-field"><span>Confirm New Password</span><div className={`profile-password-input ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}><input type={showConfirmPassword ? "text" : "password"} minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} onClick={() => setShowConfirmPassword((value) => !value)}><i className={`fa-regular ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`} /></button></div></label></div><div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isUpdatingPassword} onClick={() => void updatePassword()}>{isUpdatingPassword ? "Updating…" : "Update Password"}</button></div></section>
+            <section className="profile-security-section"><div className="profile-panel-title"><h3>Email Address</h3><span><i className="fa-solid fa-circle-check" /> Verified</span></div><label className="profile-field"><input type="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></label><div className="profile-panel-action"><button className="profile-outline-button" type="button" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? "Updating…" : "Change Email"}</button></div></section>
+            <section className="profile-security-section"><h3>Phone Number</h3><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? "Verifying…" : "Verify code"}</button></div> : <button className="profile-outline-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? "Sending…" : "Change Phone Number"}</button>}</section>
+          </div> : null}
+        </section>
       </div>
-      <div className="profile-side-column">
-        <section className="profile-panel"><div className="profile-panel-title"><h2>Email Address</h2><span><i className="fa-solid fa-circle-check" /> Verified</span></div><p className="profile-email">{email}</p></section>
-        <section className="profile-panel"><h2>Phone Number</h2><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? "Verifying…" : "Verify code"}</button></div> : <button className="profile-verify-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}><i className="fa-regular fa-message" /> {isSendingPhoneCode ? "Sending…" : "Verify via SMS"}</button>}</section>
-      </div>
-      <section className="profile-panel profile-region-panel">
-        <h2>Trading Region</h2>
-        <div className="profile-location-actions">
-          <button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={isLocating} onClick={useCurrentLocation}>
-            <i className="fa-solid fa-location-crosshairs" /> {isLocating ? "현재 위치 확인 중..." : "현재 위치 사용"}
-          </button>
-        </div>
-        {currentLocation.status !== "idle" && (
-          <div className={`profile-location-status is-${currentLocation.status}`} role="status" aria-live="polite">
-            {currentLocation.status === "loading" && "브라우저에서 현재 위치를 확인하고 있습니다."}
-            {currentLocation.status === "error" && currentLocation.message}
-            {currentLocation.status === "success" && (
-              <>
-                <span>위치 확인 완료</span>
-                <dl>
-                  <div><dt>위도</dt><dd>{currentLocation.coordinates.latitude.toFixed(6)}</dd></div>
-                  <div><dt>경도</dt><dd>{currentLocation.coordinates.longitude.toFixed(6)}</dd></div>
-                  <div><dt>정확도</dt><dd>{Math.round(currentLocation.coordinates.accuracy)}m</dd></div>
-                </dl>
-              </>
-            )}
-          </div>
-        )}
-        <div className="profile-region-fields">
-          <label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label>
-          <label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label>
-        </div>
-        <div className="profile-map profile-google-map"><iframe title={`${city || "New Zealand"} map`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /><span><i className="fa-solid fa-location-dot" /> {city && suburb ? `${city} / ${suburb}` : "Choose a city and suburb"}</span></div>
-      </section>
+      <aside className="profile-side-column profile-preferences-column">
+        <section className="profile-panel profile-trust-panel"><h2>Trust &amp; Reputation</h2><dl><div><dt>Profile completion</dt><dd><i className="fa-solid fa-battery-three-quarters" /> 35%</dd></div><div><dt>Completed trades</dt><dd>0</dd></div><div><dt>Response time</dt><dd>New</dd></div><div><dt>Response rate</dt><dd>New</dd></div></dl></section>
+        <section className="profile-panel"><h2>Contact Preferences</h2><div className="profile-preference-list">{preferenceToggle("allowChat", "Allow chat")}{preferenceToggle("showPhoneNumber", "Show phone number")}{preferenceToggle("emailNotifications", "Receive email notifications")}</div></section>
+        <section className="profile-panel"><h2>Notifications</h2><div className="profile-preference-list">{preferenceToggle("newMessages", "New messages")}{preferenceToggle("savedItems", "Saved items")}{preferenceToggle("priceUpdates", "Price updates")}{preferenceToggle("reviews", "Reviews")}</div></section>
+      </aside>
     </div>
-    <div className="profile-save-bar"><span className="profile-form-status" role="status">{status}</span><button className="profile-primary-button" type="button" disabled={isSaving} onClick={() => void saveChanges()}>{isSaving ? "Saving…" : "Save Changes"}</button></div>
+    {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </>;
 }

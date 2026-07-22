@@ -4848,10 +4848,38 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-danger-button { width: 100%; border: 1px solid #d72e3d; background: #fff; color: #c91f2d; }
 .profile-save-bar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #dbe3ef; }
 .profile-save-bar > button:first-child { border: 0; background: transparent; color: #637086; }
+.profile-settings-grid-refined { align-items: start; }
+.profile-security-panel { padding: 0; }
+.profile-security-toggle { width: 100%; min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 22px; border: 0; background: transparent; color: #182a40; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer; text-align: left; }
+.profile-security-toggle > span { display: inline-flex; align-items: center; gap: 10px; }
+.profile-security-toggle > span i { color: #10b981; }
+.profile-security-toggle > i { color: #5a6a80; font-size: 14px; transition: transform 160ms ease; }
+.profile-security-panel.is-open .profile-security-toggle { border-bottom: 1px solid #dbe5f2; }
+.profile-security-content { padding: 0 22px 22px; }
+.profile-security-section { padding: 20px 0; border-bottom: 1px solid #e4ebf3; }
+.profile-security-section:last-child { padding-bottom: 0; border-bottom: 0; }
+.profile-security-section h3 { margin: 0 0 15px; color: #182a40; font-size: 15px; }
+.profile-security-section .profile-panel-title { margin-bottom: 14px; }
+.profile-security-section .profile-panel-title h3 { margin: 0; }
+.profile-security-section .profile-panel-action { margin-top: 14px; }
+.profile-security-section .profile-outline-button { width: auto; min-width: 170px; }
+.profile-preferences-column { gap: 16px; }
+.profile-preferences-column .profile-panel { padding: 22px 24px; }
+.profile-preferences-column h2 { margin-bottom: 17px; font-size: 17px; }
+.profile-trust-panel dl { display: grid; gap: 14px; margin: 0; }
+.profile-trust-panel dl > div { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.profile-trust-panel dt { color: #34455d; font-size: 13px; }
+.profile-trust-panel dd { margin: 0; color: #10a874; font-size: 14px; font-weight: 800; white-space: nowrap; }
+.profile-trust-panel dd i { margin-right: 4px; font-size: 12px; }
+.profile-preference-list { display: grid; gap: 10px; }
+.profile-preference-toggle { display: flex; align-items: center; gap: 8px; color: #34455d; font-size: 13px; font-weight: 600; cursor: pointer; }
+.profile-preference-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #10b981; cursor: pointer; }
+.profile-settings-grid-refined + .profile-form-status { display: block; margin: 16px 0 0; color: #07895f; font-size: 12px; font-weight: 700; }
 
 @media (max-width: 1023.98px) {
   .profile-settings-grid { grid-template-columns: 1fr; }
   .profile-side-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-preferences-column { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 767.98px) {
@@ -4860,6 +4888,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .profile-photo-panel { min-height: 280px; }
   .profile-side-column { grid-template-columns: 1fr; }
   .profile-panel { padding: 17px; }
+  .profile-security-toggle { min-height: 60px; padding: 0 17px; font-size: 18px; }
+  .profile-security-content { padding: 0 17px 17px; }
+  .profile-security-section { padding: 17px 0; }
+  .profile-security-section .profile-outline-button { width: 100%; }
 }
 
 @media (max-width: 479.98px) {
