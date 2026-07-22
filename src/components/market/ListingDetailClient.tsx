@@ -202,11 +202,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
             <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="(max-width: 900px) 100vw, 68vw" />
             <Image key={`${image.src}-${activeImage}`} className={`listing-detail-main-photo is-entering-from-${imageTransition}`} src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
-            <span className="listing-detail-mobile-badge listing-detail-mobile-only">Newly listed</span>
             {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
-          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo, index) => <div key={photo.src}><img src={photo.src} alt={photo.alt} />{index === 0 ? <span className="listing-detail-mobile-badge">Newly listed</span> : null}</div>)}</div> : null}
+          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo) => <div key={photo.src}><img src={photo.src} alt={photo.alt} /></div>)}</div> : null}
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
