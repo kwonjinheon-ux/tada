@@ -187,7 +187,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
       </Link>
 
       <div className="listing-detail-layout">
-        <section className={`listing-detail-gallery ${listing.images.length > 1 ? "has-mobile-photo-stack" : ""}`} aria-label={`${listing.title} photos`}>
+        <section className="listing-detail-gallery has-mobile-photo-stack" aria-label={`${listing.title} photos`}>
           <div className="listing-detail-main-image" role="button" tabIndex={0} aria-label={`Open photo ${activeImage + 1} of ${listing.images.length} in gallery`} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setIsGalleryOpen(true); } }} onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => {
             if ((event.target as HTMLElement).closest("button")) return;
             if (swipeStartX.current === null) return;
@@ -205,7 +205,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
             {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {listing.images.length}</span>
           </div>
-          {listing.images.length > 1 ? <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo) => <div key={photo.src}><img src={photo.src} alt={photo.alt} /></div>)}</div> : null}
+          <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo, index) => <button type="button" key={photo.src} onClick={() => { setActiveImage(index); setIsGalleryOpen(true); }} aria-label={`Open photo ${index + 1} of ${listing.images.length} in gallery`}><img src={photo.src} alt={photo.alt} /></button>)}</div>
           {listing.images.length > 1 ? (
             <div className="listing-detail-thumbnails" aria-label="Choose photo">
               {listing.images.map((photo, index) => (
