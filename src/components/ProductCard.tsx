@@ -27,10 +27,6 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
     if (popTimer.current) window.clearTimeout(popTimer.current);
   }, []);
 
-  useEffect(() => {
-    setIsSaved(initialIsSaved);
-  }, [initialIsSaved]);
-
   const toggleSaved = async () => {
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);

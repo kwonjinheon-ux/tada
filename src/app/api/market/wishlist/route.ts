@@ -3,6 +3,17 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type WishlistRequest = { listingId?: unknown };
 
+export async function GET(request: Request) {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Wishlist is unavailable right now." }, { status: 503 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ saved: false });
+  const listingId = new URL(request.url).searchParams.get("listingId");
+  if (!listingId) return NextResponse.json({ error: "A valid listing is required." }, { status: 400 });
+  const { data } = await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listingId).maybeSingle();
+  return NextResponse.json({ saved: Boolean(data) });
+}
+
 async function getRequestContext(request: Request) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return { error: NextResponse.json({ error: "Wishlist is unavailable right now." }, { status: 503 }) };

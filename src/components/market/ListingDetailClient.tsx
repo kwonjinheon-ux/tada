@@ -74,6 +74,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
     void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST" });
   }, [listing.id]);
 
+  useEffect(() => {
+    let isCurrent = true;
+    void fetch(`/api/market/wishlist?listingId=${encodeURIComponent(listing.id)}`)
+      .then((response) => response.ok ? response.json() as Promise<{ saved?: boolean }> : null)
+      .then((payload) => { if (isCurrent && payload) setIsSaved(Boolean(payload.saved)); })
+      .catch(() => undefined);
+    return () => { isCurrent = false; };
+  }, [listing.id]);
+
   const showImage = (index: number) => {
     const nextImage = (index + listing.images.length) % listing.images.length;
     if (nextImage === activeImage) return;
@@ -182,7 +191,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false }: { listi
               <div className="listing-detail-status-row"><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            <button className={`listing-detail-save ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
+            <button className={`listing-detail-save save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
               <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
               <SaveHeartBurst particles={heartParticles} />
             </button>
