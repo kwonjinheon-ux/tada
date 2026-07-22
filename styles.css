@@ -5449,17 +5449,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .messages-conversation-copy small { font-size: 12px; }
   .messages-thread-panel { display: none; }
   .messages-page.has-selected-conversation .messages-list-panel { display: none; }
-  .messages-page.has-selected-conversation .messages-thread-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; overflow: hidden; }
-  .messages-thread-header { position: relative; z-index: 3; min-height: 66px; gap: 9px; padding: 10px 14px; }
+  .messages-page.has-selected-conversation .messages-thread-panel { display: block; min-height: 0; overflow: hidden; }
+  .messages-thread-header { position: fixed; top: 118px; right: 0; left: 0; z-index: 20; min-height: 66px; gap: 9px; padding: 10px 14px; }
   .messages-mobile-back { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border: 0; border-radius: 50%; background: #edf2f7; color: #263b55; text-decoration: none; }
   .messages-thread-header .messages-avatar { width: 36px; height: 36px; font-size: 12px; }
   .messages-listing-context { grid-template-columns: 31px auto; gap: 6px; margin-left: auto; padding: 3px; border: 0; background: transparent; }
   .messages-listing-context img, .messages-listing-context > i:first-child { width: 31px; height: 31px; }
   .messages-listing-context span, .messages-listing-context > i:last-child { display: none; }
-  .messages-thread-body { min-height: 0; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .messages-thread-body { height: calc(100dvh - 118px - 66px - 72px - env(safe-area-inset-bottom)); min-height: 0; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .message-bubble { max-width: 86%; }
   .message-bubble p { font-size: 14px; }
-  .messages-page.has-selected-conversation .messages-composer { position: relative; z-index: 3; gap: 8px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 20px rgb(16 33 62 / 6%); }
+  .messages-page.has-selected-conversation .messages-composer { position: fixed; right: 0; bottom: 0; left: 0; z-index: 20; gap: 8px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 20px rgb(16 33 62 / 6%); }
   .messages-composer textarea { min-height: 44px; font-size: 16px; resize: none; }
   .messages-composer button { width: 44px; height: 44px; flex-basis: 44px; }
 }
