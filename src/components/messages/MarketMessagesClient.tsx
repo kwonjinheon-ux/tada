@@ -59,6 +59,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const sendingRef = useRef(false);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
 
   useEffect(() => setConversations(initialConversations), [initialConversations]);
@@ -105,7 +106,8 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const body = draft.trim();
-    if (!body || !selectedConversationId || isSending) return;
+    if (!body || !selectedConversationId || sendingRef.current) return;
+    sendingRef.current = true;
     const optimisticMessage: MarketMessage = {
       id: `pending-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now()}`,
       conversationId: selectedConversationId,
@@ -141,6 +143,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       setDraft(body);
       setSendError("Unable to reach the messaging service. Please try again.");
     } finally {
+      sendingRef.current = false;
       setIsSending(false);
     }
   };
