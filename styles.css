@@ -4977,6 +4977,30 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .wishlist-item-actions .wishlist-secondary-action { border: 1px solid #0ea778; background: #fff; color: #07895f; }
 .wishlist-item-actions .wishlist-remove-action { border: 1px solid #e6c6cc; background: #fff; color: #ba2440; }
 .wishlist-remove-action i { margin-right: 5px; font-size: 9px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-item-actions a:hover,
+  .wishlist-item-actions button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .wishlist-item-actions a:hover {
+    background: #07895f;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(7, 137, 95, .2);
+  }
+
+  .wishlist-item-actions .wishlist-secondary-action:hover {
+    background: #e8fbf4;
+    color: #056d4b;
+  }
+
+  .wishlist-item-actions .wishlist-remove-action:hover {
+    border-color: #c3314b;
+    background: #fff1f3;
+    color: #9f1733;
+  }
+}
 .wishlist-item-side { display: flex; flex: 0 0 86px; flex-direction: column; align-items: end; justify-content: space-between; padding: 15px 0; }
 .wishlist-item-side strong { color: #24344b; font-size: 16px; white-space: nowrap; }
 .wishlist-item-side del { margin-top: -10px; color: #c66b72; font-size: 9px; }
