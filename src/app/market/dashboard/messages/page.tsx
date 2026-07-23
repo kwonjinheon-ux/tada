@@ -10,7 +10,7 @@ export const metadata = { title: "Messages" };
 
 type ConversationRow = { id: string; listing_id: string; buyer_id: string; seller_id: string; last_message_preview: string | null; last_message_at: string | null };
 type ListingRow = { id: string; title: string; price_cents: number };
-type PhotoRow = { listing_id: string; storage_path: string | null; display_order: number };
+type PhotoRow = { listing_id: string; storage_path: string | null; thumbnail_path: string | null; listing_path: string | null; display_order: number };
 type ProfileRow = { id: string; display_name: string | null; avatar_path: string | null };
 type MessageRow = { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
 
@@ -42,14 +42,17 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const participantIds = [...new Set(conversationRows.flatMap((conversation) => [conversation.buyer_id, conversation.seller_id]))];
   const [{ data: rawListings }, { data: rawPhotos }, { data: rawProfiles }, { data: unreadRows }, { data: rawMessages }] = await Promise.all([
     listingIds.length ? supabase.from("market_listings").select("id,title,price_cents").in("id", listingIds) : Promise.resolve({ data: [] }),
-    listingIds.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", listingIds).order("display_order") : Promise.resolve({ data: [] }),
+    listingIds.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,thumbnail_path,listing_path,display_order").in("listing_id", listingIds).order("display_order") : Promise.resolve({ data: [] }),
     participantIds.length ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").in("id", participantIds) : Promise.resolve({ data: [] }),
     conversationRows.length ? supabase.from("market_messages").select("conversation_id").eq("recipient_id", user.id).is("read_at", null) : Promise.resolve({ data: [] }),
     selectedConversationId ? supabase.from("market_messages").select("id,conversation_id,sender_id,recipient_id,body,created_at,read_at").eq("conversation_id", selectedConversationId).order("created_at") : Promise.resolve({ data: [] }),
   ]);
   const listings = new Map(((rawListings ?? []) as ListingRow[]).map((listing) => [listing.id, listing]));
   const primaryPhotos = new Map<string, string>();
-  for (const photo of (rawPhotos ?? []) as PhotoRow[]) if (photo.storage_path && !primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.storage_path);
+  for (const photo of (rawPhotos ?? []) as PhotoRow[]) {
+    const imagePath = photo.thumbnail_path ?? photo.listing_path ?? photo.storage_path;
+    if (imagePath && !primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, imagePath);
+  }
   const photoPaths = [...primaryPhotos.values()];
   const profiles = new Map(((rawProfiles ?? []) as ProfileRow[]).map((profile) => [profile.id, profile]));
   const avatarPaths = [...new Set([...profiles.values()].map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path)))];

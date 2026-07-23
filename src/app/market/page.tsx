@@ -9,6 +9,8 @@ export const revalidate = 0;
 type MarketListingPhotoRow = {
   listing_id: string;
   storage_path: string | null;
+  thumbnail_path: string | null;
+  listing_path: string | null;
   original_name: string | null;
   is_primary: boolean;
   display_order: number;
@@ -57,7 +59,7 @@ async function getPostedListings(): Promise<Listing[]> {
   if (listingIds.length) {
     const { data: photoRows } = await supabase
       .from("market_listing_photos")
-      .select("listing_id,storage_path,original_name,is_primary,display_order")
+      .select("listing_id,storage_path,thumbnail_path,listing_path,original_name,is_primary,display_order")
       .in("listing_id", listingIds)
       .order("display_order", { ascending: true });
 
@@ -70,7 +72,7 @@ async function getPostedListings(): Promise<Listing[]> {
   }
 
   const storagePaths = [...new Set([...primaryPhotosByListingId.values()]
-    .map((photo) => photo.storage_path)
+    .map((photo) => photo.thumbnail_path ?? photo.listing_path ?? photo.storage_path)
     .filter((path): path is string => Boolean(path)))];
   const { data: signedPhotos } = storagePaths.length
     ? await supabase.storage.from("market-listing-images").createSignedUrls(storagePaths, 3600)
@@ -86,8 +88,9 @@ async function getPostedListings(): Promise<Listing[]> {
       const photo = primaryPhotosByListingId.get(marketListing.id);
 
       let image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
-      if (photo?.storage_path) {
-        image = signedImageByPath.get(photo.storage_path) ?? image;
+      const imagePath = photo?.thumbnail_path ?? photo?.listing_path ?? photo?.storage_path;
+      if (imagePath) {
+        image = signedImageByPath.get(imagePath) ?? image;
       }
 
       return {

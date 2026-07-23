@@ -22,7 +22,7 @@ type MarketListingRow = {
   created_at: string;
 };
 
-type PhotoRow = { storage_path: string | null; original_name: string | null; display_order: number };
+type PhotoRow = { storage_path: string | null; detail_path: string | null; original_name: string | null; display_order: number };
 type SellerRow = { id: string; display_name: string | null; avatar_path: string | null; rating_average?: number | string; rating_count?: number };
 
 const conditionLabels = { brand_new: "Brand new", like_new: "Like new", good: "Good", fair: "Fair" } as const;
@@ -76,7 +76,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
   const [{ data: photoRows }, { data: sellerData }, { data: profileData }] = await Promise.all([
     supabase
       .from("market_listing_photos")
-      .select("storage_path,original_name,display_order")
+      .select("storage_path,detail_path,original_name,display_order")
       .eq("listing_id", listing.id)
       .order("display_order", { ascending: true }),
     supabase
@@ -90,8 +90,8 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
       .eq("id", listing.owner_id)
       .maybeSingle(),
   ]);
-  const photos = (photoRows as PhotoRow[] | null ?? []).filter((photo) => photo.storage_path);
-  const paths = photos.map((photo) => photo.storage_path as string);
+  const photos = (photoRows as PhotoRow[] | null ?? []).filter((photo) => photo.detail_path ?? photo.storage_path);
+  const paths = photos.map((photo) => (photo.detail_path ?? photo.storage_path) as string);
   const seller = (sellerData ?? profileData) as SellerRow | null;
   const [{ data: signedPhotos }, { data: signedAvatar }] = await Promise.all([
     paths.length
@@ -102,7 +102,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
       : Promise.resolve({ data: null }),
   ]);
   const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
-  const images = photos.map((photo) => ({ src: signedByPath.get(photo.storage_path as string), alt: photo.original_name || listing.title })).filter((photo): photo is { src: string; alt: string } => Boolean(photo.src));
+  const images = photos.map((photo) => ({ src: signedByPath.get((photo.detail_path ?? photo.storage_path) as string), alt: photo.original_name || listing.title })).filter((photo): photo is { src: string; alt: string } => Boolean(photo.src));
 
   return {
     id: listing.id,
