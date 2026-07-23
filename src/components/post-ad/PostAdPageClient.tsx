@@ -60,9 +60,9 @@ const meetingPlaces: SelectOption[] = [
   { label: "Pickup from home", value: "home" },
 ];
 
-const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
+const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxPhotoCount = 10;
-const maxPhotoSize = 4 * 1024 * 1024;
+const maxPhotoSize = 5 * 1024 * 1024;
 const editorColors = [
   { label: "Charcoal", value: "#314254" },
   { label: "Red", value: "#dc2626" },
@@ -334,7 +334,7 @@ export function PostAdPageClient() {
     const validFiles = incomingFiles.filter((file) => acceptedPhotoTypes.has(file.type) && file.size <= maxPhotoSize);
 
     if (validFiles.length !== incomingFiles.length) {
-      setError("Only JPEG, PNG, HEIC, or WebP images up to 10MB can be added.");
+      setError("Only PNG, JPG or WebP images up to 5MB can be added.");
     } else {
       setError(null);
     }
@@ -422,29 +422,57 @@ export function PostAdPageClient() {
 
   const uploadPhotos = async ({
     listingId,
+    supabase,
+    userId,
     onProgress,
   }: {
     listingId: string;
+    supabase: NonNullable<ReturnType<typeof createBrowserSupabaseClient>>;
+    userId: string;
     onProgress: (completedCount: number, totalCount: number) => void;
   }) => {
-    if (!photos.length) return null;
+    if (!supabase || !photos.length) return null;
 
     let completedCount = 0;
-    for (const [index, photo] of photos.entries()) {
-      const payload = new FormData();
-      payload.append("image", photo.file, photo.file.name);
-      payload.append("displayOrder", String(index));
-      payload.append("isPrimary", String(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)));
+    const rows = photos.map((photo, index) => {
+      const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${userId}/${listingId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
 
-      const response = await fetch(`/api/market/listings/${listingId}/images`, { method: "POST", body: payload });
-      const result = await response.json().catch(() => null) as { error?: string } | null;
-      if (!response.ok) return result?.error ?? "Unable to process one of your photos.";
+      return {
+        listing_id: listingId,
+        owner_id: userId,
+        storage_bucket: "market-listing-images",
+        storage_path: path,
+        original_name: photo.file.name,
+        mime_type: photo.file.type,
+        size_bytes: photo.file.size,
+        display_order: index,
+        is_primary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
+      };
+    });
 
-      completedCount += 1;
-      onProgress(completedCount, photos.length);
+    const uploadResults = await Promise.all(
+      photos.map(async (photo, index) => {
+        const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
+          cacheControl: "3600",
+          contentType: photo.file.type,
+          upsert: false,
+        });
+
+        completedCount += 1;
+        onProgress(completedCount, photos.length);
+
+        return uploadError?.message ?? null;
+      }),
+    );
+
+    const uploadError = uploadResults.find(Boolean);
+    if (uploadError) {
+      return uploadError;
     }
 
-    return null;
+    const { error: photoInsertError } = await supabase.from("market_listing_photos").insert(rows);
+    return photoInsertError?.message ?? null;
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -520,6 +548,8 @@ export function PostAdPageClient() {
     if (createdListing?.id) {
       const photoError = await uploadPhotos({
         listingId: createdListing.id,
+        supabase,
+        userId: user.id,
         onProgress: (completedCount, totalCount) => {
           setSubmitProgress(44 + Math.round((completedCount / totalCount) * 44));
         },
@@ -598,7 +628,7 @@ export function PostAdPageClient() {
                 ref={photoInputRef}
                 className="post-photo-input"
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
+                accept="image/png,image/jpeg,image/webp"
                 multiple
                 onChange={(event) => {
                   if (event.target.files) {
@@ -628,7 +658,7 @@ export function PostAdPageClient() {
               </div>
               <p className="post-upload-hint">
                 <strong>Click to upload or drag and drop multiple photos at once</strong>
-                <span>JPEG, PNG, HEIC or WebP (max. 4MB per image)</span>
+                <span>PNG, JPG or WebP (max. 5MB per image)</span>
               </p>
             </fieldset>
 

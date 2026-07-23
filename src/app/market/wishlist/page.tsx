@@ -10,7 +10,7 @@ export const metadata = { title: "Wishlist" };
 type SavedRow = { listing_id: string; created_at: string };
 type ViewedRow = { listing_id: string; last_viewed_at: string };
 type ListingRow = { id: string; title: string; price_cents: number; category_slug: string | null; status: "published" | "pending" | "sold" | "archived"; };
-type PhotoRow = { listing_id: string; storage_path: string; thumbnail_path: string | null; listing_path: string | null; display_order: number };
+type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
 
 function formatPrice(priceCents: number) {
   return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
@@ -36,10 +36,10 @@ export default async function MarketWishlistPage() {
   const ids = [...new Set([...saved.map((row) => row.listing_id), ...viewed.map((row) => row.listing_id)])];
   const { data: listingRows } = ids.length ? await supabase.from("market_listings").select("id,title,price_cents,category_slug,status").in("id", ids) : { data: [] };
   const listings = (listingRows ?? []) as ListingRow[];
-  const { data: photoRows } = ids.length ? await supabase.from("market_listing_photos").select("listing_id,storage_path,thumbnail_path,listing_path,display_order").in("listing_id", ids).order("display_order", { ascending: true }) : { data: [] };
+  const { data: photoRows } = ids.length ? await supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", ids).order("display_order", { ascending: true }) : { data: [] };
   const photos = (photoRows ?? []) as PhotoRow[];
   const primaryPhotos = new Map<string, string>();
-  for (const photo of photos) if (!primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.thumbnail_path ?? photo.listing_path ?? photo.storage_path);
+  for (const photo of photos) if (!primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.storage_path);
   const paths = [...new Set(primaryPhotos.values())];
   const { data: signedPhotos } = paths.length ? await supabase.storage.from("market-listing-images").createSignedUrls(paths, 3600) : { data: [] };
   const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
