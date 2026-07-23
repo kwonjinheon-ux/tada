@@ -4836,6 +4836,32 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .profile-settings-content { padding-bottom: 44px; }
+.keywords-content { width: min(100%, 940px); padding: 40px 30px 54px; }
+.keywords-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+.keywords-heading-icon { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; border-radius: 8px; background: #dff8ef; color: #00875e; font-size: 21px; }
+.keywords-heading h1, .keywords-heading p { margin: 0; }
+.keywords-heading h1 { color: #10243d; font-size: 30px; line-height: 1.15; }
+.keywords-heading p { margin-top: 6px; color: #637086; font-size: 14px; line-height: 1.5; }
+.keywords-add-panel { display: flex; gap: 10px; margin-bottom: 36px; padding: 18px; border: 1px solid #d9e5e2; border-radius: 8px; background: #fff; }
+.keywords-input-wrap { min-width: 0; flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 13px; border: 1px solid #c7d5d0; border-radius: 7px; background: #fbfefd; color: #627285; }
+.keywords-input-wrap:focus-within { border-color: #08a875; box-shadow: 0 0 0 3px rgba(8,168,117,.12); }
+.keywords-input-wrap input { width: 100%; min-width: 0; height: 46px; border: 0; outline: 0; background: transparent; color: #142841; font: inherit; font-size: 15px; }
+.keywords-input-wrap input::placeholder { color: #8b98a9; }
+.keywords-add-panel > button { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 7px; background: #08a875; color: #fff; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.keywords-add-panel > button:hover { background: #078d63; }
+.keywords-saved { padding-top: 2px; }
+.keywords-saved-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+.keywords-saved-heading span { color: #07895f; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.keywords-saved-heading h2 { margin: 5px 0 0; color: #10243d; font-size: 22px; }
+.keywords-saved-heading h2 small { color: #7a8999; font-size: 14px; font-weight: 600; }
+.keywords-saved-heading p { max-width: 300px; margin: 0; color: #6b7b8f; font-size: 12px; line-height: 1.45; text-align: right; }
+.keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.keyword-chip button:hover { background: rgba(255,255,255,.62); }
+.keyword-chip-0 { background: #e8f1ff; color: #2459a4; }.keyword-chip-1 { background: #e4f8ef; color: #13724f; }.keyword-chip-2 { background: #fff1db; color: #a35c00; }.keyword-chip-3 { background: #eee9ff; color: #5a42a5; }.keyword-chip-4 { background: #fde9f0; color: #a72c5e; }.keyword-chip-5 { background: #f0f2f5; color: #566273; }
+.keywords-notice { display: flex; align-items: center; gap: 11px; margin-top: 34px; padding: 14px 16px; border-top: 1px solid #dbe5e6; color: #627285; font-size: 13px; }
+.keywords-notice i { color: #df9800; font-size: 17px; }.keywords-notice p { margin: 0; }
 .profile-heading { margin-bottom: 28px; }
 .profile-heading h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.2; }
 .profile-heading p { margin: 0; color: #637086; font-size: 15px; }
@@ -5272,6 +5298,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Mobile: stacked canvas, compact two-column navigation and touch-friendly cards. */
 @media (max-width: 767.98px) {
+  .keywords-content { padding: 24px 20px 40px; }
+  .keywords-heading { align-items: flex-start; margin-bottom: 22px; }
+  .keywords-heading-icon { width: 42px; height: 42px; flex-basis: 42px; font-size: 18px; }
+  .keywords-heading h1 { font-size: 25px; }
+  .keywords-heading p { font-size: 13px; }
+  .keywords-add-panel { display: grid; padding: 12px; }
+  .keywords-add-panel > button { width: 100%; }
+  .keywords-saved-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .keywords-saved-heading p { max-width: none; text-align: left; }
+  .keywords-chip-list { gap: 8px; }
   .marketplace-page.dashboard-page {
     grid-template-columns: minmax(0, 1fr);
   }
