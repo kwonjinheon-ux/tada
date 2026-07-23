@@ -4550,6 +4550,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     padding: 14px 16px 34px;
   }
 
+  .market-results {
+    align-content: start;
+    grid-auto-rows: max-content;
+  }
+
   .product-grid.is-list-view .product-card {
     grid-template-columns: 110px minmax(0, 1fr) 44px;
     padding-right: 8px;
