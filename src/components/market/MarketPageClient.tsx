@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
@@ -23,10 +24,23 @@ const filters = [
 ];
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
+  const searchParams = useSearchParams();
+  const urlSearchQuery = searchParams.get("q") ?? "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+
+  useEffect(() => {
+    setSearchQuery(urlSearchQuery);
+  }, [urlSearchQuery]);
+
+  useEffect(() => {
+    const updateSearch = (event: Event) => setSearchQuery(typeof (event as CustomEvent<string>).detail === "string" ? (event as CustomEvent<string>).detail : "");
+    window.addEventListener("market-search-query-change", updateSearch);
+    return () => window.removeEventListener("market-search-query-change", updateSearch);
+  }, []);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -65,7 +79,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     setHasManualViewChoice(true);
     setViewMode(mode);
   };
-  const visibleListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
+  const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
+  const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
+  const visibleListings = normalizedSearch
+    ? allListings.filter((listing) => [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch)))
+    : allListings;
 
   return (
     <main className="marketplace-page">
@@ -166,11 +184,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           </div>
         </div>
 
-        <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+        {visibleListings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
           {visibleListings.map((listing, index) => (
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIds.includes(listing.id)} />
           ))}
-        </div>
+        </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search.</span></div>}
 
         <button className="load-more-button" type="button">
           Load More Items
