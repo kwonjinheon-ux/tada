@@ -5560,7 +5560,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .messages-thread-body { height: auto; min-height: 0; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .message-bubble { max-width: 86%; }
   .message-bubble p { font-size: 14px; }
-  .messages-page.has-selected-conversation .messages-composer { position: relative; z-index: 1; flex: 0 0 auto; gap: 8px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 20px rgb(16 33 62 / 6%); }
+  .messages-page.has-selected-conversation .messages-composer { position: relative; z-index: 1; flex: 0 0 auto; gap: 8px; padding: 12px 14px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 20px rgb(16 33 62 / 6%); }
   .messages-composer textarea { min-height: 44px; font-size: 16px; resize: none; }
   .messages-composer button { width: 44px; height: 44px; flex-basis: 44px; }
 }
