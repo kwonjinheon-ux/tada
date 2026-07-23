@@ -1146,8 +1146,7 @@ a {
 .apply-filter-button,
 .mobile-filter-strip button,
 .market-chip-row button,
-.view-toggle button,
-.load-more-button {
+.view-toggle button {
   border: 0;
   font: inherit;
   cursor: pointer;
@@ -1627,17 +1626,6 @@ a {
   margin: 0;
   color: #586879;
   font-size: 12px;
-}
-
-.load-more-button {
-  justify-self: center;
-  min-height: 42px;
-  padding: 0 26px;
-  border-radius: 999px;
-  background: #dce9ff;
-  color: var(--primary-dark);
-  font-size: 13px;
-  font-weight: 800;
 }
 
 .product-grid.is-list-view .product-card {

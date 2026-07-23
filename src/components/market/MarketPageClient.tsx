@@ -190,9 +190,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           ))}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search.</span></div>}
 
-        <button className="load-more-button" type="button">
-          Load More Items
-        </button>
       </section>
     </main>
   );
