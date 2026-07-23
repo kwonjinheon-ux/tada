@@ -87,7 +87,7 @@ export function Navbar() {
     const isAndroidMobile =
       /Android/i.test(navigator.userAgent) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("is-android-mobile", isAndroidMobile);
-    document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create"));
+    document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
     return () => {
       document.body.classList.remove("post-ad-screen");
     };
@@ -138,7 +138,7 @@ export function Navbar() {
 
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
-  const isPostAd = pathname.startsWith("/market/create");
+  const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);

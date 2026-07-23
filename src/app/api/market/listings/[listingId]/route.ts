@@ -35,6 +35,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   const priceCents = typeof payload?.priceCents === "number" ? payload.priceCents : NaN;
   const itemCondition = payload?.itemCondition;
   const tradeMethod = payload?.tradeMethod;
+  const categorySlug = typeof payload?.categorySlug === "string" ? payload.categorySlug.trim() || null : null;
+  const subcategorySlug = typeof payload?.subcategorySlug === "string" ? payload.subcategorySlug.trim() || null : null;
+  const regionCity = typeof payload?.regionCity === "string" ? payload.regionCity.trim() || null : null;
+  const regionSuburb = typeof payload?.regionSuburb === "string" ? payload.regionSuburb.trim() || null : null;
+  const meetingPlace = typeof payload?.meetingPlace === "string" ? payload.meetingPlace.trim() || null : null;
   const validConditions = new Set(["brand_new", "like_new", "good", "fair"]);
   const validTradeMethods = new Set(["pickup_delivery", "pickup", "delivery"]);
   if (title.length < 2 || title.length > 120) return NextResponse.json({ error: "Title must be between 2 and 120 characters." }, { status: 400 });
@@ -45,7 +50,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   const { listingId } = await params;
   const { data: listing, error } = await supabase
     .from("market_listings")
-    .update({ title, description, price_cents: priceCents, item_condition: itemCondition, trade_method: tradeMethod })
+    .update({
+      title,
+      description,
+      price_cents: priceCents,
+      item_condition: itemCondition,
+      trade_method: tradeMethod,
+      category_slug: categorySlug,
+      subcategory_slug: subcategorySlug,
+      region_city: regionCity,
+      region_suburb: regionSuburb,
+      meeting_place: meetingPlace,
+    })
     .eq("id", listingId)
     .eq("owner_id", user.id)
     .select("id")

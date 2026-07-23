@@ -14,8 +14,32 @@ type SelectOption = {
 
 type PhotoPreview = {
   id: string;
-  file: File;
   url: string;
+  file?: File;
+  name?: string;
+  isExisting?: boolean;
+};
+
+export type EditableListingPhoto = {
+  id: string;
+  url: string;
+  name: string;
+  isPrimary: boolean;
+};
+
+export type EditableListingInitialValues = {
+  id: string;
+  title: string;
+  description: string;
+  priceCents: number;
+  mainCategory: string;
+  subCategory: string;
+  tradeMethod: "pickup_delivery" | "pickup" | "delivery";
+  itemCondition: "brand_new" | "like_new" | "good" | "fair";
+  region: string;
+  area: string;
+  meetingPlace: string;
+  photos: EditableListingPhoto[];
 };
 
 type SmartphoneSpecs = {
@@ -226,26 +250,27 @@ function CustomSelect({
   );
 }
 
-export function PostAdPageClient() {
+export function PostAdPageClient({ initialListing }: { initialListing?: EditableListingInitialValues }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PhotoPreview[]>([]);
   const editorRef = useRef<HTMLDivElement>(null);
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [mainCategory, setMainCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-  const [tradeMethod, setTradeMethod] = useState("pickup_delivery");
-  const [itemCondition, setItemCondition] = useState("brand_new");
-  const [region, setRegion] = useState("");
-  const [area, setArea] = useState("");
+  const [title, setTitle] = useState(initialListing?.title ?? "");
+  const [price, setPrice] = useState(initialListing ? (initialListing.priceCents / 100).toFixed(initialListing.priceCents % 100 ? 2 : 0) : "");
+  const [mainCategory, setMainCategory] = useState(initialListing?.mainCategory ?? "");
+  const [subCategory, setSubCategory] = useState(initialListing?.subCategory ?? "");
+  const [tradeMethod, setTradeMethod] = useState<string>(initialListing?.tradeMethod ?? "pickup_delivery");
+  const [itemCondition, setItemCondition] = useState<string>(initialListing?.itemCondition ?? "brand_new");
+  const [region, setRegion] = useState(initialListing?.region ?? "");
+  const [area, setArea] = useState(initialListing?.area ?? "");
   const [defaultRegion, setDefaultRegion] = useState("");
   const [defaultArea, setDefaultArea] = useState("");
-  const [meetingPlace, setMeetingPlace] = useState("");
-  const [photos, setPhotos] = useState<PhotoPreview[]>([]);
-  const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
+  const [meetingPlace, setMeetingPlace] = useState(initialListing?.meetingPlace ?? "");
+  const [photos, setPhotos] = useState<PhotoPreview[]>(() => initialListing?.photos.map((photo) => ({ id: photo.id, url: photo.url, name: photo.name, isExisting: true })) ?? []);
+  const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(() => initialListing?.photos.find((photo) => photo.isPrimary)?.id ?? initialListing?.photos[0]?.id ?? null);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
+  const [description, setDescription] = useState(initialListing?.description ?? "");
   const [smartphoneSpecs, setSmartphoneSpecs] = useState<SmartphoneSpecs>(emptySmartphoneSpecs);
   const [previousDescription, setPreviousDescription] = useState<string | null>(null);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
@@ -255,6 +280,7 @@ export function PostAdPageClient() {
   const [submitProgress, setSubmitProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isEditing = Boolean(initialListing);
   const subCategoryOptions = mainCategory
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
@@ -344,9 +370,10 @@ export function PostAdPageClient() {
     setPhotos((currentPhotos) => {
       const availableSlots = maxPhotoCount - currentPhotos.length;
       const nextPhotos = validFiles.slice(0, availableSlots).map((file) => ({
-        id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+        id: crypto.randomUUID(),
         file,
         url: URL.createObjectURL(file),
+        name: file.name,
       }));
       const updatedPhotos = [...currentPhotos, ...nextPhotos];
 
@@ -370,8 +397,12 @@ export function PostAdPageClient() {
     const removedPhoto = photos.find((photo) => photo.id === photoId);
     const remainingPhotos = photos.filter((photo) => photo.id !== photoId);
 
-    if (removedPhoto) {
+    if (removedPhoto?.file) {
       URL.revokeObjectURL(removedPhoto.url);
+    }
+
+    if (removedPhoto?.isExisting) {
+      setRemovedPhotoIds((current) => [...current, photoId]);
     }
 
     setPhotos(remainingPhotos);
@@ -431,14 +462,16 @@ export function PostAdPageClient() {
     userId: string;
     onProgress: (completedCount: number, totalCount: number) => void;
   }) => {
-    if (!supabase || !photos.length) return null;
+    const uploadablePhotos = photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file));
+    if (!supabase || !uploadablePhotos.length) return null;
 
     let completedCount = 0;
-    const rows = photos.map((photo, index) => {
+    const rows = uploadablePhotos.map((photo, index) => {
       const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${userId}/${listingId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
 
       return {
+        id: photo.id,
         listing_id: listingId,
         owner_id: userId,
         storage_bucket: "market-listing-images",
@@ -447,12 +480,12 @@ export function PostAdPageClient() {
         mime_type: photo.file.type,
         size_bytes: photo.file.size,
         display_order: index,
-        is_primary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
+        is_primary: !isEditing && (photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)),
       };
     });
 
     const uploadResults = await Promise.all(
-      photos.map(async (photo, index) => {
+      uploadablePhotos.map(async (photo, index) => {
         const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
           cacheControl: "3600",
           contentType: photo.file.type,
@@ -460,7 +493,7 @@ export function PostAdPageClient() {
         });
 
         completedCount += 1;
-        onProgress(completedCount, photos.length);
+        onProgress(completedCount, uploadablePhotos.length);
 
         return uploadError?.message ?? null;
       }),
@@ -473,6 +506,59 @@ export function PostAdPageClient() {
 
     const { error: photoInsertError } = await supabase.from("market_listing_photos").insert(rows);
     return photoInsertError?.message ?? null;
+  };
+
+  const syncEditedPhotos = async ({
+    listingId,
+    supabase,
+  }: {
+    listingId: string;
+    supabase: NonNullable<ReturnType<typeof createBrowserSupabaseClient>>;
+  }) => {
+    if (removedPhotoIds.length) {
+      const { data: removedPhotos, error: removedPhotosError } = await supabase
+        .from("market_listing_photos")
+        .select("id,storage_path")
+        .eq("listing_id", listingId)
+        .in("id", removedPhotoIds);
+      if (removedPhotosError) return removedPhotosError.message;
+
+      const { error: removeRowsError } = await supabase
+        .from("market_listing_photos")
+        .delete()
+        .eq("listing_id", listingId)
+        .in("id", removedPhotoIds);
+      if (removeRowsError) return removeRowsError.message;
+
+      const paths = (removedPhotos ?? []).map((photo) => photo.storage_path).filter(Boolean);
+      if (paths.length) {
+        const { error: removeFilesError } = await supabase.storage.from("market-listing-images").remove(paths);
+        if (removeFilesError) return removeFilesError.message;
+      }
+    }
+
+    const { error: clearPrimaryError } = await supabase
+      .from("market_listing_photos")
+      .update({ is_primary: false })
+      .eq("listing_id", listingId);
+    if (clearPrimaryError) return clearPrimaryError.message;
+
+    if (primaryPhotoId) {
+      const { error: setPrimaryError } = await supabase
+        .from("market_listing_photos")
+        .update({ is_primary: true })
+        .eq("listing_id", listingId)
+        .eq("id", primaryPhotoId);
+      if (setPrimaryError) return setPrimaryError.message;
+    }
+
+    const orderErrors = await Promise.all(photos.map((photo, index) => supabase
+      .from("market_listing_photos")
+      .update({ display_order: index })
+      .eq("listing_id", listingId)
+      .eq("id", photo.id)
+      .then(({ error: updateError }) => updateError?.message ?? null)));
+    return orderErrors.find(Boolean) ?? null;
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -521,6 +607,58 @@ export function PostAdPageClient() {
       return;
     }
     setSubmitProgress(28);
+
+    if (initialListing) {
+      const response = await fetch(`/api/market/listings/${initialListing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description: body,
+          priceCents,
+          itemCondition,
+          tradeMethod,
+          categorySlug: mainCategory || null,
+          subcategorySlug: subCategory || null,
+          regionCity: region || null,
+          regionSuburb: area || null,
+          meetingPlace: meetingPlace || null,
+        }),
+      });
+      const payload = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) {
+        setError(payload?.error ?? "Unable to update this listing right now.");
+        setSubmitProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const photoError = await uploadPhotos({
+        listingId: initialListing.id,
+        supabase,
+        userId: user.id,
+        onProgress: (completedCount, totalCount) => setSubmitProgress(36 + Math.round((completedCount / totalCount) * 48)),
+      });
+      if (photoError) {
+        setError(`Listing updated, but photos could not be saved: ${photoError}`);
+        setSubmitProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const photoSyncError = await syncEditedPhotos({ listingId: initialListing.id, supabase });
+      if (photoSyncError) {
+        setError(`Listing updated, but photo changes could not be saved: ${photoSyncError}`);
+        setSubmitProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      setSubmitProgress(100);
+      router.push(`/market/${initialListing.id}`);
+      router.refresh();
+      return;
+    }
 
     const { data: createdListing, error: insertError } = await supabase.from("market_listings").insert({
       owner_id: user.id,
@@ -592,7 +730,7 @@ export function PostAdPageClient() {
   return (
     <main className="post-ad-page">
       <div className="post-ad-layout">
-        <section className="post-ad-card" aria-label="Create a new marketplace listing">
+        <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full">
               <label htmlFor="post-title">Listing Title</label>
@@ -641,10 +779,10 @@ export function PostAdPageClient() {
                 {photos.map((photo, index) => (
                     <div className="post-photo-card" key={photo.id}>
                       <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
-                        <img src={photo.url} alt={photo.file.name} />
+                        <img src={photo.url} alt={photo.name ?? photo.file?.name ?? "Listing photo"} />
                         {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>Main</span>}
                       </button>
-                      <button className="post-photo-remove" type="button" aria-label={`Remove ${photo.file.name}`} onClick={() => removePhoto(photo.id)}>
+                      <button className="post-photo-remove" type="button" aria-label={`Remove ${photo.name ?? photo.file?.name ?? "listing photo"}`} onClick={() => removePhoto(photo.id)}>
                         <i className="fa-solid fa-xmark" aria-hidden="true" />
                       </button>
                     </div>
@@ -742,7 +880,7 @@ export function PostAdPageClient() {
                 price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
-                photos={photos}
+                photos={photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))}
                 currentDescription={description}
                 hasPreviousDescription={Boolean(previousDescription)}
                 onUseDraft={useAiDraft}
@@ -783,7 +921,7 @@ export function PostAdPageClient() {
                 role={isSubmitting ? "progressbar" : undefined}
                 style={{ "--post-submit-progress": `${submitButtonProgress}%` } as CSSProperties}
               >
-                <span>{isSubmitting ? `Posting ${submitButtonProgress}%` : "Post Now"}</span>
+                <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : "Post Now"}</span>
               </button>
             </div>
           </form>
