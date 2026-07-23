@@ -1688,6 +1688,24 @@ a {
   color: #ef476f;
 }
 
+@media (max-width: 767px) {
+  /* Keep the list-card action slot stable while the heart provides feedback. */
+  .product-grid.is-list-view .save-button {
+    min-width: 36px;
+    min-height: 36px;
+    flex: 0 0 36px;
+    transform: translateZ(0);
+  }
+
+  .product-grid.is-list-view .save-button.is-popping {
+    animation: none;
+  }
+
+  .product-grid.is-list-view .save-button.is-popping > .fa-heart {
+    animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1);
+  }
+}
+
 @media (min-width: 768px) {
   .product-grid.is-list-view .product-card {
     min-height: 118px;
