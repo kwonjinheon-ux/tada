@@ -5536,7 +5536,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .site-header.is-messages-page .mobile-bottom-dock { display: none; }
   body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
-  .messages-dashboard-page { display: block; height: calc(100dvh - 118px); min-height: 0; max-height: calc(100dvh - 118px); padding: 0; overflow: hidden; }
+  .messages-dashboard-page { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
   .messages-dashboard-page .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }

@@ -69,6 +69,28 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   useEffect(() => { if (selectedConversationId) router.prefetch("/market/dashboard/messages"); }, [router, selectedConversationId]);
 
   useEffect(() => {
+    const updateMobileViewport = () => {
+      const siteHeader = document.querySelector<HTMLElement>(".site-header");
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--messages-viewport-height", `${viewportHeight}px`);
+      document.documentElement.style.setProperty("--messages-site-header-height", `${siteHeader?.getBoundingClientRect().height ?? 0}px`);
+    };
+    updateMobileViewport();
+    window.addEventListener("resize", updateMobileViewport);
+    window.visualViewport?.addEventListener("resize", updateMobileViewport);
+    const siteHeader = document.querySelector<HTMLElement>(".site-header");
+    const headerObserver = siteHeader ? new ResizeObserver(updateMobileViewport) : null;
+    if (siteHeader && headerObserver) headerObserver.observe(siteHeader);
+    return () => {
+      window.removeEventListener("resize", updateMobileViewport);
+      window.visualViewport?.removeEventListener("resize", updateMobileViewport);
+      headerObserver?.disconnect();
+      document.documentElement.style.removeProperty("--messages-viewport-height");
+      document.documentElement.style.removeProperty("--messages-site-header-height");
+    };
+  }, []);
+
+  useEffect(() => {
     if (!selectedConversationId) return;
     void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
     setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, unreadCount: 0 } : conversation));
