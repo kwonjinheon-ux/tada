@@ -46,6 +46,7 @@ function fallbackListing(id: string): ListingDetail | null {
 
   return {
     id: listing.id,
+    ownerId: null,
     title: listing.title,
     price: listing.price,
     location: listing.location,
@@ -106,6 +107,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
 
   return {
     id: listing.id,
+    ownerId: listing.owner_id,
     title: listing.title,
     price: formatPrice(listing.price_cents),
     location: formatLocation(listing.region_city, listing.region_suburb),
@@ -136,5 +138,5 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const { data: savedListing } = supabase && user
     ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
     : { data: null };
-  return <ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} />;
+  return <ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} />;
 }

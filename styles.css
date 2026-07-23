@@ -2069,6 +2069,13 @@ body.listing-gallery-open { overflow: hidden; }
   color: #e94683;
 }
 
+.listing-detail-delete {
+  border: 0;
+  background: #fff1f2;
+  color: #d92d45;
+  cursor: pointer;
+}
+
 .listing-detail-price {
   display: block;
   margin-top: 22px;
@@ -5525,6 +5532,32 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .listing-detail-message-error { margin: 9px 0 0; color: #b42318; font-size: 12px; font-weight: 700; }
 .listing-detail-actions button:disabled, .listing-detail-mobile-actions button:disabled { cursor: wait; opacity: .72; }
+.listing-delete-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(9, 24, 43, .58); backdrop-filter: blur(5px); }
+.listing-delete-dialog { width: min(100%, 390px); padding: 25px; border-radius: 8px; background: #fff; box-shadow: 0 20px 50px rgba(7, 22, 42, .3); text-align: center; }
+.listing-delete-dialog-icon { width: 46px; height: 46px; display: grid; place-items: center; margin: 0 auto 13px; border-radius: 50%; background: #fff1f2; color: #d92d45; font-size: 18px; }
+.listing-delete-dialog h2 { margin: 0; color: #13233b; font-size: 20px; }
+.listing-delete-dialog p { margin: 10px 0 0; color: #667689; font-size: 13px; line-height: 1.5; }
+.listing-delete-dialog .listing-delete-error { color: #b42318; font-weight: 700; }
+.listing-delete-dialog > div:last-child { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+.listing-delete-dialog button { min-height: 40px; padding: 0 16px; border: 1px solid #cbd5df; border-radius: 7px; background: #fff; color: #40536b; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.listing-delete-dialog .listing-delete-confirm { border-color: #d92d45; background: #d92d45; color: #fff; }
+.listing-delete-dialog button:disabled { cursor: wait; opacity: .7; }
+.listing-edit-page { width: min(760px, calc(100% - 40px)); margin: 34px auto 70px; }
+.listing-edit-form { display: grid; gap: 17px; margin-top: 22px; padding: 28px; border: 1px solid #d7e2df; border-radius: 8px; background: #fff; box-shadow: 0 16px 36px rgba(27, 49, 73, .07); }
+.listing-edit-form header span { color: #078961; font-size: 12px; font-weight: 800; letter-spacing: 0; }
+.listing-edit-form h1 { margin: 7px 0; color: #10223a; font-size: 28px; }
+.listing-edit-form header p { margin: 0; color: #667689; font-size: 14px; }
+.listing-edit-form label { display: grid; gap: 7px; color: #314254; font-size: 13px; font-weight: 750; }
+.listing-edit-form input, .listing-edit-form textarea, .listing-edit-form select { width: 100%; box-sizing: border-box; border: 1px solid #bdccc4; border-radius: 7px; background: #fff; color: #172b45; font: inherit; font-size: 15px; }
+.listing-edit-form input, .listing-edit-form select { min-height: 46px; padding: 0 13px; }
+.listing-edit-form textarea { min-height: 180px; padding: 13px; resize: vertical; line-height: 1.55; }
+.listing-edit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.listing-edit-error { margin: 0; color: #b42318; font-size: 13px; font-weight: 700; }
+.listing-edit-form footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.listing-edit-form footer a, .listing-edit-form footer button { min-height: 42px; display: inline-grid; place-items: center; padding: 0 17px; border: 1px solid #0aa875; border-radius: 7px; background: #fff; color: #078961; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
+.listing-edit-form footer button { border: 0; background: #10b981; color: #fff; }
+.listing-edit-form footer button:disabled { cursor: wait; opacity: .7; }
+@media (max-width: 620px) { .listing-edit-page { width: 100%; margin: 0; } .listing-edit-page .listing-detail-back { margin: 20px; } .listing-edit-form { border-right: 0; border-left: 0; border-radius: 0; padding: 22px 20px 100px; } .listing-edit-grid { grid-template-columns: 1fr; } }
 .listing-detail-loading { width: min(1180px, calc(100% - 48px)); display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, .95fr); gap: 46px; margin: 40px auto 70px; }
 .listing-detail-loading-media, .listing-detail-loading-summary, .listing-detail-loading-description > * { background: linear-gradient(100deg, #edf2f7 30%, #f8fafc 46%, #edf2f7 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }
 .listing-detail-loading-media { min-height: 480px; border-radius: 10px; }
