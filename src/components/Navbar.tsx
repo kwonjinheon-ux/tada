@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { MobileDrawer, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
@@ -20,8 +20,6 @@ const dashboardMenuItems = [
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlSearchQuery = searchParams.get("q") ?? "";
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -29,11 +27,12 @@ export function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    setSearchQuery(urlSearchQuery);
-  }, [urlSearchQuery]);
+    const query = new URLSearchParams(window.location.search).get("q") ?? "";
+    setSearchQuery(query);
+  }, [pathname]);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();

@@ -1,4 +1,4 @@
-import { SellerDashboard } from "@/app/account/page";
+import { SellerDashboard } from "@/components/dashboard/SellerDashboard";
 
 export const metadata = { title: "Marketplace Dashboard" };
 
