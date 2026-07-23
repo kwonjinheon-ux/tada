@@ -1552,6 +1552,10 @@ a {
   background: var(--primary);
 }
 
+.product-badge-mobile-label {
+  display: none;
+}
+
 .product-body {
   display: grid;
   gap: 6px;
@@ -1741,6 +1745,26 @@ a {
   bottom: 6px;
   padding: 3px 5px;
   font-size: 8px;
+}
+
+@media (max-width: 767px) {
+  .product-grid.is-list-view .product-badge.new {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 11px;
+  }
+
+  .product-grid.is-list-view .product-badge.new .product-badge-label {
+    display: none;
+  }
+
+  .product-grid.is-list-view .product-badge.new .product-badge-mobile-label {
+    display: block;
+  }
 }
 
 .product-grid.is-list-view .product-body {

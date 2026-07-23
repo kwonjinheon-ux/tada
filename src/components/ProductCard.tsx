@@ -91,8 +91,12 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
           sizes="(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw"
         />
         {listing.badge ? (
-          <span className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}>
-            {listing.badge}
+          <span
+            className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}
+            aria-label={listing.badge}
+          >
+            <span className="product-badge-label">{listing.badge}</span>
+            {listing.badge === "Newly Listed" ? <span className="product-badge-mobile-label" aria-hidden="true">N</span> : null}
           </span>
         ) : null}
       </div>
