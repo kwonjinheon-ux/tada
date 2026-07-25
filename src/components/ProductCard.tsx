@@ -20,7 +20,7 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
   const burstTimer = useRef<number | null>(null);
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
-  const statusLabel = listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
+  const statusLabel = listing.status === "sold" ? "Complete" : listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
@@ -99,6 +99,7 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
             {listing.badge === "Newly Listed" ? <span className="product-badge-mobile-label" aria-hidden="true">N</span> : null}
           </span>
         ) : null}
+        {listing.status === "sold" ? <span className="product-sold-out">Sold out</span> : null}
       </div>
       <div className="product-body">
         <div className="price-row">

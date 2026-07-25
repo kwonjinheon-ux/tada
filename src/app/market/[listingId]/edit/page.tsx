@@ -12,11 +12,12 @@ export default async function EditListingPage({ params }: { params: Promise<{ li
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/market/${listingId}/edit`)}`);
   const { data: listing } = await supabase
     .from("market_listings")
-    .select("id,title,description,price_cents,category_slug,subcategory_slug,item_condition,trade_method,region_city,region_suburb,meeting_place")
+    .select("id,title,description,price_cents,category_slug,subcategory_slug,item_condition,trade_method,region_city,region_suburb,meeting_place,status")
     .eq("id", listingId)
     .eq("owner_id", user.id)
     .maybeSingle();
   if (!listing) notFound();
+  if (listing.status === "sold") redirect(`/market/${listingId}`);
   const { data: photoRows } = await supabase
     .from("market_listing_photos")
     .select("id,storage_path,original_name,is_primary,display_order")

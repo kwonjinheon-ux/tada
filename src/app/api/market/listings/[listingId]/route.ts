@@ -9,9 +9,16 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!user) return NextResponse.json({ error: "Please log in to delete a listing." }, { status: 401 });
 
   const { listingId } = await params;
-  const { data: listing } = await supabase.from("market_listings").select("id,owner_id").eq("id", listingId).maybeSingle();
+  const { data: listing } = await supabase.from("market_listings").select("id,owner_id,status,sold_at").eq("id", listingId).maybeSingle();
   if (!listing) return NextResponse.json({ error: "Listing not found." }, { status: 404 });
   if (listing.owner_id !== user.id) return NextResponse.json({ error: "You can only delete your own listings." }, { status: 403 });
+  if (listing.status === "sold") {
+    const soldAt = listing.sold_at ? new Date(listing.sold_at).getTime() : NaN;
+    const canDeleteAt = Number.isFinite(soldAt) ? soldAt + 30 * 24 * 60 * 60 * 1000 : Infinity;
+    if (Date.now() < canDeleteAt) {
+      return NextResponse.json({ error: "Sold listings can be deleted 30 days after completion." }, { status: 403 });
+    }
+  }
 
   const { data: photos } = await supabase.from("market_listing_photos").select("storage_path").eq("listing_id", listingId);
   const paths = (photos ?? []).map((photo) => photo.storage_path).filter((path): path is string => Boolean(path));
@@ -48,6 +55,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   if (!validConditions.has(String(itemCondition)) || !validTradeMethods.has(String(tradeMethod))) return NextResponse.json({ error: "Choose valid listing details." }, { status: 400 });
 
   const { listingId } = await params;
+  const { data: currentListing } = await supabase
+    .from("market_listings")
+    .select("id,status")
+    .eq("id", listingId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!currentListing) return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+  if (currentListing.status === "sold") return NextResponse.json({ error: "Sold listings cannot be edited." }, { status: 403 });
+
   const { data: listing, error } = await supabase
     .from("market_listings")
     .update({
