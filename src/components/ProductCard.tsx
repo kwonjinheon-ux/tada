@@ -20,7 +20,7 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
   const burstTimer = useRef<number | null>(null);
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
-  const statusLabel = listing.status === "sold" ? "Complete" : listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
+  const statusLabel = listing.status === "sold" ? "Sold out" : listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);

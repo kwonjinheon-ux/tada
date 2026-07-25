@@ -88,7 +88,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   useEffect(() => setConversations(initialConversations), [initialConversations]);
   useEffect(() => setMessages(initialMessages), [initialMessages]);
   useEffect(() => setOffers(initialOffers), [initialOffers]);
-  useEffect(() => bottomRef.current?.scrollIntoView({ block: "end" }), [messages]);
+  useEffect(() => bottomRef.current?.scrollIntoView({ block: "end" }), [messages, offers]);
   useEffect(() => { if (selectedConversationId) router.prefetch("/market/dashboard/messages"); }, [router, selectedConversationId]);
 
   useEffect(() => {
@@ -117,32 +117,54 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     if (!selectedConversationId) return;
     void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
     setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, unreadCount: 0 } : conversation));
+  }, [selectedConversationId]);
 
+  useEffect(() => {
     try {
       const supabase = createBrowserSupabaseClient();
       if (!supabase) return;
+      const refreshConversationList = () => window.requestAnimationFrame(() => router.refresh());
       const channel = supabase
-        .channel(`market-messages:${selectedConversationId}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `conversation_id=eq.${selectedConversationId}` }, (payload) => {
+        .channel(`market-conversation-live:${currentUserId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages" }, (payload) => {
           const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
-          if (!row.id || !row.body || !row.created_at) return;
+          if (!row.id || !row.conversation_id || !row.body || !row.created_at) return;
           const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-          setMessages((current) => {
-            if (current.some((message) => message.id === incoming.id)) return current;
-            const optimisticIndex = current.findIndex((message) => message.isPending && message.senderId === incoming.senderId && message.body === incoming.body);
-            if (optimisticIndex === -1) return [...current, incoming];
-            return current.map((message, index) => index === optimisticIndex ? incoming : message);
+          if (incoming.conversationId === selectedConversationId) {
+            setMessages((current) => {
+              if (current.some((message) => message.id === incoming.id)) return current;
+              const optimisticIndex = current.findIndex((message) => message.isPending && message.senderId === incoming.senderId && message.body === incoming.body);
+              return optimisticIndex === -1 ? [...current, incoming] : current.map((message, index) => index === optimisticIndex ? incoming : message);
+            });
+            if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${incoming.conversationId}/read`, { method: "PATCH" }).catch(() => undefined);
+          }
+          setConversations((current) => {
+            const conversation = current.find((item) => item.id === incoming.conversationId);
+            if (!conversation) {
+              refreshConversationList();
+              return current;
+            }
+            const isActive = incoming.conversationId === selectedConversationId;
+            return current.map((item) => item.id === incoming.conversationId ? { ...item, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId || isActive ? 0 : item.unreadCount + 1 } : item);
           });
-          setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId ? 0 : conversation.unreadCount + 1 } : conversation));
-          if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "market_trade_offers" }, (payload) => {
+          const row = payload.new as { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
+          if (!row.id || !row.conversation_id || !row.status) return;
+          const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at };
+          if (incoming.conversationId === selectedConversationId) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
+          setConversations((current) => {
+            if (current.some((conversation) => conversation.id === incoming.conversationId)) return current;
+            refreshConversationList();
+            return current;
+          });
         })
         .subscribe();
       return () => { void supabase.removeChannel(channel).catch(() => undefined); };
     } catch {
-      // Realtime is optional: the sent message is still appended from the API response.
       return;
     }
-  }, [currentUserId, selectedConversationId]);
+  }, [currentUserId, router, selectedConversationId]);
 
   const openConversation = (conversationId: string) => router.push(`/market/dashboard/messages?conversation=${conversationId}`);
   const updateOffer = async (offer: TradeOffer, action: "accept" | "decline" | "cancel" | "complete") => {

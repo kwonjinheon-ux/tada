@@ -28,7 +28,7 @@ export type ListingDetail = {
 const statusLabel = {
   available: "Available",
   pending: "Pending",
-  sold: "Complete",
+  sold: "Sold out",
 } as const;
 
 function descriptionParagraphs(description: string) {

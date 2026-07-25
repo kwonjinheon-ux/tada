@@ -4,10 +4,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 type ListingRow = { owner_id: string; status: string };
 type ConversationRow = { id: string };
 
-function formatOfferAmount(amountCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2 }).format(amountCents / 100);
-}
-
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Offers are unavailable right now." }, { status: 503 });
@@ -64,11 +60,6 @@ export async function POST(request: Request) {
         : "Unable to make an offer right now.";
     return NextResponse.json({ error: message, conversationId }, { status });
   }
-
-  const messageBody = [`Offer made: ${formatOfferAmount(amountCents)}`, note ? note : null].filter(Boolean).join("\n");
-  await supabase
-    .from("market_messages")
-    .insert({ conversation_id: conversationId, sender_id: user.id, recipient_id: user.id, body: messageBody });
 
   return NextResponse.json({ conversationId, offer }, { status: 201 });
 }

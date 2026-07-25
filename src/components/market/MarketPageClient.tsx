@@ -1,11 +1,12 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { listings, quickCategories } from "@/data/listings";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const filters = [
   ["fa-border-all", "All"],
@@ -23,6 +24,7 @@ const filters = [
 ];
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -40,6 +42,30 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     window.addEventListener("market-search-query-change", updateSearch);
     return () => window.removeEventListener("market-search-query-change", updateSearch);
   }, []);
+
+  useEffect(() => {
+    try {
+      const supabase = createBrowserSupabaseClient();
+      if (!supabase) return;
+      let refreshFrame: number | null = null;
+      const channel = supabase
+        .channel("market-listing-status-live")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_listings" }, () => {
+          if (refreshFrame !== null) return;
+          refreshFrame = window.requestAnimationFrame(() => {
+            refreshFrame = null;
+            router.refresh();
+          });
+        })
+        .subscribe();
+      return () => {
+        if (refreshFrame !== null) window.cancelAnimationFrame(refreshFrame);
+        void supabase.removeChannel(channel).catch(() => undefined);
+      };
+    } catch {
+      return;
+    }
+  }, [router]);
 
   useEffect(() => {
     const setResponsiveView = () => {

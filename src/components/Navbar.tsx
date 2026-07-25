@@ -25,6 +25,7 @@ export function Navbar() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,6 +45,7 @@ export function Navbar() {
         const { data } = await supabase.auth.getUser();
         const user = data.user;
         if (!isMounted) return;
+        setUserId(user?.id ?? null);
         setUserEmail(user?.email ?? null);
         setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
         if (!user) { setAvatarUrl(null); setUnreadMessageCount(0); return; }
@@ -82,6 +84,26 @@ export function Navbar() {
       window.removeEventListener("profile-avatar-updated", updateAvatar);
     };
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+    const refreshUnreadCount = async () => {
+      const { count } = await supabase
+        .from("market_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", userId)
+        .is("read_at", null);
+      setUnreadMessageCount(count ?? 0);
+    };
+    const channel = supabase
+      .channel(`market-unread-count:${userId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel).catch(() => undefined); };
+  }, [userId]);
 
   useEffect(() => {
     const isAndroidMobile =
@@ -158,6 +180,7 @@ export function Navbar() {
     if (error) return;
 
     setUserEmail(null);
+    setUserId(null);
     setDisplayName(null);
     setAvatarUrl(null);
     setIsDashboardMenuOpen(false);
