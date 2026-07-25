@@ -5117,7 +5117,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-input-wrap:focus-within { border-color: #08a875; box-shadow: 0 0 0 3px rgba(8,168,117,.12); }
 .keywords-input-wrap input { width: 100%; min-width: 0; height: 46px; border: 0; outline: 0; background: transparent; color: #142841; font: inherit; font-size: 15px; }
 .keywords-input-wrap input::placeholder { color: #8b98a9; }
-.keywords-add-panel select { min-width: 150px; height: 46px; padding: 0 30px 0 12px; border: 1px solid #c7d5d0; border-radius: 7px; background: #fbfefd; color: #43546a; font: inherit; font-size: 13px; font-weight: 700; }
 .keywords-add-panel > button { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 7px; background: #08a875; color: #fff; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .keywords-add-panel > button:hover { background: #078d63; }
 .keywords-add-panel > button:disabled { cursor: wait; opacity: .58; }
@@ -5130,10 +5129,25 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-saved-heading p { max-width: 300px; margin: 0; color: #6b7b8f; font-size: 12px; line-height: 1.45; text-align: right; }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
 .keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.keyword-chip small { padding-left: 8px; border-left: 1px solid currentColor; font-size: 10px; font-weight: 800; line-height: 1.2; opacity: .74; }
 .keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .keyword-chip button:hover { background: rgba(255,255,255,.62); }
-.keyword-chip-0 { background: #e8f1ff; color: #2459a4; }.keyword-chip-1 { background: #e4f8ef; color: #13724f; }.keyword-chip-2 { background: #fff1db; color: #a35c00; }.keyword-chip-3 { background: #eee9ff; color: #5a42a5; }.keyword-chip-4 { background: #fde9f0; color: #a72c5e; }.keyword-chip-5 { background: #f0f2f5; color: #566273; }
-.keyword-chip-general { background: #f0f2f5; color: #566273; }.keyword-chip-electronics { background: #e8f1ff; color: #2459a4; }.keyword-chip-home-furniture { background: #eee9ff; color: #5a42a5; }.keyword-chip-clothing { background: #fde9f0; color: #a72c5e; }.keyword-chip-sporting-goods { background: #e4f8ef; color: #13724f; }.keyword-chip-vehicles { background: #fff1db; color: #a35c00; }.keyword-chip-baby-kids { background: #fff2d7; color: #9c6400; }.keyword-chip-books-movies-music { background: #e9f6f0; color: #237256; }.keyword-chip-garden-outdoors { background: #e6f6e8; color: #3d7d48; }
+.keyword-chip-general { background: #f0f2f5; color: #566273; }
+.keyword-chip-mobile-phones-tablets { background: #e3f0ff; color: #155da8; }
+.keyword-chip-computers-laptops { background: #e8eaff; color: #4d4fa3; }
+.keyword-chip-electronics-appliances { background: #dff5f5; color: #0d7177; }
+.keyword-chip-furniture-home-decor { background: #eee7ff; color: #6945a1; }
+.keyword-chip-home-kitchen { background: #fff0dc; color: #9a5700; }
+.keyword-chip-clothing-fashion { background: #fde7f0; color: #a42c5d; }
+.keyword-chip-baby-kids { background: #fff2d7; color: #946000; }
+.keyword-chip-books-music-media { background: #e8f4ea; color: #347043; }
+.keyword-chip-hobbies-collectables { background: #f4e9dc; color: #80542b; }
+.keyword-chip-games-toys { background: #ffe8e4; color: #a43f32; }
+.keyword-chip-sports-leisure { background: #e2f5e9; color: #267044; }
+.keyword-chip-musical-instruments { background: #f3e7fa; color: #774397; }
+.keyword-chip-garden-tools-diy { background: #e9f2d9; color: #55731d; }
+.keyword-chip-pet-supplies { background: #fff0e7; color: #97502f; }
+.keyword-chip-health-beauty { background: #fce8f4; color: #9b396f; }
 .keywords-empty { min-height: 155px; display: grid; place-content: center; justify-items: center; gap: 7px; border: 1px dashed #cbd8d4; border-radius: 8px; background: #fbfefd; color: #718198; text-align: center; }
 .keywords-empty i { color: #16a877; font-size: 23px; }.keywords-empty strong { color: #1b314d; font-size: 14px; }.keywords-empty span { font-size: 12px; }
 .keywords-notice { display: flex; align-items: center; gap: 11px; margin-top: 34px; padding: 14px 16px; border-top: 1px solid #dbe5e6; color: #627285; font-size: 13px; }
@@ -5603,7 +5617,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .keywords-heading h1 { font-size: 25px; }
   .keywords-heading p { font-size: 13px; }
   .keywords-add-panel { display: grid; }
-  .keywords-add-panel select, .keywords-add-panel > button { width: 100%; }
+  .keywords-add-panel > button { width: 100%; }
   .keywords-saved-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
   .keywords-saved-heading p { max-width: none; text-align: left; }
   .keywords-chip-list { gap: 8px; }

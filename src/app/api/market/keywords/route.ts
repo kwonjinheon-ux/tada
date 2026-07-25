@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-type KeywordRequest = { keyword?: unknown; categorySlug?: unknown; id?: unknown };
+type KeywordRequest = { keyword?: unknown; id?: unknown };
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -28,12 +29,8 @@ export async function POST(request: Request) {
   if ("error" in context) return context.error;
   const body = await request.json().catch(() => null) as KeywordRequest | null;
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim().replace(/\s+/g, " ") : "";
-  const categorySlug = typeof body?.categorySlug === "string" && body.categorySlug ? body.categorySlug : null;
   if (keyword.length < 2 || keyword.length > 80) return NextResponse.json({ error: "Use a keyword between 2 and 80 characters." }, { status: 400 });
-  if (categorySlug) {
-    const { data: category } = await context.supabase.from("market_categories").select("slug").eq("slug", categorySlug).maybeSingle();
-    if (!category) return NextResponse.json({ error: "Choose a valid category." }, { status: 400 });
-  }
+  const categorySlug = suggestCategoryFromTitle(keyword)?.mainCategory ?? null;
   const { data, error } = await context.supabase.from("market_keyword_alerts").insert({ user_id: context.user.id, keyword, category_slug: categorySlug }).select("id,keyword,category_slug,created_at").single();
   if (error?.code === "23505") return NextResponse.json({ error: "That keyword is already being tracked." }, { status: 409 });
   if (error?.code === "P0001") return NextResponse.json({ error: "You can save up to 20 keyword alerts." }, { status: 400 });
