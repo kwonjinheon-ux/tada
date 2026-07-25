@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type PhotoForAi = { file: File };
+type AiDetail = { label: string; value: string };
 
 type GeneratedListing = {
   description: string;
@@ -18,6 +19,8 @@ type AiListingGeneratorProps = {
   price: string;
   condition: string;
   location: string;
+  language: "ko" | "en";
+  additionalDetails: AiDetail[];
   photos: PhotoForAi[];
   currentDescription: string;
   hasPreviousDescription: boolean;
@@ -84,6 +87,8 @@ export function AiListingGenerator({
   price,
   condition,
   location,
+  language,
+  additionalDetails,
   photos,
   currentDescription,
   hasPreviousDescription,
@@ -112,21 +117,21 @@ export function AiListingGenerator({
 
   const generate = async () => {
     const description = plainText(currentDescription);
-    if (!description) {
-      setError("Write a description first, then AI can polish it for buyers.");
+    if (!description && !title.trim() && photos.length === 0) {
+      setError(language === "ko" ? "제목, 설명, 사진 중 하나를 먼저 추가해 주세요." : "Add a title, description, or photo before generating a draft.");
       return;
     }
 
     const numericPrice = Number(price.replace(/[^0-9.]/g, ""));
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
-      setError("AI description generation is not configured yet.");
+      setError(language === "ko" ? "AI 설명 생성이 아직 설정되지 않았습니다." : "AI description generation is not configured yet.");
       return;
     }
 
     setIsGenerating(true);
     setError(null);
-    setStatus("AI is polishing your description for buyers...");
+    setStatus(language === "ko" ? "사진과 입력한 정보를 바탕으로 판매 설명을 다듬고 있어요..." : "AI is polishing your listing for buyers...");
 
     const uploadedPaths: string[] = [];
     try {
@@ -134,7 +139,7 @@ export function AiListingGenerator({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setError("Please sign in before generating a description.");
+        setError(language === "ko" ? "AI 설명을 만들려면 먼저 로그인해 주세요." : "Please sign in before generating a description.");
         return;
       }
 
@@ -165,8 +170,9 @@ export function AiListingGenerator({
           condition: condition.trim(),
           location: location.trim(),
           description,
+          additionalDetails,
           imagePaths: uploadedPaths,
-          language: /[\u3131-\uD79D]/.test(`${title} ${category} ${condition} ${location} ${description}`) ? "ko" : "en",
+          language,
         }),
       });
       window.clearTimeout(timeout);
@@ -174,21 +180,21 @@ export function AiListingGenerator({
       const payload: unknown = await response.json();
       const generated = getGeneratedListing(payload);
       if (!response.ok || !generated) {
-        throw new Error(getErrorMessage(payload) ?? "Unable to create a listing description. Please try again shortly.");
+        throw new Error(getErrorMessage(payload) ?? (language === "ko" ? "판매 설명을 만들지 못했습니다. 잠시 후 다시 시도해 주세요." : "Unable to create a listing description. Please try again shortly."));
       }
 
       setDraft(generated);
       setProgress(100);
-      setStatus("AI draft is ready. Review and edit it before posting.");
+      setStatus(language === "ko" ? "AI 초안이 준비됐어요. 등록하기 전에 내용을 확인하고 수정해 주세요." : "AI draft is ready. Review and edit it before posting.");
       onUseDraft(generated.description, "replace");
       await new Promise((resolve) => window.setTimeout(resolve, 180));
     } catch (generationError) {
       setStatus(null);
       setError(generationError instanceof Error && generationError.name === "AbortError"
-        ? "AI generation took too long. Please try again."
+        ? language === "ko" ? "AI 생성 시간이 길어졌습니다. 다시 시도해 주세요." : "AI generation took too long. Please try again."
         : generationError instanceof Error
           ? generationError.message
-          : "Unable to create a listing description. Please try again shortly.");
+          : language === "ko" ? "판매 설명을 만들지 못했습니다. 잠시 후 다시 시도해 주세요." : "Unable to create a listing description. Please try again shortly.");
     } finally {
       if (uploadedPaths.length) {
         await supabase.storage.from("market-listing-images").remove(uploadedPaths);
@@ -201,9 +207,9 @@ export function AiListingGenerator({
     <section className="post-ai-generator" aria-label="AI listing description generator">
       <div className="post-ai-action-row">
         {isGenerating ? (
-          <div className="post-ai-progress" role="progressbar" aria-label="Creating AI description" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+          <div className="post-ai-progress" role="progressbar" aria-label={language === "ko" ? "AI 판매 설명 생성 중" : "Creating AI description"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
             <span className="post-ai-progress-fill" style={{ width: `${progress}%` }} />
-            <span className="post-ai-progress-label">Creating AI draft {progress}%</span>
+            <span className="post-ai-progress-label">{language === "ko" ? `AI 초안 생성 중 ${progress}%` : `Creating AI draft ${progress}%`}</span>
           </div>
         ) : (
           <button className="post-ai-generate-button" type="button" onClick={() => void generate()}>
@@ -211,7 +217,7 @@ export function AiListingGenerator({
             <span>AI로 판매 설명 다듬기</span>
           </button>
         )}
-        <p>AI refines the description you wrote. It never posts your listing automatically.</p>
+        <p>{language === "ko" ? "사진과 입력한 정보를 바탕으로 설명을 다듬습니다. AI가 상품을 자동으로 등록하지는 않습니다." : "AI refines your listing with the details and photos you provided. It never posts your listing automatically."}</p>
       </div>
 
       <div className="post-ai-live-region" aria-live="polite" aria-atomic="true">
@@ -220,13 +226,13 @@ export function AiListingGenerator({
       </div>
 
       {draft && (
-        <aside className="post-ai-preview" aria-label="AI listing draft preview">
+        <aside className="post-ai-preview" aria-label={language === "ko" ? "AI 판매 설명 초안 미리보기" : "AI listing draft preview"}>
           <div className="post-ai-preview-heading">
-            <span>AI draft preview</span>
-            {hasPreviousDescription && <button type="button" onClick={onRestorePreviousDescription}>Restore previous description</button>}
+            <span>{language === "ko" ? "AI 초안 미리보기" : "AI draft preview"}</span>
+            {hasPreviousDescription && <button type="button" onClick={onRestorePreviousDescription}>{language === "ko" ? "이전 설명 복원" : "Restore previous description"}</button>}
           </div>
-          <p><strong>Condition:</strong> {draft.conditionSummary}</p>
-          {draft.suggestedTags.length > 0 && <div className="post-ai-tags" aria-label="Suggested search tags">{draft.suggestedTags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
+          <p><strong>{language === "ko" ? "상품 상태:" : "Condition:"}</strong> {draft.conditionSummary}</p>
+          {draft.suggestedTags.length > 0 && <div className="post-ai-tags" aria-label={language === "ko" ? "추천 검색 태그" : "Suggested search tags"}>{draft.suggestedTags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
           {draft.warnings.length > 0 && <ul className="post-ai-warnings">{draft.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>}
         </aside>
       )}

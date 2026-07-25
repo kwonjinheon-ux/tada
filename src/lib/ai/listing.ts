@@ -12,7 +12,11 @@ export const listingAiRequestSchema = z
     price: z.number().finite().min(0).max(100_000_000).optional(),
     condition: z.string().trim().max(100).optional().default(""),
     location: z.string().trim().max(160).optional().default(""),
-    description: z.string().trim().min(1).max(6_000),
+    description: z.string().trim().max(6_000).optional().default(""),
+    additionalDetails: z.array(z.object({
+      label: z.string().trim().min(1).max(80),
+      value: z.string().trim().min(1).max(240),
+    }).strip()).max(12).optional().default([]),
     imagePaths: z.array(z.string().trim().min(1).max(260)).max(3).optional().default([]),
     language: z.enum(["ko", "en"]).optional(),
   })
@@ -40,7 +44,7 @@ export class ListingAiError extends Error {
 
 function includesKorean(input: ListingAiRequest) {
   return /[\u3131-\uD79D]/.test(
-    [input.title, input.category, input.condition, input.location, input.description]
+    [input.title, input.category, input.condition, input.location, input.description, ...input.additionalDetails.flatMap(({ label, value }) => [label, value])]
       .join(" "),
   );
 }
@@ -48,7 +52,7 @@ function includesKorean(input: ListingAiRequest) {
 function buildListingPrompt(input: ListingAiRequest) {
   const language = input.language ?? (includesKorean(input) ? "ko" : "en");
   const localeInstruction = language === "ko"
-    ? "한국어로 작성하고 본문은 약 150~300자로 제한하세요."
+    ? "description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요."
     : "Write in natural New Zealand English and keep the description to about 80–150 words.";
 
   return [
@@ -56,8 +60,9 @@ function buildListingPrompt(input: ListingAiRequest) {
     "Write in the seller's own warm, natural first-person voice, as though they wrote the polished listing themselves.",
     "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
     "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
-    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan without sounding like an advertisement or a formal report.",
+    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan. Make it feel polished, approachable, and professionally presented by highlighting real, verifiable benefits without hype.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
+    "When the written description is empty, create a concise buyer-friendly draft from the title, selected options, and clearly visible image details only. Do not fill gaps by guessing.",
     "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
     "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
     "For conditionSummary, write a brief neutral summary of the provided condition only; do not attribute it to the seller or speculate about anything they did not mention.",
@@ -72,6 +77,7 @@ function buildListingPrompt(input: ListingAiRequest) {
       condition: input.condition,
       location: input.location,
       description: input.description,
+      additionalDetails: input.additionalDetails,
     }),
   ].join("\n");
 }

@@ -884,10 +884,16 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
               )}
               <AiListingGenerator
                 title={title}
-                category={mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory}
+                category={[mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory, subCategoryOptions.find((category) => category.value === subCategory)?.label ?? subCategory].filter(Boolean).join(" / ")}
                 price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
+                language="ko"
+                additionalDetails={[
+                  { label: "거래 방식", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
+                  { label: "만남 장소", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
+                  ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
+                ].filter(({ value }) => value.length > 0)}
                 photos={photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))}
                 currentDescription={description}
                 hasPreviousDescription={Boolean(previousDescription)}
