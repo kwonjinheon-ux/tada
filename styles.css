@@ -4740,7 +4740,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .site-nav {
-    grid-template-columns: auto minmax(220px, 1fr) auto auto;
+    grid-template-columns: minmax(112px, 1fr) minmax(320px, 580px) auto auto;
     min-height: 58px;
     gap: 10px;
     padding-block: 5px;
@@ -4749,11 +4749,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .site-logo {
     width: 110px;
     height: 48px;
+    justify-self: start;
   }
 
   .nav-search {
     grid-column: auto;
     order: initial;
+    width: min(100%, 580px);
+    justify-self: center;
   }
 
   .nav-menu-button,
@@ -4766,10 +4769,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: flex;
     align-items: center;
     gap: 14px;
+    justify-self: end;
   }
 
   .nav-actions {
     display: inline-flex;
+    justify-self: end;
   }
 
   .nav-post {
