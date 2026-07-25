@@ -4590,7 +4590,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-results {
     align-content: start;
     grid-auto-rows: max-content;
-    padding: 18px 20px 42px;
   }
 
   .product-grid.is-list-view .product-card {
