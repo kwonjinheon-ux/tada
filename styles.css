@@ -5483,7 +5483,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Mobile: stacked canvas, compact two-column navigation and touch-friendly cards. */
 @media (max-width: 767.98px) {
-  .keywords-content { padding-block: 24px 40px; }
+  .dashboard-layout .dashboard-content {
+    padding: 16px max(var(--page-padding-mobile), env(safe-area-inset-right)) 16px max(var(--page-padding-mobile), env(safe-area-inset-left));
+  }
+
   .keywords-heading { align-items: flex-start; margin-bottom: 22px; }
   .keywords-heading-icon { width: 42px; height: 42px; flex-basis: 42px; font-size: 18px; }
   .keywords-heading h1 { font-size: 25px; }
