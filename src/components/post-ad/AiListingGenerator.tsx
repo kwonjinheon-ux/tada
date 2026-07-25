@@ -7,6 +7,7 @@ type PhotoForAi = { file: File };
 type AiDetail = { label: string; value: string };
 
 type GeneratedListing = {
+  title: string;
   description: string;
   conditionSummary: string;
   suggestedTags: string[];
@@ -25,6 +26,7 @@ type AiListingGeneratorProps = {
   currentDescription: string;
   hasPreviousDescription: boolean;
   onUseDraft: (description: string, mode: "append" | "replace") => void;
+  onUseTitle: (title: string) => void;
   onRestorePreviousDescription: () => void;
 };
 
@@ -46,16 +48,17 @@ function getGeneratedListing(payload: unknown): GeneratedListing | null {
   if (typeof payload !== "object" || !payload || !("success" in payload) || payload.success !== true || !("data" in payload)) return null;
   const data = payload.data;
   if (typeof data !== "object" || !data) return null;
-  const { description, conditionSummary, suggestedTags, warnings } = data as Record<string, unknown>;
+  const { title, description, conditionSummary, suggestedTags, warnings } = data as Record<string, unknown>;
   if (
-    typeof description !== "string"
+    typeof title !== "string"
+    || typeof description !== "string"
     || typeof conditionSummary !== "string"
     || !Array.isArray(suggestedTags)
     || !suggestedTags.every((tag) => typeof tag === "string")
     || !Array.isArray(warnings)
     || !warnings.every((warning) => typeof warning === "string")
   ) return null;
-  return { description, conditionSummary, suggestedTags, warnings };
+  return { title, description, conditionSummary, suggestedTags, warnings };
 }
 
 async function createAiImageFile(file: File) {
@@ -93,6 +96,7 @@ export function AiListingGenerator({
   currentDescription,
   hasPreviousDescription,
   onUseDraft,
+  onUseTitle,
   onRestorePreviousDescription,
 }: AiListingGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -186,6 +190,7 @@ export function AiListingGenerator({
       setDraft(generated);
       setProgress(100);
       setStatus(language === "ko" ? "AI 초안이 준비됐어요. 등록하기 전에 내용을 확인하고 수정해 주세요." : "AI draft is ready. Review and edit it before posting.");
+      onUseTitle(generated.title);
       onUseDraft(generated.description, "replace");
       await new Promise((resolve) => window.setTimeout(resolve, 180));
     } catch (generationError) {
@@ -231,6 +236,7 @@ export function AiListingGenerator({
             <span>{language === "ko" ? "AI 초안 미리보기" : "AI draft preview"}</span>
             {hasPreviousDescription && <button type="button" onClick={onRestorePreviousDescription}>{language === "ko" ? "이전 설명 복원" : "Restore previous description"}</button>}
           </div>
+          <p><strong>{language === "ko" ? "제목:" : "Title:"}</strong> {draft.title}</p>
           <p><strong>{language === "ko" ? "상품 상태:" : "Condition:"}</strong> {draft.conditionSummary}</p>
           {draft.suggestedTags.length > 0 && <div className="post-ai-tags" aria-label={language === "ko" ? "추천 검색 태그" : "Suggested search tags"}>{draft.suggestedTags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
           {draft.warnings.length > 0 && <ul className="post-ai-warnings">{draft.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>}

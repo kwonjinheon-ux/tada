@@ -24,6 +24,7 @@ export const listingAiRequestSchema = z
 
 export const generatedListingSchema = z
   .object({
+    title: z.string().trim().min(1).max(100),
     description: z.string().trim().min(1).max(1_800),
     conditionSummary: z.string().trim().min(1).max(400),
     suggestedTags: z.array(z.string().trim().min(1).max(64)).max(5),
@@ -52,8 +53,8 @@ function includesKorean(input: ListingAiRequest) {
 function buildListingPrompt(input: ListingAiRequest) {
   const language = input.language ?? (includesKorean(input) ? "ko" : "en");
   const localeInstruction = language === "ko"
-    ? "description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요."
-    : "Write in natural New Zealand English and keep the description to about 80–150 words.";
+    ? "title, description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요."
+    : "Write the title, description, conditionSummary, suggestedTags, and warnings in natural New Zealand English. Keep the description to about 80–150 words.";
 
   return [
     "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
@@ -61,6 +62,8 @@ function buildListingPrompt(input: ListingAiRequest) {
     "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
     "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
     "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan. Make it feel polished, approachable, and professionally presented by highlighting real, verifiable benefits without hype.",
+    "Create a concise, buyer-attracting title that is specific to this item. Prefer a concrete brand, model, type, colour, condition, or useful detail when it is supplied or clearly visible. Avoid generic category-only titles and repetitive marketplace templates.",
+    "Vary the title's wording and structure naturally instead of relying on familiar sales phrases. Do not use unsupported superlatives, urgency, scarcity, discounts, gifts, guarantees, or claims such as 'best', 'perfect', 'must-have', 'limited', 'rare', or 'like new' unless those facts are directly supplied.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
     "When the written description is empty, create a concise buyer-friendly draft from the title, selected options, and clearly visible image details only. Do not fill gaps by guessing.",
     "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
