@@ -83,13 +83,37 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const bottomRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
+  const selectedConversationIdRef = useRef(selectedConversationId);
+  const refreshFrameRef = useRef<number | null>(null);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
 
-  useEffect(() => setConversations(initialConversations), [initialConversations]);
-  useEffect(() => setMessages(initialMessages), [initialMessages]);
-  useEffect(() => setOffers(initialOffers), [initialOffers]);
-  useEffect(() => bottomRef.current?.scrollIntoView({ block: "end" }), [messages, offers]);
-  useEffect(() => { if (selectedConversationId) router.prefetch("/market/dashboard/messages"); }, [router, selectedConversationId]);
+  useEffect(() => {
+    setConversations(initialConversations);
+  }, [initialConversations]);
+
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
+  useEffect(() => {
+    setOffers(initialOffers);
+  }, [initialOffers]);
+
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversationId;
+  }, [selectedConversationId]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [messages, offers]);
+
+  useEffect(() => {
+    router.prefetch("/market/dashboard/messages");
+  }, [router]);
+
+  useEffect(() => () => {
+    if (refreshFrameRef.current !== null) window.cancelAnimationFrame(refreshFrameRef.current);
+  }, []);
 
   useEffect(() => {
     const updateMobileViewport = () => {
@@ -123,14 +147,20 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     try {
       const supabase = createBrowserSupabaseClient();
       if (!supabase) return;
-      const refreshConversationList = () => window.requestAnimationFrame(() => router.refresh());
+      const refreshConversationList = () => {
+        if (refreshFrameRef.current !== null) return;
+        refreshFrameRef.current = window.requestAnimationFrame(() => {
+          refreshFrameRef.current = null;
+          router.refresh();
+        });
+      };
       const channel = supabase
         .channel(`market-conversation-live:${currentUserId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages" }, (payload) => {
           const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
           if (!row.id || !row.conversation_id || !row.body || !row.created_at) return;
           const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-          if (incoming.conversationId === selectedConversationId) {
+          if (incoming.conversationId === selectedConversationIdRef.current) {
             setMessages((current) => {
               if (current.some((message) => message.id === incoming.id)) return current;
               const optimisticIndex = current.findIndex((message) => message.isPending && message.senderId === incoming.senderId && message.body === incoming.body);
@@ -144,7 +174,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               refreshConversationList();
               return current;
             }
-            const isActive = incoming.conversationId === selectedConversationId;
+            const isActive = incoming.conversationId === selectedConversationIdRef.current;
             return current.map((item) => item.id === incoming.conversationId ? { ...item, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId || isActive ? 0 : item.unreadCount + 1 } : item);
           });
         })
@@ -152,7 +182,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
           const row = payload.new as { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
           if (!row.id || !row.conversation_id || !row.status) return;
           const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at };
-          if (incoming.conversationId === selectedConversationId) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
+          if (incoming.conversationId === selectedConversationIdRef.current) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
           setConversations((current) => {
             if (current.some((conversation) => conversation.id === incoming.conversationId)) return current;
             refreshConversationList();
@@ -164,9 +194,12 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     } catch {
       return;
     }
-  }, [currentUserId, router, selectedConversationId]);
+  }, [currentUserId, router]);
 
-  const openConversation = (conversationId: string) => router.push(`/market/dashboard/messages?conversation=${conversationId}`);
+  const openConversation = (conversationId: string) => {
+    if (conversationId === selectedConversationIdRef.current) return;
+    router.push(`/market/dashboard/messages?conversation=${conversationId}`);
+  };
   const updateOffer = async (offer: TradeOffer, action: "accept" | "decline" | "cancel" | "complete") => {
     if (updatingOfferId) return;
     setUpdatingOfferId(offer.id);
@@ -184,7 +217,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       }
       const nextOffer: TradeOffer = { id: payload.offer.id, conversationId: payload.offer.conversation_id, listingId: payload.offer.listing_id, buyerId: payload.offer.buyer_id, sellerId: payload.offer.seller_id, amountCents: payload.offer.amount_cents, note: payload.offer.note, status: payload.offer.status, createdAt: payload.offer.created_at, respondedAt: payload.offer.responded_at, completedAt: payload.offer.completed_at };
       setOffers((current) => current.map((item) => item.id === nextOffer.id ? nextOffer : item));
-      router.refresh();
     } catch {
       setOfferError("Unable to reach offers right now. Please try again.");
     } finally {
