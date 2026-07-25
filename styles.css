@@ -6248,7 +6248,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (min-width: 768px) and (max-width: 1023.98px) {
   .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { grid-template-columns: minmax(0, 1fr); }
-  .messages-dashboard-page > .dashboard-sidebar { display: none; }
+  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page > .market-filter-panel.dashboard-sidebar { display: none; }
   .messages-page { grid-template-columns: 290px minmax(0, 1fr); }
   .messages-thread-header { padding-inline: 14px; }
   .messages-listing-context { max-width: none; }
