@@ -27,10 +27,25 @@ export type MarketMessage = {
   isPending?: boolean;
 };
 
+export type TradeOffer = {
+  id: string;
+  conversationId: string;
+  listingId: string;
+  buyerId: string;
+  sellerId: string;
+  amountCents: number;
+  note: string | null;
+  status: "pending" | "accepted" | "declined" | "cancelled" | "completed";
+  createdAt: string;
+  respondedAt: string | null;
+  completedAt: string | null;
+};
+
 type Props = {
   conversations: ConversationSummary[];
   selectedConversationId: string | null;
   initialMessages: MarketMessage[];
+  initialOffers: TradeOffer[];
   currentUserId: string;
 };
 
@@ -47,17 +62,24 @@ function formatMessageTime(value: string) {
   return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
+function formatOfferAmount(amountCents: number) {
+  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2 }).format(amountCents / 100);
+}
+
 function Avatar({ name, src, className }: { name: string; src: string | null; className: string }) {
   return src ? <img className={className} src={src} alt="" /> : <span className={className}>{name.charAt(0).toUpperCase()}</span>;
 }
 
-export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId, initialMessages, currentUserId }: Props) {
+export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId, initialMessages, initialOffers, currentUserId }: Props) {
   const router = useRouter();
   const [conversations, setConversations] = useState(initialConversations);
   const [messages, setMessages] = useState(initialMessages);
+  const [offers, setOffers] = useState(initialOffers);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
+  const [offerError, setOfferError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -65,6 +87,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
   useEffect(() => setConversations(initialConversations), [initialConversations]);
   useEffect(() => setMessages(initialMessages), [initialMessages]);
+  useEffect(() => setOffers(initialOffers), [initialOffers]);
   useEffect(() => bottomRef.current?.scrollIntoView({ block: "end" }), [messages]);
   useEffect(() => { if (selectedConversationId) router.prefetch("/market/dashboard/messages"); }, [router, selectedConversationId]);
 
@@ -122,6 +145,30 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   }, [currentUserId, selectedConversationId]);
 
   const openConversation = (conversationId: string) => router.push(`/market/dashboard/messages?conversation=${conversationId}`);
+  const updateOffer = async (offer: TradeOffer, action: "accept" | "decline" | "cancel" | "complete") => {
+    if (updatingOfferId) return;
+    setUpdatingOfferId(offer.id);
+    setOfferError(null);
+    try {
+      const response = await fetch(`/api/market/offers/${offer.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const payload = await response.json().catch(() => null) as { offer?: { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null }; error?: string } | null;
+      if (!response.ok || !payload?.offer) {
+        setOfferError(payload?.error ?? "Unable to update this offer.");
+        return;
+      }
+      const nextOffer: TradeOffer = { id: payload.offer.id, conversationId: payload.offer.conversation_id, listingId: payload.offer.listing_id, buyerId: payload.offer.buyer_id, sellerId: payload.offer.seller_id, amountCents: payload.offer.amount_cents, note: payload.offer.note, status: payload.offer.status, createdAt: payload.offer.created_at, respondedAt: payload.offer.responded_at, completedAt: payload.offer.completed_at };
+      setOffers((current) => current.map((item) => item.id === nextOffer.id ? nextOffer : item));
+      router.refresh();
+    } catch {
+      setOfferError("Unable to reach offers right now. Please try again.");
+    } finally {
+      setUpdatingOfferId(null);
+    }
+  };
   const prepareOffer = () => {
     setDraft((current) => current.trim() ? current : "Hi, I'd like to make an offer for this item.");
     requestAnimationFrame(() => composerRef.current?.focus());
@@ -189,7 +236,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         {selectedConversation ? <>
           <header className="messages-thread-header"><Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
           <div className="messages-thread-body">
-            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div>}
+            {offerError ? <p className="trade-offer-error" role="alert">{offerError}</p> : null}
+            {offers.length ? offers.map((offer) => {
+              const isBuyer = offer.buyerId === currentUserId;
+              const isSeller = offer.sellerId === currentUserId;
+              const isUpdating = updatingOfferId === offer.id;
+              return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{offer.status}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offer.status === "completed" ? "Trade complete. Both members received 10 trust points." : offer.status === "accepted" ? "Accepted. Meet safely, then buyer confirms completion." : offer.status === "pending" ? "Waiting for seller response." : "This offer is closed."}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>Accept</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>Decline</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>Cancel offer</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>Confirm trade complete</button> : null}{offer.status === "accepted" && isSeller ? <span>Waiting for buyer confirmation</span> : null}</footer></article>;
+            }) : null}
+            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
             <div ref={bottomRef} />
           </div>
           <form className="messages-composer" onSubmit={sendMessage}><button className="messages-offer-button" type="button" aria-label="Prepare an offer" onClick={prepareOffer}><i className="fa-solid fa-tag" aria-hidden="true" /></button><textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>

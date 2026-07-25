@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { MarketMessagesClient, type ConversationSummary, type MarketMessage } from "@/components/messages/MarketMessagesClient";
+import { MarketMessagesClient, type ConversationSummary, type MarketMessage, type TradeOffer } from "@/components/messages/MarketMessagesClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -13,6 +13,7 @@ type ListingRow = { id: string; title: string; price_cents: number };
 type PhotoRow = { listing_id: string; storage_path: string | null; display_order: number };
 type ProfileRow = { id: string; display_name: string | null; avatar_path: string | null };
 type MessageRow = { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+type OfferRow = { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
 
 function formatPrice(priceCents: number) {
   return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
@@ -40,12 +41,13 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     : null;
   const listingIds = [...new Set(conversationRows.map((conversation) => conversation.listing_id))];
   const participantIds = [...new Set(conversationRows.flatMap((conversation) => [conversation.buyer_id, conversation.seller_id]))];
-  const [{ data: rawListings }, { data: rawPhotos }, { data: rawProfiles }, { data: unreadRows }, { data: rawMessages }] = await Promise.all([
+  const [{ data: rawListings }, { data: rawPhotos }, { data: rawProfiles }, { data: unreadRows }, { data: rawMessages }, { data: rawOffers }] = await Promise.all([
     listingIds.length ? supabase.from("market_listings").select("id,title,price_cents").in("id", listingIds) : Promise.resolve({ data: [] }),
     listingIds.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", listingIds).order("display_order") : Promise.resolve({ data: [] }),
     participantIds.length ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").in("id", participantIds) : Promise.resolve({ data: [] }),
     conversationRows.length ? supabase.from("market_messages").select("conversation_id").eq("recipient_id", user.id).is("read_at", null) : Promise.resolve({ data: [] }),
     selectedConversationId ? supabase.from("market_messages").select("id,conversation_id,sender_id,recipient_id,body,created_at,read_at").eq("conversation_id", selectedConversationId).order("created_at") : Promise.resolve({ data: [] }),
+    selectedConversationId ? supabase.from("market_trade_offers").select("id,conversation_id,listing_id,buyer_id,seller_id,amount_cents,note,status,created_at,responded_at,completed_at").eq("conversation_id", selectedConversationId).order("created_at", { ascending: true }) : Promise.resolve({ data: [] }),
   ]);
   const listings = new Map(((rawListings ?? []) as ListingRow[]).map((listing) => [listing.id, listing]));
   const primaryPhotos = new Map<string, string>();
@@ -77,6 +79,7 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     };
   });
   const initialMessages: MarketMessage[] = ((rawMessages ?? []) as MessageRow[]).map((message) => ({ id: message.id, conversationId: message.conversation_id, senderId: message.sender_id, recipientId: message.recipient_id, body: message.body, createdAt: message.created_at, readAt: message.read_at }));
+  const initialOffers: TradeOffer[] = ((rawOffers ?? []) as OfferRow[]).map((offer) => ({ id: offer.id, conversationId: offer.conversation_id, listingId: offer.listing_id, buyerId: offer.buyer_id, sellerId: offer.seller_id, amountCents: offer.amount_cents, note: offer.note, status: offer.status, createdAt: offer.created_at, respondedAt: offer.responded_at, completedAt: offer.completed_at }));
 
-  return <main className="marketplace-page dashboard-page dashboard-layout messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} currentUserId={user.id} /></main>;
+  return <main className="marketplace-page dashboard-page dashboard-layout messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} /></main>;
 }

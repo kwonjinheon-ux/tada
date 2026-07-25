@@ -5699,6 +5699,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .listing-detail-message-error { margin: 9px 0 0; color: #b42318; font-size: 12px; font-weight: 700; }
 .listing-detail-actions button:disabled, .listing-detail-mobile-actions button:disabled { cursor: wait; opacity: .72; }
+.listing-offer-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(9, 24, 43, .58); backdrop-filter: blur(5px); }
+.listing-offer-dialog { width: min(100%, 420px); display: grid; gap: 14px; padding: 25px; border-radius: 8px; background: #fff; box-shadow: 0 20px 50px rgba(7, 22, 42, .3); }
+.listing-offer-dialog-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: #e7f9f1; color: #07966a; font-size: 18px; }
+.listing-offer-dialog h2 { margin: 0; color: #13233b; font-size: 22px; }
+.listing-offer-dialog p { margin: 0; color: #667689; font-size: 13px; line-height: 1.5; }
+.listing-offer-dialog label { display: grid; gap: 6px; color: #31465f; font-size: 12px; font-weight: 800; }
+.listing-offer-dialog input, .listing-offer-dialog textarea { width: 100%; border: 1px solid #cbd8df; border-radius: 7px; background: #f8fbfd; color: #142842; font: inherit; font-size: 15px; outline: none; }
+.listing-offer-dialog input { min-height: 44px; padding: 0 12px; }
+.listing-offer-dialog textarea { min-height: 86px; padding: 11px 12px; resize: vertical; }
+.listing-offer-dialog input:focus, .listing-offer-dialog textarea:focus { border-color: #0ba875; box-shadow: 0 0 0 3px rgba(11, 168, 117, .14); }
+.listing-offer-error { color: #b42318 !important; font-weight: 800; }
+.listing-offer-dialog > div:last-child { display: flex; justify-content: flex-end; gap: 9px; }
+.listing-offer-dialog button { min-height: 40px; padding: 0 16px; border: 1px solid #cbd5df; border-radius: 7px; background: #fff; color: #40536b; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.listing-offer-dialog .listing-offer-submit { border-color: #0ba875; background: #0ba875; color: #fff; }
 .listing-delete-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(9, 24, 43, .58); backdrop-filter: blur(5px); }
 .listing-delete-dialog { position: relative; width: min(100%, 390px); padding: 25px; overflow: hidden; border-radius: 8px; background: #fff; box-shadow: 0 20px 50px rgba(7, 22, 42, .3); text-align: center; }
 .listing-delete-dialog-icon { width: 46px; height: 46px; display: grid; place-items: center; margin: 0 auto 13px; border-radius: 50%; background: #fff1f2; color: #d92d45; font-size: 18px; }
@@ -5798,6 +5812,19 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .message-bubble.is-mine p { border-radius: 9px 9px 2px 9px; background: #08a875; color: #fff; }
 .message-bubble.is-mine > span { justify-content: flex-end; padding: 0 4px 0 0; }
 .message-bubble.is-mine i { color: #079d6e; }
+.trade-offer-card { width: min(100%, 520px); align-self: center; display: grid; gap: 10px; padding: 14px; border: 1px solid #bdd7d0; border-radius: 8px; background: #fff; box-shadow: 0 8px 20px rgba(20, 44, 68, .06); }
+.trade-offer-card > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.trade-offer-card > div span { padding: 4px 8px; border-radius: 999px; background: #e7f9f1; color: #078961; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+.trade-offer-card > div strong { color: #007b55; font-size: 22px; line-height: 1; }
+.trade-offer-card p { margin: 0; color: #253a55; font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+.trade-offer-card small { color: #62738a; font-size: 12px; line-height: 1.4; }
+.trade-offer-card em { color: #b42318; font-size: 12px; font-style: normal; font-weight: 800; }
+.trade-offer-card footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.trade-offer-card footer button { min-height: 34px; padding: 0 12px; border: 1px solid #0ba875; border-radius: 7px; background: #0ba875; color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.trade-offer-card footer button + button, .trade-offer-card footer button:first-child:last-child { border-color: #cbd8df; background: #fff; color: #31506c; }
+.trade-offer-card footer span { color: #62738a; font-size: 12px; font-weight: 700; }
+.trade-offer-card.status-completed { border-color: #a7e3cd; background: #f2fbf7; }
+.trade-offer-card.status-declined, .trade-offer-card.status-cancelled { opacity: .78; }
 .messages-thread-empty, .messages-select-empty { min-height: 100%; display: grid; align-content: center; justify-items: center; gap: 10px; padding: 32px; color: #728299; text-align: center; }
 .messages-thread-empty i, .messages-select-empty i { color: #0a9d70; font-size: 34px; }
 .messages-thread-empty strong, .messages-select-empty h2 { margin: 0; color: #1b314d; font-size: 18px; }
