@@ -1668,6 +1668,10 @@ a {
   filter: grayscale(1) contrast(.86) brightness(.64);
 }
 
+.product-card:not(.is-sold) .product-media img {
+  filter: none;
+}
+
 .product-sold-out {
   position: absolute;
   inset: 0;
@@ -4884,15 +4888,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     top: 70px;
     max-height: calc(100vh - 70px);
     align-self: start;
-    overflow-y: auto;
-    border-right: 1px solid #e2e8f0;
-    padding: 24px 18px 42px;
-    scrollbar-color: transparent transparent;
-    scrollbar-width: none;
-  }
+  overflow-y: auto;
+  border-right: 1px solid #e2e8f0;
+  padding: 24px 18px 42px;
+  scrollbar-gutter: stable;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+}
 
-  .market-filter-panel::-webkit-scrollbar {
-    width: 0;
+.market-filter-panel::-webkit-scrollbar {
+  width: 10px;
   }
 
   .market-filter-panel::-webkit-scrollbar-track {
@@ -4911,10 +4916,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     scrollbar-width: thin;
   }
 
-  .market-filter-panel:hover::-webkit-scrollbar,
-  .market-filter-panel:focus-within::-webkit-scrollbar {
-    width: 10px;
-  }
+.market-filter-panel:hover::-webkit-scrollbar,
+.market-filter-panel:focus-within::-webkit-scrollbar {
+  width: 10px;
+}
 
   .market-filter-panel:hover::-webkit-scrollbar-thumb,
   .market-filter-panel:focus-within::-webkit-scrollbar-thumb {
