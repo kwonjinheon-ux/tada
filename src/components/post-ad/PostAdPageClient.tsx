@@ -286,7 +286,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
   const regionOptions = region && !regions.some((option) => option.value === region) ? [...regions, { label: region, value: region }] : regions;
   const areaOptions = area && !areas.some((option) => option.value === area) ? [...areas, { label: area, value: area }] : areas;
-  const shouldShowSmartphoneTemplate = mainCategory === "electronics" && subCategory === "mobile-phones";
+  const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -343,8 +343,16 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     void loadProfileLocation();
   }, []);
 
-  const handleTitleChange = (title: string) => {
-    const suggestion = suggestCategoryFromTitle(title);
+  const handleTitleChange = (nextTitle: string) => {
+    setTitle(nextTitle);
+
+    if (!nextTitle.trim()) {
+      setMainCategory(initialListing?.mainCategory ?? "");
+      setSubCategory(initialListing?.subCategory ?? "");
+      return;
+    }
+
+    const suggestion = suggestCategoryFromTitle(nextTitle);
     if (!suggestion) return;
 
     setMainCategory(suggestion.mainCategory);
@@ -734,7 +742,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full">
               <label htmlFor="post-title">Listing Title</label>
-              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => { setTitle(event.target.value); handleTitleChange(event.target.value); }} required />
+              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
               <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
