@@ -893,7 +893,7 @@ a {
   display: grid;
   gap: 16px;
   margin: 0;
-  padding: 14px 12px 34px;
+  padding: 0;
   background: #fff;
 }
 
@@ -4565,7 +4565,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    padding-bottom: 84px;
+    padding: 0;
   }
 
   @keyframes mobile-category-drawer-in {
@@ -4584,7 +4584,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    padding: 14px 16px 34px;
+    padding: 0;
   }
 
   .market-results {
