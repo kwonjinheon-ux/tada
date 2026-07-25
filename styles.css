@@ -4867,12 +4867,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     overflow-y: auto;
     border-right: 1px solid #e2e8f0;
     padding: 24px 18px 42px;
-    scrollbar-color: #d3d8df transparent;
-    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    scrollbar-width: none;
   }
 
   .market-filter-panel::-webkit-scrollbar {
-    width: 10px;
+    width: 0;
   }
 
   .market-filter-panel::-webkit-scrollbar-track {
@@ -4882,6 +4882,22 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-filter-panel::-webkit-scrollbar-thumb {
     border: 3px solid #fff;
     border-radius: 999px;
+    background: transparent;
+  }
+
+  .market-filter-panel:hover,
+  .market-filter-panel:focus-within {
+    scrollbar-color: #d3d8df transparent;
+    scrollbar-width: thin;
+  }
+
+  .market-filter-panel:hover::-webkit-scrollbar,
+  .market-filter-panel:focus-within::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .market-filter-panel:hover::-webkit-scrollbar-thumb,
+  .market-filter-panel:focus-within::-webkit-scrollbar-thumb {
     background: #d3d8df;
   }
 
@@ -4962,7 +4978,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-columns: 272px minmax(0, 1fr);
     gap: 0;
   }
 
@@ -5396,7 +5412,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 /* Dashboard layout reference: shared rail and content gutters for dashboard pages. */
 .dashboard-layout {
   --dashboard-sidebar-width-tablet: 220px;
-  --dashboard-sidebar-width-desktop: 300px;
+  --dashboard-sidebar-width-desktop: 272px;
 }
 
 .marketplace-page.dashboard-page.dashboard-layout {
@@ -5594,7 +5610,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 }
 
-/* Desktop: follows Marketplace's 260px rail and full information density. */
+/* Desktop: follows Marketplace's Reddit-width rail and full information density. */
 @media (min-width: 1024px) {
   .marketplace-page.dashboard-page.dashboard-layout {
     grid-template-columns: var(--dashboard-sidebar-width-desktop) minmax(0, 1fr);
