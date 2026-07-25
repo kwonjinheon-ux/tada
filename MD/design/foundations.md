@@ -30,6 +30,8 @@ The project follows mobile first styling:
 
 Use one column as the default. Add density only at `md` and above. Inputs must be at least `16px` on mobile so Safari does not zoom on focus.
 
+Use `MD/design/layout-system.md` for page outer spacing and content width rules. Ordinary pages must use `PageContainer`; avoid direct page-level `max-w-*`, `mx-auto`, and responsive `px-*` combinations.
+
 ## Component rules
 
 - Buttons and form controls use shared `button` and `form-field` foundations.
