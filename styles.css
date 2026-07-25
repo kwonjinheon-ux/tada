@@ -1441,6 +1441,14 @@ a {
   color: #ffffff;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .market-chip-row button:not(.is-selected):hover,
+  .market-chip-row button.is-preview {
+    background: #b9d1ff;
+    color: #18345c;
+  }
+}
+
 .mobile-filter-strip button {
   min-height: 38px;
   display: inline-flex;

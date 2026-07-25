@@ -39,6 +39,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
@@ -120,8 +121,9 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   };
   const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
   const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
+  const activeCategory = hoveredCategory ?? selectedCategory;
   const visibleListings = allListings.filter((listing) => {
-    const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
+    const matchesCategory = activeCategory === "all" || listing.categorySlug === activeCategory;
     const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
     return matchesCategory && matchesSearch;
   });
@@ -202,7 +204,14 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
 
           <div className="market-chip-row" aria-label="Quick categories">
             {quickCategories.map((category) => (
-              <button key={category.value} className={category.value === selectedCategory ? "is-selected" : ""} type="button" onClick={() => chooseCategory(category.value)}>
+              <button
+                key={category.value}
+                className={`${category.value === selectedCategory ? "is-selected" : ""} ${category.value === hoveredCategory ? "is-preview" : ""}`}
+                type="button"
+                onMouseEnter={() => setHoveredCategory(category.value)}
+                onMouseLeave={() => setHoveredCategory(null)}
+                onClick={() => chooseCategory(category.value)}
+              >
                 {category.label}
               </button>
             ))}
