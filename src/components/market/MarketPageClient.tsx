@@ -5,28 +5,35 @@ import { useEffect, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
-import { listings, quickCategories } from "@/data/listings";
+import { listings } from "@/data/listings";
+import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-const filters = [
-  ["fa-border-all", "All"],
-  ["fa-warehouse", "Garage Sale"],
-  ["fa-laptop", "Electronics"],
-  ["fa-couch", "Home & Furniture"],
-  ["fa-shirt", "Clothing"],
-  ["fa-film", "Entertainment"],
-  ["fa-baby", "Baby & Kids"],
-  ["fa-paw", "Pets"],
-  ["fa-book-open", "Books"],
-  ["fa-gamepad", "Hobbies"],
-  ["fa-seedling", "Garden & Outdoors"],
-  ["fa-futbol", "Sporting Goods"],
-];
+const categoryIcons: Record<string, string> = {
+  "mobile-phones-tablets": "fa-mobile-screen-button",
+  "computers-laptops": "fa-laptop",
+  "electronics-appliances": "fa-tv",
+  "furniture-home-decor": "fa-couch",
+  "home-kitchen": "fa-kitchen-set",
+  "clothing-fashion": "fa-shirt",
+  "baby-kids": "fa-baby",
+  "books-music-media": "fa-book-open",
+  "hobbies-collectables": "fa-gem",
+  "games-toys": "fa-gamepad",
+  "sports-leisure": "fa-futbol",
+  "musical-instruments": "fa-guitar",
+  "garden-tools-diy": "fa-screwdriver-wrench",
+  "pet-supplies": "fa-paw",
+  "health-beauty": "fa-heart-pulse",
+};
+
+const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
+  const selectedCategory = searchParams.get("category") ?? "all";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -104,11 +111,20 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     setHasManualViewChoice(true);
     setViewMode(mode);
   };
+  const chooseCategory = (categorySlug: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (categorySlug === "all") params.delete("category");
+    else params.set("category", categorySlug);
+    router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
+    setIsFilterOpen(false);
+  };
   const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
   const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
-  const visibleListings = normalizedSearch
-    ? allListings.filter((listing) => [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch)))
-    : allListings;
+  const visibleListings = allListings.filter((listing) => {
+    const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
+    const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <main className="marketplace-page">
@@ -138,8 +154,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         <section className="filter-block category-filter">
           <h2>Category</h2>
           <div className="filter-list">
-            {filters.map(([icon, label]) => (
-              <button key={label} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${label === "All" ? "is-selected" : ""}`} type="button" onClick={() => setIsFilterOpen(false)}>
+            {[{ label: "All", value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+              <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${selectedCategory === value ? "is-selected" : ""}`} type="button" onClick={() => chooseCategory(value)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 <span className={mobileDrawerClasses.menuLabel}>{label}</span>
               </button>
@@ -186,8 +202,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
 
           <div className="market-chip-row" aria-label="Quick categories">
             {quickCategories.map((category) => (
-              <button key={category} className={category === "All" ? "is-selected" : ""} type="button">
-                {category}
+              <button key={category.value} className={category.value === selectedCategory ? "is-selected" : ""} type="button" onClick={() => chooseCategory(category.value)}>
+                {category.label}
               </button>
             ))}
           </div>
@@ -208,7 +224,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           {visibleListings.map((listing, index) => (
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIds.includes(listing.id)} />
           ))}
-        </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search.</span></div>}
+        </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search or category.</span></div>}
 
       </section>
     </main>
