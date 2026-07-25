@@ -4647,7 +4647,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-results {
     align-content: start;
     grid-auto-rows: max-content;
-    padding: 0 max(var(--page-padding-inline), env(safe-area-inset-right)) 0 max(var(--page-padding-inline), env(safe-area-inset-left));
+    padding: 0 max(var(--page-padding-mobile), env(safe-area-inset-right)) 0 max(var(--page-padding-mobile), env(safe-area-inset-left));
   }
 
   .product-grid.is-list-view .product-card {
