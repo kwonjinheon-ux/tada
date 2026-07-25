@@ -40,7 +40,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [applyingChip, setApplyingChip] = useState<string | null>(null);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
@@ -109,6 +109,12 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     return () => window.removeEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
   }, []);
 
+  useEffect(() => {
+    if (!applyingChip) return;
+    const timer = window.setTimeout(() => setApplyingChip(null), 420);
+    return () => window.clearTimeout(timer);
+  }, [applyingChip]);
+
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
     setViewMode(mode);
@@ -128,15 +134,19 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     else params.set("subcategory", subcategorySlug);
     router.push(`/market?${params.toString()}`);
   };
+  const chooseToolbarCategory = (categorySlug: string) => {
+    setApplyingChip(categorySlug);
+    if (selectedCategoryDefinition) chooseSubcategory(categorySlug);
+    else chooseCategory(categorySlug);
+  };
   const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
   const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
-  const activeCategory = hoveredCategory ?? selectedCategory;
   const selectedCategoryDefinition = marketplaceCategories.find((category) => category.value === selectedCategory);
   const toolbarCategories = selectedCategoryDefinition
     ? [{ label: "All", value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
     : quickCategories;
   const visibleListings = allListings.filter((listing) => {
-    const matchesCategory = activeCategory === "all" || listing.categorySlug === activeCategory;
+    const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
     const matchesSubcategory = selectedSubcategory === "all" || listing.subcategorySlug === selectedSubcategory;
     const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
     return matchesCategory && matchesSubcategory && matchesSearch;
@@ -205,7 +215,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
       </MobileDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
-      <section className="market-results" aria-label="Fresh finds">
+      <section className="market-results" aria-label="Fresh finds" aria-busy={Boolean(applyingChip)}>
         <div className="market-toolbar">
           <div className="view-toggle" aria-label="View mode">
             <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label="List view" aria-pressed={viewMode === "list"} onClick={() => chooseView("list")}>
@@ -219,14 +229,12 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           <div className="market-chip-row" aria-label="Quick categories">
             {toolbarCategories.map((category) => {
               const isSelected = selectedCategoryDefinition ? category.value === selectedSubcategory : category.value === selectedCategory;
-              const isPreview = !selectedCategoryDefinition && category.value === hoveredCategory;
               return <button
                 key={category.value}
-                className={`${isSelected ? "is-selected" : ""} ${isPreview ? "is-preview" : ""}`}
+                className={`${isSelected ? "is-selected" : ""} ${applyingChip === category.value ? "is-applying" : ""}`}
                 type="button"
-                onMouseEnter={() => { if (!selectedCategoryDefinition) setHoveredCategory(category.value); }}
-                onMouseLeave={() => { if (!selectedCategoryDefinition) setHoveredCategory(null); }}
-                onClick={() => selectedCategoryDefinition ? chooseSubcategory(category.value) : chooseCategory(category.value)}
+                aria-pressed={isSelected}
+                onClick={() => chooseToolbarCategory(category.value)}
               >
                 {category.label}
               </button>;

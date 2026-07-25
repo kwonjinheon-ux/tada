@@ -1444,11 +1444,27 @@ a {
   color: #ffffff;
 }
 
+.market-chip-row button.is-applying {
+  animation: market-chip-apply 420ms ease-out;
+}
+
+@keyframes market-chip-apply {
+  0% { transform: scale(1); }
+  40% { transform: scale(.93); }
+  72% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .market-chip-row button:not(.is-selected):hover,
-  .market-chip-row button.is-preview {
+  .market-chip-row button:not(.is-selected):hover {
     background: #b9d1ff;
     color: #18345c;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-chip-row button.is-applying {
+    animation: none;
   }
 }
 
