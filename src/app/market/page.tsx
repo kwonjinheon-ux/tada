@@ -22,6 +22,7 @@ type MarketListingRow = {
   region_suburb: string | null;
   status: "published" | "pending" | "sold";
   category_slug: string | null;
+  subcategory_slug: string | null;
   created_at: string;
 };
 
@@ -46,7 +47,7 @@ async function getPostedListings(): Promise<Listing[]> {
 
   const { data, error } = await supabase
     .from("market_listings")
-    .select("id,title,price_cents,region_city,region_suburb,status,category_slug,created_at")
+    .select("id,title,price_cents,region_city,region_suburb,status,category_slug,subcategory_slug,created_at")
     .in("status", ["published", "pending", "sold"])
     .order("created_at", { ascending: false })
     .limit(48);
@@ -100,6 +101,7 @@ async function getPostedListings(): Promise<Listing[]> {
         image,
         imageAlt: photo?.original_name ?? marketListing.title,
         categorySlug: marketListing.category_slug,
+        subcategorySlug: marketListing.subcategory_slug,
         badge: marketListing.status === "published" ? "Newly Listed" : undefined,
         status: marketListing.status === "sold" ? "sold" : marketListing.status === "pending" ? "pending" : "available",
       } satisfies Listing;

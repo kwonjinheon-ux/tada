@@ -8,6 +8,7 @@ export type Listing = {
   image: string;
   imageAlt: string;
   categorySlug?: string | null;
+  subcategorySlug?: string | null;
   badge?: "Promotion" | "Newly Listed";
   status: ListingStatus;
 };

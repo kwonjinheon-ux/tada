@@ -34,6 +34,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
   const selectedCategory = searchParams.get("category") ?? "all";
+  const selectedSubcategory = searchParams.get("subcategory") ?? "all";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -114,18 +115,31 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   };
   const chooseCategory = (categorySlug: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("subcategory");
     if (categorySlug === "all") params.delete("category");
     else params.set("category", categorySlug);
     router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
   };
+  const chooseSubcategory = (subcategorySlug: string) => {
+    if (selectedCategory === "all") return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (subcategorySlug === "all") params.delete("subcategory");
+    else params.set("subcategory", subcategorySlug);
+    router.push(`/market?${params.toString()}`);
+  };
   const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
   const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
   const activeCategory = hoveredCategory ?? selectedCategory;
+  const selectedCategoryDefinition = marketplaceCategories.find((category) => category.value === selectedCategory);
+  const toolbarCategories = selectedCategoryDefinition
+    ? [{ label: "All", value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
+    : quickCategories;
   const visibleListings = allListings.filter((listing) => {
     const matchesCategory = activeCategory === "all" || listing.categorySlug === activeCategory;
+    const matchesSubcategory = selectedSubcategory === "all" || listing.subcategorySlug === selectedSubcategory;
     const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesSubcategory && matchesSearch;
   });
 
   return (
@@ -203,18 +217,20 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           </div>
 
           <div className="market-chip-row" aria-label="Quick categories">
-            {quickCategories.map((category) => (
-              <button
+            {toolbarCategories.map((category) => {
+              const isSelected = selectedCategoryDefinition ? category.value === selectedSubcategory : category.value === selectedCategory;
+              const isPreview = !selectedCategoryDefinition && category.value === hoveredCategory;
+              return <button
                 key={category.value}
-                className={`${category.value === selectedCategory ? "is-selected" : ""} ${category.value === hoveredCategory ? "is-preview" : ""}`}
+                className={`${isSelected ? "is-selected" : ""} ${isPreview ? "is-preview" : ""}`}
                 type="button"
-                onMouseEnter={() => setHoveredCategory(category.value)}
-                onMouseLeave={() => setHoveredCategory(null)}
-                onClick={() => chooseCategory(category.value)}
+                onMouseEnter={() => { if (!selectedCategoryDefinition) setHoveredCategory(category.value); }}
+                onMouseLeave={() => { if (!selectedCategoryDefinition) setHoveredCategory(null); }}
+                onClick={() => selectedCategoryDefinition ? chooseSubcategory(category.value) : chooseCategory(category.value)}
               >
                 {category.label}
-              </button>
-            ))}
+              </button>;
+            })}
           </div>
 
           <div className="market-tools">
