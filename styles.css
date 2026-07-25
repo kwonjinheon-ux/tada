@@ -5107,6 +5107,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .profile-settings-content { padding-bottom: 44px; }
 .keywords-content { width: min(100%, 940px); padding: 40px 30px 54px; }
+.marketplace-page.dashboard-page.dashboard-layout.keywords-page { background: #fff; }
+.keywords-page .keywords-content { background: #fff; }
 .keywords-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
 .keywords-heading-icon { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; border-radius: 8px; background: #dff8ef; color: #00875e; font-size: 21px; }
 .keywords-heading h1, .keywords-heading p { margin: 0; }
