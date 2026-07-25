@@ -81,6 +81,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const selectedConversationIdRef = useRef(selectedConversationId);
@@ -104,7 +105,12 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   }, [selectedConversationId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    const threadBody = threadBodyRef.current;
+    if (!threadBody) return;
+    const frame = window.requestAnimationFrame(() => {
+      threadBody.scrollTo({ top: threadBody.scrollHeight });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [messages, offers]);
 
   useEffect(() => {
@@ -279,8 +285,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         <div className="messages-filter-row"><button className="is-active" type="button">All</button><button type="button">Unread</button><button type="button">Buying</button><button type="button">Selling</button></div>
         <div className="messages-conversation-list">
           {conversations.length ? conversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId ? "is-active" : ""}`} type="button" key={conversation.id} onClick={() => openConversation(conversation.id)}>
-            <Avatar className="messages-avatar" name={conversation.counterpart.name} src={conversation.counterpart.avatarUrl} />
-            <span className="messages-conversation-copy"><span><strong>{conversation.counterpart.name}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt)}</time></span><em>{conversation.listing.title}</em><small>{conversation.lastMessagePreview || "Start the conversation"}</small></span>
+            {conversation.listing.imageUrl
+              ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
+              : <span className="messages-listing-thumbnail"><i className="fa-regular fa-image" aria-hidden="true" /></span>}
+            <span className="messages-conversation-copy">
+              <span><strong>{conversation.listing.title}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt)}</time></span>
+              <em>{conversation.counterpart.name} · {conversation.role === "buying" ? "Seller" : "Buyer"}</em>
+              <small>{conversation.lastMessagePreview || "Start the conversation"}</small>
+            </span>
             {conversation.unreadCount ? <b>{conversation.unreadCount}</b> : null}
           </button>) : <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
         </div>
@@ -288,8 +300,19 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
       <section className="messages-thread-panel" aria-label="Conversation">
         {selectedConversation ? <>
-          <header className="messages-thread-header"><Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link><Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} /><div><strong>{selectedConversation.counterpart.name}</strong><span>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</span></div><a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">{selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={42} height={42} /> : <i className="fa-regular fa-image" aria-hidden="true" />}<span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></a></header>
-          <div className="messages-thread-body">
+          <header className="messages-thread-header">
+            <Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="fa-solid fa-arrow-left" aria-hidden="true" /></Link>
+            <a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">
+              {selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={48} height={48} /> : <i className="fa-regular fa-image" aria-hidden="true" />}
+              <span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span>
+              <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+            </a>
+            <div className="messages-thread-counterpart">
+              <Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} />
+              <span><strong>{selectedConversation.counterpart.name}</strong><small>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</small></span>
+            </div>
+          </header>
+          <div className="messages-thread-body" ref={threadBodyRef}>
             {offerError ? <p className="trade-offer-error" role="alert">{offerError}</p> : null}
             {offers.length ? offers.map((offer) => {
               const isBuyer = offer.buyerId === currentUserId;
