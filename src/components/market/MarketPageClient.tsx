@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
@@ -102,11 +101,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         <button className={`filter-close-button ${mobileDrawerClasses.closeButton} ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-        <Link className="dashboard-link" href="/market/dashboard" onClick={() => setIsFilterOpen(false)}>
-          <i className="fa-solid fa-chart-line" aria-hidden="true" />
-          <span>My Dashboard</span>
-          <i className="fa-solid fa-chevron-right" aria-hidden="true" />
-        </Link>
         <section className="filter-block location-block">
           <button className="location-select" type="button">
             <i className="fa-solid fa-location-dot" aria-hidden="true" />

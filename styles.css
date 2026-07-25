@@ -888,16 +888,15 @@ a {
 }
 
 .marketplace-page {
-  width: min(100%, 1280px);
+  width: 100%;
   min-height: calc(100vh - 70px);
   display: grid;
   gap: 16px;
-  margin: 0 auto;
+  margin: 0;
   padding: 14px 12px 34px;
   background: #fff;
 }
 
-.market-filter-panel,
 .product-card {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -909,6 +908,7 @@ a {
   display: none;
   gap: 16px;
   padding: 16px;
+  background: #fff;
 }
 
 .floating-filter-button,
@@ -4590,6 +4590,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-results {
     align-content: start;
     grid-auto-rows: max-content;
+    padding: 18px 20px 42px;
   }
 
   .product-grid.is-list-view .product-card {
@@ -4763,8 +4764,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .marketplace-page {
     grid-template-columns: 220px minmax(0, 1fr);
     align-items: start;
-    gap: 20px;
-    padding: 18px 18px 42px;
+    gap: 0;
+    padding: 0;
+  }
+
+  .market-results {
+    min-height: calc(100vh - 70px);
+    padding: 20px 24px 42px;
   }
 
   .market-toolbar {
@@ -4794,20 +4800,41 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-filter-panel {
     display: grid;
     position: sticky;
-    top: 82px;
+    top: 70px;
+    max-height: calc(100vh - 70px);
+    align-self: start;
+    overflow-y: auto;
+    border-right: 1px solid #e2e8f0;
+    padding: 24px 18px 42px;
+    scrollbar-color: #d3d8df transparent;
+    scrollbar-width: thin;
+  }
+
+  .market-filter-panel::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .market-filter-panel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .market-filter-panel::-webkit-scrollbar-thumb {
+    border: 3px solid #fff;
+    border-radius: 999px;
+    background: #d3d8df;
   }
 
   .market-filter-panel.is-open {
     position: sticky;
-    top: 82px;
+    top: 70px;
     right: auto;
     bottom: auto;
     left: auto;
     z-index: auto;
-    max-height: none;
-    overflow: visible;
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
     gap: 16px;
-    padding: 16px;
+    padding: 24px 18px 42px;
   }
 
   .floating-filter-button,
@@ -4870,8 +4897,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    grid-template-columns: 260px minmax(0, 1fr);
-    gap: 24px;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 0;
   }
 
   .product-grid {
