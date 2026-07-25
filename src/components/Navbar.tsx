@@ -11,6 +11,7 @@ const authlessRoutes = new Set(["/login", "/signup"]);
 const dashboardMenuItems = [
   ["fa-border-all", "Dashboard", ""],
   ["fa-circle-user", "Profile Settings", "/profile"],
+  ["fa-bell", "Notifications", "/notifications"],
   ["fa-message", "Messages", "/messages"],
   ["fa-heart", "Wishlist", "/wishlist"],
   ["fa-key", "Keywords", "/keywords"],
@@ -27,6 +28,7 @@ export function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -48,13 +50,20 @@ export function Navbar() {
         setUserId(user?.id ?? null);
         setUserEmail(user?.email ?? null);
         setDisplayName(user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? null);
-        if (!user) { setAvatarUrl(null); setUnreadMessageCount(0); return; }
-        const { count } = await supabase
-          .from("market_messages")
-          .select("id", { count: "exact", head: true })
-          .eq("recipient_id", user.id)
-          .is("read_at", null);
-        if (isMounted) setUnreadMessageCount(count ?? 0);
+        if (!user) {
+          setAvatarUrl(null);
+          setUnreadMessageCount(0);
+          setUnreadNotificationCount(0);
+          return;
+        }
+        const [{ count: messageCount }, { count: notificationCount }] = await Promise.all([
+          supabase.from("market_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
+          supabase.from("market_notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
+        ]);
+        if (isMounted) {
+          setUnreadMessageCount(messageCount ?? 0);
+          setUnreadNotificationCount(notificationCount ?? 0);
+        }
         const avatarPath = user.user_metadata?.avatar_path;
         if (avatarPath) {
           const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
@@ -97,10 +106,20 @@ export function Navbar() {
         .is("read_at", null);
       setUnreadMessageCount(count ?? 0);
     };
+    const refreshNotificationCount = async () => {
+      const { count } = await supabase
+        .from("market_notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .is("read_at", null);
+      setUnreadNotificationCount(count ?? 0);
+    };
     const channel = supabase
       .channel(`market-unread-count:${userId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, () => { void refreshNotificationCount(); })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, () => { void refreshNotificationCount(); })
       .subscribe();
     return () => { void supabase.removeChannel(channel).catch(() => undefined); };
   }, [userId]);
@@ -166,6 +185,7 @@ export function Navbar() {
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
   const unreadBadge = unreadMessageCount > 99 ? "99+" : String(unreadMessageCount);
+  const notificationBadge = unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount);
 
   const handleMobileProfileClick = () => {
     setIsOpen(false);
@@ -183,6 +203,7 @@ export function Navbar() {
     setUserId(null);
     setDisplayName(null);
     setAvatarUrl(null);
+    setUnreadNotificationCount(0);
     setIsDashboardMenuOpen(false);
   };
 
@@ -231,10 +252,10 @@ export function Navbar() {
             {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
           </button>
         )}
-        <button className="mobile-notifications nav-notifications" type="button" aria-label={`${unreadMessageCount} unread messages`}>
+        <Link className="mobile-notifications nav-notifications" href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
           <i className="fa-regular fa-bell" aria-hidden="true" />
-          {unreadMessageCount ? <span>{unreadBadge}</span> : null}
-        </button>
+          {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
+        </Link>
 
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
@@ -252,10 +273,10 @@ export function Navbar() {
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>Create</span>
           </Link>
-          <button className="nav-notifications" type="button" aria-label={`${unreadMessageCount} unread messages`}>
+          <Link className="nav-notifications" href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />
-            {unreadMessageCount ? <span>{unreadBadge}</span> : null}
-          </button>
+            {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
+          </Link>
           {isAuthReady && userEmail ? (
             <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
@@ -287,7 +308,7 @@ export function Navbar() {
             {dashboardMenuItems.map(([icon, label, suffix]) => (
               <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === (label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`) ? "is-active" : ""}`} href={label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : null}</span>
+                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}</span>
               </Link>
             ))}
             <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
