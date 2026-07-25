@@ -898,7 +898,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 currentDescription={description}
                 hasPreviousDescription={Boolean(previousDescription)}
                 onUseDraft={useAiDraft}
-                onUseTitle={setTitle}
+                onUseTitle={handleTitleChange}
                 onRestorePreviousDescription={restorePreviousDescription}
               />
             </div>
