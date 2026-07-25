@@ -5366,7 +5366,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .dashboard-page { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 230px minmax(0, 1fr); background: #f6f8ff; color: #0b1c30; }
-.wishlist-page { background: #fff; }
+.wishlist-page {
+  background: #fff;
+}
+
+.wishlist-page .wishlist-content {
+  background: transparent;
+}
 .dashboard-sidebar { min-height: calc(100vh - 70px); display: flex; flex-direction: column; gap: 24px; padding: 24px 14px 18px; border-right: 1px solid #dbe3ef; background: #fff; }
 .dashboard-nav { display: grid; gap: 7px; }
 .dashboard-nav a { min-height: 46px; display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 12px; padding: 0 14px; border-radius: 8px; color: #495a70; font-size: 14px; font-weight: 700; text-decoration: none; }
