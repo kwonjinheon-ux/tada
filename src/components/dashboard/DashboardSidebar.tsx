@@ -34,7 +34,6 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
           </Link>
         ))}
       </nav>
-      <Link className="dashboard-sell-button" href="/market/create"><i className="fa-solid fa-circle-plus" aria-hidden="true" /> Sell</Link>
     </aside>
   );
 }
