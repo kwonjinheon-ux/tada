@@ -10,6 +10,8 @@ export type MarketNotification = {
   type: "message" | "offer" | "trade" | "keyword" | "wishlist";
   title: string;
   body: string;
+  actorName: string | null;
+  listingTitle: string | null;
   href: string;
   readAt: string | null;
   createdAt: string;
@@ -35,11 +37,16 @@ const iconByType = {
 
 function mapRealtimeNotification(row: Record<string, unknown>): MarketNotification | null {
   if (typeof row.id !== "string" || typeof row.type !== "string" || typeof row.title !== "string") return null;
+  const metadata = row.metadata && typeof row.metadata === "object"
+    ? row.metadata as Record<string, unknown>
+    : {};
   return {
     id: row.id,
     type: row.type as MarketNotification["type"],
     title: row.title,
     body: typeof row.body === "string" ? row.body : "",
+    actorName: typeof metadata.actorName === "string" ? metadata.actorName : null,
+    listingTitle: typeof metadata.listingTitle === "string" ? metadata.listingTitle : null,
     href: typeof row.href === "string" ? row.href : "/market",
     readAt: typeof row.read_at === "string" ? row.read_at : null,
     createdAt: typeof row.created_at === "string" ? row.created_at : new Date().toISOString(),
@@ -141,7 +148,16 @@ export function MarketNotificationsClient({
           <Link className={`notification-row ${notification.readAt ? "" : "is-unread"}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.id)}>
             <span className={`notification-icon is-${notification.type}`}><i className={`fa-solid ${iconByType[notification.type]}`} aria-hidden="true" /></span>
             <span className="notification-copy">
-              <span><strong>{notification.title}</strong><time suppressHydrationWarning>{relativeTime(notification.createdAt)}</time></span>
+              <span>
+                <strong>{notification.type === "message" && notification.actorName ? notification.actorName : notification.title}</strong>
+                <time suppressHydrationWarning>{relativeTime(notification.createdAt)}</time>
+              </span>
+              {notification.type === "message" && notification.listingTitle ? (
+                <small className="notification-listing-title">
+                  <i className="fa-solid fa-tag" aria-hidden="true" />
+                  {notification.listingTitle}
+                </small>
+              ) : null}
               {notification.body ? <small>{notification.body}</small> : null}
             </span>
             {!notification.readAt ? <i className="notification-unread-dot" aria-label="Unread" /> : null}
