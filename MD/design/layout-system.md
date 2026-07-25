@@ -66,3 +66,5 @@ Full application shells may manage their own outer layout:
 - Full-width banners, maps, edge-to-edge images, modals, headers, footers, and mobile bottom navigation.
 
 These exceptions should still use the shared spacing tokens for inner content when they need ordinary content gutters.
+
+Dashboard pages must use `marketplace-page dashboard-page dashboard-layout` on the top-level `main`. The `dashboard-layout` reference owns the sidebar rail, border, and content gutter so profile settings, messages, wishlist, and keyword alerts stay aligned across mobile and desktop.

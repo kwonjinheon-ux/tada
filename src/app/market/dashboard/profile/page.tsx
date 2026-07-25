@@ -17,7 +17,7 @@ export default async function ProfileSettingsPage() {
   const preferences = user.user_metadata?.market_preferences;
 
   return (
-    <main className="marketplace-page dashboard-page profile-settings-page">
+    <main className="marketplace-page dashboard-page dashboard-layout profile-settings-page">
       <DashboardSidebar context="market" active="Profile Settings" />
       <div className="dashboard-content profile-settings-content">
         <ProfileSettingsForm

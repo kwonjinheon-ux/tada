@@ -18,7 +18,7 @@ export default async function KeywordAlertsPage() {
   const categories: KeywordCategory[] = (categoryRows ?? []).map((category) => ({ slug: category.slug, label: category.label }));
 
   return (
-    <main className="marketplace-page dashboard-page keywords-page">
+    <main className="marketplace-page dashboard-page dashboard-layout keywords-page">
       <DashboardSidebar context="market" active="Keywords" />
       <KeywordAlertsClient initialAlerts={initialAlerts} categories={categories} />
     </main>

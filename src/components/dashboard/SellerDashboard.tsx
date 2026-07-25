@@ -22,7 +22,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const isJobsDashboard = context === "jobs";
 
   return (
-    <main className="marketplace-page dashboard-page">
+    <main className="marketplace-page dashboard-page dashboard-layout">
       <DashboardSidebar context={context} active="Dashboard" />
       <div className="dashboard-content">
         <div className="dashboard-welcome">

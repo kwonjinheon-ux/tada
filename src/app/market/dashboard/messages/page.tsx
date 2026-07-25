@@ -78,5 +78,5 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   });
   const initialMessages: MarketMessage[] = ((rawMessages ?? []) as MessageRow[]).map((message) => ({ id: message.id, conversationId: message.conversation_id, senderId: message.sender_id, recipientId: message.recipient_id, body: message.body, createdAt: message.created_at, readAt: message.read_at }));
 
-  return <main className="marketplace-page dashboard-page messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} currentUserId={user.id} /></main>;
+  return <main className="marketplace-page dashboard-page dashboard-layout messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} currentUserId={user.id} /></main>;
 }

@@ -5393,21 +5393,32 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .dashboard-listing-actions button.icon-only { flex: 0 0 34px; }
 }
 
-/* Dashboard uses the same sidebar geometry and typography as Marketplace filters. */
-.marketplace-page.dashboard-page {
+/* Dashboard layout reference: shared rail and content gutters for dashboard pages. */
+.dashboard-layout {
+  --dashboard-sidebar-width-tablet: 220px;
+  --dashboard-sidebar-width-desktop: 300px;
+}
+
+.marketplace-page.dashboard-page.dashboard-layout {
   min-height: calc(100vh - 70px);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
   background: #f6f8ff;
   color: #0b1c30;
 }
 
-.market-filter-panel.dashboard-sidebar {
+.dashboard-layout > .market-filter-panel.dashboard-sidebar {
   min-height: 0;
   display: flex;
   gap: 16px;
-  padding: 16px;
-  border: 1px solid var(--line);
+  padding: 24px 18px 42px;
+  border: 0;
+  border-right: 1px solid #e2e8f0;
+  border-radius: 0;
   background: var(--surface);
+  box-shadow: none;
 }
 
 .dashboard-sidebar .dashboard-nav {
@@ -5456,15 +5467,23 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   box-shadow: none;
 }
 
-.dashboard-page .dashboard-content {
+.dashboard-layout .dashboard-content {
   width: 100%;
   min-width: 0;
-  padding: 0 0 28px;
+  max-width: var(--page-max-width);
+  margin-inline: auto;
+  padding: 24px max(var(--page-padding-inline), env(safe-area-inset-right)) 44px max(var(--page-padding-inline), env(safe-area-inset-left));
+}
+
+.dashboard-layout.messages-dashboard-page > .messages-page {
+  max-width: none;
+  margin-inline: 0;
+  padding: 0;
 }
 
 /* Mobile: stacked canvas, compact two-column navigation and touch-friendly cards. */
 @media (max-width: 767.98px) {
-  .keywords-content { padding: 24px 20px 40px; }
+  .keywords-content { padding-block: 24px 40px; }
   .keywords-heading { align-items: flex-start; margin-bottom: 22px; }
   .keywords-heading-icon { width: 42px; height: 42px; flex-basis: 42px; font-size: 18px; }
   .keywords-heading h1 { font-size: 25px; }
@@ -5474,11 +5493,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .keywords-saved-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
   .keywords-saved-heading p { max-width: none; text-align: left; }
   .keywords-chip-list { gap: 8px; }
-  .marketplace-page.dashboard-page {
+  .marketplace-page.dashboard-page.dashboard-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .market-filter-panel.dashboard-sidebar {
+  .dashboard-layout > .market-filter-panel.dashboard-sidebar {
     display: none;
   }
 
@@ -5550,8 +5569,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Tablet: identical 220px Marketplace rail with a denser dashboard canvas. */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .marketplace-page.dashboard-page {
-    grid-template-columns: 220px minmax(0, 1fr);
+  .marketplace-page.dashboard-page.dashboard-layout {
+    grid-template-columns: var(--dashboard-sidebar-width-tablet) minmax(0, 1fr);
   }
 
   .dashboard-sidebar .dashboard-nav {
@@ -5574,8 +5593,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Desktop: follows Marketplace's 260px rail and full information density. */
 @media (min-width: 1024px) {
-  .marketplace-page.dashboard-page {
-    grid-template-columns: 260px minmax(0, 1fr);
+  .marketplace-page.dashboard-page.dashboard-layout {
+    grid-template-columns: var(--dashboard-sidebar-width-desktop) minmax(0, 1fr);
   }
 
   .dashboard-sidebar .dashboard-nav {
