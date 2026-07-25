@@ -212,12 +212,20 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     setIsSubmittingOffer(true);
     setOfferError(null);
     try {
-      const response = await fetch("/api/market/offers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: listing.id, amountCents, note: offerNote }),
-      });
-      const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+      const requestBody = JSON.stringify({ listingId: listing.id, amountCents, note: offerNote });
+      let response: Response | null = null;
+      let payload: { conversationId?: string; error?: string } | null = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        response = await fetch("/api/market/offers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: requestBody,
+        });
+        payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+        if (response.status < 500 || attempt === 1) break;
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+      }
+      if (!response) throw new Error("Offer request did not start");
       if (response.status === 401) {
         router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
         return;
