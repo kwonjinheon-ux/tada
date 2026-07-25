@@ -180,8 +180,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         setMessageError(payload?.error ?? "Unable to open a conversation right now.");
         return;
       }
-      router.prefetch(`/market/dashboard/messages?conversation=${payload.conversationId}`);
-      router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
+      const conversationPath = `/market/dashboard/messages?conversation=${payload.conversationId}`;
+      router.prefetch(conversationPath);
+      if (window.matchMedia("(max-width: 767.98px)").matches) {
+        window.location.assign(conversationPath);
+        return;
+      }
+      router.push(conversationPath);
     } catch {
       setMessageError("Unable to reach messaging right now. Please try again.");
     } finally {
@@ -222,7 +227,12 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         return;
       }
       setIsOfferDialogOpen(false);
-      router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
+      const conversationPath = `/market/dashboard/messages?conversation=${payload.conversationId}`;
+      if (window.matchMedia("(max-width: 767.98px)").matches) {
+        window.location.assign(conversationPath);
+        return;
+      }
+      router.push(conversationPath);
     } catch {
       setOfferError("Unable to reach offers right now. Please try again.");
     } finally {
@@ -355,6 +365,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
       <div className="listing-detail-mobile-actions listing-detail-mobile-only">{isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon">Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Edit listing" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button><button className="listing-detail-mobile-action-icon listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button></> : <><button type="button" className="listing-detail-message" onClick={openOfferDialog}>Make an offer</button><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></>}</div>
+      {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <div className="listing-offer-backdrop" role="dialog" aria-modal="true" aria-labelledby="listing-offer-title" onPointerDown={(event) => { if (event.target === event.currentTarget && !isSubmittingOffer) setIsOfferDialogOpen(false); }}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></div> : null}
       {isDeleteDialogOpen ? <div className="listing-delete-backdrop" role="dialog" aria-modal="true" aria-labelledby="listing-delete-title" onPointerDown={(event) => { if (event.target === event.currentTarget && !isDeleting) setIsDeleteDialogOpen(false); }}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="fa-solid fa-trash-can" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="fa-solid fa-trash-can" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></div> : null}
     </main>

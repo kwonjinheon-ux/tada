@@ -5758,6 +5758,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .listing-detail-message-error { margin: 9px 0 0; color: #b42318; font-size: 12px; font-weight: 700; }
+.listing-detail-mobile-message-error { position: fixed; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); left: 12px; z-index: 42; margin: 0; padding: 9px 12px; border-radius: 7px; background: #fff1f2; color: #b42318; font-size: 12px; font-weight: 700; box-shadow: 0 7px 20px rgba(91, 20, 33, .14); }
 .listing-detail-actions button:disabled, .listing-detail-mobile-actions button:disabled { cursor: wait; opacity: .72; }
 .listing-offer-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(9, 24, 43, .58); backdrop-filter: blur(5px); }
 .listing-offer-dialog { width: min(100%, 420px); display: grid; gap: 14px; padding: 25px; border-radius: 8px; background: #fff; box-shadow: 0 20px 50px rgba(7, 22, 42, .3); }
