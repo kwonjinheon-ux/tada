@@ -1760,6 +1760,46 @@ a {
 }
 
 @media (max-width: 767px) {
+  .product-grid:not(.is-list-view) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .product-grid:not(.is-list-view) .product-body {
+    gap: 5px;
+    padding: 10px;
+  }
+
+  .product-grid:not(.is-list-view) .product-body strong {
+    font-size: 18px;
+  }
+
+  .product-grid:not(.is-list-view) .product-body h2 {
+    font-size: 14px;
+  }
+
+  .product-grid:not(.is-list-view) .product-body p {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .product-grid:not(.is-list-view) .listing-status {
+    min-height: 18px;
+    padding: 0 6px;
+    font-size: 8px;
+  }
+
+  .product-grid:not(.is-list-view) .save-button {
+    top: 7px;
+    right: 7px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
   /* Keep the list-card action slot stable while the heart provides feedback. */
   .product-grid.is-list-view .save-button {
     min-width: 36px;

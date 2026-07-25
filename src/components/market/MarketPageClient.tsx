@@ -70,7 +70,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   useEffect(() => {
     const setResponsiveView = () => {
       if (!hasManualViewChoice) {
-        setViewMode(window.innerWidth < 1024 ? "list" : "grid");
+        setViewMode(window.innerWidth < 768 ? "grid" : window.innerWidth < 1024 ? "list" : "grid");
       }
 
       if (window.innerWidth >= 768) {
