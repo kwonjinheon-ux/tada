@@ -5380,7 +5380,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .dashboard-page { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 230px minmax(0, 1fr); background: #f6f8ff; color: #0b1c30; }
-.profile-settings-page {
+.marketplace-page.dashboard-page.dashboard-layout.profile-settings-page {
   background: #fff;
 }
 
