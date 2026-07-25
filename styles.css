@@ -102,7 +102,7 @@ a {
   align-items: center;
   gap: 10px;
   margin: 0 auto;
-  padding: 9px 12px 10px;
+  padding: 9px 12px;
 }
 
 .site-logo {
@@ -3941,7 +3941,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
       "mobile mobile mobile mobile";
     row-gap: 4px;
     column-gap: 8px;
-    padding: 3px 16px 5px;
+    padding: 3px 16px;
   }
 
   .site-logo {
