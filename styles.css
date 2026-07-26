@@ -5729,20 +5729,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .notifications-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
   padding-bottom: 22px;
   border-bottom: 1px solid #dce6e3;
-}
-
-.notifications-heading > div > span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--primary-dark);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .notifications-heading h1 {
@@ -5750,12 +5741,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   color: #10233d;
   font-size: 30px;
   line-height: 1.15;
-}
-
-.notifications-heading p {
-  margin: 8px 0 0;
-  color: #66788f;
-  font-size: 14px;
 }
 
 .notifications-heading button {
@@ -5978,7 +5963,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 @media (max-width: 767.98px) {
   .notifications-heading {
-    align-items: stretch;
     gap: 14px;
     padding-bottom: 16px;
   }
@@ -5987,16 +5971,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: 26px;
   }
 
-  .notifications-heading p {
-    max-width: 270px;
-    font-size: 13px;
-  }
-
   .notifications-heading button {
     width: 42px;
     height: 42px;
     min-height: 42px;
-    align-self: flex-end;
     padding: 0;
     font-size: 0;
   }

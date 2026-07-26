@@ -123,13 +123,9 @@ export function MarketNotificationsClient({
   return (
     <div className="dashboard-content notifications-content">
       <header className="notifications-heading">
-        <div>
-          <span>Marketplace</span>
-          <h1>Notifications</h1>
-          <p>Messages, offers, trade updates, and saved-item alerts in one place.</p>
-        </div>
+        <h1>Notifications</h1>
         <button type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
-          <i className="fa-solid fa-check-double" aria-hidden="true" />
+          <i className="fa-regular fa-envelope-open" aria-hidden="true" />
           Mark all read
         </button>
       </header>
