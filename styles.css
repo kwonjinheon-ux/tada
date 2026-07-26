@@ -5136,11 +5136,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-add-panel > button:disabled { cursor: wait; opacity: .58; }
 .keywords-error { margin: -24px 0 28px; color: #bd173a; font-size: 13px; font-weight: 700; }
 .keywords-saved { padding-top: 2px; }
-.keywords-saved-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
-.keywords-saved-heading span { color: #07895f; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.keywords-saved-heading h2 { margin: 5px 0 0; color: #10243d; font-size: 22px; }
+.keywords-saved-heading { margin-bottom: 18px; }
+.keywords-saved-heading h2 { margin: 0; color: #10243d; font-size: 22px; }
 .keywords-saved-heading h2 small { color: #7a8999; font-size: 14px; font-weight: 600; }
-.keywords-saved-heading p { max-width: 300px; margin: 0; color: #6b7b8f; font-size: 12px; line-height: 1.45; text-align: right; }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
 .keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 700; }
 .keyword-chip small { padding-left: 8px; border-left: 1px solid currentColor; font-size: 10px; font-weight: 800; line-height: 1.2; opacity: .74; }
@@ -5640,8 +5638,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .keywords-heading p { font-size: 13px; }
   .keywords-add-panel { display: grid; }
   .keywords-add-panel > button { width: 100%; }
-  .keywords-saved-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
-  .keywords-saved-heading p { max-width: none; text-align: left; }
+  .keywords-input-wrap input { font-size: 16px; }
   .keywords-chip-list { gap: 8px; }
   .marketplace-page.dashboard-page.dashboard-layout {
     grid-template-columns: minmax(0, 1fr);

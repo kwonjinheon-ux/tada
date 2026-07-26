@@ -69,7 +69,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
       <button type="submit" disabled={!keyword.trim() || isSaving}><i className="fa-solid fa-plus" aria-hidden="true" /> {isSaving ? "Adding..." : "Add keyword"}</button>
     </form>
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
-    <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><div><span>Saved searches</span><h2 id="saved-keywords-title">Your keywords <small>{alerts.length}/20</small></h2></div><p>Alerts are sent as soon as a matching listing is posted.</p></div>
+    <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">Your keywords <small>{alerts.length}/20</small></h2></div>
       {alerts.length ? <div className="keywords-chip-list">{alerts.map((alert) => {
         const category = getAlertCategory(alert);
         return <div className={`keyword-chip ${category.tone}`} key={alert.id} title={category.label}>
