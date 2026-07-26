@@ -5718,13 +5718,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 /* Marketplace notifications */
-.notifications-page {
+.marketplace-page.dashboard-page.dashboard-layout.notifications-page {
   background: #fff;
 }
 
 .notifications-content {
   align-self: start;
-  background: transparent;
+  background: #fff;
 }
 
 .notifications-heading {
