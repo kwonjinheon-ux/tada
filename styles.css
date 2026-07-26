@@ -5984,15 +5984,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .notifications-filter-row {
-    margin-inline: calc(-1 * var(--page-padding-mobile));
-    padding-inline: var(--page-padding-mobile);
+    margin-inline: 0;
+    padding-inline: 0;
   }
 
   .notification-row {
     grid-template-columns: 40px minmax(0, 1fr) 7px 12px;
     gap: 11px;
-    margin-inline: calc(-1 * var(--page-padding-mobile));
-    padding: 14px var(--page-padding-mobile);
+    margin-inline: 0;
+    padding: 14px 0;
   }
 
   .notification-icon {
