@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { Listing } from "@/data/listings";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 
@@ -12,7 +12,7 @@ type ProductCardProps = {
   initialIsSaved?: boolean;
 };
 
-export function ProductCard({ listing, priority = false, initialIsSaved = false }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false }: ProductCardProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
@@ -134,3 +134,6 @@ export function ProductCard({ listing, priority = false, initialIsSaved = false 
     </article>
   );
 }
+
+export const ProductCard = memo(ProductCardComponent);
+ProductCard.displayName = "ProductCard";

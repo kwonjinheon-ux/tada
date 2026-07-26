@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImage } from "@/lib/supabase/storage-image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,9 +35,9 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
     .select("id", { count: "exact", head: true })
     .eq("owner_id", seller.id)
     .eq("status", "published");
-  const { data: signedAvatar } = seller.avatar_path
-    ? await supabase.storage.from("profile-avatars").createSignedUrl(seller.avatar_path, 3600)
-    : { data: null };
+  const signedAvatar = seller.avatar_path
+    ? await getSignedStorageImage("profile-avatars", seller.avatar_path, "avatar")
+    : null;
   const ratingCount = seller.rating_count ?? 0;
   const ratingAverage = Number(seller.rating_average ?? 0);
   const displayName = seller.display_name || "Tada seller";
@@ -45,7 +46,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
     <main className="listing-detail-page seller-public-profile">
       <Link className="listing-detail-back" href="/market"><i className="fa-solid fa-arrow-left" aria-hidden="true" />Back to listings</Link>
       <section className="seller-public-profile-card" aria-labelledby="seller-profile-name">
-        {signedAvatar?.signedUrl ? <img src={signedAvatar.signedUrl} alt={`${displayName} profile`} /> : <span>{displayName.charAt(0).toUpperCase()}</span>}
+        {signedAvatar ? <img src={signedAvatar} alt={`${displayName} profile`} /> : <span>{displayName.charAt(0).toUpperCase()}</span>}
         <div>
           <p>Seller profile</p>
           <h1 id="seller-profile-name">{displayName}</h1>

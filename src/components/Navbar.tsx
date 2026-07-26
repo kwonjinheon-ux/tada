@@ -41,8 +41,11 @@ export function Navbar() {
     const supabase = createBrowserSupabaseClient();
     if (!supabase) { setIsAuthReady(true); return; }
     let isMounted = true;
+    let syncPromise: Promise<void> | null = null;
 
-    const syncUser = async () => {
+    const syncUser = () => {
+      if (syncPromise) return syncPromise;
+      syncPromise = (async () => {
       try {
         const { data } = await supabase.auth.getUser();
         const user = data.user;
@@ -73,7 +76,10 @@ export function Navbar() {
         }
       } finally {
         if (isMounted) setIsAuthReady(true);
+        syncPromise = null;
       }
+      })();
+      return syncPromise;
     };
 
     void syncUser();

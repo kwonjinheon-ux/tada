@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
-import { listings } from "@/data/listings";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -40,40 +40,17 @@ function formatDate(date: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(date));
 }
 
-function fallbackListing(id: string): ListingDetail | null {
-  const listing = listings.find((candidate) => candidate.id === id);
-  if (!listing) return null;
-
-  return {
-    id: listing.id,
-    ownerId: null,
-    title: listing.title,
-    price: listing.price,
-    priceCents: Math.max(0, Math.round(Number(listing.price.replace(/[^0-9.]/g, "")) * 100) || 0),
-    location: listing.location,
-    description: `I am selling ${listing.title}. It is ready for its next owner and the listing photos show its current condition. Please send me a message if you would like to know anything else before arranging a viewing.`,
-    condition: "Good",
-    tradeMethod: "Pickup or delivery",
-    meetingPlace: null,
-    createdAt: "Listed recently",
-    status: listing.status,
-    viewCount: 0,
-    images: [{ src: listing.image, alt: listing.imageAlt }],
-    seller: { id: null, name: "Tada seller", avatarUrl: null, ratingAverage: 0, ratingCount: 0 },
-  };
-}
-
-async function getListingDetail(id: string): Promise<ListingDetail | null> {
-  const supabase = await createServerSupabaseClient();
-  if (!supabase) return fallbackListing(id);
-
+async function getListingDetail(
+  id: string,
+  supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
+): Promise<ListingDetail | null> {
   const { data, error } = await supabase
     .from("market_listings")
     .select("id,owner_id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at,view_count")
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !data) return fallbackListing(id);
+  if (error || !data) return null;
   const listing = data as MarketListingRow;
   const [{ data: photoRows }, { data: sellerData }, { data: profileData }] = await Promise.all([
     supabase
@@ -95,15 +72,12 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
   const photos = (photoRows as PhotoRow[] | null ?? []).filter((photo) => photo.storage_path);
   const paths = photos.map((photo) => photo.storage_path as string);
   const seller = (sellerData ?? profileData) as SellerRow | null;
-  const [{ data: signedPhotos }, { data: signedAvatar }] = await Promise.all([
-    paths.length
-      ? supabase.storage.from("market-listing-images").createSignedUrls(paths, 3600)
-      : Promise.resolve({ data: [] }),
+  const [signedByPath, signedAvatar] = await Promise.all([
+    getSignedStorageImages("market-listing-images", paths, "gallery"),
     seller?.avatar_path
-      ? supabase.storage.from("profile-avatars").createSignedUrl(seller.avatar_path, 3600)
-      : Promise.resolve({ data: null }),
+      ? getSignedStorageImage("profile-avatars", seller.avatar_path, "avatar")
+      : Promise.resolve(null),
   ]);
-  const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
   const images = photos.map((photo) => ({ src: signedByPath.get(photo.storage_path as string), alt: photo.original_name || listing.title })).filter((photo): photo is { src: string; alt: string } => Boolean(photo.src));
 
   return {
@@ -124,7 +98,7 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
     seller: {
       id: seller?.id ?? null,
       name: seller?.display_name || "Tada seller",
-      avatarUrl: signedAvatar?.signedUrl || null,
+      avatarUrl: signedAvatar,
       ratingAverage: Number(seller?.rating_average ?? 0),
       ratingCount: seller?.rating_count ?? 0,
     },
@@ -133,11 +107,15 @@ async function getListingDetail(id: string): Promise<ListingDetail | null> {
 
 export default async function ListingDetailPage({ params }: { params: Promise<{ listingId: string }> }) {
   const { listingId } = await params;
-  const listing = await getListingDetail(listingId);
-  if (!listing) notFound();
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
-  const { data: savedListing } = supabase && user
+  if (!supabase) notFound();
+  const [listing, userResult] = await Promise.all([
+    getListingDetail(listingId, supabase),
+    supabase.auth.getUser(),
+  ]);
+  if (!listing) notFound();
+  const user = userResult.data.user;
+  const { data: savedListing } = user
     ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
     : { data: null };
   return <ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} />;

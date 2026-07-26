@@ -1,6 +1,7 @@
 import { MarketPageClient } from "@/components/market/MarketPageClient";
 import type { Listing } from "@/data/listings";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const metadata = { title: "Market" };
 export const dynamic = "force-dynamic";
@@ -41,10 +42,9 @@ function formatLocation(city: string | null, suburb: string | null) {
   return parts.length ? parts.join(", ") : "New Zealand";
 }
 
-async function getPostedListings(): Promise<Listing[]> {
-  const supabase = await createServerSupabaseClient();
-  if (!supabase) return [];
-
+async function getPostedListings(
+  supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
+): Promise<Listing[]> {
   const { data, error } = await supabase
     .from("market_listings")
     .select("id,title,price_cents,region_city,region_suburb,status,category_slug,subcategory_slug,created_at")
@@ -75,17 +75,13 @@ async function getPostedListings(): Promise<Listing[]> {
   const storagePaths = [...new Set([...primaryPhotosByListingId.values()]
     .map((photo) => photo.storage_path)
     .filter((path): path is string => Boolean(path)))];
-  const { data: signedPhotos } = storagePaths.length
-    ? await supabase.storage.from("market-listing-images").createSignedUrls(storagePaths, 3600)
-    : { data: [] };
-  const signedImageByPath = new Map(
-    (signedPhotos ?? [])
-      .filter((photo) => photo.path && photo.signedUrl)
-      .map((photo) => [photo.path as string, photo.signedUrl as string]),
+  const signedImageByPath = await getSignedStorageImages(
+    "market-listing-images",
+    storagePaths,
+    "thumbnail",
   );
 
-  const listings = await Promise.all(
-    marketListings.map(async (marketListing) => {
+  const listings = marketListings.map((marketListing) => {
       const photo = primaryPhotosByListingId.get(marketListing.id);
 
       let image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
@@ -105,15 +101,14 @@ async function getPostedListings(): Promise<Listing[]> {
         badge: marketListing.status === "published" ? "Newly Listed" : undefined,
         status: marketListing.status === "sold" ? "sold" : marketListing.status === "pending" ? "pending" : "available",
       } satisfies Listing;
-    }),
-  );
+    });
 
   return listings;
 }
 
-async function getSavedListingIds() {
-  const supabase = await createServerSupabaseClient();
-  if (!supabase) return [];
+async function getSavedListingIds(
+  supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
+) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
   const { data } = await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id);
@@ -121,6 +116,11 @@ async function getSavedListingIds() {
 }
 
 export default async function MarketRoute() {
-  const [postedListings, savedListingIds] = await Promise.all([getPostedListings(), getSavedListingIds()]);
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return <MarketPageClient />;
+  const [postedListings, savedListingIds] = await Promise.all([
+    getPostedListings(supabase),
+    getSavedListingIds(supabase),
+  ]);
   return <MarketPageClient postedListings={postedListings} savedListingIds={savedListingIds} />;
 }

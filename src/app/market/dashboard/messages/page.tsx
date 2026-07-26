@@ -3,6 +3,7 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MarketMessagesClient, type ConversationSummary, type MarketMessage, type TradeOffer } from "@/components/messages/MarketMessagesClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -55,12 +56,10 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const photoPaths = [...primaryPhotos.values()];
   const profiles = new Map(((rawProfiles ?? []) as ProfileRow[]).map((profile) => [profile.id, profile]));
   const avatarPaths = [...new Set([...profiles.values()].map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path)))];
-  const [{ data: signedPhotos }, { data: signedAvatars }] = await Promise.all([
-    photoPaths.length ? supabase.storage.from("market-listing-images").createSignedUrls(photoPaths, 3600) : Promise.resolve({ data: [] }),
-    avatarPaths.length ? supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : Promise.resolve({ data: [] }),
+  const [signedPhotoUrls, avatarUrls] = await Promise.all([
+    getSignedStorageImages("market-listing-images", photoPaths, "thumbnail"),
+    getSignedStorageImages("profile-avatars", avatarPaths, "avatar"),
   ]);
-  const signedPhotoUrls = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path as string, photo.signedUrl as string]));
-  const avatarUrls = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const unreadCounts = new Map<string, number>();
   for (const unread of (unreadRows ?? []) as Array<{ conversation_id: string }>) unreadCounts.set(unread.conversation_id, (unreadCounts.get(unread.conversation_id) ?? 0) + 1);
   const conversations: ConversationSummary[] = conversationRows.map((conversation) => {

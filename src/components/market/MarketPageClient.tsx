@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
-import { listings } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+
+const LISTING_RENDER_BATCH = 16;
 
 const categoryIcons: Record<string, string> = {
   "mobile-phones-tablets": "fa-mobile-screen-button",
@@ -41,6 +42,30 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [applyingChip, setApplyingChip] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(LISTING_RENDER_BATCH);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
+  const selectedCategoryDefinition = useMemo(
+    () => marketplaceCategories.find((category) => category.value === selectedCategory),
+    [selectedCategory],
+  );
+  const toolbarCategories = useMemo(
+    () => selectedCategoryDefinition
+      ? [{ label: "All", value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
+      : quickCategories,
+    [selectedCategoryDefinition],
+  );
+  const visibleListings = useMemo(
+    () => postedListings.filter((listing) => {
+      const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
+      const matchesSubcategory = selectedSubcategory === "all" || listing.subcategorySlug === selectedSubcategory;
+      const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
+      return matchesCategory && matchesSubcategory && matchesSearch;
+    }),
+    [normalizedSearch, postedListings, selectedCategory, selectedSubcategory],
+  );
+  const renderedListings = visibleListings.slice(0, visibleCount);
+  const savedListingIdSet = useMemo(() => new Set(savedListingIds), [savedListingIds]);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
@@ -115,6 +140,26 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     return () => window.clearTimeout(timer);
   }, [applyingChip]);
 
+  useEffect(() => {
+    setVisibleCount(LISTING_RENDER_BATCH);
+  }, [normalizedSearch, selectedCategory, selectedSubcategory]);
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || visibleCount >= visibleListings.length) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisibleCount((current) => Math.min(current + LISTING_RENDER_BATCH, visibleListings.length));
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleCount, visibleListings.length]);
+
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
     setViewMode(mode);
@@ -139,19 +184,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     if (selectedCategoryDefinition) chooseSubcategory(categorySlug);
     else chooseCategory(categorySlug);
   };
-  const allListings = [...postedListings, ...listings.filter((listing) => !postedListings.some((posted) => posted.id === listing.id))];
-  const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
-  const selectedCategoryDefinition = marketplaceCategories.find((category) => category.value === selectedCategory);
-  const toolbarCategories = selectedCategoryDefinition
-    ? [{ label: "All", value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
-    : quickCategories;
-  const visibleListings = allListings.filter((listing) => {
-    const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
-    const matchesSubcategory = selectedSubcategory === "all" || listing.subcategorySlug === selectedSubcategory;
-    const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
-    return matchesCategory && matchesSubcategory && matchesSearch;
-  });
-
   return (
     <main className="marketplace-page">
       <button
@@ -254,9 +286,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         </div>
 
         {visibleListings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {visibleListings.map((listing, index) => (
-            <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIds.includes(listing.id)} />
+          {renderedListings.map((listing, index) => (
+            <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />
           ))}
+          {visibleCount < visibleListings.length ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search or category.</span></div>}
 
       </section>

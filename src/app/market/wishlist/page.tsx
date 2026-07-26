@@ -3,6 +3,7 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { WishlistClient, type WishlistItem } from "@/components/market/WishlistClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Wishlist" };
@@ -41,8 +42,7 @@ export default async function MarketWishlistPage() {
   const primaryPhotos = new Map<string, string>();
   for (const photo of photos) if (!primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.storage_path);
   const paths = [...new Set(primaryPhotos.values())];
-  const { data: signedPhotos } = paths.length ? await supabase.storage.from("market-listing-images").createSignedUrls(paths, 3600) : { data: [] };
-  const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
+  const signedByPath = await getSignedStorageImages("market-listing-images", paths, "thumbnail");
   const byId = new Map(listings.map((listing) => [listing.id, listing]));
   const toItem = (listingId: string): WishlistItem | null => {
     const listing = byId.get(listingId);
