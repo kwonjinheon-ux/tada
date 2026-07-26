@@ -401,6 +401,7 @@ a {
 
 .nav-actions .nav-profile-link {
   width: 36px;
+  height: 36px;
   min-height: 36px;
   padding: 0;
   display: inline-grid;
