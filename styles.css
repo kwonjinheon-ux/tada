@@ -1922,6 +1922,11 @@ a {
 
 .product-grid.is-list-view .product-body h2 {
   font-size: 15.5px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   white-space: normal;
 }
 
