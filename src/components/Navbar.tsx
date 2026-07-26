@@ -258,7 +258,7 @@ export function Navbar() {
             {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
           </button>
         )}
-        <Link className="mobile-notifications nav-notifications" href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
+        <Link className={`mobile-notifications nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
           <i className="fa-regular fa-bell" aria-hidden="true" />
           {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
         </Link>
@@ -279,7 +279,7 @@ export function Navbar() {
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>Create</span>
           </Link>
-          <Link className="nav-notifications" href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
+          <Link className={`nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
           </Link>
