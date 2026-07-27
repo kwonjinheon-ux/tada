@@ -345,7 +345,7 @@ a {
   border-radius: 50%;
   background: transparent;
   color: #0f0f0f;
-  font-size: 24px;
+  font-size: 19px;
   cursor: pointer;
   transition: background-color 160ms ease, color 160ms ease;
 }
@@ -358,10 +358,10 @@ a {
 .nav-notifications span {
   position: absolute;
   z-index: 1;
-  top: 2px;
-  right: 2px;
-  min-width: 16px;
-  height: 16px;
+  top: 5px;
+  right: 5px;
+  min-width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   padding: 0 3px;
@@ -369,13 +369,13 @@ a {
   border-radius: 999px;
   background: #f03;
   color: #fff;
-  font-size: 10px;
+  font-size: 13.5px;
   font-weight: 800;
   line-height: 1;
 }
 
 .nav-notifications span {
-  transform: translate(36%, -36%);
+  transform: translate(25%, -25%);
 }
 
 .nav-notifications.mobile-notifications { display: none; }
@@ -4242,12 +4242,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: inline-grid;
     width: 44px;
     height: 44px;
-    font-size: 24px;
+    font-size: 19px;
   }
 
   .mobile-notifications span {
-    top: 2px;
-    right: 2px;
+    top: 6px;
+    right: 6px;
   }
 
   .mobile-profile-link img {
