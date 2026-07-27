@@ -5,11 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export type StorageImageVariant = "avatar" | "gallery" | "thumbnail";
 
-const variants = {
-  avatar: { width: 256, height: 256, quality: 76, resize: "cover" as const },
-  gallery: { width: 1600, quality: 82, resize: "contain" as const },
-  thumbnail: { width: 720, height: 720, quality: 72, resize: "cover" as const },
-};
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 function createPublicStorageClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,19 +20,24 @@ function createPublicStorageClient() {
   });
 }
 
-const getCachedSignedStorageImage = unstable_cache(
-  async (bucket: string, path: string, variant: StorageImageVariant) => {
+const getCachedSignedStorageImages = unstable_cache(
+  async (bucket: string, paths: string[]) => {
     const supabase = createPublicStorageClient();
-    if (!supabase) return null;
+    if (!supabase || !paths.length) return [] as Array<[string, string]>;
 
+    // Serve original uploads directly. This avoids transformation-service failures
+    // while keeping every private Storage object behind a time-limited URL.
     const { data, error } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(path, 3600, { transform: variants[variant] });
+      .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
 
     if (error) throw error;
-    return data.signedUrl;
+
+    return (data ?? []).flatMap((entry) => (
+      entry.path && entry.signedUrl ? [[entry.path, entry.signedUrl] as [string, string]] : []
+    ));
   },
-  ["signed-storage-image-v1"],
+  ["signed-storage-images-v2"],
   { revalidate: 3000 },
 );
 
@@ -45,26 +46,21 @@ export async function getSignedStorageImage(
   path: string,
   variant: StorageImageVariant,
 ) {
-  try {
-    return await getCachedSignedStorageImage(bucket, path, variant);
-  } catch {
-    return null;
-  }
+  const images = await getSignedStorageImages(bucket, [path], variant);
+  return images.get(path) ?? null;
 }
 
 export async function getSignedStorageImages(
   bucket: string,
   paths: string[],
-  variant: StorageImageVariant,
+  _variant: StorageImageVariant,
 ) {
-  const uniquePaths = [...new Set(paths.filter(Boolean))];
-  const signedUrls = await Promise.all(
-    uniquePaths.map((path) => getSignedStorageImage(bucket, path, variant)),
-  );
+  const uniquePaths = [...new Set(paths.filter(Boolean))].sort();
+  if (!uniquePaths.length) return new Map<string, string>();
 
-  return new Map(
-    uniquePaths
-      .map((path, index) => [path, signedUrls[index]] as const)
-      .filter((entry): entry is readonly [string, string] => Boolean(entry[1])),
-  );
+  try {
+    return new Map(await getCachedSignedStorageImages(bucket, uniquePaths));
+  } catch {
+    return new Map<string, string>();
+  }
 }
