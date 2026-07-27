@@ -355,6 +355,11 @@ a {
   color: #0f0f0f;
 }
 
+.nav-notifications.has-unread > i {
+  transform-origin: 50% 8%;
+  animation: notification-bell-shake 30s ease-in-out infinite;
+}
+
 .nav-notifications span {
   position: absolute;
   z-index: 1;
@@ -379,6 +384,16 @@ a {
 }
 
 .nav-notifications.mobile-notifications { display: none; }
+
+@keyframes notification-bell-shake {
+  0%, 92%, 100% { transform: rotate(0deg); }
+  93% { transform: rotate(18deg); }
+  94% { transform: rotate(-16deg); }
+  95% { transform: rotate(13deg); }
+  96% { transform: rotate(-10deg); }
+  97% { transform: rotate(7deg); }
+  98% { transform: rotate(-4deg); }
+}
 
 .nav-signup,
 .nav-post {
