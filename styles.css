@@ -357,7 +357,7 @@ a {
 
 .nav-notifications.has-unread > i {
   transform-origin: 50% 8%;
-  animation: notification-bell-shake 30s ease-in-out infinite;
+  animation: notification-bell-shake 20s ease-in-out infinite;
 }
 
 .nav-notifications span {
@@ -386,13 +386,21 @@ a {
 .nav-notifications.mobile-notifications { display: none; }
 
 @keyframes notification-bell-shake {
-  0%, 92%, 100% { transform: rotate(0deg); }
-  93% { transform: rotate(18deg); }
-  94% { transform: rotate(-16deg); }
-  95% { transform: rotate(13deg); }
+  0%, 100% { transform: rotate(0deg); }
+  8% { transform: rotate(3deg); }
+  9% { transform: rotate(-3deg); }
+  10%, 22% { transform: rotate(0deg); }
+  30% { transform: rotate(3deg); }
+  31% { transform: rotate(-3deg); }
+  32%, 44% { transform: rotate(0deg); }
+  52% { transform: rotate(3deg); }
+  53% { transform: rotate(-3deg); }
+  54%, 88% { transform: rotate(0deg); }
+  90% { transform: rotate(18deg); }
+  92% { transform: rotate(-16deg); }
+  94% { transform: rotate(13deg); }
   96% { transform: rotate(-10deg); }
-  97% { transform: rotate(7deg); }
-  98% { transform: rotate(-4deg); }
+  98% { transform: rotate(6deg); }
 }
 
 .nav-signup,
