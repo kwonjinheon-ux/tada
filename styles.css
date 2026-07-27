@@ -2169,8 +2169,8 @@ body.listing-gallery-open { overflow: hidden; }
 .listing-gallery-lightbox-stage {
   position: relative;
   z-index: 1;
-  width: min(92vw, 1320px);
-  height: min(84dvh, 860px);
+  width: 100vw;
+  height: 100dvh;
 }
 
 .listing-gallery-lightbox-photo {
