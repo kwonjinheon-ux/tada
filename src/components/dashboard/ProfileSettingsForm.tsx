@@ -18,6 +18,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [isSavingNickname, setIsSavingNickname] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(true);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -34,6 +35,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
+  const [isLocationOpen, setIsLocationOpen] = useState(true);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");
@@ -41,10 +43,12 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
+  const [staticSwitches, setStaticSwitches] = useState({ allowChat: true, showPhoneNumber: false, emailNotifications: true, chatMessages: true, priceUpdates: false, smsAlerts: true, reviews: true });
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
   const locationLabel = [suburb, city].filter(Boolean).join(", ");
+  const staticSwitch = (key: keyof typeof staticSwitches) => <button className={`profile-static-switch ${staticSwitches[key] ? "is-on" : ""}`} type="button" role="switch" aria-checked={staticSwitches[key]} onClick={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))}>{staticSwitches[key] ? <i className="fa-solid fa-check" aria-hidden="true" /> : null}</button>;
 
   const saveNickname = async () => {
     const nickname = nicknameDraft.trim();
@@ -149,13 +153,13 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
-        <section className="profile-panel profile-account-panel">
-          <header className="profile-section-heading"><i className="fa-regular fa-user" aria-hidden="true" /><h2>Account</h2></header>
-          <div className="profile-account-fields">
+        <section className={`profile-panel profile-account-panel ${isAccountOpen ? "is-open" : ""}`}>
+          <button className="profile-section-toggle" type="button" aria-expanded={isAccountOpen} onClick={() => setIsAccountOpen((value) => !value)}><span><i className="fa-regular fa-user" aria-hidden="true" /> Account</span><i className={`fa-solid fa-chevron-${isAccountOpen ? "up" : "down"}`} aria-hidden="true" /></button>
+          {isAccountOpen ? <div className="profile-account-content"><div className="profile-account-fields">
             <div className="profile-account-field"><span>Nickname</span>{isEditingNickname ? <form className="profile-account-nickname-form" onSubmit={(event) => { event.preventDefault(); void saveNickname(); }}><input aria-label="Nickname" autoFocus maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} /><button className="profile-primary-button" type="submit" disabled={isSavingNickname}>{isSavingNickname ? "Saving..." : "Save"}</button><button className="profile-inline-button" type="button" disabled={isSavingNickname} onClick={() => { setNicknameDraft(displayName); setIsEditingNickname(false); }}>Cancel</button></form> : <div className="profile-account-value"><strong>{displayName}</strong><button type="button" aria-label="Edit nickname" onClick={() => { setNicknameDraft(displayName); setIsEditingNickname(true); }}><i className="fa-solid fa-pen" aria-hidden="true" /></button></div>}</div>
             <div className="profile-account-field"><span>Email address</span><div className="profile-account-action"><input type="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /><button className="profile-outline-button" type="button" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? "Updating..." : "Update"}</button></div></div>
             <div className="profile-account-field"><span>Phone number</span><div className="profile-account-action"><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? "Verifying..." : "Verify"}</button></div> : <button className="profile-outline-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? "Sending..." : "Verify"}</button>}</div></div>
-          </div>
+          </div></div> : null}
         </section>
         <section className={`profile-panel profile-security-panel ${isSecurityOpen ? "is-open" : ""}`}>
           <button className="profile-security-toggle" type="button" aria-expanded={isSecurityOpen} onClick={() => setIsSecurityOpen((value) => !value)}><span><i className="fa-solid fa-lock" /> Security</span><i className={`fa-solid fa-chevron-${isSecurityOpen ? "up" : "down"}`} /></button>
@@ -167,12 +171,13 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         </section>
       </div>
       <aside className="profile-static-preferences">
-        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Contact Preferences</h2></header><div className="profile-static-setting-list"><div><strong>Allow Chat</strong><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><strong>Show Phone Number</strong><span className="profile-static-switch" aria-label="Disabled" /></div><div><strong>Receive Email Notifications</strong><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div></div></section>
-        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Notifications</h2></header><div className="profile-static-setting-list"><div><p><strong>Chat messages</strong><small>In-app notifications for new chats</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><p><strong>Price Updates</strong><small>Weekly newsletters and transaction info</small></p><span className="profile-static-switch" aria-label="Disabled" /></div><div><p><strong>SMS Alerts</strong><small>Critical account alerts via text</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><p><strong>Reviews</strong><small>Critical account alerts via text</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div></div></section>
+        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Contact Preferences</h2></header><div className="profile-static-setting-list"><div><strong>Allow Chat</strong>{staticSwitch("allowChat")}</div><div><strong>Show Phone Number</strong>{staticSwitch("showPhoneNumber")}</div><div><strong>Receive Email Notifications</strong>{staticSwitch("emailNotifications")}</div></div></section>
+        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Notifications</h2></header><div className="profile-static-setting-list"><div><p><strong>Chat messages</strong><small>In-app notifications for new chats</small></p>{staticSwitch("chatMessages")}</div><div><p><strong>Price Updates</strong><small>Weekly newsletters and transaction info</small></p>{staticSwitch("priceUpdates")}</div><div><p><strong>SMS Alerts</strong><small>Critical account alerts via text</small></p>{staticSwitch("smsAlerts")}</div><div><p><strong>Reviews</strong><small>Critical account alerts via text</small></p>{staticSwitch("reviews")}</div></div></section>
       </aside>
     </div>
-    <section className="profile-panel profile-location-privacy-panel">
-      <header className="profile-section-heading"><i className="fa-solid fa-location-dot" aria-hidden="true" /><h2>Location &amp; Privacy</h2></header>
+    <section className={`profile-panel profile-location-privacy-panel ${isLocationOpen ? "is-open" : ""}`}>
+      <button className="profile-section-toggle" type="button" aria-expanded={isLocationOpen} onClick={() => setIsLocationOpen((value) => !value)}><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> Location &amp; Privacy</span><i className={`fa-solid fa-chevron-${isLocationOpen ? "up" : "down"}`} aria-hidden="true" /></button>
+      {isLocationOpen ? <>
       <div className="profile-location-access"><div><strong>Location access</strong><span>{locationMode === "current" ? "Using your current location" : "Set manually"}</span></div><button type="button" aria-label="Use current location" disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-sliders" aria-hidden="true" /></button></div>
       <div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" aria-hidden="true" /> {currentLocation.status === "loading" ? "Finding location..." : "Use current location"}</button><button className={locationMode === "manual" ? "is-active" : ""} type="button" onClick={() => { setLocationMode("manual"); setCurrentLocation({ status: "idle" }); }}><i className="fa-regular fa-pen-to-square" aria-hidden="true" /> Enter manually</button></div>
       {currentLocation.status === "error" ? <p className="profile-location-feedback is-error" role="alert">{currentLocation.message}</p> : null}
@@ -180,6 +185,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       <div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div>
       <div className="profile-location-privacy-note"><i className="fa-solid fa-circle-info" aria-hidden="true" /><p>Your location data is encrypted and never shared with third-party advertisers.</p></div>
       <div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isSavingLocation} onClick={() => void saveLocation()}>{isSavingLocation ? "Saving..." : "Save location"}</button></div>
+      </> : null}
     </section>
     <button className="profile-logout-button" type="button" disabled={isSigningOut} onClick={() => void signOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> {isSigningOut ? "Logging out..." : "Logout"}</button>
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
