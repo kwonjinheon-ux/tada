@@ -5,13 +5,6 @@ import { listings } from "@/data/listings";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-const quickStats = [
-  ["fa-regular fa-rectangle-list", "Listings", "12 Active"],
-  ["fa-solid fa-heart", "Wishlist", "24 Items"],
-  ["fa-solid fa-list", "Keywords", "8 Tracked"],
-  ["fa-regular fa-message", "Messages", "3 New"],
-] as const;
-
 const insights = [
   ["Total Views", "2.4k", "fa-solid fa-arrow-trend-up", "12%", "is-green"],
   ["Total Saves", "482", "fa-solid fa-arrow-trend-up", "8%", "is-amber"],
@@ -42,6 +35,27 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const memberSince = new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at));
   const membershipLabel = typeof user.user_metadata?.membership_level === "string" ? user.user_metadata.membership_level : "Member";
   const activeListings = listings.slice(0, 3);
+  const [listingCount, wishlistCount, keywordCount, unreadMessageCount, completedSalesCount, completedPurchasesCount] = supabase
+    ? await Promise.all([
+      supabase.from("market_listings").select("id", { count: "exact", head: true }).eq("owner_id", user.id).in("status", ["published", "pending"]),
+      supabase.from("market_wishlist").select("listing_id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("market_keyword_alerts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("market_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
+      supabase.from("market_trade_offers").select("id", { count: "exact", head: true }).eq("seller_id", user.id).eq("status", "completed"),
+      supabase.from("market_trade_offers").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).eq("status", "completed"),
+    ])
+    : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }];
+  const activeListingCount = listingCount.count ?? 0;
+  const savedWishlistCount = wishlistCount.count ?? 0;
+  const savedKeywordCount = keywordCount.count ?? 0;
+  const unreadMessages = unreadMessageCount.count ?? 0;
+  const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
+  const quickStats = [
+    ["fa-regular fa-rectangle-list", "Listings", `${activeListingCount} Active`, "/market/dashboard/listings"],
+    ["fa-solid fa-heart", "Wishlist", `${savedWishlistCount} ${savedWishlistCount === 1 ? "Item" : "Items"}`, "/market/wishlist"],
+    ["fa-solid fa-list", "Keywords", `${savedKeywordCount} Tracked`, "/market/dashboard/keywords"],
+    ["fa-regular fa-message", "Messages", `${unreadMessages} New`, "/market/dashboard/messages"],
+  ] as const;
 
   return (
     <main className="marketplace-page dashboard-page dashboard-layout seller-dashboard-page">
@@ -51,13 +65,12 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
           <article className="seller-summary-card">
             <div className="seller-summary-avatar">{signedAvatar?.signedUrl ? <img src={signedAvatar.signedUrl} alt="Your profile" /> : initial}<span><i className="fa-solid fa-check" /></span></div>
             <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
-            <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-camera" /></Link>
           </article>
-          <article className="seller-trust-card"><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>90%</strong></div><div className="seller-trust-meter"><span /></div><p>Highly reliable seller since 2021</p></article>
+          <article className="seller-trust-card"><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p>Earn 1% for every completed trade</p></article>
         </section>
 
         <section className="seller-quick-stats" aria-label="Account overview">
-          {quickStats.map(([icon, label, value], index) => <article key={label} className={index === 3 ? "has-alert" : ""}><i className={icon} /><div><strong>{label}</strong><span>{value}</span></div></article>)}
+          {quickStats.map(([icon, label, value, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong>{label}</strong><span>{value}</span></div></Link>)}
         </section>
 
         <section className="seller-dashboard-insights">
