@@ -6594,6 +6594,94 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-page .profile-location-privacy-panel { margin-top: 24px; }
 }
 
+/* Seller dashboard overview. */
+.seller-dashboard-page { background: #f6f8ff; }
+.seller-dashboard-content { width: min(100%, 1180px); padding: 30px 34px 56px; }
+.seller-dashboard-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .72fr); gap: 18px; }
+.seller-summary-card, .seller-trust-card, .seller-quick-stats article, .seller-dashboard-insights article, .seller-active-listings > div > article, .seller-activity, .seller-new-listing { border: 1px solid #dfe7f5; border-radius: 10px; background: #fff; box-shadow: 0 3px 10px rgba(20,44,68,.04); }
+.seller-summary-card { position: relative; min-height: 126px; display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 18px; padding: 18px; }
+.seller-summary-avatar { position: relative; width: 88px; height: 88px; display: grid; place-items: center; border: 4px solid #d6f5ea; border-radius: 50%; background: #e6eefc; color: #31527b; font-size: 30px; font-weight: 400; }
+.seller-summary-avatar span { position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #0aaa76; color: #fff; font-size: 10px; }
+.seller-summary-copy { min-width: 0; display: grid; gap: 4px; }
+.seller-summary-name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.seller-summary-name h1 { margin: 0; color: #0b1c30; font-size: 22px; font-weight: 700; line-height: 1.2; }
+.seller-summary-name em { padding: 4px 9px; border-radius: 999px; background: #fff4df; color: #9d6100; font-size: 10px; font-style: normal; font-weight: 700; }
+.seller-summary-copy p, .seller-summary-copy small { margin: 0; overflow: hidden; color: #506072; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.seller-summary-copy small { font-size: 12px; }
+.seller-summary-copy small i { width: 15px; color: #4a5c52; }
+.seller-summary-settings { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #506072; font-size: 15px; cursor: pointer; }
+.seller-summary-settings:hover { background: #eff5f3; }
+.seller-trust-card { min-height: 126px; padding: 20px; background: #eef4ff; }
+.seller-trust-card > div:first-child { display: flex; align-items: center; gap: 7px; color: #405044; }
+.seller-trust-card > div:first-child > i { color: #10b981; font-size: 17px; }
+.seller-trust-card > div:first-child > span { font-size: 16px; }
+.seller-trust-card > div:first-child > strong { margin-left: auto; color: #00865d; font-size: 15px; }
+.seller-trust-meter { height: 10px; margin-top: 20px; overflow: hidden; border-radius: 999px; background: #dbe5e5; }
+.seller-trust-meter span { width: 90%; height: 100%; display: block; border-radius: inherit; background: #10b981; }
+.seller-trust-card p { margin: 12px 0 0; color: #708077; font-size: 12px; font-weight: 600; }
+.seller-quick-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 28px; }
+.seller-quick-stats article { position: relative; min-height: 118px; display: grid; align-content: space-between; gap: 13px; padding: 18px; }
+.seller-quick-stats article > i { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 6px; background: #e8f5f0; color: #00865d; font-size: 15px; }
+.seller-quick-stats article.has-alert::after { position: absolute; top: 18px; right: 18px; width: 8px; height: 8px; border-radius: 50%; background: #c91f2d; content: ""; }
+.seller-quick-stats div { display: grid; gap: 2px; }
+.seller-quick-stats strong { color: #14243a; font-size: 16px; font-weight: 700; }
+.seller-quick-stats span { color: #52647a; font-size: 12px; }
+.seller-dashboard-insights { margin-bottom: 28px; }
+.seller-dashboard-insights h2, .seller-active-listings h2, .seller-activity h2 { margin: 0; color: #12233a; font-size: 20px; font-weight: 700; }
+.seller-dashboard-insights > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; overflow: hidden; }
+.seller-dashboard-insights article { min-height: 124px; display: grid; align-content: space-between; gap: 6px; padding: 18px; border: 0; box-shadow: none; color: #063d2b; }
+.seller-dashboard-insights article.is-green { background: #10b981; }
+.seller-dashboard-insights article.is-amber { background: #f2a000; color: #4b3100; }
+.seller-dashboard-insights article.is-blue { background: #dfeaff; color: #2d5277; }
+.seller-dashboard-insights article > span { font-size: 12px; }
+.seller-dashboard-insights article > strong { font-size: 30px; line-height: 1; }
+.seller-dashboard-insights article small { width: max-content; padding: 4px 7px; border-radius: 999px; background: rgba(255,255,255,.2); font-size: 11px; }
+.seller-dashboard-columns { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(270px, .72fr); gap: 28px; align-items: start; }
+.seller-active-listings > header, .seller-activity > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.seller-active-listings > header a { color: #00865d; font-size: 12px; font-weight: 700; text-decoration: none; }
+.seller-active-listings > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.seller-active-listings > div > article { position: relative; overflow: hidden; }
+.seller-active-listings > div > article img { width: 100%; height: 155px; display: block; object-fit: cover; }
+.seller-active-listings > div > article > div { padding: 13px; }
+.seller-active-listings h3 { margin: 0; overflow: hidden; color: #15263c; font-size: 14px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.seller-active-listings article strong { display: block; margin-top: 5px; color: #00865d; font-size: 15px; }
+.seller-active-listings article p { display: flex; gap: 12px; margin: 8px 0 0; color: #5e6f7f; font-size: 11px; }
+.seller-active-listings article p i { margin-right: 3px; }
+.seller-active-listings article > button { position: absolute; right: 6px; bottom: 7px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #52647a; cursor: pointer; }
+.seller-new-listing { min-height: 220px; display: grid; place-content: center; justify-items: center; gap: 8px; border-style: dashed; background: transparent; color: #243b55; }
+.seller-new-listing > i { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #dfeaff; color: #426888; font-size: 20px; }
+.seller-new-listing > span { font-size: 13px; font-weight: 700; }
+.seller-new-listing > small { color: #65758a; font-size: 10px; }
+.seller-activity { padding: 18px; }
+.seller-activity > header button { width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #52647a; cursor: pointer; }
+.seller-activity-list { display: grid; gap: 16px; }
+.seller-activity-list article { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 9px; }
+.seller-activity-list article > i { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font-size: 12px; }
+.seller-activity-list .is-green { background: #e5f8f0; color: #00865d; }.seller-activity-list .is-slate { background: #edf2f7; color: #52647a; }.seller-activity-list .is-amber { background: #fff4df; color: #bd7b00; }.seller-activity-list .is-blue { background: #e6efff; color: #3d64a4; }
+.seller-activity-list div { display: grid; gap: 3px; }
+.seller-activity-list strong { color: #28394f; font-size: 11px; font-weight: 700; line-height: 1.25; }
+.seller-activity-list span { color: #68798c; font-size: 10px; }
+.seller-show-activity { width: 100%; margin-top: 16px; padding: 0; border: 0; background: transparent; color: #00865d; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.seller-boost-card { margin: 20px -18px -18px; padding: 20px 18px; border-radius: 8px; background: #007b58; color: #fff; }
+.seller-boost-card strong { font-size: 14px; }.seller-boost-card p { margin: 7px 0 14px; font-size: 11px; line-height: 1.4; }.seller-boost-card button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 6px; background: #fff; color: #007b58; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+@media (max-width: 1023.98px) {
+  .seller-dashboard-content { padding: 26px 24px 48px; }
+  .seller-dashboard-columns { grid-template-columns: minmax(0, 1fr) 290px; gap: 20px; }
+}
+
+@media (max-width: 767.98px) {
+  .seller-dashboard-content { padding: 18px 16px 36px; }
+  .seller-dashboard-top, .seller-dashboard-columns { grid-template-columns: 1fr; gap: 22px; }
+  .seller-summary-card { grid-template-columns: 116px minmax(0, 1fr); min-height: 172px; padding: 16px; }
+  .seller-summary-avatar { width: 108px; height: 108px; font-size: 34px; }.seller-summary-avatar span { width: 22px; height: 22px; }
+  .seller-summary-name h1 { font-size: 16px; }.seller-summary-name em { font-size: 10px; }.seller-summary-copy p { font-size: 12px; }.seller-summary-copy small { font-size: 11px; }
+  .seller-trust-card { min-height: 0; padding: 18px; }.seller-trust-meter { margin-top: 10px; }.seller-trust-card p { margin-top: 9px; }
+  .seller-quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 22px 0 30px; }.seller-quick-stats article { min-height: 98px; padding: 16px; }.seller-quick-stats strong { font-size: 14px; }
+  .seller-dashboard-insights { margin-bottom: 30px; }.seller-dashboard-insights h2, .seller-active-listings h2, .seller-activity h2 { font-size: 19px; }.seller-dashboard-insights > div { display: flex; overflow-x: auto; padding-bottom: 4px; }.seller-dashboard-insights article { min-width: 150px; min-height: 124px; }
+  .seller-active-listings > div { grid-template-columns: 1fr; }.seller-active-listings > div > article { min-height: 114px; display: grid; grid-template-columns: 106px minmax(0, 1fr); }.seller-active-listings > div > article img { width: 106px; height: 114px; }.seller-active-listings > div > article > div { align-self: center; padding: 12px 36px 12px 14px; }.seller-active-listings h3 { font-size: 14px; }.seller-new-listing { min-height: 120px; }.seller-activity { padding: 18px; }.seller-boost-card { margin-top: 18px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
