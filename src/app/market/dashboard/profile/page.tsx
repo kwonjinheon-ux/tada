@@ -14,7 +14,6 @@ export default async function ProfileSettingsPage() {
     ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude").eq("id", user.id).maybeSingle()
     : { data: null };
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
-  const preferences = user.user_metadata?.market_preferences;
 
   return (
     <main className="marketplace-page dashboard-page dashboard-layout profile-settings-page">
@@ -33,7 +32,6 @@ export default async function ProfileSettingsPage() {
             latitude: profile?.latitude ? Number(profile.latitude) : null,
             longitude: profile?.longitude ? Number(profile.longitude) : null,
           }}
-          initialPreferences={typeof preferences === "object" && preferences ? preferences : undefined}
         />
       </div>
     </main>

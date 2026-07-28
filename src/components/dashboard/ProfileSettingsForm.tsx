@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null };
-type Preferences = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; newMessages: boolean; savedItems: boolean; priceUpdates: boolean; reviews: boolean };
+type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
+type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
+const NZ_CITIES = [
+  ["Whangarei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotaha", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
+] as const;
 
-const defaultPreferences: Preferences = { allowChat: true, showPhoneNumber: false, emailNotifications: true, newMessages: true, savedItems: true, priceUpdates: true, reviews: true };
-
-export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialPreferences }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialPreferences?: Partial<Preferences> }) {
+export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile }) {
+  const router = useRouter();
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
@@ -25,13 +29,22 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [emailDraft, setEmailDraft] = useState(email);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [phone, setPhone] = useState(initialProfile.phone ?? "");
+  const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
+  const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "");
+  const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
+  const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
+  const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
-  const [preferences, setPreferences] = useState<Preferences>({ ...defaultPreferences, ...initialPreferences });
   const [status, setStatus] = useState("");
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
+  const selectedCity = NZ_CITIES.find(([name]) => name === city);
+  const availableSuburbs = selectedCity?.[3] ?? [];
+  const locationLabel = [suburb, city].filter(Boolean).join(", ");
 
   const saveNickname = async () => {
     const nickname = nicknameDraft.trim();
@@ -77,6 +90,43 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     return digits ? (digits.startsWith("64") ? `+${digits}` : `+64${digits.replace(/^0/, "")}`) : "";
   };
 
+  const getGeolocationErrorMessage = (code: number) => {
+    if (code === 1) return "Location permission was denied. Please allow it in your browser settings and try again.";
+    if (code === 2) return "Your current location is unavailable. Check GPS or your network connection.";
+    if (code === 3) return "Finding your location took too long. Please try again.";
+    return "We could not determine your current location.";
+  };
+
+  const useCurrentLocation = () => {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) { setCurrentLocation({ status: "error", message: "This browser does not support location services." }); return; }
+    setCurrentLocation({ status: "loading" });
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      const nearest = NZ_CITIES.reduce((closest, candidate) => ((candidate[1] - coords.latitude) ** 2 + (candidate[2] - coords.longitude) ** 2) < ((closest[1] - coords.latitude) ** 2 + (closest[2] - coords.longitude) ** 2) ? candidate : closest);
+      setLocationMode("current"); setCity(nearest[0]); setSuburb(nearest[3][0]); setCoordinates({ latitude: coords.latitude, longitude: coords.longitude }); setCurrentLocation({ status: "success", coordinates: { latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy } });
+    }, (error) => setCurrentLocation({ status: "error", message: getGeolocationErrorMessage(error.code) }), { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  };
+
+  const saveLocation = async () => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setStatus("Profile settings are unavailable right now."); return; }
+    setIsSavingLocation(true);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) { setStatus("Please sign in again."); setIsSavingLocation(false); return; }
+    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: displayName, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude });
+    setStatus(error ? error.message : "Location settings updated.");
+    setIsSavingLocation(false);
+  };
+
+  const signOut = async () => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setStatus("Unable to sign out right now."); return; }
+    setIsSigningOut(true);
+    const { error } = await supabase.auth.signOut({ scope: "local" });
+    if (error) { setStatus(error.message); setIsSigningOut(false); return; }
+    router.replace("/");
+    router.refresh();
+  };
+
   const sendPhoneCode = async () => {
     const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
     if (!supabase || !targetPhone) { setStatus("Enter a valid New Zealand phone number first."); return; }
@@ -95,21 +145,10 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsVerifyingPhoneCode(false);
   };
 
-  const updatePreference = async (key: keyof Preferences, value: boolean) => {
-    const nextPreferences = { ...preferences, [key]: value };
-    setPreferences(nextPreferences);
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
-    const { error } = await supabase.auth.updateUser({ data: { market_preferences: nextPreferences } });
-    if (error) { setPreferences(preferences); setStatus(error.message); }
-  };
-
-  const preferenceToggle = (key: keyof Preferences, label: string) => <label className="profile-preference-toggle" key={key}><input type="checkbox" checked={preferences[key]} onChange={(event) => void updatePreference(key, event.target.checked)} /><span>{label}</span></label>;
-
   return <>
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
-        <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} /></section>
+        <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
         <section className="profile-panel profile-account-panel">
           <header className="profile-section-heading"><i className="fa-regular fa-user" aria-hidden="true" /><h2>Account</h2></header>
           <div className="profile-account-fields">
@@ -127,12 +166,22 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
           </div> : null}
         </section>
       </div>
-      <aside className="profile-side-column profile-preferences-column">
-        <section className="profile-panel profile-trust-panel"><header className="profile-section-heading"><i className="fa-regular fa-star" aria-hidden="true" /><h2>Trust &amp; Reputation</h2></header><dl><div><dt>Profile completion</dt><dd><i className="fa-solid fa-battery-three-quarters" /> 35%</dd></div><div><dt>Completed trades</dt><dd>0</dd></div><div><dt>Response time</dt><dd>New</dd></div><div><dt>Response rate</dt><dd>New</dd></div></dl></section>
-        <section className="profile-panel"><header className="profile-section-heading"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><h2>Contact preferences</h2></header><div className="profile-preference-list">{preferenceToggle("allowChat", "Allow chat")}{preferenceToggle("showPhoneNumber", "Show phone number")}{preferenceToggle("emailNotifications", "Receive email notifications")}</div></section>
-        <section className="profile-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Notifications</h2></header><div className="profile-preference-list">{preferenceToggle("newMessages", "New messages")}{preferenceToggle("savedItems", "Saved items")}{preferenceToggle("priceUpdates", "Price updates")}{preferenceToggle("reviews", "Reviews")}</div></section>
+      <aside className="profile-static-preferences">
+        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Contact Preferences</h2></header><div className="profile-static-setting-list"><div><strong>Allow Chat</strong><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><strong>Show Phone Number</strong><span className="profile-static-switch" aria-label="Disabled" /></div><div><strong>Receive Email Notifications</strong><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div></div></section>
+        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>Notifications</h2></header><div className="profile-static-setting-list"><div><p><strong>Chat messages</strong><small>In-app notifications for new chats</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><p><strong>Price Updates</strong><small>Weekly newsletters and transaction info</small></p><span className="profile-static-switch" aria-label="Disabled" /></div><div><p><strong>SMS Alerts</strong><small>Critical account alerts via text</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div><div><p><strong>Reviews</strong><small>Critical account alerts via text</small></p><span className="profile-static-switch is-on" aria-label="Enabled"><i className="fa-solid fa-check" aria-hidden="true" /></span></div></div></section>
       </aside>
     </div>
+    <section className="profile-panel profile-location-privacy-panel">
+      <header className="profile-section-heading"><i className="fa-solid fa-location-dot" aria-hidden="true" /><h2>Location &amp; Privacy</h2></header>
+      <div className="profile-location-access"><div><strong>Location access</strong><span>{locationMode === "current" ? "Using your current location" : "Set manually"}</span></div><button type="button" aria-label="Use current location" disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-sliders" aria-hidden="true" /></button></div>
+      <div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" aria-hidden="true" /> {currentLocation.status === "loading" ? "Finding location..." : "Use current location"}</button><button className={locationMode === "manual" ? "is-active" : ""} type="button" onClick={() => { setLocationMode("manual"); setCurrentLocation({ status: "idle" }); }}><i className="fa-regular fa-pen-to-square" aria-hidden="true" /> Enter manually</button></div>
+      {currentLocation.status === "error" ? <p className="profile-location-feedback is-error" role="alert">{currentLocation.message}</p> : null}
+      {currentLocation.status === "success" ? <p className="profile-location-feedback">Current location found within {Math.round(currentLocation.coordinates.accuracy)}m accuracy.</p> : null}
+      <div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div>
+      <div className="profile-location-privacy-note"><i className="fa-solid fa-circle-info" aria-hidden="true" /><p>Your location data is encrypted and never shared with third-party advertisers.</p></div>
+      <div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isSavingLocation} onClick={() => void saveLocation()}>{isSavingLocation ? "Saving..." : "Save location"}</button></div>
+    </section>
+    <button className="profile-logout-button" type="button" disabled={isSigningOut} onClick={() => void signOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> {isSigningOut ? "Logging out..." : "Logout"}</button>
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </>;
 }
