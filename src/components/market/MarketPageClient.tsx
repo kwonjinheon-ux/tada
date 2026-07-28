@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const LISTING_RENDER_BATCH = 16;
 
@@ -31,6 +32,7 @@ const categoryIcons: Record<string, string> = {
 const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
@@ -210,7 +212,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         </section>
 
         <section className="filter-block category-filter">
-          <h2>Category</h2>
+          <h2>{t("category")}</h2>
           <div className="filter-list">
             {[{ label: "All", value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
               <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${selectedCategory === value ? "is-selected" : ""}`} type="button" onClick={() => chooseCategory(value)}>
@@ -222,7 +224,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         </section>
 
         <section className="filter-block price-filter">
-          <h2>Max Price (NZD)</h2>
+          <h2>{t("maxPrice")}</h2>
           <input type="range" min="50" max="5000" defaultValue="5000" />
           <div className="price-range">
             <span>$50</span>
@@ -231,7 +233,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         </section>
 
         <section className="filter-block condition-filter">
-          <h2>Condition</h2>
+          <h2>{t("condition")}</h2>
           <div className="condition-chips">
             {["Any", "New", "Like New", "Excellent", "Good", "Fair"].map((condition) => (
               <button key={condition} className={condition === "Any" ? "is-selected" : ""} type="button">
@@ -242,7 +244,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
         </section>
 
         <button className="apply-filter-button" type="button" onClick={() => setIsFilterOpen(false)}>
-          Apply Filters
+          {t("applyFilters")}
         </button>
       </MobileDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
@@ -290,7 +292,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />
           ))}
           {visibleCount < visibleListings.length ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
-        </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>No matching listings</strong><span>Try a different search or category.</span></div>}
+        </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
       </section>
     </main>

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type KeywordAlert = { id: string; keyword: string; categorySlug: string | null };
 
@@ -15,6 +16,7 @@ function getAlertCategory(alert: KeywordAlert) {
 }
 
 export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordAlert[] }) {
+  const { t } = useLanguage();
   const [alerts, setAlerts] = useState(initialAlerts);
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -63,13 +65,13 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
   };
 
   return <div className="dashboard-content keywords-content">
-    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="fa-solid fa-bell" aria-hidden="true" /></div><div><h1>Keyword alerts</h1><p>Get notified when new marketplace listings match what you are looking for.</p></div></header>
+    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="fa-solid fa-bell" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
     <form className="keywords-add-panel" onSubmit={addKeyword}>
       <div className="keywords-input-wrap"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder="e.g. Laptop, Sofa, Bicycle" aria-label="Keyword" maxLength={80} /></div>
-      <button type="submit" disabled={!keyword.trim() || isSaving}><i className="fa-solid fa-plus" aria-hidden="true" /> {isSaving ? "Adding..." : "Add keyword"}</button>
+      <button type="submit" disabled={!keyword.trim() || isSaving}><i className="fa-solid fa-plus" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
     </form>
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
-    <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">Your keywords <small>{alerts.length}/20</small></h2></div>
+    <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2></div>
       {alerts.length ? <div className="keywords-chip-list">{alerts.map((alert) => {
         const category = getAlertCategory(alert);
         return <div className={`keyword-chip ${category.tone}`} key={alert.id} title={category.label}>
@@ -77,7 +79,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
           <small>{category.label}</small>
           <button type="button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
         </div>;
-      })}</div> : <div className="keywords-empty"><i className="fa-solid fa-bell-slash" aria-hidden="true" /><strong>No keyword alerts yet</strong><span>Add a keyword to receive new listing alerts.</span></div>}
+      })}</div> : <div className="keywords-empty"><i className="fa-solid fa-bell-slash" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
     </section>
     <section className="keywords-notice" aria-label="Keyword alert information"><i className="fa-solid fa-lightbulb" aria-hidden="true" /><p>Add up to 20 keywords to make your marketplace search more personal.</p></section>
   </div>;

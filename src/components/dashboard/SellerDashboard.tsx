@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { TranslatedText } from "@/components/LanguageProvider";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
@@ -69,7 +70,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const totalViews = Number(metricRow?.total_views ?? activeListings.reduce((total, listing) => total + Number(listing.view_count ?? 0), 0));
   const totalSaves = Number(metricRow?.total_saves ?? 0);
   const totalSales = Number(metricRow?.total_sales ?? completedSalesCount.count ?? 0);
-  const insights = [["Total Views", formatCount(totalViews), "fa-solid fa-chart-line", "All time", "is-green"], ["Total Saves", formatCount(totalSaves), "fa-solid fa-heart", "All time", "is-amber"], ["Sales", formatCount(totalSales), "fa-solid fa-bag-shopping", "All time", "is-blue"]] as const;
+  const insights = [["totalViews", formatCount(totalViews), "fa-solid fa-chart-line", "is-green"], ["totalSaves", formatCount(totalSaves), "fa-solid fa-heart", "is-amber"], ["sales", formatCount(totalSales), "fa-solid fa-bag-shopping", "is-blue"]] as const;
   const activity = (activityRowsResult.data ?? []) as ActivityRow[];
   const activeListingCount = listingCount.count ?? 0;
   const savedWishlistCount = wishlistCount.count ?? 0;
@@ -78,10 +79,10 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
   const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
   const quickStats = [
-    ["fa-regular fa-rectangle-list", "Listings", `${activeListingCount} Active`, "/market/dashboard/listings"],
-    ["fa-solid fa-heart", "Wishlist", `${savedWishlistCount} ${savedWishlistCount === 1 ? "Item" : "Items"}`, "/market/wishlist"],
-    ["fa-solid fa-list", "Keywords", `${savedKeywordCount} Tracked`, "/market/dashboard/keywords"],
-    ["fa-regular fa-message", "Messages", `${unreadMessages} New`, "/market/dashboard/messages"],
+    ["fa-regular fa-rectangle-list", "listings", activeListingCount, "active", "/market/dashboard/listings"],
+    ["fa-solid fa-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],
+    ["fa-solid fa-list", "keywords", savedKeywordCount, "tracked", "/market/dashboard/keywords"],
+    ["fa-regular fa-message", "messages", unreadMessages, "new", "/market/dashboard/messages"],
   ] as const;
 
   return (
@@ -94,24 +95,24 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
             <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
             <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-gear" /></Link>
           </article>
-          <article className={`seller-trust-card ${trustTone}`}><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p>Earn 1% for every completed trade</p></article>
+          <article className={`seller-trust-card ${trustTone}`}><div><i className="fa-solid fa-bolt" /><span><TranslatedText translationKey="trustPower" /></span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p><TranslatedText translationKey="earnTrade" /></p></article>
         </section>
 
         <section className="seller-quick-stats" aria-label="Account overview">
-          {quickStats.map(([icon, label, value, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong>{label}</strong><span>{value}</span></div></Link>)}
+          {quickStats.map(([icon, label, value, unit, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong><TranslatedText translationKey={label} /></strong><span>{value} <TranslatedText translationKey={unit} /></span></div></Link>)}
         </section>
 
         <section className="seller-dashboard-insights">
-          <header><h2>Performance Insights</h2></header>
-          <div>{insights.map(([label, value, icon, change, color]) => <article className={color} key={label}><span>{label}</span><strong>{value}</strong><small><i className={icon} /> {change}</small></article>)}</div>
+          <header><h2><TranslatedText translationKey="performanceInsights" /></h2></header>
+          <div>{insights.map(([label, value, icon, color]) => <article className={color} key={label}><span><TranslatedText translationKey={label} /></span><strong>{value}</strong><small><i className={icon} /> <TranslatedText translationKey="allTime" /></small></article>)}</div>
         </section>
 
         <div className="seller-dashboard-columns">
-          <section className="seller-active-listings"><header><h2>{isJobsDashboard ? "Active Job Posts" : "Active Listings"}</h2><Link href="/market/dashboard/listings">View all</Link></header><div>
-            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatPrice(listing.price_cents)}</strong><p><span><i className="fa-regular fa-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span>{listing.status === "pending" ? "In trade" : "Active"}</span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}>Edit</Link><Link href="/market/dashboard/messages">{listing.status === "pending" ? "View trade" : "Manage"}</Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="fa-solid fa-ellipsis-vertical" /></Link></article>)}
-            <button className="seller-new-listing" type="button"><i className="fa-solid fa-plus" /><span>{isJobsDashboard ? "Post New Job" : "Post New Listing"}</span><small>Show the world what you have</small></button>
+          <section className="seller-active-listings"><header><h2><TranslatedText translationKey={isJobsDashboard ? "activeJobPosts" : "activeListings"} /></h2><Link href="/market/dashboard/listings"><TranslatedText translationKey="viewAll" /></Link></header><div>
+            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatPrice(listing.price_cents)}</strong><p><span><i className="fa-regular fa-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span><TranslatedText translationKey={listing.status === "pending" ? "inTrade" : "active"} /></span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}><TranslatedText translationKey="edit" /></Link><Link href="/market/dashboard/messages"><TranslatedText translationKey={listing.status === "pending" ? "viewTrade" : "manage"} /></Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="fa-solid fa-ellipsis-vertical" /></Link></article>)}
+            <button className="seller-new-listing" type="button"><i className="fa-solid fa-plus" /><span><TranslatedText translationKey={isJobsDashboard ? "postNewJob" : "postNewListing"} /></span><small><TranslatedText translationKey="postListingHint" /></small></button>
           </div></section>
-          <aside className="seller-activity"><header><h2>Activity</h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="fa-solid fa-ellipsis" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty">Your recent marketplace activity will appear here.</p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications">Show All Activity</Link><article className="seller-boost-card"><strong>Boost Your Sales</strong><p>Professional photos help listings get noticed.</p><button type="button">Try Tada Lens</button></article></aside>
+          <aside className="seller-activity"><header><h2><TranslatedText translationKey="activity" /></h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="fa-solid fa-ellipsis" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty"><TranslatedText translationKey="recentActivityEmpty" /></p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications"><TranslatedText translationKey="showAllActivity" /></Link><article className="seller-boost-card"><strong><TranslatedText translationKey="boostSales" /></strong><p><TranslatedText translationKey="boostSalesCopy" /></p><button type="button"><TranslatedText translationKey="tryTadaLens" /></button></article></aside>
         </div>
       </div>
     </main>

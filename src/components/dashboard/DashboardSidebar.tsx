@@ -1,16 +1,17 @@
 import Link from "next/link";
+import { TranslatedText } from "@/components/LanguageProvider";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const items = [
-  ["fa-border-all", "Dashboard", ""],
-  ["fa-circle-user", "Profile Settings", "/profile"],
-  ["fa-bell", "Notifications", "/notifications"],
-  ["fa-message", "Messages", "/messages"],
-  ["fa-heart", "Wishlist", "/wishlist"],
-  ["fa-key", "Keywords", "/keywords"],
-  ["fa-rectangle-list", "Manage Listings", "/listings"],
-  ["fa-map", "Nearby Map", "/map"],
+  ["fa-border-all", "Dashboard", "dashboard", ""],
+  ["fa-circle-user", "Profile Settings", "profileSettings", "/profile"],
+  ["fa-bell", "Notifications", "notifications", "/notifications"],
+  ["fa-message", "Messages", "messages", "/messages"],
+  ["fa-heart", "Wishlist", "wishlist", "/wishlist"],
+  ["fa-key", "Keywords", "keywords", "/keywords"],
+  ["fa-rectangle-list", "Manage Listings", "manageListings", "/listings"],
+  ["fa-map", "Nearby Map", "nearbyMap", "/map"],
 ] as const;
 
 export async function DashboardSidebar({ context = "market", active = "Dashboard" }: { context?: "market" | "jobs"; active?: string }) {
@@ -28,9 +29,9 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
   return (
     <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
       <nav className="dashboard-nav">
-        {items.filter(([, label]) => context === "market" || label !== "Notifications").map(([icon, label, suffix]) => (
+        {items.filter(([, label]) => context === "market" || label !== "Notifications").map(([icon, label, translationKey, suffix]) => (
           <Link className={active === label ? "is-active" : ""} href={context === "market" && label === "Wishlist" ? "/market/wishlist" : `${base}${suffix}`} key={label}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
+            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span><TranslatedText translationKey={translationKey} /></span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
           </Link>
         ))}
       </nav>

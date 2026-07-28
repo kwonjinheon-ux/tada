@@ -4652,15 +4652,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock {
-    position: fixed;
+    position: fixed !important;
     isolation: isolate;
     overflow: hidden;
     top: auto;
-    right: 50%;
-    bottom: max(6px, env(safe-area-inset-bottom));
-    z-index: 130;
+    right: auto;
+    left: 50%;
+    bottom: 0;
+    z-index: 1000;
     width: min(390px, calc(100vw - 20px));
-    min-height: 58px;
+    min-height: calc(58px + env(safe-area-inset-bottom));
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
@@ -4671,7 +4672,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     box-shadow: 0 8px 24px rgba(41, 61, 83, .16), inset 0 1px rgba(255, 255, 255, .9);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
-    transform: translateX(50%);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateX(-50%);
     transform-origin: bottom center;
     transition: transform 220ms cubic-bezier(.22, 1, .36, 1), background 220ms ease;
   }
@@ -4755,7 +4757,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    padding: 0;
+    padding: 0 0 calc(76px + env(safe-area-inset-bottom));
   }
 
   @keyframes mobile-category-drawer-in {

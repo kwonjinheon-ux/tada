@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type MarketNotification = {
   id: string;
@@ -69,6 +70,7 @@ export function MarketNotificationsClient({
   initialNotifications: MarketNotification[];
   userId: string;
 }) {
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState(initialNotifications);
   const [filter, setFilter] = useState<Filter>("all");
   const [isMarkingAll, setIsMarkingAll] = useState(false);
@@ -123,10 +125,10 @@ export function MarketNotificationsClient({
   return (
     <div className="dashboard-content notifications-content">
       <header className="notifications-heading">
-        <h1>Notifications</h1>
+        <h1>{t("notifications")}</h1>
         <button type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
           <i className="fa-regular fa-envelope-open" aria-hidden="true" />
-          Mark all read
+          {t("markAllRead")}
         </button>
       </header>
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type ConversationSummary = {
   id: string;
@@ -71,6 +72,7 @@ function Avatar({ name, src, className }: { name: string; src: string | null; cl
 }
 
 export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId, initialMessages, initialOffers, currentUserId }: Props) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [conversations, setConversations] = useState(initialConversations);
   const [messages, setMessages] = useState(initialMessages);
@@ -281,8 +283,8 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   return (
     <main className={`messages-page ${selectedConversation ? "has-selected-conversation" : ""}`}>
       <section className="messages-list-panel" aria-label="Conversations">
-        <header className="messages-list-header"><div><p>Marketplace</p><div className="messages-list-title"><h1>Messages</h1><span>{conversations.reduce((total, conversation) => total + conversation.unreadCount, 0) || ""}</span></div></div></header>
-        <div className="messages-filter-row"><button className="is-active" type="button">All</button><button type="button">Unread</button><button type="button">Buying</button><button type="button">Selling</button></div>
+        <header className="messages-list-header"><div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{conversations.reduce((total, conversation) => total + conversation.unreadCount, 0) || ""}</span></div></div></header>
+        <div className="messages-filter-row"><button className="is-active" type="button">{t("all")}</button><button type="button">{t("unread")}</button><button type="button">{t("buying")}</button><button type="button">{t("selling")}</button></div>
         <div className="messages-conversation-list">
           {conversations.length ? conversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId ? "is-active" : ""}`} type="button" key={conversation.id} onClick={() => openConversation(conversation.id)}>
             {conversation.listing.imageUrl
