@@ -5327,7 +5327,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-settings-page .profile-camera-button { right: -4px; bottom: -4px; width: 48px; height: 48px; border: 2px solid #f8f9ff; border-radius: 50%; font-size: 20px; }
 .profile-settings-page .profile-photo-details { display: grid; align-content: center; gap: 5px; min-width: 0; }
 .profile-settings-page .profile-photo-identity { display: flex; align-items: center; gap: 9px; width: auto; color: #0b1c30; }
-.profile-settings-page .profile-photo-identity strong { font-size: 20px; line-height: 1.35; text-align: left; }
+.profile-settings-page .profile-photo-identity strong { font-size: 24px; line-height: 1.35; text-align: left; }
 .profile-settings-page .profile-photo-identity span { padding: 4px 9px; border-radius: 999px; background: rgba(226,145,0,.1); color: #855300; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .profile-settings-page .profile-photo-email { margin: 0; color: #3c4a42; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
 .profile-settings-page .profile-photo-location { margin: 0; color: #3c4a42; font-size: 12px; font-weight: 600; }
@@ -5362,8 +5362,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-account-nickname-form .profile-primary-button,
 .profile-inline-button { min-height: 44px; padding: 0 14px; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .profile-inline-button { border: 1px solid #bbcabf; background: #fff; color: #53647c; }
-.profile-settings-page .profile-security-panel { padding: 0; }
-.profile-settings-page .profile-security-toggle { min-height: 62px; padding: 0 24px; font-size: 19px; }
+.profile-settings-page .profile-security-panel,
+.profile-settings-page .profile-location-privacy-panel { padding: 0 !important; }
+.profile-settings-page .profile-security-toggle { min-height: 62px; padding: 0 24px; border-bottom: 1px solid rgba(187,202,191,.3); color: #0b1c30; font-size: 19px; font-weight: 700; }
+.profile-settings-page .profile-security-toggle > span { gap: 9px; }
+.profile-settings-page .profile-security-toggle > span i { width: 18px; color: #006c49; text-align: center; font-size: 16px; }
+.profile-settings-page .profile-security-toggle > i { color: #52647a; font-size: 13px; }
 .profile-settings-page .profile-security-content { padding: 0 24px 24px; }
 .profile-settings-page .profile-security-section:nth-child(n + 2) { display: none; }
 .profile-static-preferences { display: grid; gap: 18px; }
@@ -5372,9 +5376,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-static-preference-panel .profile-section-heading h2 { font-size: 20px; font-weight: 500; }
 .profile-static-setting-list { display: grid; gap: 20px; }
 .profile-static-setting-list > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 32px; }
-.profile-static-setting-list strong { color: #0b1c30; font-size: 16px; line-height: 1.4; }
+.profile-static-setting-list strong { color: #0b1c30; font-size: 16px; font-weight: 400; line-height: 1.4; }
 .profile-static-setting-list p { display: grid; gap: 4px; margin: 0; }
-.profile-static-setting-list small { color: #425249; font-size: 13px; font-weight: 600; line-height: 1.4; }
+.profile-static-setting-list small { color: #425249; font-size: 13px; font-weight: 400; line-height: 1.4; }
 .profile-static-switch { position: relative; width: 42px; height: 24px; flex: 0 0 42px; cursor: pointer; }
 .profile-static-switch input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .profile-static-switch span { position: absolute; inset: 0; border-radius: 999px; background: #cbd5e1; transition: background-color 160ms ease; }
@@ -5419,7 +5423,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .profile-settings-page .profile-avatar { width: 152px; height: 152px; }
   .profile-settings-page .profile-avatar-placeholder { font-size: 42px; }
   .profile-settings-page .profile-camera-button { right: -4px; bottom: -4px; width: 48px; height: 48px; font-size: 20px; }
-  .profile-settings-page .profile-photo-identity strong { font-size: 17px; }
+  .profile-settings-page .profile-photo-identity strong { font-size: 21px; }
   .profile-settings-page .profile-photo-email { font-size: 12px; }
   .profile-settings-page .profile-photo-location { font-size: 11px; }
   .profile-section-heading { margin-bottom: 18px; }
