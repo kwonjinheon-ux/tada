@@ -5412,6 +5412,44 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-logout-button:hover { background: #fff5f6; }
 .profile-logout-button:disabled { cursor: wait; opacity: .65; }
 
+/* Keep profile settings aligned with the dashboard's standard reading scale. */
+.profile-settings-page { font-size: 16px; line-height: 1.5; }
+.profile-settings-page :where(button, input, select, textarea, strong, b, h1, h2, h3, h4, h5, h6, p, span, small, label) { font-weight: 400 !important; }
+.profile-settings-page .profile-photo-identity strong { font-size: 20px; }
+.profile-settings-page .profile-photo-identity span { font-size: 12px; }
+.profile-settings-page .profile-photo-email,
+.profile-settings-page .profile-photo-location,
+.profile-settings-page .profile-member-since { font-size: 14px; }
+.profile-settings-page .profile-photo-help,
+.profile-settings-page .profile-photo-card .profile-upload-status,
+.profile-settings-page .profile-form-status { font-size: 14px; }
+.profile-settings-page .profile-section-heading h2 { font-size: 18px; }
+.profile-settings-page .profile-section-toggle,
+.profile-settings-page .profile-security-toggle,
+.profile-settings-page .profile-logout-button { font-size: 16px; }
+.profile-settings-page .profile-account-field > span,
+.profile-settings-page .profile-field { font-size: 14px; }
+.profile-settings-page .profile-account-value strong,
+.profile-settings-page .profile-account-action > input,
+.profile-settings-page .profile-account-nickname-form input,
+.profile-settings-page .profile-field input,
+.profile-settings-page .profile-phone input,
+.profile-settings-page .profile-select,
+.profile-settings-page .phone-verification input { font-size: 16px; }
+.profile-settings-page .profile-primary-button,
+.profile-settings-page .profile-outline-button,
+.profile-settings-page .profile-verify-button,
+.profile-settings-page .profile-danger-button,
+.profile-settings-page .profile-inline-button,
+.profile-settings-page .profile-location-actions button { font-size: 16px; }
+.profile-settings-page .profile-phone > span,
+.profile-settings-page .profile-static-setting-list strong,
+.profile-settings-page .profile-static-setting-list small,
+.profile-settings-page .profile-location-access strong,
+.profile-settings-page .profile-location-access span,
+.profile-settings-page .profile-location-privacy-note p { font-size: 16px; }
+.profile-settings-page .profile-location-feedback { font-size: 14px; }
+
 @media (max-width: 767.98px) {
   .profile-settings-page .profile-settings-content { width: 100%; padding: 24px 16px 42px; }
   .profile-settings-page .profile-settings-grid,
@@ -5423,9 +5461,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .profile-settings-page .profile-avatar { width: 152px; height: 152px; }
   .profile-settings-page .profile-avatar-placeholder { font-size: 42px; }
   .profile-settings-page .profile-camera-button { right: -4px; bottom: -4px; width: 48px; height: 48px; font-size: 20px; }
-  .profile-settings-page .profile-photo-identity strong { font-size: 21px; }
-  .profile-settings-page .profile-photo-email { font-size: 12px; }
-  .profile-settings-page .profile-photo-location { font-size: 11px; }
+  .profile-settings-page .profile-photo-identity strong { font-size: 20px; }
+  .profile-settings-page .profile-photo-email,
+  .profile-settings-page .profile-photo-location { font-size: 14px; }
   .profile-section-heading { margin-bottom: 18px; }
   .profile-section-heading h2 { font-size: 18px; }
   .profile-settings-page .profile-security-toggle { min-height: 62px; padding: 0 20px; }
