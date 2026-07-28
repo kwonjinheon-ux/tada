@@ -187,7 +187,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
     else chooseCategory(categorySlug);
   };
   return (
-    <main className="marketplace-page">
+    <main className="marketplace-page market-page-with-bottom-dock">
       <button
         className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`}
         type="button"
@@ -293,6 +293,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
           ))}
           {visibleCount < visibleListings.length ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
+        <div className="market-mobile-bottom-spacer" aria-hidden="true" />
 
       </section>
     </main>
