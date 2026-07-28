@@ -4111,7 +4111,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-header {
     border-bottom: 0;
-    background: linear-gradient(180deg, rgba(248, 249, 255, 0.92) 0%, rgba(248, 249, 255, 0.92) 58%, #ffffff 100%);
+    background: rgba(248, 249, 255, .72);
+    -webkit-backdrop-filter: blur(16px) saturate(145%);
+    backdrop-filter: blur(16px) saturate(145%);
   }
 
   .site-nav {
@@ -4665,7 +4667,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     align-items: center;
     padding: 0 8px env(safe-area-inset-bottom);
     border-top: 1px solid #e3e7eb;
-    background: rgba(255, 255, 255, .84);
+    background: rgba(255, 255, 255, .64);
     -webkit-backdrop-filter: blur(18px) saturate(145%);
     backdrop-filter: blur(18px) saturate(145%);
     box-shadow: 0 -1px 8px rgba(31, 54, 79, .05);
