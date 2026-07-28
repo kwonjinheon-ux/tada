@@ -91,6 +91,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
           <article className="seller-summary-card">
             <div className="seller-summary-avatar">{signedAvatar?.signedUrl ? <img src={signedAvatar.signedUrl} alt="Your profile" /> : initial}<span><i className="fa-solid fa-check" /></span></div>
             <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
+            <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-gear" /></Link>
           </article>
           <article className="seller-trust-card"><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p>Earn 1% for every completed trade</p></article>
         </section>

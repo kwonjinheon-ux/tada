@@ -6610,6 +6610,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .seller-summary-copy p, .seller-summary-copy small { margin: 0; overflow: hidden; color: #3c4a42; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .seller-summary-copy small { font-size: 14px; }
 .seller-summary-copy small i { width: 15px; color: #4a5c52; }
+.seller-summary-settings { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 6px; color: #52647a; font-size: 17px; text-decoration: none; }.seller-summary-settings:hover { background: #edf5f1; color: #00865d; }.seller-summary-settings:hover i { animation: seller-settings-spin .45s ease-in-out; }
+@keyframes seller-settings-spin { to { transform: rotate(360deg); } }
 .seller-trust-card { min-height: 126px; padding: 20px; background: #eef4ff; }
 .seller-trust-card > div:first-child { display: flex; align-items: center; gap: 7px; color: #405044; }
 .seller-trust-card > div:first-child > i { color: #10b981; font-size: 17px; }
