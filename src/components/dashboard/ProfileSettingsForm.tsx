@@ -18,7 +18,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [isSavingNickname, setIsSavingNickname] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(true);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -35,7 +35,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
-  const [isLocationOpen, setIsLocationOpen] = useState(true);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");

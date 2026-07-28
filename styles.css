@@ -5348,7 +5348,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-account-field { display: grid; gap: 6px; }
 .profile-account-field > span { padding-left: 4px; color: #3c4a42; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .profile-account-value { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px; border: 1px solid #bbcabf; border-radius: 8px; background: #eff4ff; color: #0b1c30; }
-.profile-account-value strong { min-width: 0; overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.profile-account-value strong { min-width: 0; overflow: hidden; font-size: 15px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .profile-account-value button { width: 32px; height: 32px; flex: 0 0 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #006c49; cursor: pointer; }
 .profile-account-action { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
 .profile-account-action > input,
@@ -5392,8 +5392,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-location-privacy-panel > .profile-panel-action { margin-bottom: 24px; }
 .profile-location-access { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; }
 .profile-location-access > div { display: grid; gap: 4px; }
-.profile-location-access strong { color: #0b1c30; font-size: 17px; }
-.profile-location-access span { color: #425249; font-size: 14px; font-weight: 600; }
+.profile-location-access strong { color: #0b1c30; font-size: 17px; font-weight: 400; }
+.profile-location-access span { color: #425249; font-size: 14px; font-weight: 400; }
 .profile-location-access > button { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #3c4a42; font-size: 21px; cursor: pointer; }
 .profile-location-access > button:disabled { cursor: wait; opacity: .55; }
 .profile-settings-page .profile-location-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 14px; }
@@ -5405,7 +5405,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-location-privacy-panel .profile-region-fields select { width: 100%; min-width: 0; box-sizing: border-box; }
 .profile-location-privacy-note { display: flex; align-items: flex-start; gap: 12px; padding: 18px; border: 1px solid #abe7d5; border-radius: 10px; background: #e7f9f3; color: #005e40; }
 .profile-location-privacy-note i { margin-top: 1px; font-size: 22px; }
-.profile-location-privacy-note p { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.45; }
+.profile-location-privacy-note p { margin: 0; font-size: 14px; font-weight: 400; line-height: 1.45; }
 .profile-settings-page .profile-location-privacy-panel .profile-panel-action { margin-top: 18px; }
 .profile-settings-page .profile-location-privacy-panel .profile-primary-button { width: 100%; min-width: 0; box-sizing: border-box; }
 .profile-logout-button { width: 100%; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; border: 2px solid #df8a91; border-radius: 10px; background: transparent; color: #bd1f2a; font: inherit; font-size: 17px; font-weight: 400; cursor: pointer; }
