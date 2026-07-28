@@ -76,6 +76,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const savedKeywordCount = keywordCount.count ?? 0;
   const unreadMessages = unreadMessageCount.count ?? 0;
   const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
+  const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
   const quickStats = [
     ["fa-regular fa-rectangle-list", "Listings", `${activeListingCount} Active`, "/market/dashboard/listings"],
     ["fa-solid fa-heart", "Wishlist", `${savedWishlistCount} ${savedWishlistCount === 1 ? "Item" : "Items"}`, "/market/wishlist"],
@@ -93,7 +94,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
             <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
             <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-gear" /></Link>
           </article>
-          <article className="seller-trust-card"><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p>Earn 1% for every completed trade</p></article>
+          <article className={`seller-trust-card ${trustTone}`}><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p>Earn 1% for every completed trade</p></article>
         </section>
 
         <section className="seller-quick-stats" aria-label="Account overview">

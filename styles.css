@@ -6619,6 +6619,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .seller-trust-card > div:first-child > strong { margin-left: auto; color: #00865d; font-size: 15px; }
 .seller-trust-meter { height: 10px; margin-top: 20px; overflow: hidden; border-radius: 999px; background: #dbe5e5; }
 .seller-trust-meter span { width: 90%; height: 100%; display: block; border-radius: inherit; background: #10b981; }
+.seller-trust-card.is-red > div:first-child > i, .seller-trust-card.is-red > div:first-child > strong { color: #dc2626; }.seller-trust-card.is-red .seller-trust-meter span { background: #dc2626; }
+.seller-trust-card.is-yellow > div:first-child > i, .seller-trust-card.is-yellow > div:first-child > strong { color: #d97706; }.seller-trust-card.is-yellow .seller-trust-meter span { background: #e5a000; }
+.seller-trust-card.is-blue > div:first-child > i, .seller-trust-card.is-blue > div:first-child > strong { color: #2563eb; }.seller-trust-card.is-blue .seller-trust-meter span { background: #2563eb; }
+.seller-trust-card.is-green > div:first-child > i, .seller-trust-card.is-green > div:first-child > strong { color: #00865d; }.seller-trust-card.is-green .seller-trust-meter span { background: #10b981; }
 .seller-trust-card p { margin: 12px 0 0; color: #708077; font-size: 12px; font-weight: 600; }
 .seller-quick-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 28px; }
 .seller-quick-stats a { position: relative; min-height: 118px; display: grid; align-content: space-between; gap: 13px; padding: 18px; border: 1px solid #dce8e3; border-radius: 7px; background: #fff; color: inherit; text-decoration: none; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
