@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { MobileDrawer, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { useLanguage } from "@/components/LanguageProvider";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -31,6 +32,7 @@ export function Navbar() {
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useLanguage();
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get("q") ?? "";
@@ -238,7 +240,7 @@ export function Navbar() {
             <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
             <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} type="search" placeholder="Search for items..." />
+          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} type="search" placeholder={t("search")} />
         </form>
 
         <button
@@ -267,18 +269,18 @@ export function Navbar() {
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
             <i className="fa-solid fa-store" aria-hidden="true" />
-            <span>Market</span>
+            <span>{t("market")}</span>
           </Link>
           <Link className={isJobs ? "is-active" : ""} href="/jobs">
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
-            <span>Jobs</span>
+            <span>{t("jobs")}</span>
           </Link>
         </nav>
 
         <div className="nav-actions">
           <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
-            <span>Create</span>
+            <span>{t("create")}</span>
           </Link>
           <Link className={`nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />
@@ -333,11 +335,11 @@ export function Navbar() {
       </div>
       </header>
       <nav className="mobile-bottom-dock" aria-label="Quick actions">
-        <Link className={pathname === "/market" ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>Home</span></Link>
-        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /><span>Messages</span></Link>
-        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /><span>Create</span></Link>
-        <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>Categories</span></button>
-        <button type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>More</span></button>
+        <Link className={pathname === "/market" ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
+        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
+        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
+        <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
+        <button type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
       </nav>
     </>
   );

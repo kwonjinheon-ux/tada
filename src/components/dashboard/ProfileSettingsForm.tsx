@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
+import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null };
+type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
 type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
 type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
 type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
@@ -24,6 +25,7 @@ const NZ_CITIES = [
 
 export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile }) {
   const router = useRouter();
+  const { locale, setLocale, t } = useLanguage();
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
@@ -54,12 +56,24 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
-  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, staticSwitches: readStaticSwitches() }));
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, staticSwitches: readStaticSwitches() }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
   const locationLabel = [suburb, city].filter(Boolean).join(", ");
   const staticSwitch = (key: keyof typeof staticSwitches) => <label className="profile-static-switch"><input type="checkbox" checked={staticSwitches[key]} onChange={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))} /><span aria-hidden="true" /></label>;
+
+  const updateLocale = async (nextLocale: SupportedLocale) => {
+    setLocale(nextLocale);
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setStatus(t("languageSaved")); return; }
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) { setStatus("Please sign in again."); return; }
+    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: displayName, preferred_locale: nextLocale });
+    if (error) { setStatus(error.message); return; }
+    setSavedSettings((current) => ({ ...current, locale: nextLocale }));
+    setStatus(t("languageSaved"));
+  };
 
   const saveNickname = async () => {
     const nickname = nicknameDraft.trim();
@@ -131,14 +145,14 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude });
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale });
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
     const authUpdate = nextEmail === savedSettings.email ? { data: { full_name: nickname } } : { email: nextEmail, data: { full_name: nickname } };
     const { error: authError } = await supabase.auth.updateUser(authUpdate);
     if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
     window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
     setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
-    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, staticSwitches });
+    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, locale, staticSwitches });
     setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
     setIsSavingAll(false);
     router.refresh();
@@ -146,7 +160,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
 
   const discardSettings = () => {
     setDisplayName(savedSettings.displayName); setNicknameDraft(savedSettings.displayName); setEmailDraft(savedSettings.email); setPhone(savedSettings.phone);
-    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setStaticSwitches(savedSettings.staticSwitches);
+    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setLocale(savedSettings.locale); setStaticSwitches(savedSettings.staticSwitches);
     setCurrentLocation({ status: "idle" }); setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
@@ -182,6 +196,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
+        <section className="profile-panel profile-language-panel">
+          <header className="profile-section-heading"><i className="fa-solid fa-language" aria-hidden="true" /><h2>{t("languageSettings")}</h2></header>
+          <label className="profile-language-select"><span>{t("displayLanguage")}</span><select value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select></label>
+          <p>{t("supportedNow")}</p>
+        </section>
         <section className={`profile-panel profile-account-panel ${isAccountOpen ? "is-open" : ""}`}>
           <button className="profile-section-toggle" type="button" aria-expanded={isAccountOpen} onClick={() => setIsAccountOpen((value) => !value)}><span><i className="fa-regular fa-user" aria-hidden="true" /> Account</span><i className={`fa-solid fa-chevron-${isAccountOpen ? "up" : "down"}`} aria-hidden="true" /></button>
           {isAccountOpen ? <div className="profile-account-content"><div className="profile-account-fields">

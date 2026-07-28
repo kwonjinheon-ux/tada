@@ -5347,6 +5347,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-section-toggle > span > i { width: 18px; color: #006c49; text-align: center; font-size: 16px; }
 .profile-section-toggle > i { color: #52647a; font-size: 13px; }
 .profile-account-panel { padding: 0 !important; }
+.profile-language-panel { display: grid; gap: 12px; padding: 22px 24px !important; }
+.profile-language-panel .profile-section-heading { margin: 0; }
+.profile-language-panel > p { margin: 0; color: #607187; font-size: 12px; line-height: 1.5; }
+.profile-language-select { display: grid; grid-template-columns: minmax(130px, .45fr) minmax(0, 1fr); align-items: center; gap: 14px; color: #3c4a42; font-size: 13px; }
+.profile-language-select > span { font-weight: 500; }
+.profile-language-select select { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid #bbcabf; border-radius: 8px; background: #eff4ff; color: #0b1c30; font: inherit; font-size: 14px; outline: 0; cursor: pointer; }
+.profile-language-select select:focus { border-color: #006c49; box-shadow: 0 0 0 3px rgba(0,108,73,.12); }
 .profile-account-panel .profile-section-toggle { padding: 0 24px; }
 .profile-account-content { padding: 22px 24px 24px; }
 .profile-account-fields { display: grid; gap: 16px; }
