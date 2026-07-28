@@ -357,7 +357,8 @@ a {
 
 .nav-notifications.has-unread > i {
   transform-origin: 50% 8%;
-  animation: notification-bell-shake 20s ease-in-out infinite;
+  will-change: transform;
+  animation: notification-bell-shake 1.2s cubic-bezier(.36, .07, .19, .97) infinite;
 }
 
 .nav-notifications span {
@@ -387,20 +388,15 @@ a {
 
 @keyframes notification-bell-shake {
   0%, 100% { transform: rotate(0deg); }
-  8% { transform: rotate(3deg); }
-  9% { transform: rotate(-3deg); }
-  10%, 22% { transform: rotate(0deg); }
-  30% { transform: rotate(3deg); }
-  31% { transform: rotate(-3deg); }
-  32%, 44% { transform: rotate(0deg); }
-  52% { transform: rotate(3deg); }
-  53% { transform: rotate(-3deg); }
-  54%, 88% { transform: rotate(0deg); }
-  90% { transform: rotate(18deg); }
-  92% { transform: rotate(-16deg); }
-  94% { transform: rotate(13deg); }
-  96% { transform: rotate(-10deg); }
-  98% { transform: rotate(6deg); }
+  10% { transform: rotate(22deg); }
+  20% { transform: rotate(-20deg); }
+  30% { transform: rotate(18deg); }
+  40% { transform: rotate(-16deg); }
+  50% { transform: rotate(13deg); }
+  60% { transform: rotate(-11deg); }
+  70% { transform: rotate(8deg); }
+  80% { transform: rotate(-5deg); }
+  90% { transform: rotate(2deg); }
 }
 
 .nav-signup,
@@ -5408,6 +5404,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-location-privacy-note p { margin: 0; font-size: 14px; font-weight: 400; line-height: 1.45; }
 .profile-settings-page .profile-location-privacy-panel .profile-panel-action { margin-top: 18px; }
 .profile-settings-page .profile-location-privacy-panel .profile-primary-button { width: 100%; min-width: 0; box-sizing: border-box; }
+.profile-settings-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.profile-settings-actions button { min-height: 48px; border-radius: 8px; font: inherit; font-size: 16px; font-weight: 400; cursor: pointer; }
+.profile-settings-actions .profile-primary-button { width: 100%; border: 0; background: #10b981; color: #fff; }
+.profile-discard-button { border: 1px solid #bbcabf; background: #fff; color: #425249; }
+.profile-settings-actions button:disabled { cursor: wait; opacity: .65; }
 .profile-logout-button { width: 100%; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; border: 2px solid #df8a91; border-radius: 10px; background: transparent; color: #bd1f2a; font: inherit; font-size: 17px; font-weight: 400; cursor: pointer; }
 .profile-logout-button:hover { background: #fff5f6; }
 .profile-logout-button:disabled { cursor: wait; opacity: .65; }
@@ -5478,6 +5479,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .profile-location-access strong { font-size: 16px; }
   .profile-location-access span { font-size: 13px; }
   .profile-location-privacy-note { padding: 16px; }
+  .profile-location-privacy-panel .profile-region-fields { gap: 12px; }
+  .profile-location-privacy-panel .profile-region-fields .profile-field { gap: 6px; }
+  .profile-location-privacy-panel .profile-region-fields select { min-height: 54px; padding: 0 44px 0 14px; border-color: #b7c9c0; border-radius: 9px; background-color: #f9fcfb; color: #26384e; }
+  .profile-settings-actions { gap: 8px; margin-top: 16px; }
+  .profile-settings-actions button { min-height: 48px; }
   .profile-logout-button { min-height: 52px; margin-top: 14px; font-size: 16px; }
 }
 
@@ -6549,6 +6555,11 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-comment-reply-form > div, .listing-comment-edit > div { display: flex; justify-content: flex-end; gap: 7px; }
 .listing-comment-cancel-button { min-height: 32px; padding: 0 11px; border: 0; border-radius: 6px; background: transparent; color: #6d7c90; font: inherit; font-size: 12px; font-weight: 700; }
 .listing-comments-skeleton { display: grid; gap: 14px; margin-top: 26px; }.listing-comments-skeleton span { width: 100%; height: 68px; border-radius: 8px; background: linear-gradient(100deg, #edf2f7 30%, #f8fafc 46%, #edf2f7 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }.listing-comments-skeleton span:nth-child(2) { width: 82%; }.listing-comments-skeleton span:nth-child(3) { width: 69%; }
+
+@media (min-width: 768px) {
+  .nav-notifications:not(.mobile-notifications) { width: 60px; height: 60px; font-size: 32px; }
+  .nav-notifications:not(.mobile-notifications) span { top: 9px; right: 9px; }
+}
 
 @media (max-width: 767.98px) {
   .listing-comments { width: auto; margin: 0 20px; padding-top: 25px; }.listing-comments-heading h2 { font-size: 19px; }.listing-comments-heading span { font-size: 12px; }

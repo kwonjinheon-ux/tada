@@ -8,6 +8,16 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null };
 type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
 type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
+type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
+const PROFILE_PREFERENCES_KEY = "tada-profile-preferences";
+const defaultStaticSwitches: StaticSwitches = { allowChat: true, showPhoneNumber: false, emailNotifications: true, chatMessages: true, priceUpdates: false, smsAlerts: true, reviews: true };
+const readStaticSwitches = (): StaticSwitches => {
+  if (typeof window === "undefined") return defaultStaticSwitches;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(PROFILE_PREFERENCES_KEY) ?? "null");
+    return stored && typeof stored === "object" ? { ...defaultStaticSwitches, ...stored } : defaultStaticSwitches;
+  } catch { return defaultStaticSwitches; }
+};
 const NZ_CITIES = [
   ["Whangarei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotaha", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
 ] as const;
@@ -36,14 +46,15 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [isSavingLocation, setIsSavingLocation] = useState(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
-  const [staticSwitches, setStaticSwitches] = useState({ allowChat: true, showPhoneNumber: false, emailNotifications: true, chatMessages: true, priceUpdates: false, smsAlerts: true, reviews: true });
+  const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, staticSwitches: readStaticSwitches() }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
@@ -110,15 +121,33 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     }, (error) => setCurrentLocation({ status: "error", message: getGeolocationErrorMessage(error.code) }), { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   };
 
-  const saveLocation = async () => {
+  const saveAllSettings = async () => {
+    const nickname = nicknameDraft.trim();
+    const nextEmail = emailDraft.trim();
+    if (nickname.length < 2 || nickname.length > 40) { setStatus("Nickname must be between 2 and 40 characters."); return; }
+    if (!nextEmail) { setStatus("Enter a valid email address."); return; }
     const supabase = createBrowserSupabaseClient();
     if (!supabase) { setStatus("Profile settings are unavailable right now."); return; }
-    setIsSavingLocation(true);
+    setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) { setStatus("Please sign in again."); setIsSavingLocation(false); return; }
-    const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: displayName, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude });
-    setStatus(error ? error.message : "Location settings updated.");
-    setIsSavingLocation(false);
+    if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude });
+    if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
+    const authUpdate = nextEmail === savedSettings.email ? { data: { full_name: nickname } } : { email: nextEmail, data: { full_name: nickname } };
+    const { error: authError } = await supabase.auth.updateUser(authUpdate);
+    if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
+    window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
+    setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
+    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, staticSwitches });
+    setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
+    setIsSavingAll(false);
+    router.refresh();
+  };
+
+  const discardSettings = () => {
+    setDisplayName(savedSettings.displayName); setNicknameDraft(savedSettings.displayName); setEmailDraft(savedSettings.email); setPhone(savedSettings.phone);
+    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setStaticSwitches(savedSettings.staticSwitches);
+    setCurrentLocation({ status: "idle" }); setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
   const signOut = async () => {
@@ -184,9 +213,9 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       {currentLocation.status === "success" ? <p className="profile-location-feedback">Current location found within {Math.round(currentLocation.coordinates.accuracy)}m accuracy.</p> : null}
       <div className="profile-region-fields"><label className="profile-field"><span>City</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">Select a city</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>Suburb / Area</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">Select a suburb</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div>
       <div className="profile-location-privacy-note"><i className="fa-solid fa-circle-info" aria-hidden="true" /><p>Your location data is encrypted and never shared with third-party advertisers.</p></div>
-      <div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isSavingLocation} onClick={() => void saveLocation()}>{isSavingLocation ? "Saving..." : "Save location"}</button></div>
       </> : null}
     </section>
+    <div className="profile-settings-actions"><button className="profile-discard-button" type="button" disabled={isSavingAll} onClick={discardSettings}>Discard</button><button className="profile-primary-button" type="button" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? "Saving..." : "Save changes"}</button></div>
     <button className="profile-logout-button" type="button" disabled={isSigningOut} onClick={() => void signOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> {isSigningOut ? "Logging out..." : "Logout"}</button>
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </>;
