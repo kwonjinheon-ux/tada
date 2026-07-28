@@ -163,6 +163,41 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const mobileQuery = window.matchMedia("(max-width: 767.98px)");
+    const visualViewport = window.visualViewport;
+
+    const updateMobileViewportInset = () => {
+      if (!mobileQuery.matches || !visualViewport) {
+        root.style.removeProperty("--mobile-viewport-bottom-inset");
+        return;
+      }
+
+      // iOS Chrome keeps its browser controls outside the visual viewport.
+      // Reserve that covered area while visible, then let the dock use the
+      // newly available space as the controls collapse on scroll.
+      const layoutViewportHeight = document.documentElement.clientHeight;
+      const visibleViewportBottom = visualViewport.offsetTop + visualViewport.height;
+      const bottomInset = Math.max(0, Math.round(layoutViewportHeight - visibleViewportBottom));
+      root.style.setProperty("--mobile-viewport-bottom-inset", `${bottomInset}px`);
+    };
+
+    updateMobileViewportInset();
+    visualViewport?.addEventListener("resize", updateMobileViewportInset);
+    visualViewport?.addEventListener("scroll", updateMobileViewportInset);
+    window.addEventListener("resize", updateMobileViewportInset);
+    mobileQuery.addEventListener("change", updateMobileViewportInset);
+
+    return () => {
+      visualViewport?.removeEventListener("resize", updateMobileViewportInset);
+      visualViewport?.removeEventListener("scroll", updateMobileViewportInset);
+      window.removeEventListener("resize", updateMobileViewportInset);
+      mobileQuery.removeEventListener("change", updateMobileViewportInset);
+      root.style.removeProperty("--mobile-viewport-bottom-inset");
+    };
+  }, []);
+
+  useEffect(() => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
   }, [pathname]);
