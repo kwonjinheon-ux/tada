@@ -5322,6 +5322,93 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-preference-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #10b981; cursor: pointer; }
 .profile-settings-grid-refined + .profile-form-status { display: block; margin: 16px 0 0; color: #07895f; font-size: 12px; font-weight: 700; }
 
+/* Profile settings: account-first card layout for narrow screens and dashboard use. */
+.profile-settings-page .profile-settings-content { width: min(100%, 760px); padding: 42px 34px 56px; }
+.profile-settings-page .profile-settings-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.profile-settings-page .profile-main-column,
+.profile-settings-page .profile-side-column { display: grid; gap: 18px; overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.profile-settings-page .profile-main-column .profile-panel,
+.profile-settings-page .profile-main-column .profile-panel + .profile-panel { border: 1px solid #e5eeff; border-radius: 12px; background: rgba(255,255,255,.92); box-shadow: 0 1px 2px rgba(11,28,48,.06); }
+.profile-settings-page .profile-panel { padding: 24px; border-color: #e5eeff; border-radius: 12px; box-shadow: 0 1px 2px rgba(11,28,48,.06); }
+.profile-settings-page .profile-photo-panel { min-height: 0; place-items: stretch; }
+.profile-settings-page .profile-photo-card { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: center; column-gap: 24px; padding: 0; text-align: left; }
+.profile-settings-page .profile-avatar-wrap { grid-row: 1 / span 4; width: 128px; height: 128px; margin: 0; }
+.profile-settings-page .profile-avatar { width: 128px; height: 128px; border-width: 4px; box-shadow: 0 0 0 4px rgba(16,185,129,.16); }
+.profile-settings-page .profile-avatar-placeholder { font-size: 38px; }
+.profile-settings-page .profile-camera-button { right: 1px; bottom: 1px; width: 32px; height: 32px; border: 2px solid #f8f9ff; border-radius: 50%; font-size: 12px; }
+.profile-settings-page .profile-photo-identity { display: flex; align-items: center; gap: 9px; width: auto; color: #0b1c30; }
+.profile-settings-page .profile-photo-identity strong { font-size: 20px; line-height: 1.35; text-align: left; }
+.profile-settings-page .profile-photo-identity span { padding: 4px 9px; border-radius: 999px; background: rgba(226,145,0,.1); color: #855300; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.profile-settings-page .profile-photo-email { margin: 5px 0 0; color: #3c4a42; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.profile-settings-page .profile-member-since { margin: 5px 0 0; color: #3c4a42; font-size: 12px; font-weight: 500; letter-spacing: 0; }
+.profile-settings-page .profile-photo-help { margin: 7px 0 0; color: #82909f; font-size: 10px; }
+.profile-section-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(187,202,191,.3); color: #006c49; }
+.profile-section-heading h2 { margin: 0; color: #0b1c30; font-size: 19px; font-weight: 700; }
+.profile-section-heading > i { width: 18px; text-align: center; font-size: 16px; }
+.profile-account-fields { display: grid; gap: 16px; }
+.profile-account-field { display: grid; gap: 6px; }
+.profile-account-field > span { padding-left: 4px; color: #3c4a42; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.profile-account-value { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px; border: 1px solid #bbcabf; border-radius: 8px; background: #eff4ff; color: #0b1c30; }
+.profile-account-value strong { min-width: 0; overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.profile-account-value button { width: 32px; height: 32px; flex: 0 0 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #006c49; cursor: pointer; }
+.profile-account-action { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.profile-account-action > input,
+.profile-account-nickname-form input { min-width: 0; min-height: 44px; padding: 0 14px; border: 1px solid #bbcabf; border-radius: 8px; background: #eff4ff; color: #0b1c30; font: inherit; font-size: 15px; outline: 0; }
+.profile-account-action > input:focus,
+.profile-account-nickname-form input:focus { border-color: #006c49; box-shadow: 0 0 0 3px rgba(0,108,73,.12); }
+.profile-account-action > .profile-outline-button { width: auto; min-width: 78px; min-height: 44px; padding: 0 14px; border-color: #006c49; color: #006c49; }
+.profile-account-action > .profile-phone { margin: 0; }
+.profile-account-action > .phone-verification { grid-column: 1 / -1; margin-top: 0; }
+.profile-account-nickname-form { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+.profile-account-nickname-form .profile-primary-button,
+.profile-inline-button { min-height: 44px; padding: 0 14px; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.profile-inline-button { border: 1px solid #bbcabf; background: #fff; color: #53647c; }
+.profile-settings-page .profile-security-panel { padding: 0; }
+.profile-settings-page .profile-security-toggle { min-height: 64px; padding: 0 24px; font-size: 19px; }
+.profile-settings-page .profile-security-content { padding: 0 24px 24px; }
+.profile-settings-page .profile-security-section:nth-child(n + 2) { display: none; }
+.profile-settings-page .profile-preferences-column { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.profile-settings-page .profile-preferences-column .profile-panel { padding: 22px; }
+.profile-settings-page .profile-preferences-column .profile-section-heading { margin-bottom: 16px; }
+.profile-settings-page .profile-preferences-column .profile-section-heading h2 { font-size: 16px; }
+.profile-settings-page .profile-preference-list { gap: 12px; }
+.profile-settings-page .profile-preference-toggle { gap: 9px; font-size: 12px; line-height: 1.35; }
+
+@media (max-width: 767.98px) {
+  .profile-settings-page .profile-settings-content { width: 100%; padding: 24px 16px 42px; }
+  .profile-settings-page .profile-settings-grid,
+  .profile-settings-page .profile-main-column,
+  .profile-settings-page .profile-side-column { gap: 14px; }
+  .profile-settings-page .profile-panel { padding: 20px; border-radius: 10px; }
+  .profile-settings-page .profile-photo-card { grid-template-columns: 96px minmax(0, 1fr); column-gap: 18px; }
+  .profile-settings-page .profile-avatar-wrap,
+  .profile-settings-page .profile-avatar { width: 96px; height: 96px; }
+  .profile-settings-page .profile-avatar-placeholder { font-size: 30px; }
+  .profile-settings-page .profile-camera-button { right: -2px; bottom: -2px; width: 30px; height: 30px; }
+  .profile-settings-page .profile-photo-identity strong { font-size: 17px; }
+  .profile-settings-page .profile-photo-email { font-size: 12px; }
+  .profile-section-heading { margin-bottom: 18px; }
+  .profile-section-heading h2 { font-size: 18px; }
+  .profile-settings-page .profile-preferences-column { grid-template-columns: 1fr; }
+  .profile-settings-page .profile-security-toggle { min-height: 60px; padding: 0 20px; }
+  .profile-settings-page .profile-security-content { padding: 0 20px 20px; }
+}
+
+@media (max-width: 479.98px) {
+  .profile-settings-page .profile-account-action,
+  .profile-account-nickname-form { grid-template-columns: 1fr; }
+  .profile-settings-page .profile-account-action > .profile-outline-button,
+  .profile-account-nickname-form .profile-primary-button,
+  .profile-inline-button { width: 100%; }
+  .profile-settings-page .profile-account-action > .phone-verification { grid-column: auto; }
+  .profile-settings-page .profile-photo-card { grid-template-columns: 76px minmax(0, 1fr); column-gap: 15px; }
+  .profile-settings-page .profile-avatar-wrap,
+  .profile-settings-page .profile-avatar { width: 76px; height: 76px; }
+  .profile-settings-page .profile-avatar-placeholder { font-size: 24px; }
+  .profile-settings-page .profile-camera-button { width: 28px; height: 28px; font-size: 10px; }
+  .profile-settings-page .profile-photo-help { display: none; }
+}
+
 @media (max-width: 1023.98px) {
   .profile-settings-grid { grid-template-columns: 1fr; }
   .profile-side-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }

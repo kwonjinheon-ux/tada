@@ -17,7 +17,7 @@ const angle = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 const centre = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, nicknameDraft, isEditingNickname, isSavingNickname, onNicknameChange, onEditNickname, onCancelNickname, onSaveNickname }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; nicknameDraft: string; isEditingNickname: boolean; isSavingNickname: boolean; onNicknameChange: (value: string) => void; onEditNickname: () => void; onCancelNickname: () => void; onSaveNickname: () => void }) {
+export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorImageRef = useRef<HTMLImageElement>(null);
@@ -185,20 +185,9 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
         </button>
         <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="fa-solid fa-camera" /></button>
       </div>
-      {isEditingNickname ? (
-        <form className="profile-nickname-form" onSubmit={(event) => { event.preventDefault(); onSaveNickname(); }}>
-          <input aria-label="Nickname" autoFocus maxLength={40} value={nicknameDraft} onChange={(event) => onNicknameChange(event.target.value)} />
-          <button type="submit" disabled={isSavingNickname} aria-label="Save nickname"><i className="fa-solid fa-check" /></button>
-          <button type="button" disabled={isSavingNickname} aria-label="Cancel nickname edit" onClick={onCancelNickname}><i className="fa-solid fa-xmark" /></button>
-        </form>
-      ) : (
-        <div className="profile-photo-identity">
-          <strong>{displayName || avatarFallback.initial}</strong>
-          <button type="button" aria-label="Edit nickname" onClick={onEditNickname}><i className="fa-solid fa-pen" /></button>
-        </div>
-      )}
+      <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
       {email && <p className="profile-photo-email">{email}</p>}
-      {memberSince && <p className="profile-member-since">Member since {memberSince}</p>}
+      {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
       <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 2MB</p>
       {status && <p className="profile-upload-status" role="status">{status}</p>}
 
