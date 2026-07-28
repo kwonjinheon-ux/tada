@@ -5337,7 +5337,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-section-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(187,202,191,.3); color: #006c49; }
 .profile-section-heading h2 { margin: 0; color: #0b1c30; font-size: 19px; font-weight: 700; }
 .profile-section-heading > i { width: 18px; text-align: center; font-size: 16px; }
-.profile-section-toggle { width: 100%; min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0; border: 0; border-bottom: 1px solid rgba(187,202,191,.3); background: transparent; color: #0b1c30; font: inherit; font-size: 19px; font-weight: 700; cursor: pointer; text-align: left; }
+.profile-section-toggle { width: 100%; min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0; border: 0; border-bottom: 1px solid rgba(187,202,191,.3); background: transparent; color: #0b1c30; font: inherit; font-size: 19px; font-weight: 400; cursor: pointer; text-align: left; }
 .profile-section-toggle > span { display: inline-flex; align-items: center; gap: 9px; }
 .profile-section-toggle > span > i { width: 18px; color: #006c49; text-align: center; font-size: 16px; }
 .profile-section-toggle > i { color: #52647a; font-size: 13px; }
@@ -5364,7 +5364,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-inline-button { border: 1px solid #bbcabf; background: #fff; color: #53647c; }
 .profile-settings-page .profile-security-panel,
 .profile-settings-page .profile-location-privacy-panel { padding: 0 !important; }
-.profile-settings-page .profile-security-toggle { min-height: 62px; padding: 0 24px; border-bottom: 1px solid rgba(187,202,191,.3); color: #0b1c30; font-size: 19px; font-weight: 700; }
+.profile-settings-page .profile-security-toggle { min-height: 62px; padding: 0 24px; border-bottom: 1px solid rgba(187,202,191,.3); color: #0b1c30; font-size: 19px; font-weight: 400; }
 .profile-settings-page .profile-security-toggle > span { gap: 9px; }
 .profile-settings-page .profile-security-toggle > span i { width: 18px; color: #006c49; text-align: center; font-size: 16px; }
 .profile-settings-page .profile-security-toggle > i { color: #52647a; font-size: 13px; }
@@ -5408,7 +5408,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-location-privacy-note p { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.45; }
 .profile-settings-page .profile-location-privacy-panel .profile-panel-action { margin-top: 18px; }
 .profile-settings-page .profile-location-privacy-panel .profile-primary-button { width: 100%; min-width: 0; box-sizing: border-box; }
-.profile-logout-button { width: 100%; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; border: 2px solid #df8a91; border-radius: 10px; background: transparent; color: #bd1f2a; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
+.profile-logout-button { width: 100%; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; border: 2px solid #df8a91; border-radius: 10px; background: transparent; color: #bd1f2a; font: inherit; font-size: 17px; font-weight: 400; cursor: pointer; }
 .profile-logout-button:hover { background: #fff5f6; }
 .profile-logout-button:disabled { cursor: wait; opacity: .65; }
 
