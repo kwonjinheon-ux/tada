@@ -133,32 +133,9 @@ export function Navbar() {
   }, [userId]);
 
   useEffect(() => {
-    const isAndroidMobile =
-      /Android/i.test(navigator.userAgent) && window.matchMedia("(max-width: 767.98px)").matches;
-    document.body.classList.toggle("is-android-mobile", isAndroidMobile);
     document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
-
-    if (!isAndroidMobile) {
-      document.body.classList.remove("is-mobile-dock-hidden");
-      return () => document.body.classList.remove("post-ad-screen");
-    }
-
-    let previousScrollY = window.scrollY;
-    const onScroll = () => {
-      const nextScrollY = window.scrollY;
-      const scrollDelta = nextScrollY - previousScrollY;
-
-      if (nextScrollY <= 12 || scrollDelta < -8) document.body.classList.remove("is-mobile-dock-hidden");
-      else if (scrollDelta > 8) document.body.classList.add("is-mobile-dock-hidden");
-
-      previousScrollY = nextScrollY;
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       document.body.classList.remove("post-ad-screen");
-      document.body.classList.remove("is-mobile-dock-hidden");
-      window.removeEventListener("scroll", onScroll);
     };
   }, [pathname]);
 
@@ -273,6 +250,10 @@ export function Navbar() {
   const openMobileCategories = () => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
+    if (!isMarket) {
+      router.push("/market?filters=open");
+      return;
+    }
     window.dispatchEvent(new Event("mobile-category-menu-request"));
   };
 
@@ -389,12 +370,12 @@ export function Navbar() {
 
       </div>
       </header>
-      <nav className="mobile-bottom-dock" aria-label="Quick actions">
-        <Link className={pathname === "/market" ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
-        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
-        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
-        <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
-        <button type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
+      <nav className="mobile-bottom-dock" aria-label="Primary navigation">
+        <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
+        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
+        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post" aria-current={isPostAd ? "page" : undefined}><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
+        <button type="button" aria-label="Browse categories" aria-haspopup="dialog" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
+        <button className={isDashboardMenuOpen ? "is-active" : ""} type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
       </nav>
     </>
   );

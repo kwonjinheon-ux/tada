@@ -80,6 +80,16 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   }, []);
 
   useEffect(() => {
+    if (searchParams.get("filters") !== "open") return;
+
+    setIsFilterOpen(true);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("filters");
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `/market?${nextQuery}` : "/market", { scroll: false });
+  }, [router, searchParams]);
+
+  useEffect(() => {
     try {
       const supabase = createBrowserSupabaseClient();
       if (!supabase) return;
