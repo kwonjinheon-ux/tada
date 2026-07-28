@@ -7,9 +7,10 @@ This folder is the maintained source of truth for product, design, architecture,
 1. [Architecture](./architecture/overview.md)
 2. [Design system](./design/foundations.md)
 3. [Marketplace domain](./product/marketplace.md)
-4. [Security and Supabase RLS](./security/supabase-rls.md)
-5. [Migration plan](./operations/migration-plan.md)
-6. [Local development and deployment](./operations/development-and-deployment.md)
+4. [Marketplace implementation guide](./product/marketplace-implementation-guide.md)
+5. [Security and Supabase RLS](./security/supabase-rls.md)
+6. [Migration plan](./operations/migration-plan.md)
+7. [Local development and deployment](./operations/development-and-deployment.md)
 
 ## Current state
 

@@ -45,7 +45,7 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const [{ data: rawListings }, { data: rawPhotos }, { data: rawProfiles }, { data: unreadRows }, { data: rawMessages }, { data: rawOffers }] = await Promise.all([
     listingIds.length ? supabase.from("market_listings").select("id,title,price_cents").in("id", listingIds) : Promise.resolve({ data: [] }),
     listingIds.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", listingIds).order("display_order") : Promise.resolve({ data: [] }),
-    participantIds.length ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").in("id", participantIds) : Promise.resolve({ data: [] }),
+    participantIds.length ? supabase.from("market_message_profiles").select("id,display_name,avatar_path").in("id", participantIds) : Promise.resolve({ data: [] }),
     conversationRows.length ? supabase.from("market_messages").select("conversation_id").eq("recipient_id", user.id).is("read_at", null) : Promise.resolve({ data: [] }),
     selectedConversationId ? supabase.from("market_messages").select("id,conversation_id,sender_id,recipient_id,body,created_at,read_at").eq("conversation_id", selectedConversationId).order("created_at") : Promise.resolve({ data: [] }),
     selectedConversationId ? supabase.from("market_trade_offers").select("id,conversation_id,listing_id,buyer_id,seller_id,amount_cents,note,status,created_at,responded_at,completed_at").eq("conversation_id", selectedConversationId).order("created_at", { ascending: true }) : Promise.resolve({ data: [] }),
@@ -56,10 +56,18 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const photoPaths = [...primaryPhotos.values()];
   const profiles = new Map(((rawProfiles ?? []) as ProfileRow[]).map((profile) => [profile.id, profile]));
   const avatarPaths = [...new Set([...profiles.values()].map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path)))];
-  const [signedPhotoUrls, avatarUrls] = await Promise.all([
+  const [signedPhotoUrls, signedAvatarEntries] = await Promise.all([
     getSignedStorageImages("market-listing-images", photoPaths, "thumbnail"),
-    getSignedStorageImages("profile-avatars", avatarPaths, "avatar"),
+    Promise.all(avatarPaths.map(async (path) => {
+      const { data, error } = await supabase.storage
+        .from("profile-avatars")
+        .createSignedUrl(path, 3600, { transform: { width: 256, height: 256, quality: 76, resize: "cover" } });
+      return !error && data?.signedUrl ? [path, data.signedUrl] as const : null;
+    })),
   ]);
+  const avatarUrls = new Map(
+    signedAvatarEntries.filter((entry): entry is readonly [string, string] => Boolean(entry)),
+  );
   const unreadCounts = new Map<string, number>();
   for (const unread of (unreadRows ?? []) as Array<{ conversation_id: string }>) unreadCounts.set(unread.conversation_id, (unreadCounts.get(unread.conversation_id) ?? 0) + 1);
   const conversations: ConversationSummary[] = conversationRows.map((conversation) => {
