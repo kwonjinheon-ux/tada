@@ -226,7 +226,8 @@ export function Navbar() {
   };
 
   return (
-    <header className={`site-header ${isMessagesPage ? "is-messages-page" : ""}`}>
+    <>
+      <header className={`site-header ${isMessagesPage ? "is-messages-page" : ""}`}>
       <div className="site-nav">
         <Link className="site-logo" href="/" aria-label="Tada home">
           <img src="/images/logo.png" alt="Tada" />
@@ -329,14 +330,15 @@ export function Navbar() {
           </nav>
         )}
 
-        <nav className="mobile-bottom-dock" aria-label="Quick actions">
-          <Link className={pathname === "/market" ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>Home</span></Link>
-          <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /><span>Messages</span></Link>
-          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /><span>Create</span></Link>
-          <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>Categories</span></button>
-          <button type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>More</span></button>
-        </nav>
       </div>
-    </header>
+      </header>
+      <nav className="mobile-bottom-dock" aria-label="Quick actions">
+        <Link className={pathname === "/market" ? "is-active" : ""} href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>Home</span></Link>
+        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label="Messages"><i className="fa-regular fa-comment" aria-hidden="true" /><span>Messages</span></Link>
+        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post"><i className="fa-solid fa-plus" aria-hidden="true" /><span>Create</span></Link>
+        <button type="button" aria-label="Browse categories" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>Categories</span></button>
+        <button type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>More</span></button>
+      </nav>
+    </>
   );
 }
