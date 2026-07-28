@@ -6599,18 +6599,19 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .seller-dashboard-content { width: min(100%, 1180px); padding: 30px 34px 56px; }
 .seller-dashboard-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .72fr); gap: 18px; }
 .seller-summary-card, .seller-trust-card, .seller-quick-stats article, .seller-dashboard-insights article, .seller-active-listings > div > article, .seller-activity, .seller-new-listing { border: 1px solid #dfe7f5; border-radius: 10px; background: #fff; box-shadow: 0 3px 10px rgba(20,44,68,.04); }
-.seller-summary-card { position: relative; min-height: 126px; display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 18px; padding: 18px; }
-.seller-summary-avatar { position: relative; width: 88px; height: 88px; display: grid; place-items: center; border: 4px solid #d6f5ea; border-radius: 50%; background: #e6eefc; color: #31527b; font-size: 30px; font-weight: 400; }
+.seller-summary-card { position: relative; min-height: 172px; display: grid; grid-template-columns: 152px minmax(0, 1fr); align-items: center; gap: 24px; padding: 20px; }
+.seller-summary-avatar { position: relative; width: 152px; height: 152px; display: grid; place-items: center; overflow: hidden; border: 4px solid #d6f5ea; border-radius: 50%; background: #e6eefc; color: #31527b; font-size: 38px; font-weight: 400; }
+.seller-summary-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .seller-summary-avatar span { position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #0aaa76; color: #fff; font-size: 10px; }
 .seller-summary-copy { min-width: 0; display: grid; gap: 4px; }
 .seller-summary-name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.seller-summary-name h1 { margin: 0; color: #0b1c30; font-size: 22px; font-weight: 700; line-height: 1.2; }
-.seller-summary-name em { padding: 4px 9px; border-radius: 999px; background: #fff4df; color: #9d6100; font-size: 10px; font-style: normal; font-weight: 700; }
-.seller-summary-copy p, .seller-summary-copy small { margin: 0; overflow: hidden; color: #506072; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.seller-summary-copy small { font-size: 12px; }
+.seller-summary-name h1 { margin: 0; color: #0b1c30; font-size: 20px; font-weight: 400; line-height: 1.35; }
+.seller-summary-name em { padding: 4px 9px; border-radius: 999px; background: rgba(226,145,0,.1); color: #855300; font-size: 10px; font-style: normal; font-weight: 400; text-transform: uppercase; }
+.seller-summary-copy p, .seller-summary-copy small { margin: 0; overflow: hidden; color: #3c4a42; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.seller-summary-copy small { font-size: 14px; }
 .seller-summary-copy small i { width: 15px; color: #4a5c52; }
-.seller-summary-settings { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #506072; font-size: 15px; cursor: pointer; }
-.seller-summary-settings:hover { background: #eff5f3; }
+.seller-summary-settings { position: absolute; top: calc(50% + 50px); left: 148px; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 2px solid #f8f9ff; border-radius: 50%; background: #10b981; color: #fff; font-size: 17px; text-decoration: none; box-shadow: 0 4px 10px rgba(15,35,60,.16); cursor: pointer; }
+.seller-summary-settings:hover { background: #07966a; }
 .seller-trust-card { min-height: 126px; padding: 20px; background: #eef4ff; }
 .seller-trust-card > div:first-child { display: flex; align-items: center; gap: 7px; color: #405044; }
 .seller-trust-card > div:first-child > i { color: #10b981; font-size: 17px; }
@@ -6674,9 +6675,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 @media (max-width: 767.98px) {
   .seller-dashboard-content { padding: 18px 16px 36px; }
   .seller-dashboard-top, .seller-dashboard-columns { grid-template-columns: 1fr; gap: 22px; }
-  .seller-summary-card { grid-template-columns: 116px minmax(0, 1fr); min-height: 172px; padding: 16px; }
-  .seller-summary-avatar { width: 108px; height: 108px; font-size: 34px; }.seller-summary-avatar span { width: 22px; height: 22px; }
-  .seller-summary-name h1 { font-size: 16px; }.seller-summary-name em { font-size: 10px; }.seller-summary-copy p { font-size: 12px; }.seller-summary-copy small { font-size: 11px; }
+  .seller-summary-card { grid-template-columns: 152px minmax(0, 1fr); min-height: 172px; padding: 16px; }
+  .seller-summary-avatar { width: 152px; height: 152px; font-size: 38px; }.seller-summary-avatar span { width: 22px; height: 22px; }
+  .seller-summary-name h1 { font-size: 20px; }.seller-summary-name em { font-size: 10px; }.seller-summary-copy p, .seller-summary-copy small { font-size: 14px; }
+  .seller-summary-settings { top: calc(50% + 50px); left: 144px; }
   .seller-trust-card { min-height: 0; padding: 18px; }.seller-trust-meter { margin-top: 10px; }.seller-trust-card p { margin-top: 9px; }
   .seller-quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 22px 0 30px; }.seller-quick-stats article { min-height: 98px; padding: 16px; }.seller-quick-stats strong { font-size: 14px; }
   .seller-dashboard-insights { margin-bottom: 30px; }.seller-dashboard-insights h2, .seller-active-listings h2, .seller-activity h2 { font-size: 19px; }.seller-dashboard-insights > div { display: flex; overflow-x: auto; padding-bottom: 4px; }.seller-dashboard-insights article { min-width: 150px; min-height: 124px; }

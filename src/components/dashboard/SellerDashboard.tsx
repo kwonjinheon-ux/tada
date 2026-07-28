@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { listings } from "@/data/listings";
 import { getServerUser } from "@/lib/auth-server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const quickStats = [
   ["fa-regular fa-rectangle-list", "Listings", "12 Active"],
@@ -28,9 +29,18 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const user = await getServerUser();
   if (!user) redirect("/login");
 
+  const supabase = await createServerSupabaseClient();
+  const { data: profile } = supabase
+    ? await supabase.from("profiles").select("display_name, avatar_path, region_city, region_suburb").eq("id", user.id).maybeSingle()
+    : { data: null };
   const isJobsDashboard = context === "jobs";
-  const displayName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : user.email?.split("@")[0] ?? "Tada member";
+  const displayName = profile?.display_name || (typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : user.email?.split("@")[0]) || "Tada member";
   const initial = displayName.trim().charAt(0).toUpperCase() || "T";
+  const avatarPath = profile?.avatar_path || (typeof user.user_metadata?.avatar_path === "string" ? user.user_metadata.avatar_path : null);
+  const { data: signedAvatar } = supabase && avatarPath ? await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : { data: null };
+  const locationLabel = [profile?.region_suburb, profile?.region_city].filter(Boolean).join(", ");
+  const memberSince = new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at));
+  const membershipLabel = typeof user.user_metadata?.membership_level === "string" ? user.user_metadata.membership_level : "Member";
   const activeListings = listings.slice(0, 3);
 
   return (
@@ -39,9 +49,9 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
       <div className="dashboard-content seller-dashboard-content">
         <section className="seller-dashboard-top">
           <article className="seller-summary-card">
-            <div className="seller-summary-avatar">{initial}<span><i className="fa-solid fa-check" /></span></div>
-            <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>Top Seller</em></div><p>{user.email}</p><small><i className="fa-solid fa-location-dot" /> Hamilton, New Zealand</small><small><i className="fa-regular fa-calendar" /> Joined October 2023</small></div>
-            <button className="seller-summary-settings" type="button" aria-label="Dashboard settings"><i className="fa-solid fa-gear" /></button>
+            <div className="seller-summary-avatar">{signedAvatar?.signedUrl ? <img src={signedAvatar.signedUrl} alt="Your profile" /> : initial}<span><i className="fa-solid fa-check" /></span></div>
+            <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
+            <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-camera" /></Link>
           </article>
           <article className="seller-trust-card"><div><i className="fa-solid fa-bolt" /><span>Trust Power</span><strong>90%</strong></div><div className="seller-trust-meter"><span /></div><p>Highly reliable seller since 2021</p></article>
         </section>
