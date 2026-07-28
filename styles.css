@@ -6391,11 +6391,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .messages-dashboard-page > .market-filter-panel.dashboard-sidebar { height: 100%; min-height: 0; top: 0; }
 .messages-page { min-width: 0; height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); overflow: hidden; background: #fff; color: #10243d; }
 .messages-list-panel { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #dce4ed; background: #fff; }
-.messages-list-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 25px 22px 14px; }
+.messages-list-header { display: flex; align-items: flex-start; padding: 25px 22px 14px; }
 .messages-list-header p { margin: 0 0 4px; color: #079468; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .messages-list-header h1 { margin: 0; font-size: 25px; line-height: 1.15; }
-.messages-list-header > span { min-width: 22px; min-height: 22px; display: grid; place-items: center; border-radius: 50%; background: #cb2233; color: #fff; font-size: 10px; font-weight: 800; }
-.messages-list-header > span:empty { display: none; }
+.messages-list-title { display: flex; align-items: center; gap: 7px; }.messages-list-title > span { min-width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: #cb2233; color: #fff; font-size: 10px; font-weight: 800; }.messages-list-title > span:empty { display: none; }
 .messages-filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 0 18px 15px; border-bottom: 1px solid #e4eaf0; scrollbar-width: none; }
 .messages-filter-row::-webkit-scrollbar { display: none; }
 .messages-filter-row button { min-height: 28px; flex: 0 0 auto; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #627289; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
