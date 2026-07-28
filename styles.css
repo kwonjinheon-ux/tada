@@ -4657,7 +4657,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     bottom: 0;
     z-index: 1000;
     width: 100%;
-    min-height: calc(68px + env(safe-area-inset-bottom));
+    height: calc(72px + env(safe-area-inset-bottom));
+    min-height: 72px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
@@ -4737,11 +4738,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .marketplace-page {
-    padding: 0 0 calc(76px + env(safe-area-inset-bottom));
+    padding: 0 0 calc(112px + env(safe-area-inset-bottom));
   }
 
   .market-results {
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    scroll-margin-bottom: calc(112px + env(safe-area-inset-bottom));
   }
 
   @keyframes mobile-category-drawer-in {
