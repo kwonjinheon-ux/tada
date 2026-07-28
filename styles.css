@@ -4740,6 +4740,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     padding: 0 0 calc(76px + env(safe-area-inset-bottom));
   }
 
+  .market-results {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
   @keyframes mobile-category-drawer-in {
     from { opacity: 1; transform: translateX(-105%); }
     to { opacity: 1; transform: translateX(0); }
