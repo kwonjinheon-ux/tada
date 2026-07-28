@@ -5424,6 +5424,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-settings-page .profile-photo-card .profile-upload-status,
 .profile-settings-page .profile-form-status { font-size: 14px; }
 .profile-settings-page .profile-section-heading h2 { font-size: 18px; }
+.profile-settings-page .profile-static-preference-panel .profile-section-heading h2 { font-size: 16px; }
 .profile-settings-page .profile-section-toggle,
 .profile-settings-page .profile-security-toggle,
 .profile-settings-page .profile-logout-button { font-size: 16px; }
@@ -5443,11 +5444,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-settings-page .profile-inline-button,
 .profile-settings-page .profile-location-actions button { font-size: 16px; }
 .profile-settings-page .profile-phone > span,
-.profile-settings-page .profile-static-setting-list strong,
-.profile-settings-page .profile-static-setting-list small,
 .profile-settings-page .profile-location-access strong,
 .profile-settings-page .profile-location-access span,
 .profile-settings-page .profile-location-privacy-note p { font-size: 16px; }
+.profile-settings-page .profile-static-setting-list strong { font-size: 14px; }
+.profile-settings-page .profile-static-setting-list small { font-size: 12px; }
 .profile-settings-page .profile-location-feedback { font-size: 14px; }
 
 @media (max-width: 767.98px) {
@@ -6554,6 +6555,32 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .listing-comments-composer { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comments-composer-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comments-composer textarea { min-height: 72px; font-size: 16px; }.listing-comment-edit textarea, .listing-comment-reply-form textarea { font-size: 16px; }
   .listing-comments-list { gap: 20px; margin-top: 22px; }.listing-comment { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comment-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comment-content > p { font-size: 13px; }
   .listing-comment-children { gap: 15px; margin-top: 15px; padding-left: 10px; }.listing-comment-children .listing-comment { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }.listing-comment-children .listing-comment-avatar { width: 30px; height: 30px; font-size: 9px; }.listing-comment-tools > button { padding-inline: 5px; font-size: 10px; }
+}
+
+/* Profile settings use wider dashboard compositions above the mobile breakpoint. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .profile-settings-page .profile-settings-content { width: min(100%, 920px); padding: 36px 30px 56px; }
+  .profile-settings-page .profile-settings-grid { gap: 22px; }
+  .profile-settings-page .profile-photo-card { grid-template-columns: 168px minmax(0, 1fr); column-gap: 28px; }
+  .profile-settings-page .profile-avatar-wrap,
+  .profile-settings-page .profile-avatar { width: 168px; height: 168px; }
+  .profile-settings-page .profile-static-preferences { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .profile-settings-page .profile-static-preference-panel { height: 100%; padding: 24px 22px; }
+  .profile-settings-page .profile-location-privacy-panel { margin-top: 22px; }
+}
+
+@media (min-width: 1024px) {
+  .profile-settings-page .profile-settings-content { width: min(100%, 1160px); padding: 44px 40px 64px; }
+  .profile-settings-page .profile-settings-grid { grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 24px; }
+  .profile-settings-page .profile-main-column,
+  .profile-settings-page .profile-side-column { gap: 24px; }
+  .profile-settings-page .profile-panel { border-radius: 10px; }
+  .profile-settings-page .profile-photo-card { grid-template-columns: 172px minmax(0, 1fr); column-gap: 28px; }
+  .profile-settings-page .profile-avatar-wrap,
+  .profile-settings-page .profile-avatar { width: 172px; height: 172px; }
+  .profile-settings-page .profile-static-preferences { gap: 24px; }
+  .profile-settings-page .profile-static-preference-panel { padding: 24px; }
+  .profile-settings-page .profile-location-privacy-panel { margin-top: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
