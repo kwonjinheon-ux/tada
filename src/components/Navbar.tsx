@@ -137,8 +137,28 @@ export function Navbar() {
       /Android/i.test(navigator.userAgent) && window.matchMedia("(max-width: 767.98px)").matches;
     document.body.classList.toggle("is-android-mobile", isAndroidMobile);
     document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
+
+    if (!isAndroidMobile) {
+      document.body.classList.remove("is-mobile-dock-hidden");
+      return () => document.body.classList.remove("post-ad-screen");
+    }
+
+    let previousScrollY = window.scrollY;
+    const onScroll = () => {
+      const nextScrollY = window.scrollY;
+      const scrollDelta = nextScrollY - previousScrollY;
+
+      if (nextScrollY <= 12 || scrollDelta < -8) document.body.classList.remove("is-mobile-dock-hidden");
+      else if (scrollDelta > 8) document.body.classList.add("is-mobile-dock-hidden");
+
+      previousScrollY = nextScrollY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       document.body.classList.remove("post-ad-screen");
+      document.body.classList.remove("is-mobile-dock-hidden");
+      window.removeEventListener("scroll", onScroll);
     };
   }, [pathname]);
 
