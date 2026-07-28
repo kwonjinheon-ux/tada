@@ -1,6 +1,8 @@
 drop policy if exists "Market listings are readable while visible" on public.market_listings;
 drop policy if exists "Trade conversation participants can read listings" on public.market_listings;
 drop policy if exists "Wishlisted market listings are readable" on public.market_listings;
+drop policy if exists "Visible market listings are publicly readable" on public.market_listings;
+drop policy if exists "Authenticated members read permitted market listings" on public.market_listings;
 
 create policy "Visible market listings are publicly readable"
 on public.market_listings
@@ -33,6 +35,8 @@ using (
 drop policy if exists "Visible market listing photos are readable" on public.market_listing_photos;
 drop policy if exists "Trade conversation participants can read listing photos" on public.market_listing_photos;
 drop policy if exists "Wishlisted market listing photos are readable" on public.market_listing_photos;
+drop policy if exists "Visible market listing photos are publicly readable" on public.market_listing_photos;
+drop policy if exists "Authenticated members read permitted market listing photos" on public.market_listing_photos;
 
 create policy "Visible market listing photos are publicly readable"
 on public.market_listing_photos
