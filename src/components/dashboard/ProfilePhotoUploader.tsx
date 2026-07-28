@@ -185,12 +185,14 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
         </button>
         <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="fa-solid fa-camera" /></button>
       </div>
-      <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
-      {email && <p className="profile-photo-email">{email}</p>}
-      {locationLabel && <p className="profile-photo-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {locationLabel}</p>}
-      {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
-      <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 2MB</p>
-      {status && <p className="profile-upload-status" role="status">{status}</p>}
+      <div className="profile-photo-details">
+        <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
+        {email && <p className="profile-photo-email">{email}</p>}
+        {locationLabel && <p className="profile-photo-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {locationLabel}</p>}
+        {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
+        <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 2MB</p>
+        {status && <p className="profile-upload-status" role="status">{status}</p>}
+      </div>
 
       {editorUrl && (
         <div className="avatar-editor-backdrop" role="dialog" aria-modal="true" aria-label="Adjust profile photo" onPointerDown={(event) => event.target === event.currentTarget && closeEditor()}>

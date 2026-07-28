@@ -48,7 +48,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
   const locationLabel = [suburb, city].filter(Boolean).join(", ");
-  const staticSwitch = (key: keyof typeof staticSwitches) => <button className={`profile-static-switch ${staticSwitches[key] ? "is-on" : ""}`} type="button" role="switch" aria-checked={staticSwitches[key]} onClick={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))}>{staticSwitches[key] ? <i className="fa-solid fa-check" aria-hidden="true" /> : null}</button>;
+  const staticSwitch = (key: keyof typeof staticSwitches) => <label className="profile-static-switch"><input type="checkbox" checked={staticSwitches[key]} onChange={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))} /><span aria-hidden="true" /></label>;
 
   const saveNickname = async () => {
     const nickname = nicknameDraft.trim();
