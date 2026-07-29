@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useRef, useState } from "react";
+import { marketWishlistResponseSchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { readApiResponse } from "@/lib/api/client";
 
 type ProductCardProps = {
   listing: Listing;
@@ -47,7 +49,8 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         router.push(`/login?redirectTo=${encodeURIComponent("/market")}`);
         return;
       }
-      if (!response.ok) setIsSaved(!nextSaved);
+      const result = await readApiResponse(response, marketWishlistResponseSchema);
+      if (result.error || result.data.saved !== nextSaved) setIsSaved(!nextSaved);
     } catch {
       setIsSaved(!nextSaved);
     }

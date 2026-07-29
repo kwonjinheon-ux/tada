@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
+import { marketMessageRequestSchema } from "@/contracts/api";
+import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return NextResponse.json({ error: "Messaging is unavailable right now." }, { status: 503 });
+  if (!supabase) return apiFailure("UNAVAILABLE", "Messaging is unavailable right now.", 503);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Please log in to send a message." }, { status: 401 });
+  if (!user) return apiFailure("UNAUTHORIZED", "Please log in to send a message.", 401);
 
-  const payload = await request.json().catch(() => null) as { conversationId?: unknown; body?: unknown } | null;
-  const conversationId = typeof payload?.conversationId === "string" ? payload.conversationId : "";
-  const body = typeof payload?.body === "string" ? payload.body.trim() : "";
-  if (!conversationId || !body || body.length > 2000) return NextResponse.json({ error: "Messages must be between 1 and 2,000 characters." }, { status: 400 });
+  const parsed = marketMessageRequestSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return apiFailure("BAD_REQUEST", "Messages must be between 1 and 2,000 characters.", 400);
+  const { conversationId, body } = parsed.data;
 
   const { data: message, error } = await supabase
     .from("market_messages")
@@ -22,7 +22,15 @@ export async function POST(request: Request) {
   if (error || !message) {
     const status = error?.code === "42501" || error?.code === "P0001" ? 403 : 500;
     const errorMessage = status === 403 ? "You can only send messages in your own conversations." : "Unable to send your message. Please try again.";
-    return NextResponse.json({ error: errorMessage }, { status });
+    return apiFailure(status === 403 ? "FORBIDDEN" : "INTERNAL", errorMessage, status);
   }
-  return NextResponse.json({ message }, { status: 201 });
+  return apiSuccess({
+    id: message.id,
+    conversationId: message.conversation_id,
+    senderId: message.sender_id,
+    recipientId: message.recipient_id,
+    body: message.body,
+    createdAt: message.created_at,
+    readAt: message.read_at,
+  }, { status: 201 });
 }

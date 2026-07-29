@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { marketMessageResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -257,14 +259,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     setSendError(null);
     try {
       const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: selectedConversationId, body }) });
-      const payload = await response.json().catch(() => null) as { error?: string; message?: { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null } } | null;
-      if (!response.ok || !payload?.message) {
-        setSendError(payload?.error ?? "Unable to send your message.");
+      const result = await readApiResponse(response, marketMessageResponseSchema);
+      if (!result.data) {
+        setSendError(result.error?.message ?? "Unable to send your message.");
         setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
         setDraft(body);
         return;
       }
-      const message: MarketMessage = { id: payload.message.id, conversationId: payload.message.conversation_id, senderId: payload.message.sender_id, recipientId: payload.message.recipient_id, body: payload.message.body, createdAt: payload.message.created_at, readAt: payload.message.read_at };
+      const message: MarketMessage = result.data;
       setMessages((current) => {
         const withoutOptimistic = current.filter((item) => item.id !== optimisticMessage.id);
         return withoutOptimistic.some((item) => item.id === message.id) ? withoutOptimistic : [...withoutOptimistic, message];

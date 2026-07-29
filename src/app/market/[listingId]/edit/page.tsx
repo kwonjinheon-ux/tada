@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { PostAdPageClient } from "@/components/post-ad/PostAdPageClient";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -24,12 +25,17 @@ export default async function EditListingPage({ params }: { params: Promise<{ li
     .eq("listing_id", listing.id)
     .order("display_order", { ascending: true });
 
-  const photos = (photoRows ?? []).map((photo) => ({
+  const paths = (photoRows ?? []).map((photo) => photo.storage_path).filter((path): path is string => Boolean(path));
+  const signedByPath = await getSignedStorageImages("market-listing-images", paths, "gallery");
+  const photos = (photoRows ?? []).flatMap((photo) => {
+    const url = signedByPath.get(photo.storage_path);
+    return url ? [{
     id: photo.id,
-    url: supabase.storage.from("market-listing-images").getPublicUrl(photo.storage_path).data.publicUrl,
+    url,
     name: photo.original_name ?? "Listing photo",
     isPrimary: photo.is_primary,
-  }));
+    }] : [];
+  });
 
   return <PostAdPageClient initialListing={{
     id: listing.id,

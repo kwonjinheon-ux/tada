@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
 
 export type WishlistItem = {
   id: string;
@@ -44,7 +46,8 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId }),
       });
-      return response.ok;
+      const result = await readApiResponse(response, marketWishlistResponseSchema);
+      return !result.error && result.data.saved === saved;
     } finally {
       setUpdatingIds((current) => {
         const next = new Set(current);
@@ -68,12 +71,12 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId }),
       });
-      const payload = await response.json().catch(() => null) as { conversationId?: string } | null;
+      const result = await readApiResponse(response, marketConversationResponseSchema);
       if (response.status === 401) {
         router.push(`/login?redirectTo=${encodeURIComponent("/market/wishlist")}`);
         return;
       }
-      if (payload?.conversationId) router.push(`/market/dashboard/messages?conversation=${payload.conversationId}`);
+      if (result.data?.conversationId) router.push(`/market/dashboard/messages?conversation=${result.data.conversationId}`);
     } finally {
       setMessagingId(null);
     }

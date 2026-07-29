@@ -1,126 +1,25 @@
+import { marketFeedQuerySchema } from "@/contracts/api";
 import { MarketPageClient } from "@/components/market/MarketPageClient";
-import type { Listing } from "@/data/listings";
+import { getMarketFeed } from "@/lib/market/feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const metadata = { title: "Market" };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-type MarketListingPhotoRow = {
-  listing_id: string;
-  storage_path: string | null;
-  original_name: string | null;
-  is_primary: boolean;
-  display_order: number;
-};
+type SearchParams = Record<string, string | string[] | undefined>;
 
-type MarketListingRow = {
-  id: string;
-  title: string;
-  price_cents: number;
-  region_city: string | null;
-  region_suburb: string | null;
-  status: "published" | "pending" | "sold";
-  category_slug: string | null;
-  subcategory_slug: string | null;
-  created_at: string;
-};
-
-function formatPrice(priceCents: number | null | undefined) {
-  const parsed = typeof priceCents === "number" ? priceCents / 100 : 0;
-  if (!Number.isFinite(parsed) || parsed <= 0) return "$0";
-  return new Intl.NumberFormat("en-NZ", {
-    style: "currency",
-    currency: "NZD",
-    maximumFractionDigits: parsed % 1 === 0 ? 0 : 2,
-  }).format(parsed);
-}
-
-function formatLocation(city: string | null, suburb: string | null) {
-  const parts = [suburb, city].filter(Boolean);
-  return parts.length ? parts.join(", ") : "New Zealand";
-}
-
-async function getPostedListings(
-  supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
-): Promise<Listing[]> {
-  const { data, error } = await supabase
-    .from("market_listings")
-    .select("id,title,price_cents,region_city,region_suburb,status,category_slug,subcategory_slug,created_at")
-    .in("status", ["published", "pending", "sold"])
-    .order("created_at", { ascending: false })
-    .limit(48);
-
-  if (error || !data) return [];
-  const marketListings = data as MarketListingRow[];
-  const listingIds = marketListings.map((listing) => listing.id);
-  const primaryPhotosByListingId = new Map<string, MarketListingPhotoRow>();
-
-  if (listingIds.length) {
-    const { data: photoRows } = await supabase
-      .from("market_listing_photos")
-      .select("listing_id,storage_path,original_name,is_primary,display_order")
-      .in("listing_id", listingIds)
-      .order("display_order", { ascending: true });
-
-    for (const photo of (photoRows as MarketListingPhotoRow[] | null ?? [])) {
-      const currentPhoto = primaryPhotosByListingId.get(photo.listing_id);
-      if (!currentPhoto || photo.is_primary || (!currentPhoto.is_primary && photo.display_order < currentPhoto.display_order)) {
-        primaryPhotosByListingId.set(photo.listing_id, photo);
-      }
-    }
-  }
-
-  const storagePaths = [...new Set([...primaryPhotosByListingId.values()]
-    .map((photo) => photo.storage_path)
-    .filter((path): path is string => Boolean(path)))];
-  const signedImageByPath = await getSignedStorageImages(
-    "market-listing-images",
-    storagePaths,
-    "thumbnail",
-  );
-
-  const listings = marketListings.map((marketListing) => {
-      const photo = primaryPhotosByListingId.get(marketListing.id);
-
-      let image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
-      if (photo?.storage_path) {
-        image = signedImageByPath.get(photo.storage_path) ?? image;
-      }
-
-      return {
-        id: marketListing.id,
-        title: marketListing.title,
-        price: formatPrice(marketListing.price_cents),
-        location: formatLocation(marketListing.region_city, marketListing.region_suburb),
-        image,
-        imageAlt: photo?.original_name ?? marketListing.title,
-        categorySlug: marketListing.category_slug,
-        subcategorySlug: marketListing.subcategory_slug,
-        badge: marketListing.status === "published" ? "Newly Listed" : undefined,
-        status: marketListing.status === "sold" ? "sold" : marketListing.status === "pending" ? "pending" : "available",
-      } satisfies Listing;
-    });
-
-  return listings;
-}
-
-async function getSavedListingIds(
-  supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
-) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-  const { data } = await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id);
-  return (data ?? []).map((row) => row.listing_id as string);
-}
-
-export default async function MarketRoute() {
+export default async function MarketRoute({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const rawParams = await searchParams;
+  const query = marketFeedQuerySchema.parse({
+    q: typeof rawParams.q === "string" ? rawParams.q : "",
+    category: typeof rawParams.category === "string" ? rawParams.category : undefined,
+    subcategory: typeof rawParams.subcategory === "string" ? rawParams.subcategory : undefined,
+    sort: typeof rawParams.sort === "string" ? rawParams.sort : undefined,
+  });
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <MarketPageClient />;
-  const [postedListings, savedListingIds] = await Promise.all([
-    getPostedListings(supabase),
-    getSavedListingIds(supabase),
-  ]);
-  return <MarketPageClient postedListings={postedListings} savedListingIds={savedListingIds} />;
+  const { data: { user } } = await supabase.auth.getUser();
+  const feed = await getMarketFeed(supabase, query, user?.id);
+  return <MarketPageClient postedListings={feed.listings} savedListingIds={feed.savedListingIds} nextCursor={feed.nextCursor} />;
 }

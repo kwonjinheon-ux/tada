@@ -1,44 +1,43 @@
-import { NextResponse } from "next/server";
+import { marketWishlistRequestSchema } from "@/contracts/api";
+import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-
-type WishlistRequest = { listingId?: unknown };
 
 export async function GET(request: Request) {
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return NextResponse.json({ error: "Wishlist is unavailable right now." }, { status: 503 });
+  if (!supabase) return apiFailure("UNAVAILABLE", "Wishlist is unavailable right now.", 503);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ saved: false });
+  if (!user) return apiSuccess({ saved: false });
   const listingId = new URL(request.url).searchParams.get("listingId");
-  if (!listingId) return NextResponse.json({ error: "A valid listing is required." }, { status: 400 });
+  if (!marketWishlistRequestSchema.safeParse({ listingId }).success) return apiFailure("BAD_REQUEST", "A valid listing is required.", 400);
   const { data } = await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listingId).maybeSingle();
-  return NextResponse.json({ saved: Boolean(data) });
+  return apiSuccess({ saved: Boolean(data) });
 }
 
 async function getRequestContext(request: Request) {
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return { error: NextResponse.json({ error: "Wishlist is unavailable right now." }, { status: 503 }) };
+  if (!supabase) return { error: apiFailure("UNAVAILABLE", "Wishlist is unavailable right now.", 503) };
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: NextResponse.json({ error: "Please log in to save listings." }, { status: 401 }) };
-  const body = await request.json().catch(() => null) as WishlistRequest | null;
-  if (!body || typeof body.listingId !== "string") return { error: NextResponse.json({ error: "A valid listing is required." }, { status: 400 }) };
-  return { supabase, user, listingId: body.listingId };
+  if (!user) return { error: apiFailure("UNAUTHORIZED", "Please log in to save listings.", 401) };
+  const parsed = marketWishlistRequestSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return { error: apiFailure("BAD_REQUEST", "A valid listing is required.", 400) };
+  return { supabase, user, listingId: parsed.data.listingId };
 }
 
 export async function POST(request: Request) {
   const context = await getRequestContext(request);
   if ("error" in context) return context.error;
   const { data: listing } = await context.supabase.from("market_listings").select("id,owner_id").eq("id", context.listingId).maybeSingle();
-  if (!listing) return NextResponse.json({ error: "This listing is not available." }, { status: 404 });
-  if (listing.owner_id === context.user.id) return NextResponse.json({ error: "You cannot save your own listing." }, { status: 400 });
+  if (!listing) return apiFailure("NOT_FOUND", "This listing is not available.", 404);
+  if (listing.owner_id === context.user.id) return apiFailure("BAD_REQUEST", "You cannot save your own listing.", 400);
   const { error } = await context.supabase.from("market_wishlist").upsert({ user_id: context.user.id, listing_id: context.listingId }, { onConflict: "user_id,listing_id", ignoreDuplicates: true });
-  if (error) return NextResponse.json({ error: "Unable to save this listing right now." }, { status: 500 });
-  return NextResponse.json({ saved: true });
+  if (error) return apiFailure("INTERNAL", "Unable to save this listing right now.", 500);
+  return apiSuccess({ saved: true });
 }
 
 export async function DELETE(request: Request) {
   const context = await getRequestContext(request);
   if ("error" in context) return context.error;
   const { error } = await context.supabase.from("market_wishlist").delete().eq("user_id", context.user.id).eq("listing_id", context.listingId);
-  if (error) return NextResponse.json({ error: "Unable to remove this listing right now." }, { status: 500 });
-  return NextResponse.json({ saved: false });
+  if (error) return apiFailure("INTERNAL", "Unable to remove this listing right now.", 500);
+  return apiSuccess({ saved: false });
 }

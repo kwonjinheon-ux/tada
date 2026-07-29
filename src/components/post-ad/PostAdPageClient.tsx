@@ -4,6 +4,7 @@ import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
 
@@ -84,9 +85,7 @@ const meetingPlaces: SelectOption[] = [
   { label: "Pickup from home", value: "home" },
 ];
 
-const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const maxPhotoCount = 10;
-const maxPhotoSize = 5 * 1024 * 1024;
+const maxPhotoCount = marketListingImagePolicy.maxCount;
 const editorColors = [
   { label: "Charcoal", value: "#314254" },
   { label: "Red", value: "#dc2626" },
@@ -363,9 +362,9 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setSmartphoneSpecs((current) => ({ ...current, [key]: value }));
   };
 
-  const addPhotos = (fileList: FileList | File[]) => {
+  const addPhotos = async (fileList: FileList | File[]) => {
     const incomingFiles = Array.from(fileList);
-    const validFiles = incomingFiles.filter((file) => acceptedPhotoTypes.has(file.type) && file.size <= maxPhotoSize);
+    const validFiles = incomingFiles.filter(isAcceptedMarketListingImage);
 
     if (validFiles.length !== incomingFiles.length) {
       setError("Only PNG, JPG or WebP images up to 5MB can be added.");
@@ -375,9 +374,17 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
 
     if (!validFiles.length) return;
 
+    let normalizedFiles: File[];
+    try {
+      normalizedFiles = await Promise.all(validFiles.map(normalizeMarketListingImage));
+    } catch {
+      setError("One or more images could not be prepared. Please try another file.");
+      return;
+    }
+
     setPhotos((currentPhotos) => {
       const availableSlots = maxPhotoCount - currentPhotos.length;
-      const nextPhotos = validFiles.slice(0, availableSlots).map((file) => ({
+      const nextPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
         id: crypto.randomUUID(),
         file,
         url: URL.createObjectURL(file),
@@ -389,7 +396,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
         setPrimaryPhotoId(updatedPhotos[0].id);
       }
 
-      if (validFiles.length > availableSlots) {
+      if (normalizedFiles.length > availableSlots) {
         setError("You can add up to 10 photos.");
       }
 
@@ -763,7 +770,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
               onDrop={(event) => {
                 event.preventDefault();
                 setIsDraggingPhotos(false);
-                addPhotos(event.dataTransfer.files);
+                void addPhotos(event.dataTransfer.files);
               }}
             >
               <div className="field-label-row">
@@ -778,7 +785,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 multiple
                 onChange={(event) => {
                   if (event.target.files) {
-                    addPhotos(event.target.files);
+                    void addPhotos(event.target.files);
                     event.target.value = "";
                   }
                 }}

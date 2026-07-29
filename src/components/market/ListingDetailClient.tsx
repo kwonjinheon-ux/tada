@@ -4,8 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
+import { readApiResponse } from "@/lib/api/client";
 
 export type ListingDetail = {
   id: string;
@@ -116,8 +118,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     if (isOwner) return;
     let isCurrent = true;
     void fetch(`/api/market/wishlist?listingId=${encodeURIComponent(listing.id)}`)
-      .then((response) => response.ok ? response.json() as Promise<{ saved?: boolean }> : null)
-      .then((payload) => { if (isCurrent && payload) setIsSaved(Boolean(payload.saved)); })
+      .then((response) => readApiResponse(response, marketWishlistResponseSchema))
+      .then((result) => { if (isCurrent && result.data) setIsSaved(result.data.saved); })
       .catch(() => undefined);
     return () => { isCurrent = false; };
   }, [isOwner, listing.id]);
@@ -146,7 +148,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
         return;
       }
-      if (!response.ok) setIsSaved(!nextSaved);
+      const result = await readApiResponse(response, marketWishlistResponseSchema);
+      if (result.error || result.data.saved !== nextSaved) setIsSaved(!nextSaved);
     } catch {
       setIsSaved(!nextSaved);
     }
@@ -171,16 +174,16 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId: listing.id }),
       });
-      const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+      const result = await readApiResponse(response, marketConversationResponseSchema);
       if (response.status === 401) {
         router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
         return;
       }
-      if (!response.ok || !payload?.conversationId) {
-        setMessageError(payload?.error ?? "Unable to open a conversation right now.");
+      if (!result.data) {
+        setMessageError(result.error?.message ?? "Unable to open a conversation right now.");
         return;
       }
-      const conversationPath = `/market/dashboard/messages?conversation=${payload.conversationId}`;
+      const conversationPath = `/market/dashboard/messages?conversation=${result.data.conversationId}`;
       router.prefetch(conversationPath);
       if (window.matchMedia("(max-width: 767.98px)").matches) {
         window.location.assign(conversationPath);

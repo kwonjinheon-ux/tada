@@ -2,14 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { marketFeedResponseSchema } from "@/contracts/api";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
-
-const LISTING_RENDER_BATCH = 16;
 
 const categoryIcons: Record<string, string> = {
   "mobile-phones-tablets": "fa-mobile-screen-button",
@@ -31,7 +31,7 @@ const categoryIcons: Record<string, string> = {
 
 const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
 
-export function MarketPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {
+export function MarketPageClient({ postedListings = [], savedListingIds = [], nextCursor = null }: { postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,9 +44,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [applyingChip, setApplyingChip] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(LISTING_RENDER_BATCH);
+  const [listings, setListings] = useState(postedListings);
+  const [savedIds, setSavedIds] = useState(savedListingIds);
+  const [nextPageCursor, setNextPageCursor] = useState<string | null>(nextCursor);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
   const selectedCategoryDefinition = useMemo(
     () => marketplaceCategories.find((category) => category.value === selectedCategory),
     [selectedCategory],
@@ -57,27 +59,34 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
       : quickCategories,
     [selectedCategoryDefinition],
   );
-  const visibleListings = useMemo(
-    () => postedListings.filter((listing) => {
-      const matchesCategory = selectedCategory === "all" || listing.categorySlug === selectedCategory;
-      const matchesSubcategory = selectedSubcategory === "all" || listing.subcategorySlug === selectedSubcategory;
-      const matchesSearch = !normalizedSearch || [listing.title, listing.location, listing.imageAlt].some((value) => value.toLocaleLowerCase().includes(normalizedSearch));
-      return matchesCategory && matchesSubcategory && matchesSearch;
-    }),
-    [normalizedSearch, postedListings, selectedCategory, selectedSubcategory],
-  );
-  const renderedListings = visibleListings.slice(0, visibleCount);
-  const savedListingIdSet = useMemo(() => new Set(savedListingIds), [savedListingIds]);
+  const savedListingIdSet = useMemo(() => new Set(savedIds), [savedIds]);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
   }, [urlSearchQuery]);
 
   useEffect(() => {
+    setListings(postedListings);
+    setSavedIds(savedListingIds);
+    setNextPageCursor(nextCursor);
+  }, [nextCursor, postedListings, savedListingIds]);
+
+  useEffect(() => {
     const updateSearch = (event: Event) => setSearchQuery(typeof (event as CustomEvent<string>).detail === "string" ? (event as CustomEvent<string>).detail : "");
     window.addEventListener("market-search-query-change", updateSearch);
     return () => window.removeEventListener("market-search-query-change", updateSearch);
   }, []);
+
+  useEffect(() => {
+    if (searchQuery === urlSearchQuery) return;
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("cursor");
+      if (searchQuery.trim()) params.set("q", searchQuery.trim()); else params.delete("q");
+      router.replace(`/market${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [router, searchParams, searchQuery, urlSearchQuery]);
 
   useEffect(() => {
     if (searchParams.get("filters") !== "open") return;
@@ -153,24 +162,31 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   }, [applyingChip]);
 
   useEffect(() => {
-    setVisibleCount(LISTING_RENDER_BATCH);
-  }, [normalizedSearch, selectedCategory, selectedSubcategory]);
-
-  useEffect(() => {
     const sentinel = loadMoreRef.current;
-    if (!sentinel || visibleCount >= visibleListings.length) return;
+    if (!sentinel || !nextPageCursor || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          setVisibleCount((current) => Math.min(current + LISTING_RENDER_BATCH, visibleListings.length));
+          setIsLoadingMore(true);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("cursor", nextPageCursor);
+          void fetch(`/api/market/listings?${params.toString()}`)
+            .then((response) => readApiResponse(response, marketFeedResponseSchema))
+            .then((result) => {
+              if (!result.data) return;
+              setListings((current) => [...current, ...result.data.listings.filter((listing) => !current.some((item) => item.id === listing.id))]);
+              setSavedIds((current) => [...new Set([...current, ...result.data.savedListingIds])]);
+              setNextPageCursor(result.data.nextCursor);
+            })
+            .finally(() => setIsLoadingMore(false));
         }
       },
       { rootMargin: "300px 0px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [visibleCount, visibleListings.length]);
+  }, [isLoadingMore, nextPageCursor, searchParams]);
 
   const chooseView = (mode: "grid" | "list") => {
     setHasManualViewChoice(true);
@@ -178,6 +194,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   };
   const chooseCategory = (categorySlug: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("cursor");
     params.delete("subcategory");
     if (categorySlug === "all") params.delete("category");
     else params.set("category", categorySlug);
@@ -187,6 +204,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
   const chooseSubcategory = (subcategorySlug: string) => {
     if (selectedCategory === "all") return;
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("cursor");
     if (subcategorySlug === "all") params.delete("subcategory");
     else params.set("subcategory", subcategorySlug);
     router.push(`/market?${params.toString()}`);
@@ -287,21 +305,20 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [] }: 
 
           <div className="market-tools">
             <label className="sort-control" aria-label="Sort listings">
-              <select defaultValue="Newest">
-                <option>Newest</option>
-                <option>Low to High</option>
-                <option>High to Low</option>
-                <option>Recommended</option>
+              <select value={searchParams.get("sort") ?? "newest"} onChange={(event) => { const params = new URLSearchParams(searchParams.toString()); params.delete("cursor"); if (event.target.value === "newest") params.delete("sort"); else params.set("sort", event.target.value); router.push(`/market${params.size ? `?${params.toString()}` : ""}`); }}>
+                <option value="newest">Newest</option>
+                <option value="priceAsc">Low to High</option>
+                <option value="priceDesc">High to Low</option>
               </select>
             </label>
           </div>
         </div>
 
-        {visibleListings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {renderedListings.map((listing, index) => (
+        {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+          {listings.map((listing, index) => (
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />
           ))}
-          {visibleCount < visibleListings.length ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
+          {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-label={isLoadingMore ? "Loading more listings" : "More listings available"} /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
         <div className="market-mobile-bottom-spacer" aria-hidden="true" />
 
