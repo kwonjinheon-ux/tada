@@ -26,6 +26,10 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
     : [{ count: 0 }, { count: 0 }];
   const unreadBadge = (unreadMessageCount ?? 0) > 99 ? "99+" : String(unreadMessageCount ?? 0);
   const notificationBadge = (unreadNotificationCount ?? 0) > 99 ? "99+" : String(unreadNotificationCount ?? 0);
+  const { data: role } = context === "market" && user && supabase
+    ? await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const isAdmin = role?.role === "admin" || role?.role === "moderator";
   return (
     <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
       <nav className="dashboard-nav">
@@ -34,6 +38,7 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
             <i className={`fa-solid ${icon}`} aria-hidden="true" /><span><TranslatedText translationKey={translationKey} /></span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
           </Link>
         ))}
+        {isAdmin ? <Link className={active === "Admin Centre" ? "is-active" : ""} href="/admin/listings"><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin Centre</span></Link> : null}
       </nav>
     </aside>
   );

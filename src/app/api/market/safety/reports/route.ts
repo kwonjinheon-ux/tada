@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("market_reports")
-    .insert({ reporter_id: user.id, target_type: parsed.data.targetType, target_id: parsed.data.targetId, reason: parsed.data.reason, details: parsed.data.details || null })
+    .insert({ reporter_id: user.id, domain: "market", target_type: parsed.data.targetType, target_id: parsed.data.targetId, reason: parsed.data.reason, details: parsed.data.details || null })
     .select("id,status")
     .single();
   if (error || !data) return apiFailure("BAD_REQUEST", "Unable to submit this report.", 400);
