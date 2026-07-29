@@ -30,6 +30,7 @@ export function Navbar() {
   const [userId, setUserId] = useState<string | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { t } = useLanguage();
@@ -59,15 +60,18 @@ export function Navbar() {
           setAvatarUrl(null);
           setUnreadMessageCount(0);
           setUnreadNotificationCount(0);
+          setIsAdmin(false);
           return;
         }
-        const [{ count: messageCount }, { count: notificationCount }] = await Promise.all([
+        const [{ count: messageCount }, { count: notificationCount }, { data: role }] = await Promise.all([
           supabase.from("market_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
           supabase.from("market_notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
+          supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle(),
         ]);
         if (isMounted) {
           setUnreadMessageCount(messageCount ?? 0);
           setUnreadNotificationCount(notificationCount ?? 0);
+          setIsAdmin(role?.role === "admin" || role?.role === "moderator");
         }
         const avatarPath = user.user_metadata?.avatar_path;
         if (avatarPath) {
@@ -364,6 +368,7 @@ export function Navbar() {
                 <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}</span>
               </Link>
             ))}
+            {isAdmin ? <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span className={mobileDrawerClasses.menuLabel}>Admin centre</span></Link> : null}
             <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
             </MobileDrawer>
           </>

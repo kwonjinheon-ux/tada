@@ -44,10 +44,10 @@ export function AdminListingsClient() {
     <header><p>Marketplace operations</p><h1>All listings</h1><span>Manage published, pending, sold and archived listings across the marketplace.</span></header>
     {error ? <p className="moderation-error" role="alert">{error}</p> : null}
     <div className="admin-listing-table" role="table"><div className="admin-listing-row admin-listing-head" role="row"><span>Listing</span><span>Location</span><span>Status</span><span>Actions</span></div>{listings.map((listing) => <div className="admin-listing-row" role="row" key={listing.id}>
-      <span><Link href={`/market/${listing.id}`}>{listing.title}</Link><small>${(listing.price_cents / 100).toLocaleString("en-NZ")}</small></span>
-      <span>{[listing.region_suburb, listing.region_city].filter(Boolean).join(", ") || "—"}</span>
-      <span><select aria-label={`Status for ${listing.title}`} disabled={busyId === listing.id} value={listing.status} onChange={(event) => void changeStatus(listing, event.target.value as Listing["status"])}>{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</select></span>
-      <span><button type="button" disabled={busyId === listing.id} onClick={() => void remove(listing)}>Delete</button></span>
+      <span data-label="Listing"><Link href={`/market/${listing.id}`}>{listing.title}</Link><small>${(listing.price_cents / 100).toLocaleString("en-NZ")}</small></span>
+      <span data-label="Location">{[listing.region_suburb, listing.region_city].filter(Boolean).join(", ") || "—"}</span>
+      <span data-label="Status"><select aria-label={`Status for ${listing.title}`} disabled={busyId === listing.id} value={listing.status} onChange={(event) => void changeStatus(listing, event.target.value as Listing["status"])}>{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</select></span>
+      <span data-label="Actions"><button type="button" disabled={busyId === listing.id} onClick={() => void remove(listing)}>Delete</button></span>
     </div>)}</div>
     {!error && !listings.length ? <p className="moderation-empty">No listings found.</p> : null}
   </section>;
