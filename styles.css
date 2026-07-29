@@ -6525,19 +6525,23 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
   .listing-detail-description h2 { font-size: 19px; }
   .listing-detail-description p { font-size: 14px; line-height: 1.75; }
-  .listing-detail-mobile-seller { display: grid; gap: 14px; margin: 24px 20px 0; padding: 24px 0; border-top: 1px solid #e3ebea; }
-  .listing-detail-mobile-seller-profile { display: flex; align-items: center; gap: 12px; }
-  .listing-detail-mobile-seller-avatar { width: 56px; height: 56px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #dff8ef; color: #00845c; font-size: 21px; font-weight: 800; }
+  .listing-detail-mobile-seller { display: grid; gap: 16px; margin: 24px 20px 0; padding: 22px; border: 1px solid #dce2e8; border-radius: 26px; background: #fff; }
+  .listing-detail-mobile-seller-label { margin: 0; color: #5d6d82; font-size: 14px; font-weight: 800; }
+  .listing-detail-mobile-seller-profile { display: flex; align-items: center; gap: 13px; }
+  .listing-detail-mobile-seller-avatar { width: 70px; height: 70px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid #dfe5ec; border-radius: 50%; background: #dff8ef; color: #00845c; font-size: 25px; font-weight: 800; }
   img.listing-detail-mobile-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-profile > div { display: grid; flex: 1; gap: 3px; min-width: 0; }
-  .listing-detail-mobile-seller strong { color: #10243d; font-size: 16px; }
-  .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 11px; }
-  .listing-detail-mobile-seller span i { color: #f6b600; }
-  .listing-detail-mobile-seller-actions { display: grid; grid-template-columns: 1.35fr minmax(0, 1fr); gap: 10px; width: 100%; }
-  .listing-detail-mobile-seller-actions > a { min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 12px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+  .listing-detail-mobile-seller strong { color: #10243d; font-size: 20px; }
+  .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 13px; }
+  .listing-detail-mobile-seller span i { color: #ff9200; }
+  .listing-detail-mobile-seller-profile > i { color: #b0b9c5; font-size: 22px; }
+  .listing-detail-mobile-seller-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 10px; width: 100%; padding-top: 16px; border-top: 1px solid #e2e7eb; }
+  .listing-detail-mobile-seller-actions > a { min-width: 0; min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border: 0; border-radius: 999px; background: #e8f1ff; color: #1767dc; font: inherit; font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
   .listing-detail-mobile-seller-actions .listing-safety-actions { min-width: 0; display: block; margin: 0; padding: 0; border: 0; }
   .listing-detail-mobile-seller-actions .listing-safety-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-  .listing-detail-mobile-seller-actions .listing-safety-buttons button { min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 8px; border: 1px solid #d9e0e8; border-radius: 12px; background: #fff; color: #526981; font-size: 13px; white-space: nowrap; }
+  .listing-detail-mobile-seller-actions .listing-safety-buttons button { min-width: 0; min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #dfe3e8; border-radius: 999px; background: #f8f8fa; color: #172b43; font-size: 14px; font-weight: 800; white-space: nowrap; }
+  .listing-detail-mobile-seller-actions .listing-safety-buttons.is-seller-profile-variant button i { display: none; }
+  .listing-detail-mobile-seller-actions .listing-safety-buttons.is-seller-profile-variant button:last-child { color: #ef4c3b; }
   .listing-detail-mobile-seller-actions .listing-safety-actions > p { grid-column: 1 / -1; margin-top: 8px; }
   .listing-detail-mobile-safety { align-items: center; gap: 12px; margin: 24px 20px 0; padding: 14px; border: 1px solid #d8e1e5; border-radius: 9px; color: #0f2845; }
   .listing-detail-mobile-safety > i:first-child { color: #059a6a; font-size: 25px; }

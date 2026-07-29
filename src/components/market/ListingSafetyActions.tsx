@@ -14,7 +14,7 @@ const reasons = [
   ["other", "Other"],
 ] as const;
 
-export function ListingSafetyActions({ listingId, sellerId }: { listingId: string; sellerId: string | null }) {
+export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant = false }: { listingId: string; sellerId: string | null; sellerProfileVariant?: boolean }) {
   const router = useRouter();
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reason, setReason] = useState<(typeof reasons)[number][0]>("fraud");
@@ -51,9 +51,9 @@ export function ListingSafetyActions({ listingId, sellerId }: { listingId: strin
   };
 
   return <section className="listing-safety-actions" aria-label="Listing safety tools">
-    <div className="listing-safety-buttons">
-      <button type="button" onClick={() => setIsReportOpen(true)}><i className="fa-regular fa-flag" aria-hidden="true" /> Report</button>
-      {sellerId ? <button type="button" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> Block</button> : null}
+    <div className={`listing-safety-buttons ${sellerProfileVariant ? "is-seller-profile-variant" : ""}`}>
+      <button type="button" onClick={() => setIsReportOpen(true)}><i className="fa-regular fa-flag" aria-hidden="true" /> {sellerProfileVariant ? "신고" : "Report"}</button>
+      {sellerId ? <button type="button" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> {sellerProfileVariant ? "차단" : "Block"}</button> : null}
     </div>
     {feedback ? <p role="status">{feedback}</p> : null}
     {isReportOpen ? <div className="listing-report-dialog" role="dialog" aria-modal="true" aria-labelledby="listing-report-title">
