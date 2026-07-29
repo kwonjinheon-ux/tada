@@ -1,6 +1,7 @@
 import { marketConversationRequestSchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { consumeMarketRateLimit } from "@/lib/market/safety";
 
 type ListingRow = { owner_id: string };
 
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to message the seller.", 401);
+  if (!await consumeMarketRateLimit(supabase, "conversation")) return apiFailure("RATE_LIMITED", "Too many conversation requests. Please try again in a minute.", 429);
 
   const parsed = marketConversationRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", "A valid listing is required.", 400);

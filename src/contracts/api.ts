@@ -6,6 +6,7 @@ export const apiErrorCodeSchema = z.enum([
   "FORBIDDEN",
   "NOT_FOUND",
   "CONFLICT",
+  "RATE_LIMITED",
   "UNAVAILABLE",
   "INTERNAL",
 ]);
@@ -44,6 +45,24 @@ export const marketMessageResponseSchema = z.object({
   body: z.string(),
   createdAt: z.string().datetime(),
   readAt: z.string().datetime().nullable(),
+});
+
+export const marketReportRequestSchema = z.object({
+  targetType: z.enum(["listing", "user", "comment", "message"]),
+  targetId: uuidSchema,
+  reason: z.enum(["fraud", "prohibited_item", "harassment", "spam", "inappropriate_content", "other"]),
+  details: z.string().trim().max(1_000).optional(),
+});
+
+export const marketBlockRequestSchema = z.object({ blockedUserId: uuidSchema });
+export const marketReportResponseSchema = z.object({ reportId: uuidSchema, status: z.literal("open") });
+export const marketBlockResponseSchema = z.object({ blocked: z.boolean() });
+
+export const marketModerationReviewRequestSchema = z.object({
+  status: z.enum(["in_review", "resolved", "dismissed"]),
+  reviewerNote: z.string().trim().max(1_000).optional(),
+  action: z.enum(["none", "warning", "suspension", "listing_hidden", "listing_restored"]).default("none"),
+  suspensionHours: z.number().int().min(1).max(24 * 365).optional(),
 });
 
 export const marketFeedQuerySchema = z.object({

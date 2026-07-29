@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
+import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { readApiResponse } from "@/lib/api/client";
 
 export type ListingDetail = {
@@ -366,6 +367,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <h2>About this item</h2>
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
+      {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
 
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
         {listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div>{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}>View profile</Link> : null}
