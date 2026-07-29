@@ -30,37 +30,6 @@ const categoryIcons: Record<string, string> = {
 };
 
 const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
-const marketFeedSnapshotPrefix = "tada:market-feed-return:";
-const marketFeedSnapshotMaxAge = 30 * 60 * 1_000;
-
-type MarketFeedSnapshot = {
-  savedAt: number;
-  scrollY: number;
-  listings: Listing[];
-  savedIds: string[];
-  nextCursor: string | null;
-};
-
-function marketFeedSnapshotKey(searchParams: URLSearchParams) {
-  const params = new URLSearchParams();
-  for (const name of ["q", "category", "subcategory", "sort"]) {
-    const value = searchParams.get(name);
-    if (value) params.set(name, value);
-  }
-  return `${marketFeedSnapshotPrefix}${params.toString()}`;
-}
-function readMarketFeedSnapshot(key: string): MarketFeedSnapshot | null {
-  try {
-    const snapshot = JSON.parse(window.sessionStorage.getItem(key) ?? "null") as MarketFeedSnapshot | null;
-    if (!snapshot || !Array.isArray(snapshot.listings) || !Array.isArray(snapshot.savedIds) || Date.now() - snapshot.savedAt > marketFeedSnapshotMaxAge) {
-      window.sessionStorage.removeItem(key);
-      return null;
-    }
-    return snapshot;
-  } catch {
-    return null;
-  }
-}
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [], nextCursor = null }: { postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { t } = useLanguage();
@@ -80,10 +49,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const [nextPageCursor, setNextPageCursor] = useState<string | null>(nextCursor);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const skipInitialServerFeedRef = useRef(false);
-  const isRestoringFeedRef = useRef(false);
-  const feedStateRef = useRef({ listings: postedListings, savedIds: savedListingIds, nextCursor });
-  const currentSnapshotKey = useMemo(() => marketFeedSnapshotKey(new URLSearchParams(searchParams.toString())), [searchParams]);
   const selectedCategoryDefinition = useMemo(
     () => marketplaceCategories.find((category) => category.value === selectedCategory),
     [selectedCategory],
@@ -101,69 +66,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   }, [urlSearchQuery]);
 
   useEffect(() => {
-    const snapshot = readMarketFeedSnapshot(currentSnapshotKey);
-    if (!snapshot) return;
-
-    isRestoringFeedRef.current = true;
-    skipInitialServerFeedRef.current = true;
-    setListings(snapshot.listings);
-    setSavedIds(snapshot.savedIds);
-    setNextPageCursor(snapshot.nextCursor);
-
-    let frame = 0;
-    const restoreScroll = () => {
-      window.scrollTo({ top: snapshot.scrollY, left: 0, behavior: "auto" });
-      frame += 1;
-      if (frame < 3) window.requestAnimationFrame(restoreScroll);
-      else isRestoringFeedRef.current = false;
-    };
-    window.requestAnimationFrame(restoreScroll);
-  }, [currentSnapshotKey]);
-
-  useEffect(() => {
-    if (skipInitialServerFeedRef.current) {
-      skipInitialServerFeedRef.current = false;
-      return;
-    }
     setListings(postedListings);
     setSavedIds(savedListingIds);
     setNextPageCursor(nextCursor);
   }, [nextCursor, postedListings, savedListingIds]);
-
-  useEffect(() => {
-    feedStateRef.current = { listings, savedIds, nextCursor: nextPageCursor };
-  }, [listings, nextPageCursor, savedIds]);
-
-  useEffect(() => {
-    const persistFeedState = () => {
-      if (isRestoringFeedRef.current) return;
-      const state = feedStateRef.current;
-      try {
-        window.sessionStorage.setItem(currentSnapshotKey, JSON.stringify({
-          savedAt: Date.now(),
-          scrollY: window.scrollY,
-          listings: state.listings,
-          savedIds: state.savedIds,
-          nextCursor: state.nextCursor,
-        } satisfies MarketFeedSnapshot));
-      } catch {
-        // Session storage may be unavailable or full; normal navigation still works.
-      }
-    };
-
-    window.addEventListener("pagehide", persistFeedState);
-    window.addEventListener("market-feed-persist", persistFeedState);
-    persistFeedState();
-    return () => {
-      persistFeedState();
-      window.removeEventListener("pagehide", persistFeedState);
-      window.removeEventListener("market-feed-persist", persistFeedState);
-    };
-  }, [currentSnapshotKey]);
-
-  useEffect(() => {
-    if (!isRestoringFeedRef.current) window.dispatchEvent(new Event("market-feed-persist"));
-  }, [listings, nextPageCursor, savedIds]);
 
   useEffect(() => {
     const updateSearch = (event: Event) => setSearchQuery(typeof (event as CustomEvent<string>).detail === "string" ? (event as CustomEvent<string>).detail : "");

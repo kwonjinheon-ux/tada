@@ -63,7 +63,6 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     router.prefetch(detailPath);
   };
   const openListing = () => {
-    window.dispatchEvent(new Event("market-feed-persist"));
     prefetchListing();
     router.push(detailPath);
   };
