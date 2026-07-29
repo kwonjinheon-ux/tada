@@ -19,6 +19,12 @@ const dashboardMenuItems = [
   ["fa-rectangle-list", "Manage Listings", "/listings"],
 ] as const;
 
+declare global {
+  interface Window {
+    __tadaOnlineMemberIds?: string[];
+  }
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -141,8 +147,19 @@ export function Navbar() {
     const supabase = createBrowserSupabaseClient();
     if (!supabase) return;
 
-    const channel = supabase
-      .channel("tada-member-presence", { config: { presence: { key: userId } } })
+    const channel = supabase.channel("tada-member-presence", { config: { presence: { key: userId } } });
+    const publishPresence = () => {
+      const onlineMemberIds = Array.from(new Set(
+        Object.values(channel.presenceState<{ userId?: string }>()).flatMap((presences) => presences.map((presence) => presence.userId).filter((memberId): memberId is string => Boolean(memberId))),
+      ));
+      window.__tadaOnlineMemberIds = onlineMemberIds;
+      window.dispatchEvent(new Event("tada-member-presence"));
+    };
+
+    channel
+      .on("presence", { event: "sync" }, publishPresence)
+      .on("presence", { event: "join" }, publishPresence)
+      .on("presence", { event: "leave" }, publishPresence)
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
           void channel.track({ userId });
@@ -150,6 +167,8 @@ export function Navbar() {
       });
 
     return () => {
+      window.__tadaOnlineMemberIds = undefined;
+      window.dispatchEvent(new Event("tada-member-presence"));
       void channel.untrack().catch(() => undefined);
       void supabase.removeChannel(channel).catch(() => undefined);
     };

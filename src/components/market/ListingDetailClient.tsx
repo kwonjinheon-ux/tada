@@ -9,7 +9,6 @@ import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/comp
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { readApiResponse } from "@/lib/api/client";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 export type ListingDetail = {
   id: string;
@@ -117,24 +116,12 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       return;
     }
 
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
-    const channel = supabase.channel("tada-member-presence");
-    const syncPresence = () => {
-      const presenceState = channel.presenceState<{ userId?: string }>();
-      setIsSellerOnline(Object.values(presenceState).some((presences) => presences.some((presence) => presence.userId === sellerId)));
-    };
-
-    channel
-      .on("presence", { event: "sync" }, syncPresence)
-      .on("presence", { event: "join" }, syncPresence)
-      .on("presence", { event: "leave" }, syncPresence)
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") syncPresence();
-      });
+    const syncPresence = () => setIsSellerOnline(window.__tadaOnlineMemberIds?.includes(sellerId) ?? false);
+    syncPresence();
+    window.addEventListener("tada-member-presence", syncPresence);
 
     return () => {
-      void supabase.removeChannel(channel).catch(() => undefined);
+      window.removeEventListener("tada-member-presence", syncPresence);
     };
   }, [listing.seller.id]);
 
