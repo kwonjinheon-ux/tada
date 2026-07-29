@@ -4859,6 +4859,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     line-height: 1.1;
   }
 
+  .mobile-bottom-dock > a > span,
+  .mobile-bottom-dock > button > span { display: none; }
+
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
   .mobile-bottom-dock button:focus-visible {
