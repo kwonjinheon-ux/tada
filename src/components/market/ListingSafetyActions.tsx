@@ -53,7 +53,7 @@ export function ListingSafetyActions({ listingId, sellerId }: { listingId: strin
   return <section className="listing-safety-actions" aria-label="Listing safety tools">
     <div className="listing-safety-buttons">
       <button type="button" onClick={() => setIsReportOpen(true)}><i className="fa-regular fa-flag" aria-hidden="true" /> Report</button>
-      {sellerId ? <button type="button" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> Block seller</button> : null}
+      {sellerId ? <button type="button" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> Block</button> : null}
     </div>
     {feedback ? <p role="status">{feedback}</p> : null}
     {isReportOpen ? <div className="listing-report-dialog" role="dialog" aria-modal="true" aria-labelledby="listing-report-title">

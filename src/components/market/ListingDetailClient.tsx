@@ -371,8 +371,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile">{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div>{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}>View profile</Link> : null}</div>
-        {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
+        <div className="listing-detail-mobile-seller-profile">{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div></div>
+        <div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}><i className="fa-regular fa-user" aria-hidden="true" /> View profile</Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}</div>
       </section>
 
       <ListingComments listingId={listing.id} />
