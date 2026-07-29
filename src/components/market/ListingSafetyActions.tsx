@@ -51,10 +51,6 @@ export function ListingSafetyActions({ listingId, sellerId }: { listingId: strin
   };
 
   return <section className="listing-safety-actions" aria-label="Listing safety tools">
-    <div>
-      <strong>Stay safe</strong>
-      <span>Report suspicious listings or block a seller.</span>
-    </div>
     <div className="listing-safety-buttons">
       <button type="button" onClick={() => setIsReportOpen(true)}><i className="fa-regular fa-flag" aria-hidden="true" /> Report</button>
       {sellerId ? <button type="button" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> Block seller</button> : null}

@@ -2267,20 +2267,18 @@ body.listing-gallery-open { overflow: hidden; }
 }
 
 .listing-safety-actions {
-  margin-top: 22px;
-  padding: 16px;
-  border: 1px solid #dbe4ef;
-  border-radius: 16px;
-  background: #f8fbff;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e8f0;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
   flex-wrap: wrap;
 }
-.listing-safety-actions > div:first-child { display: grid; gap: 3px; margin-right: auto; }
+.listing-safety-actions > div:first-child { margin-right: 0; }
 .listing-safety-actions span, .listing-safety-actions p { color: #61738a; font-size: 13px; margin: 0; }
 .listing-safety-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-.listing-safety-buttons button { border: 1px solid #c9d7e7; background: #fff; color: #28415e; border-radius: 9px; min-height: 36px; padding: 0 11px; font-weight: 700; cursor: pointer; }
+.listing-safety-buttons button { border: 1px solid #c9d7e7; background: #fff; color: #526981; border-radius: 8px; min-height: 32px; padding: 0 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .listing-safety-buttons button:hover { border-color: #7c96b5; }
 .listing-report-dialog { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 20px; background: rgb(15 25 40 / 48%); backdrop-filter: blur(4px); }
 .listing-report-panel { position: relative; width: min(100%, 440px); padding: 26px; border-radius: 18px; background: #fff; box-shadow: 0 18px 60px rgb(15 25 40 / 25%); display: grid; gap: 16px; }
@@ -2508,8 +2506,10 @@ body.listing-gallery-open { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 18px;
+  margin: 0;
 }
+
+.listing-detail-seller-card { margin-top: 18px; padding: 13px; border: 1px solid #e0e8f0; border-radius: 12px; background: #fbfdff; }
 
 .listing-detail-seller-avatar {
   width: 38px;
@@ -6525,14 +6525,18 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
   .listing-detail-description h2 { font-size: 19px; }
   .listing-detail-description p { font-size: 14px; line-height: 1.75; }
-  .listing-detail-mobile-seller { align-items: center; gap: 12px; margin: 24px 20px 0; padding: 24px 0; border-top: 1px solid #e3ebea; }
+  .listing-detail-mobile-seller { display: grid; gap: 14px; margin: 24px 20px 0; padding: 24px 0; border-top: 1px solid #e3ebea; }
+  .listing-detail-mobile-seller-profile { display: flex; align-items: center; gap: 12px; }
   .listing-detail-mobile-seller-avatar { width: 56px; height: 56px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #dff8ef; color: #00845c; font-size: 21px; font-weight: 800; }
   img.listing-detail-mobile-seller-avatar { object-fit: cover; }
-  .listing-detail-mobile-seller div { display: grid; flex: 1; gap: 3px; min-width: 0; }
+  .listing-detail-mobile-seller-profile > div { display: grid; flex: 1; gap: 3px; min-width: 0; }
   .listing-detail-mobile-seller strong { color: #10243d; font-size: 16px; }
   .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 11px; }
   .listing-detail-mobile-seller span i { color: #f6b600; }
-  .listing-detail-mobile-seller button, .listing-detail-mobile-seller a { min-height: 36px; display: grid; place-items: center; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 8px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 11px; font-weight: 700; text-decoration: none; }
+  .listing-detail-mobile-seller-profile > a { min-height: 36px; display: grid; place-items: center; padding: 0 10px; border: 1px solid #adc9fc; border-radius: 8px; background: #edf4ff; color: #1742bf; font: inherit; font-size: 11px; font-weight: 700; text-decoration: none; }
+  .listing-detail-mobile-seller .listing-safety-actions { margin-top: 0; padding-top: 12px; }
+  .listing-detail-mobile-seller .listing-safety-buttons { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .listing-detail-mobile-seller .listing-safety-buttons button { width: 100%; min-height: 38px; }
   .listing-detail-mobile-safety { align-items: center; gap: 12px; margin: 24px 20px 0; padding: 14px; border: 1px solid #d8e1e5; border-radius: 9px; color: #0f2845; }
   .listing-detail-mobile-safety > i:first-child { color: #059a6a; font-size: 25px; }
   .listing-detail-mobile-safety span { display: grid; flex: 1; gap: 4px; }

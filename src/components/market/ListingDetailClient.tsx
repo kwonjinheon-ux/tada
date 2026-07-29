@@ -339,10 +339,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
             {listing.meetingPlace ? <div><dt>Meet at</dt><dd>{listing.meetingPlace}</dd></div> : null}
           </dl>
 
-          <div className="listing-detail-seller">
-            {listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}
-            <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
-          </div>
+          <section className="listing-detail-seller-card">
+            <div className="listing-detail-seller">
+              {listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}
+              <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
+            </div>
+            {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
+          </section>
         </aside>
       </div>
 
@@ -367,10 +370,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <h2>About this item</h2>
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
-      {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
-
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        {listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div>{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}>View profile</Link> : null}
+        <div className="listing-detail-mobile-seller-profile">{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> {ratingLabel}</span><small><i className="fa-regular fa-clock" aria-hidden="true" /> Local member</small></div>{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`}>View profile</Link> : null}</div>
+        {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
       </section>
 
       <ListingComments listingId={listing.id} />
