@@ -49,6 +49,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const [nextPageCursor, setNextPageCursor] = useState<string | null>(nextCursor);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isLoadRequestInFlight = useRef(false);
   const selectedCategoryDefinition = useMemo(
     () => marketplaceCategories.find((category) => category.value === selectedCategory),
     [selectedCategory],
@@ -162,12 +163,37 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   }, [applyingChip]);
 
   useEffect(() => {
+    if (!isLoadingMore || window.innerWidth >= 768) return;
+
+    let touchStartY = 0;
+    const blockDownwardScroll = (event: TouchEvent | WheelEvent) => {
+      const deltaY = event instanceof WheelEvent
+        ? event.deltaY
+        : touchStartY - (event.touches[0]?.clientY ?? touchStartY);
+      if (deltaY > 0) event.preventDefault();
+    };
+    const rememberTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? 0;
+    };
+
+    window.addEventListener("touchstart", rememberTouchStart, { passive: true });
+    window.addEventListener("touchmove", blockDownwardScroll, { passive: false });
+    window.addEventListener("wheel", blockDownwardScroll, { passive: false });
+    return () => {
+      window.removeEventListener("touchstart", rememberTouchStart);
+      window.removeEventListener("touchmove", blockDownwardScroll);
+      window.removeEventListener("wheel", blockDownwardScroll);
+    };
+  }, [isLoadingMore]);
+
+  useEffect(() => {
     const sentinel = loadMoreRef.current;
     if (!sentinel || !nextPageCursor || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
+        if (entry?.isIntersecting && !isLoadRequestInFlight.current) {
+          isLoadRequestInFlight.current = true;
           setIsLoadingMore(true);
           const params = new URLSearchParams(searchParams.toString());
           params.set("cursor", nextPageCursor);
@@ -179,7 +205,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
               setSavedIds((current) => [...new Set([...current, ...result.data.savedListingIds])]);
               setNextPageCursor(result.data.nextCursor);
             })
-            .finally(() => setIsLoadingMore(false));
+            .finally(() => {
+              isLoadRequestInFlight.current = false;
+              setIsLoadingMore(false);
+            });
         }
       },
       { rootMargin: "300px 0px" },
