@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { MobileDrawer, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -190,10 +190,18 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    const isMobileDrawerOpen = isDashboardMenuOpen && Boolean(userEmail) && window.matchMedia("(max-width: 767.98px)").matches;
-    document.body.classList.toggle("has-mobile-dashboard-drawer", isMobileDrawerOpen);
-    window.dispatchEvent(new CustomEvent(mobileDrawerEvents.dashboardState, { detail: isMobileDrawerOpen }));
-    return () => document.body.classList.remove("has-mobile-dashboard-drawer");
+    const isMobileMenuOpen = isDashboardMenuOpen && window.matchMedia("(max-width: 767.98px)").matches;
+    const isDashboardDrawerOpen = isMobileMenuOpen && Boolean(userEmail);
+    const isGuestMenuOpen = isMobileMenuOpen && !userEmail;
+
+    document.body.classList.toggle("has-mobile-dashboard-drawer", isDashboardDrawerOpen);
+    document.body.classList.toggle("has-open-mobile-drawer", isGuestMenuOpen);
+    window.dispatchEvent(new CustomEvent(mobileDrawerEvents.dashboardState, { detail: isDashboardDrawerOpen }));
+
+    return () => {
+      document.body.classList.remove("has-mobile-dashboard-drawer");
+      document.body.classList.remove("has-open-mobile-drawer");
+    };
   }, [isDashboardMenuOpen, userEmail]);
 
   if (authlessRoutes.has(pathname)) {
@@ -250,7 +258,7 @@ export function Navbar() {
   const openMobileCategories = () => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
-    if (!isMarket) {
+    if (pathname !== "/market") {
       router.push("/market?filters=open");
       return;
     }
@@ -361,11 +369,14 @@ export function Navbar() {
           </>
         )}
         {isAuthReady && !userEmail && (
-          <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
-            <p>Account</p>
-            <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-right-to-bracket" aria-hidden="true" /> Log in</Link>
-            <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> Sign up</Link>
-          </nav>
+          <>
+            <MobileDrawerBackdrop open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close account menu" className="mobile-auth-backdrop" />
+            <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
+              <p>Account</p>
+              <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-right-to-bracket" aria-hidden="true" /> Log in</Link>
+              <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> Sign up</Link>
+            </nav>
+          </>
         )}
 
       </div>

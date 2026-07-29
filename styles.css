@@ -4509,6 +4509,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     z-index: 123;
   }
 
+  .mobile-auth-backdrop {
+    z-index: 121;
+  }
+
+  .mobile-auth-menu {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top));
+    right: 14px;
+    z-index: 122;
+  }
+
   .floating-filter-button {
     display: none;
   }
