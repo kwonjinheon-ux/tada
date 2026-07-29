@@ -1967,6 +1967,34 @@ a {
   pointer-events: none;
 }
 
+.market-list-load-more.is-loading {
+  min-height: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #58708b;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.market-list-load-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d5e1ef;
+  border-top-color: #2546c7;
+  border-radius: 50%;
+  animation: market-list-load-spin 700ms linear infinite;
+}
+
+@keyframes market-list-load-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-list-load-spinner { animation: none; border-top-color: #7d91aa; }
+}
+
 .listing-detail-page {
   width: 100%;
   max-width: var(--page-max-width);

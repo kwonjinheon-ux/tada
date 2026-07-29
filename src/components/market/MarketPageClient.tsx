@@ -318,7 +318,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
           {listings.map((listing, index) => (
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />
           ))}
-          {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-label={isLoadingMore ? "Loading more listings" : "More listings available"} /> : null}
+          {nextPageCursor ? (
+            <div ref={loadMoreRef} className={`market-list-load-more ${isLoadingMore ? "is-loading" : ""}`} role="status" aria-live="polite">
+              {isLoadingMore && <><span className="market-list-load-spinner" aria-hidden="true" /><span>새 콘텐츠를 불러오는 중...</span></>}
+            </div>
+          ) : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
         <div className="market-mobile-bottom-spacer" aria-hidden="true" />
 
