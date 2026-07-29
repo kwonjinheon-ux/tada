@@ -9,7 +9,7 @@ export function ModerationQueue() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   useEffect(() => {
-    void fetch("/api/market/admin/reports")
+    void fetch("/api/admin/reports")
       .then(async (response) => {
         const payload = await response.json().catch(() => null) as { data?: { reports?: Report[] }; error?: { message?: string } } | null;
         if (!response.ok) throw new Error(payload?.error?.message ?? "Unable to load reports.");
@@ -22,7 +22,7 @@ export function ModerationQueue() {
     setBusyId(report.id);
     setError(null);
     try {
-      const response = await fetch(`/api/market/admin/reports/${report.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, action, suspensionHours: action === "suspension" ? 24 : undefined }) });
+      const response = await fetch(`/api/admin/reports/${report.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, action, suspensionHours: action === "suspension" ? 24 : undefined }) });
       const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
       if (!response.ok) throw new Error(payload?.error?.message ?? "Unable to update report.");
       setReports((current) => current.filter((item) => item.id !== report.id));
