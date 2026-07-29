@@ -137,6 +137,25 @@ export function Navbar() {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) return;
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel("tada-member-presence", { config: { presence: { key: userId } } })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          void channel.track({ userId });
+        }
+      });
+
+    return () => {
+      void channel.untrack().catch(() => undefined);
+      void supabase.removeChannel(channel).catch(() => undefined);
+    };
+  }, [userId]);
+
+  useEffect(() => {
     document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
     return () => {
       document.body.classList.remove("post-ad-screen");

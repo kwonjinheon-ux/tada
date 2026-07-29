@@ -9,6 +9,7 @@ import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/comp
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { readApiResponse } from "@/lib/api/client";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 export type ListingDetail = {
   id: string;
@@ -66,6 +67,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteAnimating, setIsDeleteAnimating] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isSellerOnline, setIsSellerOnline] = useState(false);
   const burstTimer = useRef<number | null>(null);
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
@@ -107,6 +109,34 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   useEffect(() => {
     router.prefetch("/market/dashboard/messages");
   }, [router]);
+
+  useEffect(() => {
+    const sellerId = listing.seller.id;
+    if (!sellerId) {
+      setIsSellerOnline(false);
+      return;
+    }
+
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+    const channel = supabase.channel("tada-member-presence");
+    const syncPresence = () => {
+      const presenceState = channel.presenceState<{ userId?: string }>();
+      setIsSellerOnline(Object.values(presenceState).some((presences) => presences.some((presence) => presence.userId === sellerId)));
+    };
+
+    channel
+      .on("presence", { event: "sync" }, syncPresence)
+      .on("presence", { event: "join" }, syncPresence)
+      .on("presence", { event: "leave" }, syncPresence)
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") syncPresence();
+      });
+
+    return () => {
+      void supabase.removeChannel(channel).catch(() => undefined);
+    };
+  }, [listing.seller.id]);
 
   useEffect(() => {
     void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST", cache: "no-store" })
@@ -371,12 +401,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile">{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>로컬 멤버</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+        <div className="listing-detail-mobile-seller-profile"><span className="listing-detail-mobile-seller-avatar-wrap">{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}<span className={`listing-detail-mobile-seller-presence ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"} /></span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>로컬 멤버</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
       </section>
 
       <ListingComments listingId={listing.id} />
-
-      <Link className="listing-detail-mobile-safety listing-detail-mobile-only" href="/market"><i className="fa-solid fa-shield-heart" aria-hidden="true" /><span><strong>Safe trading tips</strong><small>Meet in a public place and check the item before buying.</small></span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>
 
       <div className="listing-detail-mobile-actions listing-detail-mobile-only">{isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon">Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Edit listing" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button><button className="listing-detail-mobile-action-icon listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button></> : <><button type="button" className="listing-detail-message" onClick={openOfferDialog}>Make an offer</button><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></>}</div>
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
