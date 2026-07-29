@@ -4862,6 +4862,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
   .mobile-bottom-dock button:focus-visible {
+    background: transparent;
+  }
+
+  .mobile-bottom-dock a:hover:not(.mobile-dock-create) > svg,
+  .mobile-bottom-dock a:hover:not(.mobile-dock-create) > i,
+  .mobile-bottom-dock button:hover > i,
+  .mobile-bottom-dock button:focus-visible > i {
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 9px;
+    border-radius: 50%;
     background: #f0f5fb;
   }
 
