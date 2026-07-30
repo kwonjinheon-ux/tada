@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type AppIconName = "home" | "message" | "create" | "categories" | "profile" | "offer" | "share" | "heart" | "edit" | "delete";
+export type AppIconName = "home" | "message" | "create" | "categories" | "profile" | "offer" | "share" | "check" | "heart" | "edit" | "delete";
 
 const iconClasses: Partial<Record<AppIconName, string>> = {
   message: "fa-regular fa-comment",
@@ -9,6 +9,7 @@ const iconClasses: Partial<Record<AppIconName, string>> = {
   profile: "fa-regular fa-circle-user",
   offer: "fa-solid fa-tag",
   share: "fa-solid fa-arrow-up-from-bracket",
+  check: "fa-solid fa-check",
   heart: "fa-regular fa-heart",
   edit: "fa-solid fa-pen-to-square",
   delete: "fa-regular fa-trash-can",

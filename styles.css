@@ -128,7 +128,9 @@ a {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid rgba(187, 202, 191, 0.72);
-  background: #f8f9ff;
+  background: linear-gradient(180deg, rgb(248 249 255 / .46) 0%, rgb(255 255 255 / .72) 100%);
+  -webkit-backdrop-filter: blur(32px) saturate(165%);
+  backdrop-filter: blur(32px) saturate(165%);
 }
 
 .site-nav {
@@ -2269,6 +2271,10 @@ body.listing-gallery-open { overflow: hidden; }
   margin-top: 12px;
 }
 
+.listing-detail-page.is-sold .listing-detail-gallery img {
+  filter: grayscale(1);
+}
+
 .listing-safety-actions {
   margin-top: 12px;
   padding-top: 12px;
@@ -4247,7 +4253,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-header {
     border-bottom: 0;
-    background: #f8f9ff;
+    background: linear-gradient(180deg, rgb(248 249 255 / .46) 0%, rgb(255 255 255 / .72) 100%);
+    -webkit-backdrop-filter: blur(32px) saturate(165%);
+    backdrop-filter: blur(32px) saturate(165%);
   }
 
   .site-nav {
@@ -4309,6 +4317,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .nav-menu-button.is-open {
     background: var(--primary-dark);
     color: #fff;
+    box-shadow: none;
   }
 
   .nav-menu-button span {
@@ -4959,7 +4968,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     background: #08a66f;
     color: #fff;
     font-size: 17px;
-    box-shadow: 0 5px 12px rgba(0, 132, 90, .34);
+    box-shadow: none;
   }
 
   .mobile-bottom-dock .mobile-dock-action-label {
@@ -4973,6 +4982,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: 10px;
     font-weight: 800;
     line-height: 1;
+    box-shadow: none;
+  }
+
+  .mobile-bottom-dock .mobile-dock-create i,
+  .mobile-bottom-dock .mobile-dock-offer i {
     box-shadow: 0 5px 12px rgba(0, 132, 90, .34);
   }
 
@@ -4985,6 +4999,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock .mobile-dock-offer { color: #00845a; }
   .mobile-bottom-dock .mobile-dock-save { position: relative; overflow: visible; isolation: isolate; }
   .mobile-bottom-dock .mobile-dock-save.is-saved { color: #e94683; }
+  .mobile-bottom-dock .mobile-dock-save.is-saved > i { color: #e94683; }
+  .mobile-bottom-dock .mobile-dock-save .save-heart-particles { inset: -36px; z-index: 3; }
+  .mobile-bottom-dock .mobile-dock-save .save-heart-particle { z-index: 4; filter: drop-shadow(0 3px 5px rgb(116 26 57 / .3)); }
 
   @media (prefers-reduced-motion: reduce) {
     .mobile-bottom-dock,
@@ -6572,7 +6589,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller { display: block; margin: 18px 20px 0; padding: 14px 0; border-top: 1px solid rgba(225, 231, 235, .16); border-bottom: 1px solid #e1e7eb; border-radius: 0; background: transparent; }
   .listing-detail-mobile-seller-profile { display: flex; align-items: center; gap: 10px; }
   .listing-detail-mobile-seller-avatar-wrap { display: grid; width: 56px; height: 56px; flex: 0 0 auto; padding: 2px; border-radius: 50%; background: #e3e8ee; }
-  .listing-detail-mobile-seller-avatar-wrap.is-online { background: #18b879; }
+  .listing-detail-mobile-seller-avatar-wrap.is-online { padding: 3px; background: #18b879; animation: seller-online-ring-pulse 2.1s ease-in-out infinite; }
   .listing-detail-mobile-seller-avatar { width: 52px; height: 52px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid #e3e8ee; border-radius: 50%; background: #dff8ef; color: #00845c; font-size: 19px; font-weight: 800; }
   img.listing-detail-mobile-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-avatar-wrap .listing-detail-mobile-seller-avatar { width: 100%; height: 100%; border: 0; }
@@ -6774,6 +6791,15 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .messages-thread-counterpart { flex-basis: 145px; }
   .messages-thread-body { padding-inline: 24px; }
   .messages-composer { padding-inline: 24px; }
+}
+
+@keyframes seller-online-ring-pulse {
+  0%, 100% { background: #119765; box-shadow: 0 0 0 0 rgb(24 184 121 / 0); }
+  50% { background: #25c98b; box-shadow: 0 0 0 4px rgb(24 184 121 / .18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-detail-mobile-seller-avatar-wrap.is-online { animation: none; }
 }
 
 @media (max-width: 767.98px) {

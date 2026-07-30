@@ -45,13 +45,28 @@ export function Navbar() {
   const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
   const [dockHeartParticles, setDockHeartParticles] = useState<HeartParticle[]>([]);
   const [isDockHeartPopping, setIsDockHeartPopping] = useState(false);
+  const [isListingShareCopied, setIsListingShareCopied] = useState(false);
   const dockHeartTimer = useRef<number | null>(null);
+  const shareCopiedTimer = useRef<number | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get("q") ?? "";
     setSearchQuery(query);
   }, [pathname]);
+
+  useEffect(() => {
+    const showCopiedState = () => {
+      setIsListingShareCopied(true);
+      if (shareCopiedTimer.current) window.clearTimeout(shareCopiedTimer.current);
+      shareCopiedTimer.current = window.setTimeout(() => setIsListingShareCopied(false), 2_000);
+    };
+    window.addEventListener("listing-share-copied", showCopiedState);
+    return () => {
+      window.removeEventListener("listing-share-copied", showCopiedState);
+      if (shareCopiedTimer.current) window.clearTimeout(shareCopiedTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -343,7 +358,7 @@ export function Navbar() {
     listingDockConfig.isOwner
       ? { id: "edit", label: "Edit listing", icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
       : { id: "offer", label: "Make an offer", icon: "offer", actionLabel: "Offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
-    { id: "share", label: "Share listing", icon: "share", onClick: () => triggerListingDockAction("share") },
+    { id: "share", label: isListingShareCopied ? "Listing link copied" : "Copy listing link", icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
     listingDockConfig.isOwner
       ? { id: "delete", label: "Delete listing", icon: "delete", onClick: () => triggerListingDockAction("delete") }
       : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },

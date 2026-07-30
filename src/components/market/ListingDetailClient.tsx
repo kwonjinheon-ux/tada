@@ -174,30 +174,25 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   };
 
   const shareListing = async () => {
-    const shareData = { title: listing.title, text: `${listing.title}\nPrice: ${listing.price}`, url: window.location.href };
-    const primaryImage = listing.images[0]?.src;
-
-    if (navigator.share) {
-      if (primaryImage) {
-        try {
-          const imageResponse = await fetch(primaryImage);
-          if (imageResponse.ok) {
-            const image = await imageResponse.blob();
-            const imageFile = new File([image], "tada-listing-image", { type: image.type || "image/jpeg" });
-            const shareDataWithImage = { ...shareData, files: [imageFile] };
-            if (navigator.canShare?.(shareDataWithImage)) {
-              await navigator.share(shareDataWithImage);
-              return;
-            }
-          }
-        } catch {
-          // Fall through to text and link sharing when the image cannot be attached.
-        }
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+      } else {
+        const copyTarget = document.createElement("textarea");
+        copyTarget.value = window.location.href;
+        copyTarget.setAttribute("readonly", "");
+        copyTarget.style.position = "fixed";
+        copyTarget.style.opacity = "0";
+        document.body.append(copyTarget);
+        copyTarget.select();
+        const copied = document.execCommand("copy");
+        copyTarget.remove();
+        if (!copied) throw new Error("Copy command was unavailable");
       }
-      await navigator.share(shareData);
-      return;
+      window.dispatchEvent(new Event("listing-share-copied"));
+    } catch {
+      setMessageError("Unable to copy this listing link. Please try again.");
     }
-    await navigator.clipboard?.writeText(`${shareData.text}\n${shareData.url}`);
   };
 
   const openConversation = async () => {
@@ -234,6 +229,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   };
 
   const openOfferDialog = () => {
+    if (listing.status === "sold") {
+      setMessageError("This listing has already been sold.");
+      return;
+    }
     setOfferError(null);
     setOfferAmount((listing.priceCents / 100).toString());
     setOfferNote("");
@@ -242,6 +241,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
   const submitOffer = async () => {
     if (isSubmittingOffer) return;
+    if (listing.status === "sold") {
+      setOfferError("This listing has already been sold.");
+      return;
+    }
     const amount = Number(offerAmount);
     const amountCents = Math.round(amount * 100);
     if (!Number.isFinite(amount) || amount < 0 || amountCents < 0) {
@@ -340,7 +343,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   }, [isOwner, isSaved]);
 
   return (
-    <main className="listing-detail-page">
+    <main className={`listing-detail-page ${listing.status === "sold" ? "is-sold" : ""}`}>
       <Link className="listing-detail-back" href="/market">
         <i className="fa-solid fa-arrow-left" aria-hidden="true" />
         Back to listings

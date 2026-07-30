@@ -49,6 +49,9 @@ export async function POST(request: Request) {
   const listingRow = listing as ListingRow | null;
   if (listingError || !listingRow) return NextResponse.json({ error: "This listing is not available for offers." }, { status: 404 });
   if (listingRow.owner_id === user.id) return NextResponse.json({ error: "You cannot make an offer on your own listing." }, { status: 400 });
+  if (listingRow.status === "sold") {
+    return NextResponse.json({ error: "This listing has already been sold." }, { status: 409 });
+  }
   if (!["published", "pending"].includes(listingRow.status)) {
     return NextResponse.json({ error: "This listing is not accepting offers right now." }, { status: 409 });
   }
