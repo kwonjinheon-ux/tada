@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
-import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -342,11 +342,11 @@ export function Navbar() {
     { id: "message", label: "Message seller", icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
       ? { id: "edit", label: "Edit listing", icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
-      : { id: "offer", label: "Make an offer", icon: "offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
+      : { id: "offer", label: "Make an offer", icon: "offer", actionLabel: "Offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
     { id: "share", label: "Share listing", icon: "share", onClick: () => triggerListingDockAction("share") },
     listingDockConfig.isOwner
       ? { id: "delete", label: "Delete listing", icon: "delete", onClick: () => triggerListingDockAction("delete") }
-      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: isDockHeartPopping ? "is-popping" : "", onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
+      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
 
   function openMobileCategories() {
@@ -476,7 +476,7 @@ export function Navbar() {
 
       </div>
       </header>
-      <MobileDock items={listingDockItems ?? standardDockItems} />
+      {!isMessagesPage ? <MobileDock items={listingDockItems ?? standardDockItems} /> : null}
     </>
   );
 }

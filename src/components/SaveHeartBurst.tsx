@@ -11,6 +11,11 @@ export type HeartParticle = {
   color: string;
 };
 
+export const saveFeedbackClasses = {
+  root: "save-feedback",
+  popping: "is-popping",
+} as const;
+
 const heartColors = ["#ff3b6b", "#ff5d8f", "#ff8a5b", "#ffbd4a", "#e94683"];
 
 export function createHeartParticles() {

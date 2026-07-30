@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
-import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { readApiResponse } from "@/lib/api/client";
@@ -174,12 +174,30 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   };
 
   const shareListing = async () => {
-    const shareData = { title: listing.title, text: `${listing.title} - ${listing.price}`, url: window.location.href };
+    const shareData = { title: listing.title, text: `${listing.title}\nPrice: ${listing.price}`, url: window.location.href };
+    const primaryImage = listing.images[0]?.src;
+
     if (navigator.share) {
+      if (primaryImage) {
+        try {
+          const imageResponse = await fetch(primaryImage);
+          if (imageResponse.ok) {
+            const image = await imageResponse.blob();
+            const imageFile = new File([image], "tada-listing-image", { type: image.type || "image/jpeg" });
+            const shareDataWithImage = { ...shareData, files: [imageFile] };
+            if (navigator.canShare?.(shareDataWithImage)) {
+              await navigator.share(shareDataWithImage);
+              return;
+            }
+          }
+        } catch {
+          // Fall through to text and link sharing when the image cannot be attached.
+        }
+      }
       await navigator.share(shareData);
       return;
     }
-    await navigator.clipboard?.writeText(window.location.href);
+    await navigator.clipboard?.writeText(`${shareData.text}\n${shareData.url}`);
   };
 
   const openConversation = async () => {
@@ -357,6 +375,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               ))}
             </div>
           ) : null}
+          {!isOwner ? <div className="listing-detail-gallery-safety"><ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /></div> : null}
         </section>
 
         <aside className="listing-detail-summary">
@@ -365,7 +384,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               <div className="listing-detail-status-row"><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : <button className={`listing-detail-save save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>}
+            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? "is-saved" : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>}
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
@@ -386,7 +405,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               {listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}
               <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
             </div>
-            {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
           </section>
         </aside>
       </div>

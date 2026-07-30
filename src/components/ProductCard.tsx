@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { memo, useEffect, useRef, useState } from "react";
 import { marketWishlistResponseSchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
-import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { readApiResponse } from "@/lib/api/client";
 
 type ProductCardProps = {
@@ -116,7 +116,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         </p>
       </div>
       <button
-        className={`save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`}
+        className={`save-button ${saveFeedbackClasses.root} ${isSaved ? "is-saved" : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
         aria-label={`Save ${listing.title}`}
         aria-pressed={isSaved}

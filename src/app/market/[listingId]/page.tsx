@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -101,6 +102,32 @@ async function getListingDetail(
       avatarUrl: signedAvatar,
       ratingAverage: Number(seller?.rating_average ?? 0),
       ratingCount: seller?.rating_count ?? 0,
+    },
+  };
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ listingId: string }> }): Promise<Metadata> {
+  const { listingId } = await params;
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return {};
+  const listing = await getListingDetail(listingId, supabase);
+  if (!listing) return {};
+
+  const description = `${listing.price} · ${listing.location}`;
+  const primaryImage = listing.images[0];
+  return {
+    title: listing.title,
+    description,
+    openGraph: {
+      title: listing.title,
+      description,
+      images: primaryImage ? [{ url: primaryImage.src, alt: primaryImage.alt }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: listing.title,
+      description,
+      images: primaryImage ? [primaryImage.src] : [],
     },
   };
 }
