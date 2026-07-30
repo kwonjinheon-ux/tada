@@ -22,7 +22,7 @@ const dashboardMenuItems = [
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
-    __tadaListingDockConfig?: { isOwner: boolean };
+    __tadaListingDockConfig?: { isOwner: boolean; isSaved: boolean };
   }
 }
 
@@ -40,7 +40,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean } | null>(null);
+  const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -437,10 +437,10 @@ export function Navbar() {
       <nav className="mobile-bottom-dock" aria-label="Primary navigation">
         {isListingDetail && listingDockConfig ? <>
           <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
-          <Link href={`${dashboardBase}/messages`} aria-label={t("messages")}><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
+          <button type="button" aria-label="Message seller" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "message" }))}><i className="fa-regular fa-comment" aria-hidden="true" /></button>
           {listingDockConfig.isOwner ? <button className="mobile-dock-offer" type="button" aria-label="Edit listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "edit" }))}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button> : <button className="mobile-dock-offer" type="button" aria-label="Make an offer" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "offer" }))}><i className="fa-solid fa-hand-holding-dollar" aria-hidden="true" /></button>}
           <button type="button" aria-label="Share listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "share" }))}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
-          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "delete" }))}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button type="button" aria-label="Save listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "save" }))}><i className="fa-regular fa-heart" aria-hidden="true" /></button>}
+          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "delete" }))}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button className={listingDockConfig.isSaved ? "is-active" : ""} type="button" aria-label={listingDockConfig.isSaved ? "Remove saved listing" : "Save listing"} aria-pressed={listingDockConfig.isSaved} onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "save" }))}><i className={`${listingDockConfig.isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /></button>}
         </> : <>
           <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
           <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>

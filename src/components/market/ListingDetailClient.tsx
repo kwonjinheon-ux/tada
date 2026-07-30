@@ -296,15 +296,16 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     }
   };
 
-  const listingDockActionsRef = useRef({ openOfferDialog, shareListing, saveListing, editListing });
-  listingDockActionsRef.current = { openOfferDialog, shareListing, saveListing, editListing };
+  const listingDockActionsRef = useRef({ openOfferDialog, openConversation, shareListing, saveListing, editListing });
+  listingDockActionsRef.current = { openOfferDialog, openConversation, shareListing, saveListing, editListing };
 
   useEffect(() => {
-    window.__tadaListingDockConfig = { isOwner };
+    window.__tadaListingDockConfig = { isOwner, isSaved };
     window.dispatchEvent(new Event("listing-mobile-dock-config"));
     const handleDockAction = (event: Event) => {
       switch ((event as CustomEvent<string>).detail) {
         case "offer": listingDockActionsRef.current.openOfferDialog(); break;
+        case "message": void listingDockActionsRef.current.openConversation(); break;
         case "share": void listingDockActionsRef.current.shareListing(); break;
         case "save": void listingDockActionsRef.current.saveListing(); break;
         case "edit": listingDockActionsRef.current.editListing(); break;
@@ -318,7 +319,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       window.dispatchEvent(new Event("listing-mobile-dock-config"));
       window.removeEventListener("listing-mobile-dock-action", handleDockAction);
     };
-  }, [isOwner]);
+  }, [isOwner, isSaved]);
 
   return (
     <main className="listing-detail-page">

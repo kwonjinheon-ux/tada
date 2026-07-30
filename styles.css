@@ -4887,6 +4887,19 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     background: rgba(84, 109, 141, .12);
   }
 
+  .mobile-bottom-dock a:active:not(.mobile-dock-create) > svg,
+  .mobile-bottom-dock a:active:not(.mobile-dock-create) > i,
+  .mobile-bottom-dock button:active > i {
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background: rgba(46, 100, 208, .13);
+  }
+
   .mobile-bottom-dock a:focus-visible,
   .mobile-bottom-dock button:focus-visible {
     outline: 3px solid rgba(37, 70, 199, .34);
