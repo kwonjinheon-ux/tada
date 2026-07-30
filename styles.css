@@ -4801,21 +4801,25 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock {
     position: fixed !important;
-    inset: auto 0 auto;
-    bottom: var(--mobile-viewport-bottom-inset, 0px);
+    right: 16px;
+    bottom: calc(12px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+    left: 16px;
     z-index: 1000;
-    width: 100%;
-    height: calc(76px + env(safe-area-inset-bottom));
-    min-height: 76px;
+    width: auto;
+    max-width: 520px;
+    height: 64px;
+    min-height: 64px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
-    padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
-    border-top: 1px solid rgba(206, 216, 225, .86);
-    background: rgba(255, 255, 255, .9);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
-    box-shadow: 0 -10px 30px rgba(26, 47, 70, .09), 0 -1px 0 rgba(255, 255, 255, .8);
+    margin: 0 auto;
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 999px;
+    background: rgba(22, 34, 48, .76);
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: blur(26px) saturate(150%);
+    box-shadow: 0 14px 32px rgba(13, 23, 34, .25), inset 0 1px 0 rgba(255, 255, 255, .15);
     transition: transform 260ms cubic-bezier(.22, .61, .36, 1), opacity 180ms ease;
     will-change: transform;
   }
@@ -4823,7 +4827,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
     width: 100%;
-    min-height: 58px;
+    min-height: 52px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -4831,11 +4835,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     gap: 4px;
     justify-self: center;
     border: 0;
-    border-radius: 12px;
+    border-radius: 50%;
     background: transparent;
-    color: #607489;
+    color: rgba(255, 255, 255, .88);
     font: inherit;
-    font-size: 19px;
+    font-size: 20px;
     text-decoration: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -4873,13 +4877,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock button:hover > i,
   .mobile-bottom-dock button:focus-visible > i {
     box-sizing: border-box;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
-    padding: 9px;
+    padding: 10px;
     border-radius: 50%;
-    background: #f0f5fb;
+    background: rgba(255, 255, 255, .14);
   }
 
   .mobile-bottom-dock a:focus-visible,
@@ -4892,7 +4896,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock button.is-active {
     width: 100%;
     background: transparent;
-    color: #2546c7;
+    color: #fff;
     box-shadow: none;
   }
 
@@ -4903,43 +4907,43 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a.is-active:not(.mobile-dock-create) > i,
   .mobile-bottom-dock button.is-active > i {
     box-sizing: border-box;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
-    padding: 9px;
+    padding: 10px;
     border-radius: 50%;
-    background: #eaf0ff;
+    background: rgba(255, 255, 255, .2);
   }
 
   .mobile-bottom-dock .mobile-dock-create {
     width: 100%;
-    min-height: 58px;
-    color: #00845a;
+    min-height: 52px;
+    color: #fff;
     font-size: 18px;
   }
 
   .mobile-bottom-dock .mobile-dock-create:hover,
   .mobile-bottom-dock .mobile-dock-create:focus-visible {
-    background: #e7f8f1;
-    color: #007452;
+    background: transparent;
+    color: #fff;
   }
 
   .mobile-bottom-dock .mobile-dock-create i {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: #00845a;
+    background: #08a66f;
     color: #fff;
-    font-size: 14px;
-    box-shadow: none;
+    font-size: 17px;
+    box-shadow: 0 5px 12px rgba(0, 132, 90, .34);
   }
 
   .mobile-bottom-dock .mobile-dock-create.is-active {
     background: transparent;
-    color: #007452;
+    color: #fff;
     box-shadow: none;
   }
 
