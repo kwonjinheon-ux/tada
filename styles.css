@@ -29,7 +29,7 @@
   --section-gap: 32px;
   --content-gap: 16px;
   --font-size-mobile-control: 16px;
-  --desktop-header-height: 54px;
+  --desktop-header-height: 68px;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -129,9 +129,7 @@ a {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid rgba(187, 202, 191, 0.72);
-  background: linear-gradient(180deg, rgb(248 249 255 / .46) 0%, rgb(255 255 255 / .72) 100%);
-  -webkit-backdrop-filter: blur(32px) saturate(165%);
-  backdrop-filter: blur(32px) saturate(165%);
+  background: #fff;
 }
 
 .site-nav {
@@ -1497,13 +1495,13 @@ a {
   }
 }
 
-/* Keep the desktop navigation compact and invariant between guest and signed-in states. */
+/* Keep the desktop navigation invariant between guest and signed-in states. */
 @media (min-width: 1024px) {
   .site-nav {
     height: var(--desktop-header-height);
     min-height: var(--desktop-header-height);
     grid-auto-rows: 48px;
-    padding-block: 3px;
+    padding-block: 10px;
   }
 
   .market-filter-panel,
@@ -2308,10 +2306,6 @@ body.listing-gallery-open { overflow: hidden; }
   height: 100dvh;
 }
 
-.listing-detail-gallery-safety {
-  margin-top: 12px;
-}
-
 .listing-detail-page.is-sold .listing-detail-gallery img {
   filter: grayscale(1);
 }
@@ -2464,6 +2458,7 @@ body.listing-gallery-open { overflow: hidden; }
   background: #eaf1ff;
   color: #263446;
   font-size: 18px;
+  box-shadow: none;
 }
 
 .listing-detail-save.is-saved {
@@ -2565,8 +2560,8 @@ body.listing-gallery-open { overflow: hidden; }
 
 .listing-detail-seller-avatar-wrap {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 56px;
+  height: 56px;
   flex: 0 0 auto;
   padding: 2px;
   border-radius: 50%;
@@ -2632,6 +2627,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .listing-detail-seller-profile-link:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+.listing-detail-seller-card .listing-safety-actions {
+  justify-content: center;
+  text-align: center;
+}
+
+.listing-detail-seller-card .listing-safety-buttons {
+  width: 100%;
+  justify-content: center;
+}
 
 .listing-detail-description {
   width: min(100%, 760px);
@@ -4336,9 +4341,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-header {
     border-bottom: 0;
-    background: linear-gradient(180deg, rgb(248 249 255 / .46) 0%, rgb(255 255 255 / .72) 100%);
-    -webkit-backdrop-filter: blur(32px) saturate(165%);
-    backdrop-filter: blur(32px) saturate(165%);
+    background: #fff;
   }
 
   .site-nav {
@@ -4439,11 +4442,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-menu-backdrop {
-    position: absolute;
-    top: -3px;
-    left: -9px;
-    width: 100vw;
-    height: 100dvh;
+    position: fixed;
+    inset: 0;
     z-index: 29;
     display: block;
     border: 0;
@@ -6489,6 +6489,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   color: #087b5e;
   font-size: 11px;
   font-weight: 700;
+}
+
+.listing-detail-back-category {
+  padding-left: 8px;
+  border-left: 1px solid #cbd8d7;
+  color: #617184;
+  font-weight: 600;
 }
 
 .notification-listing-title i {

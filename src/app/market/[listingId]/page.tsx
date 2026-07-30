@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
+import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 
@@ -13,6 +14,8 @@ type MarketListingRow = {
   title: string;
   description: string;
   price_cents: number;
+  category_slug: string | null;
+  subcategory_slug: string | null;
   region_city: string | null;
   region_suburb: string | null;
   item_condition: "brand_new" | "like_new" | "good" | "fair";
@@ -41,13 +44,19 @@ function formatDate(date: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(date));
 }
 
+function formatCategory(categorySlug: string | null, subcategorySlug: string | null) {
+  const category = marketplaceCategories.find(({ value }) => value === categorySlug);
+  const subcategory = category?.subcategories.find(({ value }) => value === subcategorySlug);
+  return [category?.label, subcategory?.label].filter(Boolean).join(" / ") || "Marketplace";
+}
+
 async function getListingDetail(
   id: string,
   supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
 ): Promise<ListingDetail | null> {
   const { data, error } = await supabase
     .from("market_listings")
-    .select("id,owner_id,title,description,price_cents,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at,view_count")
+    .select("id,owner_id,title,description,price_cents,category_slug,subcategory_slug,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at,view_count")
     .eq("id", id)
     .maybeSingle();
 
@@ -87,6 +96,7 @@ async function getListingDetail(
     title: listing.title,
     price: formatPrice(listing.price_cents),
     priceCents: listing.price_cents,
+    category: formatCategory(listing.category_slug, listing.subcategory_slug),
     location: formatLocation(listing.region_city, listing.region_suburb),
     description: listing.description,
     condition: conditionLabels[listing.item_condition],

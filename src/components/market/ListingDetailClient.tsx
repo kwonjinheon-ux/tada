@@ -17,6 +17,7 @@ export type ListingDetail = {
   title: string;
   price: string;
   priceCents: number;
+  category: string;
   location: string;
   description: string;
   condition: string;
@@ -348,6 +349,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <Link className="listing-detail-back" href="/market">
         <i className="fa-solid fa-arrow-left" aria-hidden="true" />
         Back to listings
+        <span className="listing-detail-back-category">{listing.category}</span>
       </Link>
 
       <div className="listing-detail-layout">
@@ -379,7 +381,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               ))}
             </div>
           ) : null}
-          {!isOwner ? <div className="listing-detail-gallery-safety"><ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /></div> : null}
         </section>
 
         <aside className="listing-detail-summary">
