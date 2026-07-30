@@ -4,6 +4,7 @@ import { MarketMessagesClient, type ConversationSummary, type MarketMessage, typ
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { formatMarketPrice } from "@/lib/market/format-price";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,10 +16,6 @@ type PhotoRow = { listing_id: string; storage_path: string | null; display_order
 type ProfileRow = { id: string; display_name: string | null; avatar_path: string | null };
 type MessageRow = { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
 type OfferRow = { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
-
-function formatPrice(priceCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
-}
 
 export default async function MarketMessagesPage({ searchParams }: { searchParams: Promise<{ conversation?: string }> }) {
   const { conversation: requestedConversationId } = await searchParams;
@@ -77,7 +74,7 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     const photoPath = primaryPhotos.get(conversation.listing_id);
     return {
       id: conversation.id,
-      listing: { id: conversation.listing_id, title: listing?.title ?? "Marketplace listing", price: listing ? formatPrice(listing.price_cents) : "", imageUrl: photoPath ? signedPhotoUrls.get(photoPath) ?? null : null },
+      listing: { id: conversation.listing_id, title: listing?.title ?? "Marketplace listing", price: listing ? formatMarketPrice(listing.price_cents) : "", imageUrl: photoPath ? signedPhotoUrls.get(photoPath) ?? null : null },
       counterpart: { id: counterpartId, name: counterpart?.display_name || "Tada member", avatarUrl: counterpart?.avatar_path ? avatarUrls.get(counterpart.avatar_path) ?? null : null },
       lastMessagePreview: conversation.last_message_preview,
       lastMessageAt: conversation.last_message_at,

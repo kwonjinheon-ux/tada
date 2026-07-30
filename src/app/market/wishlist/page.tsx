@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { WishlistClient, type WishlistItem } from "@/components/market/WishlistClient";
+import { formatMarketPrice } from "@/lib/market/format-price";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
@@ -12,10 +13,6 @@ type SavedRow = { listing_id: string; created_at: string };
 type ViewedRow = { listing_id: string; last_viewed_at: string };
 type ListingRow = { id: string; title: string; price_cents: number; category_slug: string | null; status: "published" | "pending" | "sold" | "archived"; };
 type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
-
-function formatPrice(priceCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
-}
 
 function categoryLabel(slug: string | null) {
   if (!slug) return "Marketplace";
@@ -47,7 +44,7 @@ export default async function MarketWishlistPage() {
   const toItem = (listingId: string): WishlistItem | null => {
     const listing = byId.get(listingId);
     if (!listing) return null;
-    return { id: listing.id, title: listing.title, price: formatPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? "/images/logo.png" };
+    return { id: listing.id, title: listing.title, price: formatMarketPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? "/images/logo.png" };
   };
   const wishlist = saved.map((row) => toItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
   const recent = viewed.filter((row) => !saved.some((savedRow) => savedRow.listing_id === row.listing_id)).map((row) => toItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));

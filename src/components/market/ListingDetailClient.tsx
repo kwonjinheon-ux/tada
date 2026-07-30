@@ -17,7 +17,8 @@ export type ListingDetail = {
   title: string;
   price: string;
   priceCents: number;
-  category: string;
+  category: { label: string; href: string; subcategory: { label: string; href: string } | null } | null;
+  subcategorySlug: string | null;
   location: string;
   description: string;
   condition: string;
@@ -346,11 +347,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
   return (
     <main className={`listing-detail-page ${listing.status === "sold" ? "is-sold" : ""}`}>
-      <Link className="listing-detail-back" href="/market">
-        <i className="fa-solid fa-arrow-left" aria-hidden="true" />
-        Back to listings
-        <span className="listing-detail-back-category">{listing.category}</span>
-      </Link>
+      <div className="listing-detail-back-row">
+        <Link className="listing-detail-back" href="/market"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
+        {listing.category ? <nav className="listing-detail-category-path" aria-label="Listing category"><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><span aria-hidden="true">/</span><Link href={listing.category.subcategory.href}>{listing.category.subcategory.label}</Link></> : null}</nav> : null}
+      </div>
 
       <div className="listing-detail-layout">
         <section className="listing-detail-gallery has-mobile-photo-stack" aria-label={`${listing.title} photos`}>
@@ -435,7 +435,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </section>
 
       <section className="listing-detail-description">
-        <h2>About this item</h2>
+        <h2>Description</h2>
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </section>
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">

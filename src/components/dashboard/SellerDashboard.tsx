@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TranslatedText } from "@/components/LanguageProvider";
+import { formatMarketPrice } from "@/lib/market/format-price";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
@@ -15,10 +16,6 @@ const activityIconByType = { message: ["fa-regular fa-message", "is-slate"], off
 
 function formatCount(value: number) {
   return new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatPrice(priceCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
 }
 
 function relativeTime(value: string) {
@@ -109,7 +106,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
 
         <div className="seller-dashboard-columns">
           <section className="seller-active-listings"><header><h2><TranslatedText translationKey={isJobsDashboard ? "activeJobPosts" : "activeListings"} /></h2><Link href="/market/dashboard/listings"><TranslatedText translationKey="viewAll" /></Link></header><div>
-            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatPrice(listing.price_cents)}</strong><p><span><i className="fa-regular fa-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span><TranslatedText translationKey={listing.status === "pending" ? "inTrade" : "active"} /></span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}><TranslatedText translationKey="edit" /></Link><Link href="/market/dashboard/messages"><TranslatedText translationKey={listing.status === "pending" ? "viewTrade" : "manage"} /></Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="fa-solid fa-ellipsis-vertical" /></Link></article>)}
+            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatMarketPrice(listing.price_cents)}</strong><p><span><i className="fa-regular fa-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span><TranslatedText translationKey={listing.status === "pending" ? "inTrade" : "active"} /></span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}><TranslatedText translationKey="edit" /></Link><Link href="/market/dashboard/messages"><TranslatedText translationKey={listing.status === "pending" ? "viewTrade" : "manage"} /></Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="fa-solid fa-ellipsis-vertical" /></Link></article>)}
             <button className="seller-new-listing" type="button"><i className="fa-solid fa-plus" /><span><TranslatedText translationKey={isJobsDashboard ? "postNewJob" : "postNewListing"} /></span><small><TranslatedText translationKey="postListingHint" /></small></button>
           </div></section>
           <aside className="seller-activity"><header><h2><TranslatedText translationKey="activity" /></h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="fa-solid fa-ellipsis" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty"><TranslatedText translationKey="recentActivityEmpty" /></p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications"><TranslatedText translationKey="showAllActivity" /></Link><article className="seller-boost-card"><strong><TranslatedText translationKey="boostSales" /></strong><p><TranslatedText translationKey="boostSalesCopy" /></p><button type="button"><TranslatedText translationKey="tryTadaLens" /></button></article></aside>

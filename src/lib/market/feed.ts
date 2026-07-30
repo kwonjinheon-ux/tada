@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { z } from "zod";
 import { marketFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
+import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 const PAGE_SIZE = 24;
@@ -20,7 +21,6 @@ function decodeCursor(cursor: string | undefined): Cursor | null {
   } catch { return null; }
 }
 function encodeCursor(value: string | number, id: string) { return Buffer.from(JSON.stringify({ value, id })).toString("base64url"); }
-function formatPrice(cents: number) { return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: cents % 100 === 0 ? 0 : 2 }).format(cents / 100); }
 function formatLocation(city: string | null, suburb: string | null) { return [suburb, city].filter(Boolean).join(", ") || "New Zealand"; }
 function safeSearch(value: string) { return value.replace(/[,%()]/g, " ").trim(); }
 
@@ -57,7 +57,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     : [];
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatPrice(row.price_cents), location: formatLocation(row.region_city, row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available" } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.region_city, row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available" } satisfies Listing;
   });
   const last = page.at(-1);
   return { listings, savedListingIds, nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };

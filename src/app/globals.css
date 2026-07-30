@@ -27,7 +27,7 @@
   --section-gap: 32px;
   --content-gap: 16px;
   --font-size-mobile-control: 16px;
-  --desktop-header-height: 68px;
+  --desktop-header-height: 60px;
   --space-page: var(--page-padding-inline);
 }
 

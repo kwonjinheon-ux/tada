@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
+import { formatMarketPrice } from "@/lib/market/format-price";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -12,10 +13,6 @@ export const metadata = { title: "Manage Listings" };
 
 type ListingRow = { id: string; title: string; price_cents: number; status: "published" | "pending" | "sold" | "archived"; created_at: string };
 type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
-
-function formatPrice(priceCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
-}
 
 function statusLabel(status: ListingRow["status"]) {
   return status.charAt(0).toUpperCase() + status.slice(1);
@@ -42,7 +39,7 @@ export default async function ManageListingsPage() {
       <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /></p><h1><TranslatedText translationKey="manageListings" /></h1><span>{listings.length} <TranslatedText translationKey="totalListings" /></span></div><Link href="/market/create"><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
       {listings.length ? <div className="manage-listings-grid">{listings.map((listing) => {
         const imageUrl = signedPhotos.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
-        return <article key={listing.id}><img src={imageUrl} alt="" /><div className="manage-listings-details"><div className="manage-listings-title"><h2>{listing.title}</h2><span className={`is-${listing.status}`}>{statusLabel(listing.status)}</span></div><strong>{formatPrice(listing.price_cents)}</strong><small>Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small></div><ManageListingActions id={listing.id} title={listing.title} status={listing.status} /></article>;
+        return <article key={listing.id}><img src={imageUrl} alt="" /><div className="manage-listings-details"><div className="manage-listings-title"><h2>{listing.title}</h2><span className={`is-${listing.status}`}>{statusLabel(listing.status)}</span></div><strong>{formatMarketPrice(listing.price_cents)}</strong><small>Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small></div><ManageListingActions id={listing.id} title={listing.title} status={listing.status} /></article>;
       })}</div> : <div className="manage-listings-empty"><i className="fa-regular fa-rectangle-list" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
     </section>
   </main>;

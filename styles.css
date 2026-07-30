@@ -29,7 +29,7 @@
   --section-gap: 32px;
   --content-gap: 16px;
   --font-size-mobile-control: 16px;
-  --desktop-header-height: 68px;
+  --desktop-header-height: 60px;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -1501,7 +1501,7 @@ a {
     height: var(--desktop-header-height);
     min-height: var(--desktop-header-height);
     grid-auto-rows: 48px;
-    padding-block: 10px;
+    padding-block: 6px;
   }
 
   .market-filter-panel,
@@ -2115,12 +2115,19 @@ a {
 .seller-public-profile-card strong i { color: #f6b600; }
 .seller-public-profile-card small { display: block; margin-top: 6px; }
 
+.listing-detail-back-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
 .listing-detail-back {
   width: fit-content;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 0;
   color: #047c58;
   font-size: 14px;
   font-weight: 700;
@@ -6491,12 +6498,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-weight: 700;
 }
 
-.listing-detail-back-category {
-  padding-left: 8px;
-  border-left: 1px solid #cbd8d7;
-  color: #617184;
-  font-weight: 600;
-}
+.listing-detail-category-path { display: inline-flex; align-items: center; gap: 7px; padding-left: 10px; border-left: 1px solid #cbd8d7; color: #617184; font-size: 14px; font-weight: 600; }
+.listing-detail-category-path a { color: #526981; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color 160ms ease, text-decoration-color 160ms ease; }
+.listing-detail-category-path a:hover, .listing-detail-category-path a:focus-visible { color: #047c58; text-decoration-color: currentColor; }
 
 .notification-listing-title i {
   flex: 0 0 auto;
@@ -6629,7 +6633,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-only { display: flex; }
   .listing-detail-page { padding: 0 0 calc(164px + env(safe-area-inset-bottom)); }
   body.listing-detail-screen .listing-detail-page { padding-bottom: calc(142px + env(safe-area-inset-bottom)); }
-  .listing-detail-back, .listing-detail-summary { display: none; }
+  .listing-detail-back-row, .listing-detail-summary { display: none; }
   .listing-detail-gallery-safety { display: none; }
 
   .listing-detail-layout { display: block; }
@@ -6927,7 +6931,16 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 .listing-comments { width: min(100%, 760px); margin-top: 34px; padding-top: 28px; border-top: 1px solid #d7e1df; }
+.related-listings { width: min(100% - (var(--page-padding-inline) * 2), var(--page-max-width)); margin: 52px auto 72px; padding-top: 28px; border-top: 1px solid #d7e1df; }
+.related-listings-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+.related-listings-heading p { margin: 0 0 4px; color: #00845c; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.related-listings-heading h2 { margin: 0; color: #0b1c30; font-size: 24px; line-height: 1.2; }
+.related-listings-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .listing-comments-heading { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .related-listings-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .listing-comments-heading h2 { margin: 0; color: #0b1c30; font-size: 21px; line-height: 1.25; }
 .listing-comments-heading span { color: #65758a; font-size: 13px; }
 .listing-comments-composer { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; }
@@ -6976,6 +6989,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   }
 }
 
+@media (min-width: 1024px) {
+  .site-nav { height: var(--desktop-header-height); min-height: var(--desktop-header-height); grid-auto-rows: 48px; padding-block: 6px; }
+}
+
 /* Keep every touch-device form control at 16px or larger to prevent iOS focus zoom. */
 @media (hover: none) and (pointer: coarse) {
   input,
@@ -6987,6 +7004,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (max-width: 767.98px) {
   .listing-comments { width: auto; margin: 0 20px; padding-top: 25px; border-top: 0; }.listing-comments-heading h2 { font-size: 19px; }.listing-comments-heading span { font-size: 12px; }
+  .related-listings { width: auto; margin: 36px 20px calc(152px + env(safe-area-inset-bottom)); padding-top: 25px; }.related-listings-heading { margin-bottom: 14px; }.related-listings-heading h2 { font-size: 20px; }.related-listings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .listing-comments-composer { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comments-composer-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comments-composer textarea { min-height: 72px; font-size: 16px; }.listing-comment-edit textarea, .listing-comment-reply-form textarea { font-size: 16px; }
   .listing-comments-list { gap: 20px; margin-top: 22px; }.listing-comment { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }.listing-comment-avatar { width: 36px; height: 36px; font-size: 11px; }.listing-comment-content > p { font-size: 13px; }
   .listing-comment-children { gap: 15px; margin-top: 15px; padding-left: 10px; }.listing-comment-children .listing-comment { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }.listing-comment-children .listing-comment-avatar { width: 30px; height: 30px; font-size: 9px; }.listing-comment-tools > button { padding-inline: 5px; font-size: 10px; }

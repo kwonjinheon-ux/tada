@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
+import { RelatedListings } from "@/components/market/RelatedListings";
+import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { formatMarketPrice } from "@/lib/market/format-price";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,14 +30,12 @@ type MarketListingRow = {
 };
 
 type PhotoRow = { storage_path: string | null; original_name: string | null; display_order: number };
+type RelatedListingRow = Pick<MarketListingRow, "id" | "title" | "price_cents" | "region_city" | "region_suburb" | "status">;
+type RelatedPhotoRow = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 type SellerRow = { id: string; display_name: string | null; avatar_path: string | null; rating_average?: number | string; rating_count?: number };
 
 const conditionLabels = { brand_new: "Brand new", like_new: "Like new", good: "Good", fair: "Fair" } as const;
 const tradeMethodLabels = { pickup_delivery: "Pickup or delivery", pickup: "Pickup", delivery: "Delivery" } as const;
-
-function formatPrice(priceCents: number) {
-  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: priceCents % 100 === 0 ? 0 : 2 }).format(priceCents / 100);
-}
 
 function formatLocation(city: string | null, suburb: string | null) {
   return [suburb, city].filter(Boolean).join(", ") || "New Zealand";
@@ -44,10 +45,18 @@ function formatDate(date: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(date));
 }
 
-function formatCategory(categorySlug: string | null, subcategorySlug: string | null) {
+function getCategoryPath(categorySlug: string | null, subcategorySlug: string | null) {
   const category = marketplaceCategories.find(({ value }) => value === categorySlug);
   const subcategory = category?.subcategories.find(({ value }) => value === subcategorySlug);
-  return [category?.label, subcategory?.label].filter(Boolean).join(" / ") || "Marketplace";
+  if (!category) return null;
+  return {
+    label: category.label,
+    href: `/market?category=${encodeURIComponent(category.value)}`,
+    subcategory: subcategory ? {
+      label: subcategory.label,
+      href: `/market?category=${encodeURIComponent(category.value)}&subcategory=${encodeURIComponent(subcategory.value)}`,
+    } : null,
+  };
 }
 
 async function getListingDetail(
@@ -94,9 +103,10 @@ async function getListingDetail(
     id: listing.id,
     ownerId: listing.owner_id,
     title: listing.title,
-    price: formatPrice(listing.price_cents),
+    price: formatMarketPrice(listing.price_cents),
     priceCents: listing.price_cents,
-    category: formatCategory(listing.category_slug, listing.subcategory_slug),
+    category: getCategoryPath(listing.category_slug, listing.subcategory_slug),
+    subcategorySlug: listing.subcategory_slug,
     location: formatLocation(listing.region_city, listing.region_suburb),
     description: listing.description,
     condition: conditionLabels[listing.item_condition],
@@ -142,6 +152,46 @@ export async function generateMetadata({ params }: { params: Promise<{ listingId
   };
 }
 
+async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>): Promise<Listing[]> {
+  if (!listing.subcategorySlug) return [];
+  const { data } = await supabase
+    .from("market_listings")
+    .select("id,title,price_cents,region_city,region_suburb,status")
+    .eq("subcategory_slug", listing.subcategorySlug)
+    .eq("status", "published")
+    .neq("id", listing.id)
+    .order("created_at", { ascending: false })
+    .limit(8);
+  const rows = (data ?? []) as RelatedListingRow[];
+  if (!rows.length) return [];
+
+  const ids = rows.map(({ id }) => id);
+  const { data: photoRows } = await supabase
+    .from("market_listing_photos")
+    .select("listing_id,storage_path,original_name,is_primary,display_order")
+    .in("listing_id", ids)
+    .order("display_order", { ascending: true });
+  const primaryPhotos = new Map<string, RelatedPhotoRow>();
+  for (const photo of (photoRows ?? []) as RelatedPhotoRow[]) {
+    if (!photo.storage_path) continue;
+    const current = primaryPhotos.get(photo.listing_id);
+    if (!current || photo.is_primary || (!current.is_primary && photo.display_order < current.display_order)) primaryPhotos.set(photo.listing_id, photo);
+  }
+  const signedImages = await getSignedStorageImages("market-listing-images", [...primaryPhotos.values()].map((photo) => photo.storage_path as string), "thumbnail");
+  return rows.map((row) => {
+    const photo = primaryPhotos.get(row.id);
+    return {
+      id: row.id,
+      title: row.title,
+      price: formatMarketPrice(row.price_cents),
+      location: formatLocation(row.region_city, row.region_suburb),
+      image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "/images/logo.png" : "/images/logo.png",
+      imageAlt: photo?.original_name ?? row.title,
+      status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
+    } satisfies Listing;
+  });
+}
+
 export default async function ListingDetailPage({ params }: { params: Promise<{ listingId: string }> }) {
   const { listingId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -152,8 +202,12 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   ]);
   if (!listing) notFound();
   const user = userResult.data.user;
+  const relatedListings = await getRelatedListings(listing, supabase);
   const { data: savedListing } = user
     ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
     : { data: null };
-  return <ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} />;
+  const { data: savedRelatedListings } = user && relatedListings.length
+    ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
+    : { data: [] };
+  return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
 }
