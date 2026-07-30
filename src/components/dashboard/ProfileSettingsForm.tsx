@@ -49,7 +49,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
@@ -164,16 +163,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setCurrentLocation({ status: "idle" }); setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
-  const signOut = async () => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setStatus("Unable to sign out right now."); return; }
-    setIsSigningOut(true);
-    const { error } = await supabase.auth.signOut({ scope: "local" });
-    if (error) { setStatus(error.message); setIsSigningOut(false); return; }
-    router.replace("/");
-    router.refresh();
-  };
-
   const sendPhoneCode = async () => {
     const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
     if (!supabase || !targetPhone) { setStatus("Enter a valid New Zealand phone number first."); return; }
@@ -235,7 +224,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       </> : null}
     </section>
     <div className="profile-settings-actions"><button className="profile-discard-button" type="button" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</button><button className="profile-primary-button" type="button" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</button></div>
-    <button className="profile-logout-button" type="button" disabled={isSigningOut} onClick={() => void signOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> {isSigningOut ? t("loggingOut") : t("logout")}</button>
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </>;
 }

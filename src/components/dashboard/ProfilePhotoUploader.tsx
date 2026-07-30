@@ -3,6 +3,7 @@
 import { ChangeEvent, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent, useEffect, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const PREVIEW_SIZE = 300;
@@ -195,7 +196,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
       </div>
 
       {editorUrl && (
-        <div className="avatar-editor-backdrop" role="dialog" aria-modal="true" aria-label="Adjust profile photo" onPointerDown={(event) => event.target === event.currentTarget && closeEditor()}>
+        <DialogOverlay className="avatar-editor-backdrop" aria-label="Adjust profile photo" onClose={closeEditor}>
           <section className="avatar-editor">
             <div className="avatar-editor-heading"><h2>Adjust profile photo</h2><button type="button" aria-label="Close photo editor" onClick={closeEditor}><i className="fa-solid fa-xmark" /></button></div>
             <div
@@ -213,7 +214,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
             <p className="avatar-editor-hint"><i className="fa-solid fa-hand-pointer" /> Drag to move · pinch to zoom · twist to rotate</p>
             <div className="avatar-editor-actions"><button className="profile-outline-button" type="button" onClick={closeEditor}>Cancel</button><button className="profile-primary-button" type="button" disabled={isUploading} onClick={() => void saveCroppedAvatar()}>{isUploading ? "Saving…" : "Save photo"}</button></div>
           </section>
-        </div>
+        </DialogOverlay>
       )}
     </div>
   );

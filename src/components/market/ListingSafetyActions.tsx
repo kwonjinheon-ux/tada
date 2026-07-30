@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { readApiResponse } from "@/lib/api/client";
 import { marketBlockResponseSchema, marketReportResponseSchema } from "@/contracts/api";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 const reasons = [
   ["fraud", "Scam or fraud"],
@@ -56,7 +57,7 @@ export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant
       {sellerId ? <button type="button" aria-label="Block seller" title="Block seller" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> {!iconOnly && (sellerProfileVariant ? "차단" : "Block")}</button> : null}
     </div>
     {feedback ? <p role="status">{feedback}</p> : null}
-    {isReportOpen ? <div className="listing-report-dialog" role="dialog" aria-modal="true" aria-labelledby="listing-report-title">
+    {isReportOpen ? <DialogOverlay className="listing-report-dialog" aria-labelledby="listing-report-title" onClose={() => setIsReportOpen(false)} isDismissible={!isSubmitting}>
       <div className="listing-report-panel">
         <button className="listing-report-close" type="button" aria-label="Close report form" onClick={() => setIsReportOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
         <h2 id="listing-report-title">Report listing</h2>
@@ -64,6 +65,6 @@ export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant
         <label>Details (optional)<textarea value={details} maxLength={1000} rows={4} onChange={(event) => setDetails(event.target.value)} placeholder="Tell us what happened" /></label>
         <button className="listing-report-submit" type="button" disabled={isSubmitting} onClick={() => void submitReport()}>{isSubmitting ? "Submitting..." : "Submit report"}</button>
       </div>
-    </div> : null}
+    </DialogOverlay> : null}
   </section>;
 }

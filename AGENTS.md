@@ -31,6 +31,14 @@ Before adding a file or a new visual pattern, confirm all of the following:
 
 A task is not complete if reusable UI has been duplicated inside a page.
 
+## Dialog and popup standard
+
+- Use `src/components/ui/DialogOverlay.tsx` for every dismissible modal or popup.
+- Every dialog backdrop must blur the page behind it and visibly state that clicking or tapping outside closes the dialog.
+- A click or tap on the backdrop must close the dialog unless a submission or destructive operation is in progress.
+- Keep an explicit close or cancel control in the dialog for keyboard and assistive-technology users.
+- Reuse `DialogDismissHint` for lightboxes or other overlays that require a custom backdrop structure.
+
 Before completing any UI task:
 
 - Check for duplicate implementations.
