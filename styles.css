@@ -4801,15 +4801,19 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock {
+    --mobile-dock-horizontal-inset: clamp(16px, 8vw, 38px);
+    --mobile-dock-bottom-offset: 12px;
+    --mobile-dock-height: 64px;
+    --mobile-dock-control-size: 52px;
     position: fixed !important;
-    right: clamp(16px, 8vw, 38px);
-    bottom: calc(12px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
-    left: clamp(16px, 8vw, 38px);
+    right: var(--mobile-dock-horizontal-inset);
+    bottom: calc(var(--mobile-dock-bottom-offset) + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+    left: var(--mobile-dock-horizontal-inset);
     z-index: 1000;
     width: auto;
     max-width: 390px;
-    height: 64px;
-    min-height: 64px;
+    height: var(--mobile-dock-height);
+    min-height: var(--mobile-dock-height);
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
@@ -4829,7 +4833,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
     width: 100%;
-    min-height: 52px;
+    height: var(--mobile-dock-control-size);
+    min-height: var(--mobile-dock-control-size);
     display: flex;
     flex-direction: column;
     align-items: center;
