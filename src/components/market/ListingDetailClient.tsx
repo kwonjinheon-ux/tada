@@ -296,6 +296,30 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     }
   };
 
+  const listingDockActionsRef = useRef({ openOfferDialog, shareListing, saveListing, editListing });
+  listingDockActionsRef.current = { openOfferDialog, shareListing, saveListing, editListing };
+
+  useEffect(() => {
+    window.__tadaListingDockConfig = { isOwner };
+    window.dispatchEvent(new Event("listing-mobile-dock-config"));
+    const handleDockAction = (event: Event) => {
+      switch ((event as CustomEvent<string>).detail) {
+        case "offer": listingDockActionsRef.current.openOfferDialog(); break;
+        case "share": void listingDockActionsRef.current.shareListing(); break;
+        case "save": void listingDockActionsRef.current.saveListing(); break;
+        case "edit": listingDockActionsRef.current.editListing(); break;
+        case "delete": setIsDeleteDialogOpen(true); break;
+        default: break;
+      }
+    };
+    window.addEventListener("listing-mobile-dock-action", handleDockAction);
+    return () => {
+      delete window.__tadaListingDockConfig;
+      window.dispatchEvent(new Event("listing-mobile-dock-config"));
+      window.removeEventListener("listing-mobile-dock-action", handleDockAction);
+    };
+  }, [isOwner]);
+
   return (
     <main className="listing-detail-page">
       <Link className="listing-detail-back" href="/market">
@@ -393,7 +417,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
       <ListingComments listingId={listing.id} />
 
-      <div className="listing-detail-mobile-actions listing-detail-mobile-only">{isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon">Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Edit listing" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button><button className="listing-detail-mobile-action-icon listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button></> : <><button type="button" className="listing-detail-message" onClick={openOfferDialog}>Make an offer</button><button type="button" className="listing-detail-offer" onPointerDown={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening..." : "Message"}</button><button type="button" className="listing-detail-mobile-action-icon" aria-label="Share listing" onClick={() => void shareListing()}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button><button className={`listing-detail-mobile-action-icon save-button ${isSaved ? "is-saved" : ""} ${isPopping ? "is-popping" : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button></>}</div>
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <div className="listing-offer-backdrop" role="dialog" aria-modal="true" aria-labelledby="listing-offer-title" onPointerDown={(event) => { if (event.target === event.currentTarget && !isSubmittingOffer) setIsOfferDialogOpen(false); }}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></div> : null}
       {isDeleteDialogOpen ? <div className="listing-delete-backdrop" role="dialog" aria-modal="true" aria-labelledby="listing-delete-title" onPointerDown={(event) => { if (event.target === event.currentTarget && !isDeleting) setIsDeleteDialogOpen(false); }}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="fa-solid fa-trash-can" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="fa-solid fa-trash-can" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></div> : null}

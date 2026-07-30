@@ -22,6 +22,7 @@ const dashboardMenuItems = [
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
+    __tadaListingDockConfig?: { isOwner: boolean };
   }
 }
 
@@ -39,6 +40,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean } | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -222,6 +224,13 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    const syncListingDock = () => setListingDockConfig(window.__tadaListingDockConfig ?? null);
+    window.addEventListener("listing-mobile-dock-config", syncListingDock);
+    syncListingDock();
+    return () => window.removeEventListener("listing-mobile-dock-config", syncListingDock);
+  }, [pathname]);
+
+  useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
     window.addEventListener(mobileDrawerEvents.dashboardClose, closeDashboardDrawer);
@@ -270,6 +279,7 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
@@ -425,11 +435,19 @@ export function Navbar() {
       </div>
       </header>
       <nav className="mobile-bottom-dock" aria-label="Primary navigation">
-        <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
-        <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
-        <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post" aria-current={isPostAd ? "page" : undefined}><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
-        <button type="button" aria-label="Browse categories" aria-haspopup="dialog" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
-        <button className={isDashboardMenuOpen ? "is-active" : ""} type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
+        {isListingDetail && listingDockConfig ? <>
+          <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
+          <Link href={`${dashboardBase}/messages`} aria-label={t("messages")}><i className="fa-regular fa-comment" aria-hidden="true" /></Link>
+          {listingDockConfig.isOwner ? <button className="mobile-dock-offer" type="button" aria-label="Edit listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "edit" }))}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button> : <button className="mobile-dock-offer" type="button" aria-label="Make an offer" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "offer" }))}><i className="fa-solid fa-hand-holding-dollar" aria-hidden="true" /></button>}
+          <button type="button" aria-label="Share listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "share" }))}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
+          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "delete" }))}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button type="button" aria-label="Save listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "save" }))}><i className="fa-regular fa-heart" aria-hidden="true" /></button>}
+        </> : <>
+          <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
+          <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
+          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post" aria-current={isPostAd ? "page" : undefined}><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
+          <button type="button" aria-label="Browse categories" aria-haspopup="dialog" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
+          <button className={isDashboardMenuOpen ? "is-active" : ""} type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
+        </>}
       </nav>
     </>
   );

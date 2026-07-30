@@ -4930,7 +4930,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     color: #00845a;
   }
 
-  .mobile-bottom-dock .mobile-dock-create i {
+  .mobile-bottom-dock .mobile-dock-create i,
+  .mobile-bottom-dock .mobile-dock-offer i {
     width: 44px;
     height: 44px;
     display: grid;
@@ -4947,6 +4948,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     color: #fff;
     box-shadow: none;
   }
+
+  .mobile-bottom-dock .mobile-dock-offer { color: #00845a; }
 
   @media (prefers-reduced-motion: reduce) {
     .mobile-bottom-dock,
