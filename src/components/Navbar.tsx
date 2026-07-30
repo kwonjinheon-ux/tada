@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
+import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -41,6 +42,9 @@ export function Navbar() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
+  const [dockHeartParticles, setDockHeartParticles] = useState<HeartParticle[]>([]);
+  const [isDockHeartPopping, setIsDockHeartPopping] = useState(false);
+  const dockHeartTimer = useRef<number | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -230,6 +234,10 @@ export function Navbar() {
     return () => window.removeEventListener("listing-mobile-dock-config", syncListingDock);
   }, [pathname]);
 
+  useEffect(() => () => {
+    if (dockHeartTimer.current) window.clearTimeout(dockHeartTimer.current);
+  }, []);
+
   useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
@@ -305,6 +313,19 @@ export function Navbar() {
     setAvatarUrl(null);
     setUnreadNotificationCount(0);
     setIsDashboardMenuOpen(false);
+  };
+
+  const triggerListingDockAction = (action: "message" | "offer" | "share" | "save" | "edit" | "delete") => {
+    if (action === "save") {
+      setIsDockHeartPopping(true);
+      setDockHeartParticles(createHeartParticles());
+      if (dockHeartTimer.current) window.clearTimeout(dockHeartTimer.current);
+      dockHeartTimer.current = window.setTimeout(() => {
+        setDockHeartParticles([]);
+        setIsDockHeartPopping(false);
+      }, 1_050);
+    }
+    window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
   };
 
   const openMobileCategories = () => {
@@ -437,10 +458,10 @@ export function Navbar() {
       <nav className="mobile-bottom-dock" aria-label="Primary navigation">
         {isListingDetail && listingDockConfig ? <>
           <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
-          <button type="button" aria-label="Message seller" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "message" }))}><i className="fa-regular fa-comment" aria-hidden="true" /></button>
-          {listingDockConfig.isOwner ? <button className="mobile-dock-offer" type="button" aria-label="Edit listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "edit" }))}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button> : <button className="mobile-dock-offer" type="button" aria-label="Make an offer" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "offer" }))}><i className="fa-solid fa-hand-holding-dollar" aria-hidden="true" /></button>}
-          <button type="button" aria-label="Share listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "share" }))}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
-          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "delete" }))}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button className={listingDockConfig.isSaved ? "is-active" : ""} type="button" aria-label={listingDockConfig.isSaved ? "Remove saved listing" : "Save listing"} aria-pressed={listingDockConfig.isSaved} onClick={() => window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: "save" }))}><i className={`${listingDockConfig.isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /></button>}
+          <button type="button" aria-label="Message seller" onClick={() => triggerListingDockAction("message")}><i className="fa-regular fa-comment" aria-hidden="true" /></button>
+          {listingDockConfig.isOwner ? <button className="mobile-dock-offer" type="button" aria-label="Edit listing" onClick={() => triggerListingDockAction("edit")}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button> : <button className="mobile-dock-offer" type="button" aria-label="Make an offer" onClick={() => triggerListingDockAction("offer")}><i className="fa-solid fa-tag" aria-hidden="true" /></button>}
+          <button type="button" aria-label="Share listing" onClick={() => triggerListingDockAction("share")}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
+          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => triggerListingDockAction("delete")}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button className={`mobile-dock-save ${listingDockConfig.isSaved ? "is-saved" : ""} ${isDockHeartPopping ? "is-popping" : ""}`} type="button" aria-label={listingDockConfig.isSaved ? "Remove saved listing" : "Save listing"} aria-pressed={listingDockConfig.isSaved} onClick={() => triggerListingDockAction("save")}><i className={`${listingDockConfig.isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={dockHeartParticles} /></button>}
         </> : <>
           <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
           <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>

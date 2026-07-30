@@ -1675,7 +1675,8 @@ a {
 }
 
 .save-button.is-popping,
-.listing-detail-save.is-popping {
+.listing-detail-save.is-popping,
+.mobile-bottom-dock .mobile-dock-save.is-popping {
   animation: heart-pop-wiggle 420ms cubic-bezier(0.18, 1.35, 0.38, 1);
 }
 
@@ -4963,6 +4964,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock .mobile-dock-offer { color: #00845a; }
+  .mobile-bottom-dock .mobile-dock-save { position: relative; overflow: visible; }
+  .mobile-bottom-dock .mobile-dock-save.is-saved { color: #e94683; }
 
   @media (prefers-reduced-motion: reduce) {
     .mobile-bottom-dock,
