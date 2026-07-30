@@ -4816,12 +4816,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     margin: 0 auto;
     padding: 5px;
     box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, .88);
+    border: 1px solid rgba(255, 255, 255, .72);
     border-radius: 999px;
-    background: rgba(255, 255, 255, .72);
-    -webkit-backdrop-filter: blur(26px) saturate(150%);
-    backdrop-filter: blur(26px) saturate(150%);
-    box-shadow: 0 14px 32px rgba(37, 58, 82, .16), inset 0 1px 0 rgba(255, 255, 255, .92);
+    background: rgba(255, 255, 255, .46);
+    -webkit-backdrop-filter: blur(32px) saturate(165%);
+    backdrop-filter: blur(32px) saturate(165%);
+    box-shadow: 0 14px 32px rgba(37, 58, 82, .14), inset 0 1px 0 rgba(255, 255, 255, .86);
     transition: transform 260ms cubic-bezier(.22, .61, .36, 1), opacity 180ms ease;
     will-change: transform;
   }
