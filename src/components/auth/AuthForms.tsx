@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from "@/lib/auth";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 function PasswordToggleIcon() {
   return (
@@ -38,7 +40,7 @@ function SocialActions({ mode }: { mode: "sign in" | "sign up" }) {
   return (
     <div className="social-auth-block">
       <div className="social-actions" aria-label={`Social ${mode} options`}>
-      <button className="social-button" type="button" onClick={continueWithGoogle} disabled={isGoogleLoading}>
+      <Button variant="social" onClick={continueWithGoogle} disabled={isGoogleLoading}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285f4" />
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34a853" />
@@ -46,13 +48,13 @@ function SocialActions({ mode }: { mode: "sign in" | "sign up" }) {
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#ea4335" />
         </svg>
         {isGoogleLoading ? "Connecting..." : "Google"}
-      </button>
-      <button className="social-button" type="button" disabled title="Apple sign-in is not available yet">
+      </Button>
+      <Button variant="social" disabled title="Apple sign-in is not available yet">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M17.13 12.89c-.02-2.15 1.76-3.18 1.84-3.23-1.01-1.48-2.57-1.68-3.12-1.7-1.32-.13-2.6.78-3.27.78-.69 0-1.72-.76-2.83-.74-1.45.02-2.8.85-3.55 2.16-1.52 2.64-.39 6.52 1.07 8.65.73 1.04 1.58 2.2 2.7 2.16 1.09-.04 1.5-.69 2.81-.69 1.3 0 1.68.69 2.83.67 1.18-.02 1.92-1.05 2.62-2.1.84-1.2 1.17-2.38 1.19-2.44-.03-.01-2.27-.87-2.29-3.52zM15 6.56c.59-.73 1-1.72.88-2.72-.85.04-1.9.59-2.51 1.31-.55.64-1.03 1.67-.9 2.65.96.07 1.93-.49 2.53-1.24z" fill="currentColor" />
         </svg>
         Apple
-      </button>
+      </Button>
       </div>
       {socialError ? <p className="form-error social-error" role="alert">{socialError}</p> : null}
     </div>
@@ -144,9 +146,9 @@ export function LoginForm({
               <div className="input-wrap">
                 <i className="fa-solid fa-lock" aria-hidden="true" />
                 <input ref={passwordInputRef} id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
-                <button className="icon-button" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
+                <IconButton aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
-                </button>
+                </IconButton>
               </div>
             </div>
 
@@ -156,11 +158,11 @@ export function LoginForm({
             </label>
 
             {error ? <p className="form-error" role="alert">{error}</p> : null}
-            <button className="primary-button" type="submit" disabled={isLoading}>{isLoading ? "Logging in..." : "Log In"}</button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Logging in..." : "Log In"}</Button>
           </form>
 
           <div className="divider compact"><span>or</span></div>
-          <button className="passkey-button" type="button"><i className="fa-solid fa-user-plus" aria-hidden="true" />Sign in with Passkey</button>
+          <Button variant="secondary"><i className="fa-solid fa-user-plus" aria-hidden="true" />Sign in with Passkey</Button>
           <p className="signup-copy">Don&apos;t have an account? <Link href="/signup">Sign Up</Link></p>
         </div>
       </section>
@@ -243,9 +245,9 @@ export function SignupForm() {
               <div className="input-wrap">
                 <i className="fa-solid fa-lock" aria-hidden="true" />
                 <input id="signup-password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="At least 8 characters" value={password} onChange={(event) => setPassword(event.target.value)} required />
-                <button className="icon-button" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
+                <IconButton aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
-                </button>
+                </IconButton>
               </div>
             </div>
 
@@ -255,9 +257,9 @@ export function SignupForm() {
                 <i className="fa-solid fa-lock" aria-hidden="true" />
                 <input id="confirm-password" name="confirm-password" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="Repeat your password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
                 {confirmPassword ? <i className={`password-confirm-status fa-solid ${passwordsMatch ? "fa-check" : "fa-xmark"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} /> : null}
-                <button className="icon-button" type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)}>
+                <IconButton aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)}>
                   <PasswordToggleIcon />
-                </button>
+                </IconButton>
               </div>
             </div>
 
@@ -267,7 +269,7 @@ export function SignupForm() {
             </label>
 
             {error ? <p className="form-error" role="alert">{error}</p> : null}
-            <button className="primary-button signup-submit" type="submit" disabled={isLoading}>{isLoading ? "Creating..." : "Create My Account"}</button>
+            <Button className="signup-submit" type="submit" disabled={isLoading}>{isLoading ? "Creating..." : "Create My Account"}</Button>
           </form>
 
           <p className="signup-copy signin-copy">Already have an account? <Link href="/login">Sign In</Link></p>

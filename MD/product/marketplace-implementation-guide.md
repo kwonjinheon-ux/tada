@@ -15,7 +15,7 @@
 | Web app | Next.js App Router, React, TypeScript | `src/app`, `src/components` |
 | Backend | Supabase Auth, Postgres, Storage, Realtime | `src/lib/supabase`, `supabase/migrations` |
 | API boundary | Next Route Handlers | `src/app/api` |
-| Styling | Tailwind 설정 + 전역 CSS + 페이지 전용 CSS | `src/app/globals.css`, `styles.css`, `src/app/post-ad/post-ad.css` |
+| Styling | Tailwind 설정 + 전역 CSS | `src/app/globals.css`, `styles.css` |
 | AI listing draft | OpenAI server route | `src/app/api/ai/generate-listing/route.ts`, `src/lib/ai/listing.ts` |
 | Type checking | TypeScript strict mode | `npm run typecheck` |
 

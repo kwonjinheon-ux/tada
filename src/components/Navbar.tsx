@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, type HeartParticle } from "@/components/SaveHeartBurst";
+import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -328,7 +329,27 @@ export function Navbar() {
     window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
   };
 
-  const openMobileCategories = () => {
+  const standardDockItems: MobileDockItem[] = [
+    { id: "home", label: t("home"), icon: "home", href: "/market", active: isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
+    { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
+    { id: "create", label: t("create"), icon: "create", href: "/market/create", active: isPostAd, variant: "create" },
+    { id: "categories", label: "Browse categories", icon: "categories", onClick: openMobileCategories },
+    { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
+  ];
+
+  const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
+    { id: "home", label: "Market home", icon: "home", href: "/market" },
+    { id: "message", label: "Message seller", icon: "message", onClick: () => triggerListingDockAction("message") },
+    listingDockConfig.isOwner
+      ? { id: "edit", label: "Edit listing", icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
+      : { id: "offer", label: "Make an offer", icon: "offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
+    { id: "share", label: "Share listing", icon: "share", onClick: () => triggerListingDockAction("share") },
+    listingDockConfig.isOwner
+      ? { id: "delete", label: "Delete listing", icon: "delete", onClick: () => triggerListingDockAction("delete") }
+      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: isDockHeartPopping ? "is-popping" : "", onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
+  ];
+
+  function openMobileCategories() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     if (pathname !== "/market") {
@@ -336,13 +357,13 @@ export function Navbar() {
       return;
     }
     window.dispatchEvent(new Event("mobile-category-menu-request"));
-  };
+  }
 
-  const openMobileDashboard = () => {
+  function openMobileDashboard() {
     setIsOpen(false);
     window.dispatchEvent(new Event("mobile-category-menu-close"));
     setIsDashboardMenuOpen(true);
-  };
+  }
 
   return (
     <>
@@ -455,21 +476,7 @@ export function Navbar() {
 
       </div>
       </header>
-      <nav className="mobile-bottom-dock" aria-label="Primary navigation">
-        {isListingDetail && listingDockConfig ? <>
-          <Link href="/market" aria-label="Market home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg></Link>
-          <button type="button" aria-label="Message seller" onClick={() => triggerListingDockAction("message")}><i className="fa-regular fa-comment" aria-hidden="true" /></button>
-          {listingDockConfig.isOwner ? <button className="mobile-dock-offer" type="button" aria-label="Edit listing" onClick={() => triggerListingDockAction("edit")}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /></button> : <button className="mobile-dock-offer" type="button" aria-label="Make an offer" onClick={() => triggerListingDockAction("offer")}><i className="fa-solid fa-tag" aria-hidden="true" /></button>}
-          <button type="button" aria-label="Share listing" onClick={() => triggerListingDockAction("share")}><i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" /></button>
-          {listingDockConfig.isOwner ? <button type="button" aria-label="Delete listing" onClick={() => triggerListingDockAction("delete")}><i className="fa-regular fa-trash-can" aria-hidden="true" /></button> : <button className={`mobile-dock-save ${listingDockConfig.isSaved ? "is-saved" : ""} ${isDockHeartPopping ? "is-popping" : ""}`} type="button" aria-label={listingDockConfig.isSaved ? "Remove saved listing" : "Save listing"} aria-pressed={listingDockConfig.isSaved} onClick={() => triggerListingDockAction("save")}><i className={`${listingDockConfig.isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={dockHeartParticles} /></button>}
-        </> : <>
-          <Link className={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "is-active" : ""} href="/market" aria-label="Market home" aria-current={isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") ? "page" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7v9.25a1.75 1.75 0 0 1-1.75 1.75H5.25a1.75 1.75 0 0 1-1.75-1.75z" /><path d="M9.25 21.5v-6.25h5.5v6.25" /></svg><span>{t("home")}</span></Link>
-          <Link className={isMessagesPage ? "is-active" : ""} href={`${dashboardBase}/messages`} aria-label={t("messages")} aria-current={isMessagesPage ? "page" : undefined}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{t("messages")}</span></Link>
-          <Link className={`mobile-dock-create ${isPostAd ? "is-active" : ""}`} href="/market/create" aria-label="Create post" aria-current={isPostAd ? "page" : undefined}><i className="fa-solid fa-plus" aria-hidden="true" /><span>{t("create")}</span></Link>
-          <button type="button" aria-label="Browse categories" aria-haspopup="dialog" onClick={openMobileCategories}><i className="fa-regular fa-rectangle-list" aria-hidden="true" /><span>{t("categories")}</span></button>
-          <button className={isDashboardMenuOpen ? "is-active" : ""} type="button" aria-label="Open dashboard menu" aria-expanded={isDashboardMenuOpen} aria-controls="mobile-dashboard-menu" onClick={openMobileDashboard}><i className="fa-regular fa-circle-user" aria-hidden="true" /><span>{t("more")}</span></button>
-        </>}
-      </nav>
+      <MobileDock items={listingDockItems ?? standardDockItems} />
     </>
   );
 }
