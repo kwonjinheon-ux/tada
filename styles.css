@@ -4964,8 +4964,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock .mobile-dock-offer { color: #00845a; }
-  .mobile-bottom-dock .mobile-dock-save { position: relative; overflow: visible; }
+  .mobile-bottom-dock .mobile-dock-save { position: relative; overflow: visible; isolation: isolate; }
   .mobile-bottom-dock .mobile-dock-save.is-saved { color: #e94683; }
+  .mobile-bottom-dock .mobile-dock-save .save-heart-particles { inset: -36px; z-index: 3; }
+  .mobile-bottom-dock .mobile-dock-save .save-heart-particle { z-index: 4; filter: drop-shadow(0 3px 5px rgb(116 26 57 / .3)); }
 
   @media (prefers-reduced-motion: reduce) {
     .mobile-bottom-dock,
