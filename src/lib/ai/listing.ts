@@ -43,6 +43,25 @@ export class ListingAiError extends Error {
   }
 }
 
+const genericListingTitles = new Set([
+  "item",
+  "item for sale",
+  "listing item",
+  "marketplace item",
+  "marketplace listing",
+  "product",
+  "product for sale",
+  "selling item",
+  "판매 상품",
+  "판매 물품",
+  "중고 물품",
+]);
+
+export function isGenericListingTitle(value: string) {
+  const normalized = value.trim().toLocaleLowerCase().replace(/[.!?]+$/g, "");
+  return !normalized || genericListingTitles.has(normalized);
+}
+
 function includesKorean(input: ListingAiRequest) {
   return /[\u3131-\uD79D]/.test(
     [input.title, input.category, input.condition, input.location, input.description, ...input.additionalDetails.flatMap(({ label, value }) => [label, value])]
@@ -74,6 +93,7 @@ function buildListingPrompt(input: ListingAiRequest) {
     "Give the description real care: organise the confirmed facts into a friendly, detailed listing that a buyer can confidently revisit until the item sells. Weave the selected category, condition, price, location, trade method, meeting place, and other chosen options into natural seller wording rather than listing field labels mechanically. Where supported, cover condition, practical features, what is included, honest flaws, collection or delivery, and the reason for selling. Do not add any missing details.",
     "Explain practical, evidence-based reasons a buyer may value the item, such as visible features, condition, usefulness, compatibility, or convenience. Present these as grounded benefits, never as unsupported promises or generic marketing claims.",
     "Create a concise, buyer-attracting title that is specific to this item. Prefer a concrete brand, model, type, colour, condition, or useful detail when it is supplied or clearly visible. Avoid generic category-only titles and repetitive marketplace templates.",
+    "When photos are supplied, the title must name the item visible in them. Never return generic titles such as 'Marketplace item', 'Item for sale', 'Product', '판매 상품', or equivalent placeholders in any language.",
     "Vary the title's wording and structure naturally instead of relying on familiar sales phrases. Do not use unsupported superlatives, urgency, scarcity, discounts, gifts, guarantees, or claims such as 'best', 'perfect', 'must-have', 'limited', 'rare', or 'like new' unless those facts are directly supplied.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
     "When the written description is empty, create a concise buyer-friendly draft from the title, selected options, and clearly visible image details only. Do not fill gaps by guessing.",
@@ -116,7 +136,8 @@ export function isOwnedAiDraftImagePath(path: string, userId: string) {
 
 export function createListingFallbackDraft(input: ListingAiRequest): GeneratedListing {
   const isKorean = input.language === "ko";
-  const title = input.title || (isKorean ? "판매 상품" : "Marketplace item");
+  const categoryTitle = input.category.split("/").map((part) => part.trim()).filter(Boolean).at(-1);
+  const title = input.title || categoryTitle || (isKorean ? "제목 확인 필요" : "Title needs review");
   const condition = input.condition || (isKorean ? "사진과 설명을 확인해 주세요" : "Please review the photos and description");
   const detailLines = input.additionalDetails.map(({ label, value }) => `${label}: ${value}.`);
   const description = (isKorean
@@ -206,7 +227,12 @@ export async function generateListingDraft({
   }
 
   try {
-    return generatedListingSchema.parse(response.output_parsed);
+    const draft = generatedListingSchema.parse(response.output_parsed);
+    if (imageUrls.length > 0 && isGenericListingTitle(draft.title)) {
+      console.error("AI listing response used a generic title despite image input", { title: draft.title });
+      throw new ListingAiError("AI_RESPONSE_INVALID");
+    }
+    return draft;
   } catch {
     console.error("AI listing parsed response did not match the expected shape");
     throw new ListingAiError("AI_RESPONSE_INVALID");

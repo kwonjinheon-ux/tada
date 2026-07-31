@@ -30,6 +30,8 @@
   --content-gap: 16px;
   --font-size-mobile-control: 16px;
   --desktop-header-height: 60px;
+  --site-logo-width: 77px;
+  --site-logo-height: 36px;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -144,8 +146,8 @@ a {
 }
 
 .site-logo {
-  width: 77px;
-  height: 36px;
+  width: var(--site-logo-width);
+  height: var(--site-logo-height);
   display: block;
 }
 
@@ -156,11 +158,6 @@ a {
   display: block;
   object-fit: contain;
   object-position: center;
-}
-
-.post-ad-screen .site-logo img {
-  transform: scale(1.15);
-  transform-origin: center;
 }
 
 .nav-search {
@@ -1513,6 +1510,11 @@ a {
 
 /* Mobile administrator workspace: navigation and operational data stay usable without horizontal tables. */
 @media (max-width: 767.98px) {
+  :root {
+    --site-logo-width: 122px;
+    --site-logo-height: 58px;
+  }
+
   .dashboard-layout.admin-page > .market-filter-panel.dashboard-sidebar {
     position: static;
     display: block;
@@ -4441,8 +4443,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     top: 3px;
     left: 50%;
     z-index: 1;
-    width: 122px;
-    height: 58px;
     transform: translateX(-50%);
   }
 
@@ -5255,6 +5255,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 @media (min-width: 768px) {
   :root {
     --page-padding-inline: var(--page-padding-tablet);
+    --site-logo-width: 110px;
+    --site-logo-height: 48px;
   }
 
   .post-ad-page {
@@ -5332,8 +5334,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .site-logo {
-    width: 110px;
-    height: 48px;
     justify-self: start;
   }
 

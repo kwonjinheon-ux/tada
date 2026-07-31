@@ -201,12 +201,13 @@ export function AiListingGenerator({
         throw new Error(getErrorMessage(payload) ?? (language === "ko" ? "판매 설명을 만들지 못했습니다. 잠시 후 다시 시도해 주세요." : "Unable to create a listing description. Please try again shortly."));
       }
 
+      const fallbackDraft = isFallbackDraft(payload);
       setDraft(generated);
       setProgress(100);
-      setStatus(isFallbackDraft(payload)
+      setStatus(fallbackDraft
         ? "ChatGPT is temporarily unavailable, so a starter draft was created from your details. Please review it before posting."
         : "AI draft is ready. Review and edit it before posting.");
-      onUseTitle(generated.title);
+      if (!fallbackDraft) onUseTitle(generated.title);
       onUseDraft(generated.description, "replace");
       await new Promise((resolve) => window.setTimeout(resolve, 180));
     } catch (generationError) {

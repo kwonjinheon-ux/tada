@@ -7,6 +7,7 @@ export const designTokens = {
   radius: { control: "var(--radius-ui)", card: "var(--radius-card)" },
   spacing: { content: "var(--content-gap)", section: "var(--section-gap)" },
   container: { default: "var(--page-max-width)", narrow: "var(--page-narrow-max-width)", wide: "var(--page-wide-max-width)" },
+  logo: { width: "var(--site-logo-width)", height: "var(--site-logo-height)" },
   color: { surface: "var(--color-surface)", ink: "var(--color-ink)", muted: "var(--color-muted)", primary: "var(--color-primary)" },
   shadow: { card: "var(--shadow-card)" },
 } as const;
