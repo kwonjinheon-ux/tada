@@ -44,8 +44,28 @@ export const generatedListingSchema = z
   })
   .strict();
 
+const itemIdentitySchema = z
+  .object({
+    title: z.string().trim().min(1).max(70),
+    category: z.string().trim().min(1).max(100).nullable(),
+    subcategory: z.string().trim().min(1).max(100).nullable(),
+    brand: z.string().trim().min(1).max(100).nullable(),
+    model: z.string().trim().min(1).max(120).nullable(),
+    colour: z.string().trim().min(1).max(100).nullable(),
+    itemType: z.string().trim().min(1).max(120),
+    confidence: z.enum(["low", "medium", "high"]),
+    missingInformation: z.array(z.string().trim().min(1).max(240)).max(8),
+  })
+  .strict();
+
 export type ListingAiRequest = z.infer<typeof listingAiRequestSchema>;
 export type GeneratedListing = z.infer<typeof generatedListingSchema>;
+type ItemIdentity = z.infer<typeof itemIdentitySchema>;
+
+export type ListingGenerationResult = {
+  draft: GeneratedListing;
+  fallback: boolean;
+};
 
 export class ListingAiError extends Error {
   constructor(
@@ -64,6 +84,7 @@ const genericListingTitles = new Set([
   "product",
   "product for sale",
   "selling item",
+  "title needs review",
   "판매 상품",
   "판매 물품",
   "중고 물품",
@@ -74,13 +95,32 @@ export function isGenericListingTitle(value: string) {
   return !normalized || genericListingTitles.has(normalized);
 }
 
-function buildListingPrompt(input: ListingAiRequest) {
+function buildIdentityPrompt(input: ListingAiRequest) {
+  return [
+    "Identify the single main second-hand item shown across the supplied photographs.",
+    "Return only the required JSON. Use the first photograph as the primary view and the others only as supporting views.",
+    "Create a specific, searchable title of at most 70 characters. Use brand + model + item type + distinguishing feature only when visible.",
+    "If brand or model text is not clearly readable, return null instead of guessing. A broad but visually supported title such as 'Black dual-camera smartphone' is acceptable.",
+    "Never return a placeholder such as 'Marketplace item', 'Item for sale', 'Product', or 'Unknown item'.",
+    "Do not infer operation, authenticity, capacity, size, age, ownership, or accessories that are not visible.",
+    "If several possible sale items appear, choose the most visually prominent item and record the ambiguity in missingInformation.",
+    `Preferred title language: ${input.language ?? "en"}. Keep recognised brand and model names unchanged.`,
+    "Seller-provided clues are context, not proof:",
+    JSON.stringify({
+      title: input.title,
+      category: input.category,
+      condition: input.condition,
+      additionalDetails: input.additionalDetails,
+    }),
+  ].join("\n");
+}
+
+function buildListingPrompt(input: ListingAiRequest, identity: ItemIdentity | null) {
   return [
     "You create accurate second-hand marketplace listings from product photographs.",
-    "Analyse every supplied image carefully and return only valid JSON matching the required schema.",
-    "Identify the main item being sold and create a concise, searchable title of no more than 70 characters. Use Brand + model + item type + distinguishing feature when those details are clearly visible or explicitly supplied.",
-    "Describe only details supported by the photographs or explicit seller inputs. Identify visible branding, model information, colour, materials, features, accessories, and defects. If text or a logo is unclear, return null instead of guessing.",
-    "Never invent a brand, model, specification, size, age, capacity, material, condition, function, accessory, authenticity, price, purchase history, warranty, shipping, payment, or collection details.",
+    "Return only valid JSON matching the required schema. Analyse the photographs and use the verified identity supplied below.",
+    "Describe only details supported by the photographs, verified identity, or explicit seller inputs. If text or a logo is unclear, return null.",
+    "Never invent a brand, model, specification, size, age, capacity, material, condition, function, accessory, authenticity, price, purchase history, warranty, shipping, payment, or collection detail.",
     "Do not claim an electronic or mechanical item works unless operation is visibly demonstrated or explicitly confirmed by the seller. When working condition cannot be confirmed, say so in the description and add it to missingInformation.",
     "If multiple items appear, identify the most likely primary item and record the ambiguity in missingInformation.",
     "Record every visible scratch, stain, dent, crack, missing part, fading, or other wear in visibleDefects. Do not hide defects or use misleading advertising language.",
@@ -92,6 +132,7 @@ function buildListingPrompt(input: ListingAiRequest) {
     "Do not generate or recommend a selling price. Return a draft only and never claim it has been published.",
     "Listing details:",
     JSON.stringify({
+      verifiedPhotoIdentity: identity,
       title: input.title,
       category: input.category,
       price: input.price,
@@ -101,6 +142,49 @@ function buildListingPrompt(input: ListingAiRequest) {
       additionalDetails: input.additionalDetails,
     }),
   ].join("\n");
+}
+
+async function identifyListingItem({
+  apiKey,
+  input,
+  imageUrls,
+  safetyIdentifier,
+}: {
+  apiKey: string;
+  input: ListingAiRequest;
+  imageUrls: string[];
+  safetyIdentifier: string;
+}) {
+  if (!imageUrls.length || !isGenericListingTitle(input.title)) return null;
+
+  const openai = new OpenAI({ apiKey, timeout: 18_000, maxRetries: 0 });
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_LISTING_VISION_MODEL?.trim()
+      || process.env.OPENAI_LISTING_MODEL?.trim()
+      || "gpt-5-mini",
+    safety_identifier: safetyIdentifier,
+    max_output_tokens: 500,
+    input: [{
+      role: "user",
+      content: [
+        { type: "input_text", text: buildIdentityPrompt(input) },
+        ...imageUrls.map((imageUrl, index) => ({
+          type: "input_image" as const,
+          image_url: imageUrl,
+          detail: index === 0 ? "high" as const : "low" as const,
+        })),
+      ],
+    }],
+    text: {
+      format: zodTextFormat(itemIdentitySchema, "tada_item_identity"),
+    },
+  });
+
+  const identity = itemIdentitySchema.parse(response.output_parsed);
+  if (isGenericListingTitle(identity.title)) {
+    throw new ListingAiError("AI_RESPONSE_INVALID");
+  }
+  return identity;
 }
 
 export function createListingInputHash(input: ListingAiRequest) {
@@ -121,9 +205,12 @@ export function isOwnedAiDraftImagePath(path: string, userId: string) {
     && /^[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/.test(fileName);
 }
 
-export function createListingFallbackDraft(input: ListingAiRequest): GeneratedListing {
+export function createListingFallbackDraft(
+  input: ListingAiRequest,
+  identity: ItemIdentity | null = null,
+): GeneratedListing {
   const categoryTitle = input.category.split("/").map((part) => part.trim()).filter(Boolean).at(-1);
-  const title = (input.title || categoryTitle || "Title needs review").slice(0, 70);
+  const title = (identity?.title || input.title || categoryTitle || "Title needs review").slice(0, 70);
   const detailLines = input.additionalDetails.map(({ label, value }) => `${label}: ${value}.`);
   const description = [
     `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
@@ -153,10 +240,10 @@ export function createListingFallbackDraft(input: ListingAiRequest): GeneratedLi
 
   return generatedListingSchema.parse({
     title,
-    category: categoryParts[0] || null,
-    subcategory: categoryParts[1] || null,
-    brand: null,
-    model: null,
+    category: identity?.category || categoryParts[0] || null,
+    subcategory: identity?.subcategory || categoryParts[1] || null,
+    brand: identity?.brand || null,
+    model: identity?.model || null,
     condition,
     conditionReason: input.condition
       ? `The seller selected ${input.condition}; this could not be independently verified while image analysis was unavailable.`
@@ -164,11 +251,14 @@ export function createListingFallbackDraft(input: ListingAiRequest): GeneratedLi
     description,
     keyFeatures: [],
     visibleDefects: [],
-    colour: null,
+    colour: identity?.colour || null,
     includedItems: [],
     suggestedSearchKeywords: suggestedTags.length ? suggestedTags : ["marketplace"],
-    confidence: "low",
-    missingInformation: ["Confirm the exact item identity, visible condition, included items, and working operation before posting."],
+    confidence: identity?.confidence || "low",
+    missingInformation: [
+      ...(identity?.missingInformation ?? []),
+      "Confirm the visible condition, included items, and working operation before posting.",
+    ].slice(0, 12),
     requiresManualReview: true,
     reviewReason: "ChatGPT was temporarily unavailable, so the photo analysis must be reviewed manually.",
   });
@@ -182,60 +272,88 @@ export async function generateListingDraft({
   input: ListingAiRequest;
   imageUrls: string[];
   safetyIdentifier: string;
-}): Promise<GeneratedListing> {
+}): Promise<ListingGenerationResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new ListingAiError("AI_NOT_CONFIGURED");
   }
 
-  const openai = new OpenAI({ apiKey, timeout: 24_000, maxRetries: 1 });
-  const response = await openai.responses.parse({
-    model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
-    safety_identifier: safetyIdentifier,
-    max_output_tokens: 1_200,
-    input: [
-      {
-        role: "developer",
-        content: "You create careful, factual listing drafts. Follow the supplied instructions exactly.",
-      },
-      {
-        role: "user",
-        content: [
-          { type: "input_text", text: buildListingPrompt(input) },
-          ...imageUrls.map((imageUrl, index) => ({
-            type: "input_image" as const,
-            image_url: imageUrl,
-            detail: index === 0 ? "high" as const : "low" as const,
-          })),
-        ],
-      },
-    ],
-    text: {
-      format: zodTextFormat(generatedListingSchema, "tada_listing_draft"),
-    },
-  });
-
-  if (!response.output_parsed) {
-    console.error("AI listing response could not be parsed", {
-      status: response.status,
-      incompleteReason: response.incomplete_details?.reason,
-      outputCount: response.output.length,
-      hasRefusal: response.output.some(
-        (item) => item.type === "message" && item.content.some((content) => content.type === "refusal"),
-      ),
-    });
-    throw new ListingAiError("AI_RESPONSE_INVALID");
+  let identity: ItemIdentity | null = null;
+  try {
+    identity = await identifyListingItem({ apiKey, input, imageUrls, safetyIdentifier });
+  } catch (error) {
+    console.warn("Focused AI item identification did not complete; continuing with full analysis", error);
   }
 
+  const openai = new OpenAI({ apiKey, timeout: 36_000, maxRetries: 0 });
   try {
+    const response = await openai.responses.parse({
+      model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
+      safety_identifier: safetyIdentifier,
+      max_output_tokens: 1_400,
+      input: [
+        {
+          role: "developer",
+          content: "Create a careful, factual marketplace draft. Follow the evidence rules and output schema exactly.",
+        },
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: buildListingPrompt(input, identity) },
+            ...imageUrls.map((imageUrl, index) => ({
+              type: "input_image" as const,
+              image_url: imageUrl,
+              detail: index === 0 ? "high" as const : "low" as const,
+            })),
+          ],
+        },
+      ],
+      text: {
+        format: zodTextFormat(generatedListingSchema, "tada_listing_draft"),
+      },
+    });
+
+    if (!response.output_parsed) {
+      console.error("AI listing response could not be parsed", {
+        status: response.status,
+        incompleteReason: response.incomplete_details?.reason,
+        outputCount: response.output.length,
+        hasRefusal: response.output.some(
+          (item) => item.type === "message" && item.content.some((content) => content.type === "refusal"),
+        ),
+      });
+      throw new ListingAiError("AI_RESPONSE_INVALID");
+    }
+
     const draft = generatedListingSchema.parse(response.output_parsed);
-    if (imageUrls.length > 0 && isGenericListingTitle(draft.title)) {
+    const resolvedDraft = identity && isGenericListingTitle(draft.title)
+      ? generatedListingSchema.parse({
+        ...draft,
+        title: identity.title,
+        category: draft.category || identity.category,
+        subcategory: draft.subcategory || identity.subcategory,
+        brand: draft.brand || identity.brand,
+        model: draft.model || identity.model,
+        colour: draft.colour || identity.colour,
+        confidence: identity.confidence,
+        missingInformation: [...new Set([
+          ...draft.missingInformation,
+          ...identity.missingInformation,
+        ])].slice(0, 12),
+      })
+      : draft;
+
+    if (imageUrls.length > 0 && isGenericListingTitle(resolvedDraft.title)) {
       console.error("AI listing response used a generic title despite image input", { title: draft.title });
       throw new ListingAiError("AI_RESPONSE_INVALID");
     }
-    return draft;
-  } catch {
-    console.error("AI listing parsed response did not match the expected shape");
-    throw new ListingAiError("AI_RESPONSE_INVALID");
+    return { draft: resolvedDraft, fallback: false };
+  } catch (error) {
+    if (identity) {
+      console.warn("Full AI listing generation failed; preserving focused photo identification", error);
+      return { draft: createListingFallbackDraft(input, identity), fallback: true };
+    }
+    console.error("AI listing generation did not produce a valid structured response", error);
+    throw error instanceof ListingAiError ? error : new ListingAiError("AI_RESPONSE_INVALID");
   }
 }

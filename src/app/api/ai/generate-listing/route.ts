@@ -6,7 +6,6 @@ import {
   createListingInputHash,
   createSafetyIdentifier,
   generateListingDraft,
-  isGenericListingTitle,
   isOwnedAiDraftImagePath,
   listingAiRequestSchema,
 } from "@/lib/ai/listing";
@@ -115,31 +114,24 @@ export async function POST(request: Request) {
     }
   }
 
-  const requiresImageIdentification = imageUrls.length > 0 && isGenericListingTitle(input.title);
-
   try {
-    const draft = await generateListingDraft({
+    const result = await generateListingDraft({
       input,
       imageUrls,
       safetyIdentifier: createSafetyIdentifier(user.id),
     });
     await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
-    return NextResponse.json({ success: true, data: draft });
+    return NextResponse.json({
+      success: true,
+      data: result.draft,
+      ...(result.fallback ? { fallback: true } : {}),
+    });
   } catch (error) {
     console.error("AI listing generation failed", error);
 
     if (error instanceof ListingAiError && error.code === "AI_NOT_CONFIGURED") {
       await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
       return failure("AI_NOT_CONFIGURED", "AI description generation is not configured yet.");
-    }
-
-    if (requiresImageIdentification) {
-      await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
-      return failure(
-        "AI_IMAGE_IDENTIFICATION_FAILED",
-        "ChatGPT could not identify the item accurately from the photo. Please try again with a clear main photo.",
-        502,
-      );
     }
 
     if (typeof error === "object" && error && "status" in error && error.status === 429) {
