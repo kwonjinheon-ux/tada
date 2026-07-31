@@ -3387,7 +3387,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   border: 1px solid #e3e9e7;
   border-radius: 8px;
   background: var(--surface);
-  box-shadow: var(--shadow);
 }
 
 .post-ad-form,
@@ -3399,6 +3398,23 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .post-ad-form {
   gap: 20px;
+}
+
+.post-title-field { order: 1; }
+.post-photo-field { order: 2; }
+.post-ai-field { order: 3; }
+.post-price-field { order: 4; }
+.post-description-field { order: 5; }
+.post-category-fields { order: 6; }
+.post-location-grid { order: 7; }
+.post-create-status { order: 8; }
+.post-submit-row { order: 9; }
+
+.post-photo-processing {
+  margin: 0;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .post-field label,
@@ -4015,6 +4031,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-ai-generate-button:hover:not(:disabled) {
   background: #059669;
   transform: translateY(-1px);
+}
+
+.post-ai-generate-button .fa-openai {
+  color: #111827;
 }
 
 .post-ai-generate-button:disabled {
@@ -5909,6 +5929,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-settings-page .profile-location-feedback { font-size: 14px; }
 
 @media (max-width: 767.98px) {
+  .post-ad-page {
+    padding-inline: 16px;
+    padding-top: 16px;
+  }
   .profile-settings-page .profile-settings-content { width: 100%; padding: 24px 16px 42px; }
   .profile-settings-page .profile-settings-grid,
   .profile-settings-page .profile-main-column,

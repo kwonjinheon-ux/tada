@@ -32,6 +32,7 @@ type AiListingGeneratorProps = {
 
 const MAX_AI_IMAGE_DIMENSION = 1280;
 const MAX_AI_IMAGES = 3;
+const AI_REQUEST_TIMEOUT_MS = 65_000;
 
 function plainText(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -59,6 +60,11 @@ function getGeneratedListing(payload: unknown): GeneratedListing | null {
     || !warnings.every((warning) => typeof warning === "string")
   ) return null;
   return { title, description, conditionSummary, suggestedTags, warnings };
+}
+
+function isFallbackDraft(payload: unknown) {
+  if (typeof payload !== "object" || !payload || !("fallback" in payload)) return false;
+  return (payload as Record<string, unknown>).fallback === true;
 }
 
 async function createAiImageFile(file: File) {
@@ -161,25 +167,29 @@ export function AiListingGenerator({
       }
 
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 30_000);
-      const response = await fetch("/api/ai/generate-listing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        signal: controller.signal,
-        body: JSON.stringify({
-          title: title.trim(),
-          category: category.trim(),
-          price: Number.isFinite(numericPrice) ? numericPrice : undefined,
-          condition: condition.trim(),
-          location: location.trim(),
-          description,
-          additionalDetails,
-          imagePaths: uploadedPaths,
-          language,
-        }),
-      });
-      window.clearTimeout(timeout);
+      const timeout = window.setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
+      let response: Response;
+      try {
+        response = await fetch("/api/ai/generate-listing", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          signal: controller.signal,
+          body: JSON.stringify({
+            title: title.trim(),
+            category: category.trim(),
+            price: Number.isFinite(numericPrice) ? numericPrice : undefined,
+            condition: condition.trim(),
+            location: location.trim(),
+            description,
+            additionalDetails,
+            imagePaths: uploadedPaths,
+            language,
+          }),
+        });
+      } finally {
+        window.clearTimeout(timeout);
+      }
 
       const payload: unknown = await response.json();
       const generated = getGeneratedListing(payload);
@@ -189,7 +199,9 @@ export function AiListingGenerator({
 
       setDraft(generated);
       setProgress(100);
-      setStatus(language === "ko" ? "AI 초안이 준비됐어요. 등록하기 전에 내용을 확인하고 수정해 주세요." : "AI draft is ready. Review and edit it before posting.");
+      setStatus(isFallbackDraft(payload)
+        ? "ChatGPT is temporarily unavailable, so a starter draft was created from your details. Please review it before posting."
+        : "AI draft is ready. Review and edit it before posting.");
       onUseTitle(generated.title);
       onUseDraft(generated.description, "replace");
       await new Promise((resolve) => window.setTimeout(resolve, 180));
@@ -218,11 +230,11 @@ export function AiListingGenerator({
           </div>
         ) : (
           <button className="post-ai-generate-button" type="button" onClick={() => void generate()}>
-            <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
-            <span>AI로 판매 설명 다듬기</span>
+            <i className="fa-brands fa-openai" aria-hidden="true" />
+            <span>Generate a listing description with ChatGPT</span>
           </button>
         )}
-        <p>{language === "ko" ? "사진과 입력한 정보를 바탕으로 설명을 다듬습니다. AI가 상품을 자동으로 등록하지는 않습니다." : "AI refines your listing with the details and photos you provided. It never posts your listing automatically."}</p>
+        <p>{language === "ko" ? "사진과 입력한 정보를 바탕으로 설명을 다듬습니다. AI가 상품을 자동으로 등록하지는 않습니다." : "ChatGPT turns your listing details and photos into a clear, buyer-friendly description. It never posts your listing automatically."}</p>
       </div>
 
       <div className="post-ai-live-region" aria-live="polite" aria-atomic="true">

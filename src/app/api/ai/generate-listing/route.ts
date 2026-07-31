@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import {
   ListingAiError,
+  createListingFallbackDraft,
   createListingInputHash,
   createSafetyIdentifier,
   generateListingDraft,
@@ -12,6 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const FEATURE = "listing_description";
 const MAX_GENERATIONS_PER_WINDOW = 3;
@@ -121,17 +123,19 @@ export async function POST(request: Request) {
     await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
     return NextResponse.json({ success: true, data: draft });
   } catch (error) {
-    await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
     console.error("AI listing generation failed", error);
 
     if (error instanceof ListingAiError && error.code === "AI_NOT_CONFIGURED") {
+      await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
       return failure("AI_NOT_CONFIGURED", "AI description generation is not configured yet.");
     }
 
     if (typeof error === "object" && error && "status" in error && error.status === 429) {
-      return failure("RATE_LIMITED", "AI generation is busy right now. Please wait a moment and try again.", 429);
+      await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
+      return NextResponse.json({ success: true, data: createListingFallbackDraft(input), fallback: true });
     }
 
-    return failure("AI_GENERATION_FAILED", "Unable to create a listing description. Please try again shortly.");
+    await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
+    return NextResponse.json({ success: true, data: createListingFallbackDraft(input), fallback: true });
   }
 }

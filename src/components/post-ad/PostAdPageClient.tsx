@@ -19,6 +19,7 @@ type PhotoPreview = {
   file?: File;
   name?: string;
   isExisting?: boolean;
+  draftPath?: string;
 };
 
 export type EditableListingPhoto = {
@@ -276,6 +277,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [textColor, setTextColor] = useState("#314254");
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
+  const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
@@ -305,8 +307,20 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   }, [description, isHtmlMode]);
 
   useEffect(() => {
+    const cleanupDraftPhotos = () => {
+      const draftPaths = photosRef.current.flatMap((photo) => photo.draftPath ? [photo.draftPath] : []);
+      if (draftPaths.length) {
+        const supabase = createBrowserSupabaseClient();
+        void supabase?.storage.from("market-listing-images").remove(draftPaths);
+      }
+    };
+    window.addEventListener("pagehide", cleanupDraftPhotos);
     return () => {
-      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.url));
+      window.removeEventListener("pagehide", cleanupDraftPhotos);
+      cleanupDraftPhotos();
+      photosRef.current.forEach((photo) => {
+        if (photo.file) URL.revokeObjectURL(photo.url);
+      });
     };
   }, []);
 
@@ -363,6 +377,44 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setSmartphoneSpecs((current) => ({ ...current, [key]: value }));
   };
 
+  const uploadDraftPhotos = async (nextPhotos: Array<PhotoPreview & { file: File }>) => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase || !nextPhotos.length) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError("Please sign in before adding photos.");
+      return;
+    }
+
+    setIsProcessingPhotos(true);
+    setNotice("Your images are being processed and saved securely.");
+    const results = await Promise.all(nextPhotos.map(async (photo) => {
+      const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const draftPath = `${user.id}/drafts/${photo.id}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(draftPath, photo.file, {
+        cacheControl: "3600",
+        contentType: photo.file.type,
+        upsert: false,
+      });
+      if (uploadError) return uploadError.message;
+      if (!photosRef.current.some((currentPhoto) => currentPhoto.id === photo.id)) {
+        await supabase.storage.from("market-listing-images").remove([draftPath]);
+        return null;
+      }
+      setPhotos((current) => current.map((currentPhoto) => currentPhoto.id === photo.id ? { ...currentPhoto, draftPath } : currentPhoto));
+      return null;
+    }));
+    setIsProcessingPhotos(false);
+    const uploadError = results.find(Boolean);
+    if (uploadError) {
+      setError(`Some photos could not be prepared: ${uploadError}`);
+      setNotice(null);
+      return;
+    }
+    setNotice("Photos are ready and will be attached instantly when you post.");
+  };
+
   const addPhotos = async (fileList: FileList | File[]) => {
     const incomingFiles = Array.from(fileList);
     const validFiles = incomingFiles.filter(isAcceptedMarketListingImage);
@@ -383,26 +435,26 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       return;
     }
 
-    setPhotos((currentPhotos) => {
-      const availableSlots = maxPhotoCount - currentPhotos.length;
-      const nextPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        url: URL.createObjectURL(file),
-        name: file.name,
-      }));
-      const updatedPhotos = [...currentPhotos, ...nextPhotos];
+    const currentPhotos = photosRef.current;
+    const availableSlots = maxPhotoCount - currentPhotos.length;
+    const addedPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name,
+    }));
+    const updatedPhotos = [...currentPhotos, ...addedPhotos];
+    photosRef.current = updatedPhotos;
+    setPhotos(updatedPhotos);
 
-      if (!primaryPhotoId && updatedPhotos[0]) {
-        setPrimaryPhotoId(updatedPhotos[0].id);
-      }
+    if (!primaryPhotoId && updatedPhotos[0]) {
+      setPrimaryPhotoId(updatedPhotos[0].id);
+    }
 
-      if (normalizedFiles.length > availableSlots) {
-        setError("You can add up to 10 photos.");
-      }
-
-      return updatedPhotos;
-    });
+    if (normalizedFiles.length > availableSlots) {
+      setError("You can add up to 10 photos.");
+    }
+    if (addedPhotos.length) void uploadDraftPhotos(addedPhotos);
   };
 
   const openPhotoPicker = () => {
@@ -416,11 +468,16 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     if (removedPhoto?.file) {
       URL.revokeObjectURL(removedPhoto.url);
     }
+    if (removedPhoto?.draftPath) {
+      const supabase = createBrowserSupabaseClient();
+      void supabase?.storage.from("market-listing-images").remove([removedPhoto.draftPath]);
+    }
 
     if (removedPhoto?.isExisting) {
       setRemovedPhotoIds((current) => [...current, photoId]);
     }
 
+    photosRef.current = remainingPhotos;
     setPhotos(remainingPhotos);
     setPrimaryPhotoId((currentPrimaryPhotoId) =>
       currentPrimaryPhotoId === photoId ? remainingPhotos[0]?.id ?? null : currentPrimaryPhotoId,
@@ -502,11 +559,13 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
 
     const uploadResults = await Promise.all(
       uploadablePhotos.map(async (photo, index) => {
-        const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
-          cacheControl: "3600",
-          contentType: photo.file.type,
-          upsert: false,
-        });
+        const { error: uploadError } = photo.draftPath
+          ? await supabase.storage.from("market-listing-images").move(photo.draftPath, rows[index].storage_path)
+          : await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
+            cacheControl: "3600",
+            contentType: photo.file.type,
+            upsert: false,
+          });
 
         completedCount += 1;
         onProgress(completedCount, uploadablePhotos.length);
@@ -748,21 +807,20 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       <div className="post-ad-layout">
         <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
-            <div className="post-field post-field-full">
+            <div className="post-field post-field-full post-title-field">
               <label htmlFor="post-title">Listing Title</label>
               <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
               <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
-            <div className="post-form-grid post-form-grid-four">
+            <div className="post-form-grid post-form-grid-three post-category-fields">
               <CustomSelect id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
               <CustomSelect id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
-              <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <CustomSelect id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>
 
             <fieldset
-              className={`photo-fieldset ${isDraggingPhotos ? "is-dragging" : ""}`}
+              className={`photo-fieldset post-photo-field ${isDraggingPhotos ? "is-dragging" : ""}`}
               onDragOver={(event) => {
                 event.preventDefault();
                 setIsDraggingPhotos(true);
@@ -814,9 +872,10 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 <strong>Click to upload or drag and drop multiple photos at once</strong>
                 <span>PNG, JPG or WebP (max. 5MB per image)</span>
               </p>
+              {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
             </fieldset>
 
-            <div className="post-field post-field-full">
+            <div className="post-field post-field-full post-description-field">
               <label htmlFor="post-description">Description</label>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
@@ -853,7 +912,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 {isHtmlMode ? (
                   <textarea className="post-editor-source" id="post-description" value={description} onChange={(event) => setDescription(event.target.value)} spellCheck={false} aria-label="HTML source" />
                 ) : (
-                  <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Tell buyers about your item's condition, features, and why you're selling..." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
+                  <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Write a clear, detailed and friendly description buyers can trust. Include the item’s condition, key features, included accessories, any flaws, pickup or delivery details, and why you are selling. This description can be reused until the item sells, so make it helpful and complete." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
                 )}
               </div>
               {shouldShowSmartphoneTemplate && (
@@ -890,16 +949,19 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                   </div>
                 </section>
               )}
+            </div>
+
+            <div className="post-ai-field">
               <AiListingGenerator
                 title={title}
                 category={[mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory, subCategoryOptions.find((category) => category.value === subCategory)?.label ?? subCategory].filter(Boolean).join(" / ")}
                 price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
-                language="ko"
+                language="en"
                 additionalDetails={[
-                  { label: "거래 방식", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
-                  { label: "만남 장소", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
+                  { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
+                  { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
                   ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
                 ].filter(({ value }) => value.length > 0)}
                 photos={photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))}
@@ -911,7 +973,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
               />
             </div>
 
-            <div className="post-field post-field-full">
+            <div className="post-field post-field-full post-price-field">
               <label htmlFor="listing-price">Price (NZD)</label>
               <div className="post-price-input">
                 <span>$</span>
@@ -922,6 +984,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
             <div className="post-form-grid post-location-grid">
               <CustomSelect id="listing-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regionOptions} value={region} onChange={setRegion} />
               <CustomSelect id="listing-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areaOptions} value={area} onChange={setArea} />
+              <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <CustomSelect id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>
 
@@ -936,7 +999,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
               <button
                 className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`}
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isProcessingPhotos}
                 aria-busy={isSubmitting}
                 aria-valuemin={isSubmitting ? 0 : undefined}
                 aria-valuemax={isSubmitting ? 100 : undefined}
