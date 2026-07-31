@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
+import { descriptionTextScale, MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizeControls } from "@/components/ui/TextSizeSection";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
+type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale; listing_description_text_step: number };
 type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
 type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
 type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
@@ -46,6 +47,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "");
   const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
+  const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialProfile.listing_description_text_step);
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -55,7 +57,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
-  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, staticSwitches: readStaticSwitches() }));
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialProfile.listing_description_text_step, staticSwitches: readStaticSwitches() }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
@@ -144,14 +146,14 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale });
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale, listing_description_text_step: descriptionTextSizeStep });
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
     const authUpdate = nextEmail === savedSettings.email ? { data: { full_name: nickname } } : { email: nextEmail, data: { full_name: nickname } };
     const { error: authError } = await supabase.auth.updateUser(authUpdate);
     if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
     window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
     setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
-    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, locale, staticSwitches });
+    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, locale, descriptionTextSizeStep, staticSwitches });
     setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
     setIsSavingAll(false);
     router.refresh();
@@ -159,7 +161,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
 
   const discardSettings = () => {
     setDisplayName(savedSettings.displayName); setNicknameDraft(savedSettings.displayName); setEmailDraft(savedSettings.email); setPhone(savedSettings.phone);
-    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setLocale(savedSettings.locale); setStaticSwitches(savedSettings.staticSwitches);
+    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setLocale(savedSettings.locale); setDescriptionTextSizeStep(savedSettings.descriptionTextSizeStep); setStaticSwitches(savedSettings.staticSwitches);
     setCurrentLocation({ status: "idle" }); setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
@@ -212,6 +214,21 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="fa-regular fa-bell" aria-hidden="true" /><h2>{t("notifications")}</h2></header><div className="profile-static-setting-list"><div><p><strong>{t("chatMessages")}</strong><small>{t("inAppNotifications")}</small></p>{staticSwitch("chatMessages")}</div><div><p><strong>{t("priceUpdates")}</strong><small>{t("weeklyNewsletter")}</small></p>{staticSwitch("priceUpdates")}</div><div><p><strong>{t("smsAlerts")}</strong><small>{t("criticalAlerts")}</small></p>{staticSwitch("smsAlerts")}</div><div><p><strong>{t("reviews")}</strong><small>{t("criticalAlerts")}</small></p>{staticSwitch("reviews")}</div></div></section>
       </aside>
     </div>
+    <section className="profile-panel profile-description-text-size-panel">
+      <header className="profile-section-heading"><i className="fa-solid fa-text-height" aria-hidden="true" /><h2>Listing description text size</h2></header>
+      <p className="profile-description-text-size-help">Set a comfortable size for every listing description. Save changes to apply it across Tada.</p>
+      <div className="profile-description-text-size-preview">
+        <div>
+          <span>Preview · {Math.round(descriptionTextScale(descriptionTextSizeStep) * 100)}%</span>
+          <p style={{ "--text-scale": descriptionTextScale(descriptionTextSizeStep) } as CSSProperties}>This is how description content will appear on every listing.</p>
+        </div>
+        <TextSizeControls
+          value={descriptionTextSizeStep}
+          label="Listing description text size"
+          onChange={(change) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)))}
+        />
+      </div>
+    </section>
     <section className={`profile-panel profile-location-privacy-panel ${isLocationOpen ? "is-open" : ""}`}>
       <button className="profile-section-toggle" type="button" aria-expanded={isLocationOpen} onClick={() => setIsLocationOpen((value) => !value)}><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {t("locationPrivacy")}</span><i className={`fa-solid fa-chevron-${isLocationOpen ? "up" : "down"}`} aria-hidden="true" /></button>
       {isLocationOpen ? <>

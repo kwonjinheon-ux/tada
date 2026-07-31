@@ -5811,6 +5811,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .profile-static-switch input:checked + span::after { transform: translateX(18px); }
 .profile-static-switch input:focus-visible + span { outline: 3px solid rgba(0,108,73,.28); outline-offset: 3px; }
 .profile-settings-page .profile-location-privacy-panel { margin-top: 18px; padding: 0; }
+.profile-settings-page .profile-description-text-size-panel { display: grid; gap: 14px; margin-top: 18px; padding: 22px 24px; }
+.profile-description-text-size-panel .profile-section-heading { margin: 0; }
+.profile-description-text-size-help { margin: 0; color: #607187; font-size: 13px; line-height: 1.5; }
+.profile-description-text-size-preview { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 18px; border: 1px solid #dce8e3; border-radius: 10px; background: #f8fbff; }
+.profile-description-text-size-preview > div { min-width: 0; }
+.profile-description-text-size-preview span { display: block; margin-bottom: 8px; color: #006c49; font-size: 12px; font-weight: 700; }
+.profile-description-text-size-preview p { margin: 0; color: #34465d; font-size: calc(14px * var(--text-scale, 1)); line-height: 1.55; transition: font-size 180ms ease; }
+.profile-description-text-size-preview .text-size-controls { flex: 0 0 auto; }
 .profile-location-privacy-panel .profile-section-toggle { padding: 0 24px; }
 .profile-location-privacy-panel > :not(.profile-section-toggle) { width: calc(100% - 48px); box-sizing: border-box; margin-left: 24px; margin-right: 24px; }
 .profile-location-privacy-panel > .profile-panel-action { margin-bottom: 24px; }
@@ -5898,6 +5906,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .profile-location-privacy-panel .profile-section-toggle { padding: 0 20px; }
   .profile-account-content { padding: 20px; }
   .profile-settings-page .profile-location-privacy-panel { margin-top: 14px; }
+  .profile-settings-page .profile-description-text-size-panel { margin-top: 14px; padding: 20px; }
   .profile-location-privacy-panel > :not(.profile-section-toggle) { width: calc(100% - 40px); margin-left: 20px; margin-right: 20px; }
   .profile-location-access { padding: 12px 0 18px; }
   .profile-location-access strong { font-size: 16px; }
