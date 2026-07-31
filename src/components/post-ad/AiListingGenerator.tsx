@@ -139,7 +139,7 @@ export function AiListingGenerator({
             <span>Generate title & description with ChatGPT</span>
           </button>
         )}
-        <p>ChatGPT uses your title, price and any notes you have entered. If they are blank, it identifies the item from your photos and creates a natural seller-style draft. It never publishes automatically.</p>
+        <p>ChatGPT uses your title, price and any notes you have entered. If they are blank, it identifies the item from your photos and creates a natural seller-style draft. It never publishes automatically. AI is convenient, but it cannot replace the human touch that catches a buyer&apos;s eye.</p>
       </div>
 
       <div className="post-ai-live-region" aria-live="polite" aria-atomic="true">
