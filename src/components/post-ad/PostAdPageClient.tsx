@@ -4,6 +4,7 @@ import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/LanguageProvider";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
@@ -253,6 +254,7 @@ function CustomSelect({
 
 export function PostAdPageClient({ initialListing }: { initialListing?: EditableListingInitialValues }) {
   const router = useRouter();
+  const { locale } = useLanguage();
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PhotoPreview[]>([]);
@@ -958,13 +960,18 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
-                language="en"
+                language={locale}
                 additionalDetails={[
                   { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
                   { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
                   ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
                 ].filter(({ value }) => value.length > 0)}
-                photos={photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))}
+                photos={photos
+                  .filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))
+                  .map((photo, index) => ({
+                    file: photo.file,
+                    isPrimary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
+                  }))}
                 currentDescription={description}
                 hasPreviousDescription={Boolean(previousDescription)}
                 onUseDraft={useAiDraft}

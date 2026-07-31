@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type PhotoForAi = { file: File };
+type PhotoForAi = { file: File; isPrimary?: boolean };
 type AiDetail = { label: string; value: string };
 
 type GeneratedListing = {
@@ -20,7 +20,7 @@ type AiListingGeneratorProps = {
   price: string;
   condition: string;
   location: string;
-  language: "ko" | "en";
+  language: "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar";
   additionalDetails: AiDetail[];
   photos: PhotoForAi[];
   currentDescription: string;
@@ -153,7 +153,11 @@ export function AiListingGenerator({
         return;
       }
 
-      for (const photo of photos.slice(0, MAX_AI_IMAGES)) {
+      const photosForAnalysis = [...photos]
+        .sort((left, right) => Number(Boolean(right.isPrimary)) - Number(Boolean(left.isPrimary)))
+        .slice(0, MAX_AI_IMAGES);
+
+      for (const photo of photosForAnalysis) {
         const aiFile = await createAiImageFile(photo.file);
         const extension = aiFile.name.split(".").pop()?.toLowerCase() || "webp";
         const path = `${user.id}/ai-drafts/${crypto.randomUUID()}.${extension}`;

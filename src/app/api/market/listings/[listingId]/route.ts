@@ -29,6 +29,35 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   return NextResponse.json({ deleted: true });
 }
 
+export async function POST(_request: Request, { params }: { params: Promise<{ listingId: string }> }) {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Listing management is unavailable right now." }, { status: 503 });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Please log in to relist a listing." }, { status: 401 });
+
+  const { listingId } = await params;
+  const { data: listing } = await supabase
+    .from("market_listings")
+    .select("id,status")
+    .eq("id", listingId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!listing) return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+  if (listing.status !== "published") return NextResponse.json({ error: "Only active listings can be relisted." }, { status: 403 });
+
+  const { data: relistedListing, error } = await supabase
+    .from("market_listings")
+    .update({ created_at: new Date().toISOString() })
+    .eq("id", listingId)
+    .eq("owner_id", user.id)
+    .select("id,created_at")
+    .maybeSingle();
+  if (error || !relistedListing) return NextResponse.json({ error: "Unable to relist this item right now." }, { status: 500 });
+
+  return NextResponse.json({ listingId: relistedListing.id, relistedAt: relistedListing.created_at });
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ listingId: string }> }) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Listing management is unavailable right now." }, { status: 503 });

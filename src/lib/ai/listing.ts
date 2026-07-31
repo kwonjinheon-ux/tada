@@ -18,7 +18,7 @@ export const listingAiRequestSchema = z
       value: z.string().trim().min(1).max(240),
     }).strip()).max(12).optional().default([]),
     imagePaths: z.array(z.string().trim().min(1).max(260)).max(3).optional().default([]),
-    language: z.enum(["ko", "en"]).optional(),
+    language: z.enum(["en", "ko", "zh", "ja", "es", "hi", "ar"]).optional(),
   })
   .strip();
 
@@ -52,17 +52,27 @@ function includesKorean(input: ListingAiRequest) {
 
 function buildListingPrompt(input: ListingAiRequest) {
   const language = input.language ?? (includesKorean(input) ? "ko" : "en");
-  const localeInstruction = language === "ko"
-    ? "title, description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요."
-    : "Write the title, description, conditionSummary, suggestedTags, and warnings in natural New Zealand English. Write a genuinely useful 160–240 word description when the supplied facts support it; otherwise use only the supported details without guessing.";
+  const localeInstructions: Record<NonNullable<ListingAiRequest["language"]>, string> = {
+    ko: "title, description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요.",
+    en: "Write the title, description, conditionSummary, suggestedTags, and warnings in natural New Zealand English. Write a genuinely useful 160–240 word description when the supplied facts support it; otherwise use only the supported details without guessing.",
+    zh: "Write every human-facing field in natural Simplified Chinese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    ja: "Write every human-facing field in natural Japanese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    es: "Write every human-facing field in natural, neutral Spanish. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    hi: "Write every human-facing field in clear, natural Hindi. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    ar: "Write every human-facing field in clear Modern Standard Arabic. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+  };
+  const localeInstruction = localeInstructions[language];
 
   return [
     "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
     "Write in the seller's own warm, natural first-person voice, as though they wrote the polished listing themselves.",
     "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
+    "Inspect the supplied photos before writing. Identify the item as specifically as the visible evidence supports, using the selected primary photo first. Treat the existing title as a clue, not proof: improve or correct it when the images and confirmed details support a clearer name. If brand, model, material, size, colour, or included accessories are unclear, use a precise generic item type instead of guessing.",
+    "Write the title and every human-facing field entirely in the requested language. Preserve established brand names, model numbers, measurements, and proper nouns where translating them would make them less accurate.",
     "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
     "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan. Make it feel polished, approachable, and professionally presented by highlighting real, verifiable benefits without hype.",
-    "Give the description real care: organise the confirmed facts into a friendly, detailed listing that a buyer can confidently revisit until the item sells. Where the seller supplied the information, cover condition, practical features, what is included, honest flaws, collection or delivery, and the reason for selling. Do not add any missing details.",
+    "Give the description real care: organise the confirmed facts into a friendly, detailed listing that a buyer can confidently revisit until the item sells. Weave the selected category, condition, price, location, trade method, meeting place, and other chosen options into natural seller wording rather than listing field labels mechanically. Where supported, cover condition, practical features, what is included, honest flaws, collection or delivery, and the reason for selling. Do not add any missing details.",
+    "Explain practical, evidence-based reasons a buyer may value the item, such as visible features, condition, usefulness, compatibility, or convenience. Present these as grounded benefits, never as unsupported promises or generic marketing claims.",
     "Create a concise, buyer-attracting title that is specific to this item. Prefer a concrete brand, model, type, colour, condition, or useful detail when it is supplied or clearly visible. Avoid generic category-only titles and repetitive marketplace templates.",
     "Vary the title's wording and structure naturally instead of relying on familiar sales phrases. Do not use unsupported superlatives, urgency, scarcity, discounts, gifts, guarantees, or claims such as 'best', 'perfect', 'must-have', 'limited', 'rare', or 'like new' unless those facts are directly supplied.",
     "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
@@ -105,15 +115,26 @@ export function isOwnedAiDraftImagePath(path: string, userId: string) {
 }
 
 export function createListingFallbackDraft(input: ListingAiRequest): GeneratedListing {
-  const title = input.title || "Marketplace item";
-  const condition = input.condition || "Please review the photos and description";
+  const isKorean = input.language === "ko";
+  const title = input.title || (isKorean ? "판매 상품" : "Marketplace item");
+  const condition = input.condition || (isKorean ? "사진과 설명을 확인해 주세요" : "Please review the photos and description");
   const detailLines = input.additionalDetails.map(({ label, value }) => `${label}: ${value}.`);
-  const description = [
-    `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
-    input.description || "Please review the photos carefully and get in touch if you would like to know more.",
-    ...detailLines,
-    input.location ? `Pickup or delivery can be discussed around ${input.location}.` : "",
-  ].filter(Boolean).join(" ").slice(0, 1_800);
+  const description = (isKorean
+    ? [
+      `${title} 판매합니다${input.condition ? ` 상태는 ${input.condition}입니다` : ""}.`,
+      input.description || "사진을 꼼꼼히 확인해 보시고 궁금한 점이 있으면 편하게 문의해 주세요.",
+      ...detailLines,
+      input.location ? `${input.location} 인근에서 픽업 또는 배송 여부를 협의할 수 있습니다.` : "",
+    ]
+    : [
+      `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
+      input.description || "Please review the photos carefully and get in touch if you would like to know more.",
+      ...detailLines,
+      input.location ? `Pickup or delivery can be discussed around ${input.location}.` : "",
+    ])
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 1_800);
   const suggestedTags = [input.category, input.condition]
     .flatMap((value) => value.split(/[\s/,]+/))
     .map((value) => value.trim().slice(0, 64))
@@ -125,7 +146,9 @@ export function createListingFallbackDraft(input: ListingAiRequest): GeneratedLi
     description,
     conditionSummary: condition,
     suggestedTags: suggestedTags.length ? suggestedTags : ["marketplace"],
-    warnings: ["ChatGPT was temporarily unavailable, so this starter draft was created from your confirmed details. Please review it before posting."],
+    warnings: [isKorean
+      ? "ChatGPT를 일시적으로 사용할 수 없어 입력한 정보만으로 초안을 만들었습니다. 게시 전 내용을 확인해 주세요."
+      : "ChatGPT was temporarily unavailable, so this starter draft was created from your confirmed details. Please review it before posting."],
   });
 }
 
@@ -157,7 +180,11 @@ export async function generateListingDraft({
         role: "user",
         content: [
           { type: "input_text", text: buildListingPrompt(input) },
-          ...imageUrls.map((imageUrl) => ({ type: "input_image" as const, image_url: imageUrl, detail: "low" as const })),
+          ...imageUrls.map((imageUrl, index) => ({
+            type: "input_image" as const,
+            image_url: imageUrl,
+            detail: index === 0 ? "high" as const : "low" as const,
+          })),
         ],
       },
     ],
