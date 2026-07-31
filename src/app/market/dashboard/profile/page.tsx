@@ -11,7 +11,7 @@ export default async function ProfileSettingsPage() {
   if (!user) redirect("/login");
   const supabase = await createServerSupabaseClient();
   const { data: profile } = supabase
-    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale, listing_description_text_step").eq("id", user.id).maybeSingle()
+    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
     : { data: null };
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
 
@@ -23,6 +23,7 @@ export default async function ProfileSettingsPage() {
           email={user.email ?? ""}
           avatarPath={user.user_metadata?.avatar_path}
           memberSince={new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at))}
+          initialDescriptionTextSizeStep={typeof user.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5 ? user.user_metadata.listing_description_text_step : 0}
           initialProfile={{
             display_name: displayName,
             phone: profile?.phone ?? null,
@@ -32,7 +33,6 @@ export default async function ProfileSettingsPage() {
             latitude: profile?.latitude ? Number(profile.latitude) : null,
             longitude: profile?.longitude ? Number(profile.longitude) : null,
             preferred_locale: ["en", "ko", "zh", "ja", "es", "hi", "ar"].includes(profile?.preferred_locale ?? "") ? profile?.preferred_locale as "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar" : "en",
-            listing_description_text_step: typeof profile?.listing_description_text_step === "number" && profile.listing_description_text_step >= 0 && profile.listing_description_text_step <= 5 ? profile.listing_description_text_step : 0,
           }}
         />
       </div>

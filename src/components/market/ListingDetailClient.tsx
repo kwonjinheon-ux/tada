@@ -51,7 +51,7 @@ function descriptionParagraphs(description: string) {
   return plainText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
 }
 
-export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false }: { listing: ListingDetail; initialIsSaved?: boolean; isOwner?: boolean }) {
+export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0 }: { listing: ListingDetail; initialIsSaved?: boolean; isOwner?: boolean; descriptionTextSizeStep?: number }) {
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
@@ -436,7 +436,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
-      <TextSizeSection className="listing-detail-description" title="Description">
+      <TextSizeSection className="listing-detail-description" title="Description" sizeStep={descriptionTextSizeStep}>
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />

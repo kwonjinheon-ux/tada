@@ -209,5 +209,8 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const { data: savedRelatedListings } = user && relatedListings.length
     ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
     : { data: [] };
-  return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
+  const descriptionTextSizeStep = typeof user?.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5
+    ? user.user_metadata.listing_description_text_step
+    : 0;
+  return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
 }

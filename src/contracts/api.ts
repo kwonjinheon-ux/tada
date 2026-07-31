@@ -29,14 +29,6 @@ export const uuidSchema = z.string().uuid();
 export const marketWishlistRequestSchema = z.object({ listingId: uuidSchema });
 export const marketWishlistResponseSchema = z.object({ saved: z.boolean() });
 
-export const marketDescriptionTextSizeRequestSchema = z.object({
-  sizeStep: z.number().int().min(0).max(5),
-});
-export const marketDescriptionTextSizeResponseSchema = z.object({
-  sizeStep: z.number().int().min(0).max(5),
-  persisted: z.boolean(),
-});
-
 export const marketConversationRequestSchema = z.object({ listingId: uuidSchema });
 export const marketConversationResponseSchema = z.object({ conversationId: uuidSchema, created: z.boolean() });
 

@@ -7,7 +7,7 @@ import { languageOptions, SupportedLocale, useLanguage } from "@/components/Lang
 import { descriptionTextScale, MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizeControls } from "@/components/ui/TextSizeSection";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale; listing_description_text_step: number };
+type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
 type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
 type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
 type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
@@ -24,7 +24,7 @@ const NZ_CITIES = [
   ["Whangarei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotaha", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
 ] as const;
 
-export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile }) {
+export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
   const { locale, setLocale, t } = useLanguage();
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
@@ -47,7 +47,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "");
   const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
   const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
-  const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialProfile.listing_description_text_step);
+  const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialDescriptionTextSizeStep);
   const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -57,7 +57,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
-  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialProfile.listing_description_text_step, staticSwitches: readStaticSwitches() }));
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep, staticSwitches: readStaticSwitches() }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const selectedCity = NZ_CITIES.find(([name]) => name === city);
   const availableSuburbs = selectedCity?.[3] ?? [];
@@ -146,9 +146,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale, listing_description_text_step: descriptionTextSizeStep });
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale });
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
-    const authUpdate = nextEmail === savedSettings.email ? { data: { full_name: nickname } } : { email: nextEmail, data: { full_name: nickname } };
+    const authUpdate = nextEmail === savedSettings.email
+      ? { data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } }
+      : { email: nextEmail, data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } };
     const { error: authError } = await supabase.auth.updateUser(authUpdate);
     if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
     window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
