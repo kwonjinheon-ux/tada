@@ -97,11 +97,13 @@ export function isGenericListingTitle(value: string) {
 
 function buildIdentityPrompt(input: ListingAiRequest) {
   return [
-    "Identify the single main second-hand item shown across the supplied photographs.",
+    "Identify the single main second-hand item shown across the supplied photographs before writing any listing copy.",
     "Return only the required JSON. Use the first photograph as the primary view and the others only as supporting views.",
-    "Create a specific, searchable title of at most 70 characters. Use brand + model + item type + distinguishing feature only when visible.",
-    "If brand or model text is not clearly readable, return null instead of guessing. A broad but visually supported title such as 'Black dual-camera smartphone' is acceptable.",
+    "Inspect the dominant object, visible labels, logos, printed text, controls, shape, materials, colour, and included parts. Use these clues to determine the most precise supported item name.",
+    "Create a specific, searchable title of at most 70 characters. The title must name the actual object, not merely its marketplace category. Use brand + model + item type + distinguishing feature only when visible.",
+    "If brand or model text is not clearly readable, return null instead of guessing, but still identify the concrete item type. A broad but visually supported title such as 'Black dual-camera smartphone' is acceptable.",
     "Never return a placeholder such as 'Marketplace item', 'Item for sale', 'Product', or 'Unknown item'.",
+    "Treat the existing title as an unverified clue. Correct it when the photographs support a more accurate name; do not copy a generic, unrelated, or inaccurate title.",
     "Do not infer operation, authenticity, capacity, size, age, ownership, or accessories that are not visible.",
     "If several possible sale items appear, choose the most visually prominent item and record the ambiguity in missingInformation.",
     `Preferred title language: ${input.language ?? "en"}. Keep recognised brand and model names unchanged.`,
@@ -116,6 +118,10 @@ function buildIdentityPrompt(input: ListingAiRequest) {
 }
 
 function buildListingPrompt(input: ListingAiRequest, identity: ItemIdentity | null) {
+  const languageInstruction = input.language === "ko"
+    ? "Write the title and description in natural Korean as a local private seller would write them."
+    : `Write the title and description in natural ${input.language ?? "en"} for the selected app language. Use New Zealand English when the language is en.`;
+
   return [
     "You create accurate second-hand marketplace listings from product photographs.",
     "Return only valid JSON matching the required schema. Analyse the photographs and use the verified identity supplied below.",
@@ -124,7 +130,10 @@ function buildListingPrompt(input: ListingAiRequest, identity: ItemIdentity | nu
     "Do not claim an electronic or mechanical item works unless operation is visibly demonstrated or explicitly confirmed by the seller. When working condition cannot be confirmed, say so in the description and add it to missingInformation.",
     "If multiple items appear, identify the most likely primary item and record the ambiguity in missingInformation.",
     "Record every visible scratch, stain, dent, crack, missing part, fading, or other wear in visibleDefects. Do not hide defects or use misleading advertising language.",
-    "Write the description as a trustworthy private seller in clear, friendly New Zealand English. Keep it concise and easy to scan. Explain what the item is, its visible condition, included items, and what the buyer should confirm. Do not refer to yourself as an AI and do not say 'according to the image'.",
+    languageInstruction,
+    "Write a genuine, fluent private-seller listing, not a product specification sheet or a list of form fields. Open naturally with what is being offered, then weave the confirmed strengths and practical buyer value into complete sentences, honestly describe visible condition, and close with a simple invitation to ask questions.",
+    "Use a warm first-person seller voice such as 'I'm selling...' when appropriate, but never invent a reason for selling, ownership history, use history, or performance claim. Do not use robotic phrases such as 'visible details support', 'the seller selected', or 'according to the image'.",
+    "Use two or three short paragraphs when the available facts support them. Keep the description concise, easy to scan, and buyer-friendly without exaggerated marketing language.",
     "Use these condition definitions exactly: New = appears unused and in original or equivalent new condition; Like New = minimal or no visible use but cannot be confirmed unused; Good = normal light wear with no major visible damage; Fair = noticeable wear, marks, damage, or missing elements but still potentially usable; For Parts = significant damage or visible incompleteness suggesting repair or parts use; Unknown = insufficient photographic evidence.",
     "Clearly separate confirmed facts from uncertainty using conditionReason and missingInformation. Set confidence to low, medium, or high based on identification certainty.",
     "Set requiresManualReview to true and explain reviewReason for goods that may require legal, safety, authenticity, or marketplace-policy review. Otherwise set requiresManualReview to false and reviewReason to null.",
@@ -155,7 +164,7 @@ async function identifyListingItem({
   imageUrls: string[];
   safetyIdentifier: string;
 }) {
-  if (!imageUrls.length || !isGenericListingTitle(input.title)) return null;
+  if (!imageUrls.length) return null;
 
   const openai = new OpenAI({ apiKey, timeout: 18_000, maxRetries: 0 });
   const response = await openai.responses.parse({
@@ -215,8 +224,8 @@ export function createListingFallbackDraft(
   const description = [
     `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
     input.description || "Please review the photos carefully and get in touch if you would like to know more.",
-    ...detailLines,
-    input.location ? `The seller provided ${input.location} as the listing location.` : "",
+    detailLines.length ? `A few details worth noting: ${detailLines.join(" ")}` : "",
+    "Please check the photos and confirm any details that matter to you before posting.",
   ]
     .filter(Boolean)
     .join(" ")
@@ -326,7 +335,7 @@ export async function generateListingDraft({
     }
 
     const draft = generatedListingSchema.parse(response.output_parsed);
-    const resolvedDraft = identity && isGenericListingTitle(draft.title)
+    const resolvedDraft = identity
       ? generatedListingSchema.parse({
         ...draft,
         title: identity.title,

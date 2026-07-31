@@ -42,7 +42,7 @@ type AiListingGeneratorProps = {
   onRestorePreviousDescription: () => void;
 };
 
-const MAX_AI_IMAGE_DIMENSION = 1280;
+const MAX_AI_IMAGE_DIMENSION = 1600;
 const MAX_AI_IMAGES = 3;
 const AI_REQUEST_TIMEOUT_MS = 65_000;
 
@@ -117,7 +117,7 @@ async function createAiImageFile(file: File) {
     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
     canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.78));
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.86));
     return blob ? new File([blob], `${file.name.replace(/\.[^.]+$/, "") || "listing"}.webp`, { type: "image/webp" }) : file;
   } catch {
     return file;
@@ -243,7 +243,7 @@ export function AiListingGenerator({
       setStatus(fallbackDraft
         ? "ChatGPT is temporarily unavailable, so a starter draft was created from your details. Please review it before posting."
         : "AI draft is ready. Review and edit it before posting.");
-      if (!fallbackDraft) onUseTitle(generated.title);
+      if (!fallbackDraft || generated.title.toLocaleLowerCase() !== "title needs review") onUseTitle(generated.title);
       onUseDraft(generated.description, "replace");
       await new Promise((resolve) => window.setTimeout(resolve, 180));
     } catch (generationError) {
