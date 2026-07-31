@@ -19,6 +19,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
   const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const [imageFailed, setImageFailed] = useState(false);
   const burstTimer = useRef<number | null>(null);
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
@@ -28,6 +29,10 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
     if (popTimer.current) window.clearTimeout(popTimer.current);
   }, []);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [listing.image]);
 
   const toggleSaved = async () => {
     const nextSaved = !isSaved;
@@ -85,14 +90,21 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       }}
     >
       <div className="product-media">
-        <Image
-          src={listing.image}
-          alt={listing.imageAlt}
-          fill
-          priority={priority}
-          quality={70}
-          sizes="(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw"
-        />
+        {imageFailed ? (
+          <div className="product-image-unavailable" role="img" aria-label={`${listing.title} image unavailable`}>
+            <i className="fa-regular fa-image" aria-hidden="true" />
+          </div>
+        ) : (
+          <Image
+            src={listing.image}
+            alt={listing.imageAlt}
+            fill
+            priority={priority}
+            quality={70}
+            sizes="(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw"
+            onError={() => setImageFailed(true)}
+          />
+        )}
         {listing.badge ? (
           <span
             className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}

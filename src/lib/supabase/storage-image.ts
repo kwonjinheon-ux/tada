@@ -11,6 +11,13 @@ const variants = {
   thumbnail: { width: 720, height: 720, quality: 72, resize: "cover" as const },
 };
 
+// Feed cards can remain in the browser's route cache after a user visits a
+// listing and returns.  The previous one-hour URL could expire while that
+// cached page was still being displayed, leaving the card image broken.
+// Keep URLs valid materially longer than both the server and router caches.
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+const SIGNED_URL_CACHE_SECONDS = 60 * 60 * 24;
+
 function createPublicStorageClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey =
@@ -31,13 +38,13 @@ const getCachedSignedStorageImage = unstable_cache(
 
     const { data, error } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(path, 3600, { transform: variants[variant] });
+      .createSignedUrl(path, SIGNED_URL_TTL_SECONDS, { transform: variants[variant] });
 
     if (error) throw error;
     return data.signedUrl;
   },
-  ["signed-storage-image-v1"],
-  { revalidate: 3000 },
+  ["signed-storage-image-v2"],
+  { revalidate: SIGNED_URL_CACHE_SECONDS },
 );
 
 export async function getSignedStorageImage(
