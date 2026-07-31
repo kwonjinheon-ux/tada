@@ -24,11 +24,23 @@ export const listingAiRequestSchema = z
 
 export const generatedListingSchema = z
   .object({
-    title: z.string().trim().min(1).max(100),
+    title: z.string().trim().min(1).max(70),
+    category: z.string().trim().min(1).max(100).nullable(),
+    subcategory: z.string().trim().min(1).max(100).nullable(),
+    brand: z.string().trim().min(1).max(100).nullable(),
+    model: z.string().trim().min(1).max(120).nullable(),
+    condition: z.enum(["New", "Like New", "Good", "Fair", "For Parts", "Unknown"]),
+    conditionReason: z.string().trim().min(1).max(500),
     description: z.string().trim().min(1).max(1_800),
-    conditionSummary: z.string().trim().min(1).max(400),
-    suggestedTags: z.array(z.string().trim().min(1).max(64)).max(5),
-    warnings: z.array(z.string().trim().min(1).max(300)).max(6),
+    keyFeatures: z.array(z.string().trim().min(1).max(180)).max(12),
+    visibleDefects: z.array(z.string().trim().min(1).max(240)).max(12),
+    colour: z.string().trim().min(1).max(100).nullable(),
+    includedItems: z.array(z.string().trim().min(1).max(160)).max(12),
+    suggestedSearchKeywords: z.array(z.string().trim().min(1).max(64)).max(10),
+    confidence: z.enum(["low", "medium", "high"]),
+    missingInformation: z.array(z.string().trim().min(1).max(240)).max(12),
+    requiresManualReview: z.boolean(),
+    reviewReason: z.string().trim().min(1).max(500).nullable(),
   })
   .strict();
 
@@ -62,47 +74,22 @@ export function isGenericListingTitle(value: string) {
   return !normalized || genericListingTitles.has(normalized);
 }
 
-function includesKorean(input: ListingAiRequest) {
-  return /[\u3131-\uD79D]/.test(
-    [input.title, input.category, input.condition, input.location, input.description, ...input.additionalDetails.flatMap(({ label, value }) => [label, value])]
-      .join(" "),
-  );
-}
-
 function buildListingPrompt(input: ListingAiRequest) {
-  const language = input.language ?? (includesKorean(input) ? "ko" : "en");
-  const localeInstructions: Record<NonNullable<ListingAiRequest["language"]>, string> = {
-    ko: "title, description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요.",
-    en: "Write the title, description, conditionSummary, suggestedTags, and warnings in natural New Zealand English. Write a genuinely useful 160–240 word description when the supplied facts support it; otherwise use only the supported details without guessing.",
-    zh: "Write every human-facing field in natural Simplified Chinese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
-    ja: "Write every human-facing field in natural Japanese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
-    es: "Write every human-facing field in natural, neutral Spanish. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
-    hi: "Write every human-facing field in clear, natural Hindi. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
-    ar: "Write every human-facing field in clear Modern Standard Arabic. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
-  };
-  const localeInstruction = localeInstructions[language];
-
   return [
-    "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
-    "Write in the seller's own warm, natural first-person voice, as though they wrote the polished listing themselves.",
-    "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
-    "Inspect the supplied photos before writing. Identify the item as specifically as the visible evidence supports, using the selected primary photo first. Treat the existing title as a clue, not proof: improve or correct it when the images and confirmed details support a clearer name. If brand, model, material, size, colour, or included accessories are unclear, use a precise generic item type instead of guessing.",
-    "Write the title and every human-facing field entirely in the requested language. Preserve established brand names, model numbers, measurements, and proper nouns where translating them would make them less accurate.",
-    "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
-    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan. Make it feel polished, approachable, and professionally presented by highlighting real, verifiable benefits without hype.",
-    "Give the description real care: organise the confirmed facts into a friendly, detailed listing that a buyer can confidently revisit until the item sells. Weave the selected category, condition, price, location, trade method, meeting place, and other chosen options into natural seller wording rather than listing field labels mechanically. Where supported, cover condition, practical features, what is included, honest flaws, collection or delivery, and the reason for selling. Do not add any missing details.",
-    "Explain practical, evidence-based reasons a buyer may value the item, such as visible features, condition, usefulness, compatibility, or convenience. Present these as grounded benefits, never as unsupported promises or generic marketing claims.",
-    "Create a concise, buyer-attracting title that is specific to this item. Prefer a concrete brand, model, type, colour, condition, or useful detail when it is supplied or clearly visible. Avoid generic category-only titles and repetitive marketplace templates.",
-    "When photos are supplied, the title must name the item visible in them. Never return generic titles such as 'Marketplace item', 'Item for sale', 'Product', '판매 상품', or equivalent placeholders in any language.",
-    "Vary the title's wording and structure naturally instead of relying on familiar sales phrases. Do not use unsupported superlatives, urgency, scarcity, discounts, gifts, guarantees, or claims such as 'best', 'perfect', 'must-have', 'limited', 'rare', or 'like new' unless those facts are directly supplied.",
-    "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
-    "When the written description is empty, create a concise buyer-friendly draft from the title, selected options, and clearly visible image details only. Do not fill gaps by guessing.",
-    "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
-    "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
-    "For conditionSummary, write a brief neutral summary of the provided condition only; do not attribute it to the seller or speculate about anything they did not mention.",
-    "Do not repeat phone numbers, emails, addresses, or other sensitive personal information.",
-    "Return a draft only. Never claim the listing has been published.",
-    localeInstruction,
+    "You create accurate second-hand marketplace listings from product photographs.",
+    "Analyse every supplied image carefully and return only valid JSON matching the required schema.",
+    "Identify the main item being sold and create a concise, searchable title of no more than 70 characters. Use Brand + model + item type + distinguishing feature when those details are clearly visible or explicitly supplied.",
+    "Describe only details supported by the photographs or explicit seller inputs. Identify visible branding, model information, colour, materials, features, accessories, and defects. If text or a logo is unclear, return null instead of guessing.",
+    "Never invent a brand, model, specification, size, age, capacity, material, condition, function, accessory, authenticity, price, purchase history, warranty, shipping, payment, or collection details.",
+    "Do not claim an electronic or mechanical item works unless operation is visibly demonstrated or explicitly confirmed by the seller. When working condition cannot be confirmed, say so in the description and add it to missingInformation.",
+    "If multiple items appear, identify the most likely primary item and record the ambiguity in missingInformation.",
+    "Record every visible scratch, stain, dent, crack, missing part, fading, or other wear in visibleDefects. Do not hide defects or use misleading advertising language.",
+    "Write the description as a trustworthy private seller in clear, friendly New Zealand English. Keep it concise and easy to scan. Explain what the item is, its visible condition, included items, and what the buyer should confirm. Do not refer to yourself as an AI and do not say 'according to the image'.",
+    "Use these condition definitions exactly: New = appears unused and in original or equivalent new condition; Like New = minimal or no visible use but cannot be confirmed unused; Good = normal light wear with no major visible damage; Fair = noticeable wear, marks, damage, or missing elements but still potentially usable; For Parts = significant damage or visible incompleteness suggesting repair or parts use; Unknown = insufficient photographic evidence.",
+    "Clearly separate confirmed facts from uncertainty using conditionReason and missingInformation. Set confidence to low, medium, or high based on identification certainty.",
+    "Set requiresManualReview to true and explain reviewReason for goods that may require legal, safety, authenticity, or marketplace-policy review. Otherwise set requiresManualReview to false and reviewReason to null.",
+    "Never use generic titles such as 'Marketplace item', 'Item for sale', 'Product', or equivalent placeholders. Avoid emojis, excessive capitalisation, promotional language, and unsupported claims such as 'perfect condition'.",
+    "Do not generate or recommend a selling price. Return a draft only and never claim it has been published.",
     "Listing details:",
     JSON.stringify({
       title: input.title,
@@ -135,24 +122,15 @@ export function isOwnedAiDraftImagePath(path: string, userId: string) {
 }
 
 export function createListingFallbackDraft(input: ListingAiRequest): GeneratedListing {
-  const isKorean = input.language === "ko";
   const categoryTitle = input.category.split("/").map((part) => part.trim()).filter(Boolean).at(-1);
-  const title = input.title || categoryTitle || (isKorean ? "제목 확인 필요" : "Title needs review");
-  const condition = input.condition || (isKorean ? "사진과 설명을 확인해 주세요" : "Please review the photos and description");
+  const title = (input.title || categoryTitle || "Title needs review").slice(0, 70);
   const detailLines = input.additionalDetails.map(({ label, value }) => `${label}: ${value}.`);
-  const description = (isKorean
-    ? [
-      `${title} 판매합니다${input.condition ? ` 상태는 ${input.condition}입니다` : ""}.`,
-      input.description || "사진을 꼼꼼히 확인해 보시고 궁금한 점이 있으면 편하게 문의해 주세요.",
-      ...detailLines,
-      input.location ? `${input.location} 인근에서 픽업 또는 배송 여부를 협의할 수 있습니다.` : "",
-    ]
-    : [
-      `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
-      input.description || "Please review the photos carefully and get in touch if you would like to know more.",
-      ...detailLines,
-      input.location ? `Pickup or delivery can be discussed around ${input.location}.` : "",
-    ])
+  const description = [
+    `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
+    input.description || "Please review the photos carefully and get in touch if you would like to know more.",
+    ...detailLines,
+    input.location ? `The seller provided ${input.location} as the listing location.` : "",
+  ]
     .filter(Boolean)
     .join(" ")
     .slice(0, 1_800);
@@ -161,15 +139,38 @@ export function createListingFallbackDraft(input: ListingAiRequest): GeneratedLi
     .map((value) => value.trim().slice(0, 64))
     .filter(Boolean)
     .slice(0, 5);
+  const categoryParts = input.category.split("/").map((part) => part.trim()).filter(Boolean);
+  const selectedCondition = input.condition.toLocaleLowerCase();
+  const condition = selectedCondition.includes("brand new") || selectedCondition === "new"
+    ? "New"
+    : selectedCondition.includes("like new")
+      ? "Like New"
+      : selectedCondition.includes("good")
+        ? "Good"
+        : selectedCondition.includes("fair")
+          ? "Fair"
+          : "Unknown";
 
   return generatedListingSchema.parse({
     title,
+    category: categoryParts[0] || null,
+    subcategory: categoryParts[1] || null,
+    brand: null,
+    model: null,
+    condition,
+    conditionReason: input.condition
+      ? `The seller selected ${input.condition}; this could not be independently verified while image analysis was unavailable.`
+      : "The available details are not sufficient to assess condition.",
     description,
-    conditionSummary: condition,
-    suggestedTags: suggestedTags.length ? suggestedTags : ["marketplace"],
-    warnings: [isKorean
-      ? "ChatGPT를 일시적으로 사용할 수 없어 입력한 정보만으로 초안을 만들었습니다. 게시 전 내용을 확인해 주세요."
-      : "ChatGPT was temporarily unavailable, so this starter draft was created from your confirmed details. Please review it before posting."],
+    keyFeatures: [],
+    visibleDefects: [],
+    colour: null,
+    includedItems: [],
+    suggestedSearchKeywords: suggestedTags.length ? suggestedTags : ["marketplace"],
+    confidence: "low",
+    missingInformation: ["Confirm the exact item identity, visible condition, included items, and working operation before posting."],
+    requiresManualReview: true,
+    reviewReason: "ChatGPT was temporarily unavailable, so the photo analysis must be reviewed manually.",
   });
 }
 
@@ -191,7 +192,7 @@ export async function generateListingDraft({
   const response = await openai.responses.parse({
     model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
     safety_identifier: safetyIdentifier,
-    max_output_tokens: 900,
+    max_output_tokens: 1_200,
     input: [
       {
         role: "developer",

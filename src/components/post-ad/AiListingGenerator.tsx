@@ -8,10 +8,22 @@ type AiDetail = { label: string; value: string };
 
 type GeneratedListing = {
   title: string;
+  category: string | null;
+  subcategory: string | null;
+  brand: string | null;
+  model: string | null;
+  condition: "New" | "Like New" | "Good" | "Fair" | "For Parts" | "Unknown";
+  conditionReason: string;
   description: string;
-  conditionSummary: string;
-  suggestedTags: string[];
-  warnings: string[];
+  keyFeatures: string[];
+  visibleDefects: string[];
+  colour: string | null;
+  includedItems: string[];
+  suggestedSearchKeywords: string[];
+  confidence: "low" | "medium" | "high";
+  missingInformation: string[];
+  requiresManualReview: boolean;
+  reviewReason: string | null;
 };
 
 type AiListingGeneratorProps = {
@@ -49,17 +61,41 @@ function getGeneratedListing(payload: unknown): GeneratedListing | null {
   if (typeof payload !== "object" || !payload || !("success" in payload) || payload.success !== true || !("data" in payload)) return null;
   const data = payload.data;
   if (typeof data !== "object" || !data) return null;
-  const { title, description, conditionSummary, suggestedTags, warnings } = data as Record<string, unknown>;
+  const draft = data as Record<string, unknown>;
+  const nullableStrings = [
+    draft.category,
+    draft.subcategory,
+    draft.brand,
+    draft.model,
+    draft.colour,
+    draft.reviewReason,
+  ];
+  const conditions = new Set(["New", "Like New", "Good", "Fair", "For Parts", "Unknown"]);
+  const confidenceLevels = new Set(["low", "medium", "high"]);
   if (
-    typeof title !== "string"
-    || typeof description !== "string"
-    || typeof conditionSummary !== "string"
-    || !Array.isArray(suggestedTags)
-    || !suggestedTags.every((tag) => typeof tag === "string")
-    || !Array.isArray(warnings)
-    || !warnings.every((warning) => typeof warning === "string")
+    typeof draft.title !== "string"
+    || draft.title.length < 1
+    || draft.title.length > 70
+    || typeof draft.description !== "string"
+    || typeof draft.condition !== "string"
+    || !conditions.has(draft.condition)
+    || typeof draft.conditionReason !== "string"
+    || !nullableStrings.every((value) => value === null || typeof value === "string")
+    || !Array.isArray(draft.keyFeatures)
+    || !draft.keyFeatures.every((item) => typeof item === "string")
+    || !Array.isArray(draft.visibleDefects)
+    || !draft.visibleDefects.every((item) => typeof item === "string")
+    || !Array.isArray(draft.includedItems)
+    || !draft.includedItems.every((item) => typeof item === "string")
+    || !Array.isArray(draft.suggestedSearchKeywords)
+    || !draft.suggestedSearchKeywords.every((item) => typeof item === "string")
+    || !Array.isArray(draft.missingInformation)
+    || !draft.missingInformation.every((item) => typeof item === "string")
+    || typeof draft.requiresManualReview !== "boolean"
+    || typeof draft.confidence !== "string"
+    || !confidenceLevels.has(draft.confidence)
   ) return null;
-  return { title, description, conditionSummary, suggestedTags, warnings };
+  return draft as GeneratedListing;
 }
 
 function isFallbackDraft(payload: unknown) {
@@ -254,9 +290,11 @@ export function AiListingGenerator({
             {hasPreviousDescription && <button type="button" onClick={onRestorePreviousDescription}>{language === "ko" ? "이전 설명 복원" : "Restore previous description"}</button>}
           </div>
           <p><strong>{language === "ko" ? "제목:" : "Title:"}</strong> {draft.title}</p>
-          <p><strong>{language === "ko" ? "상품 상태:" : "Condition:"}</strong> {draft.conditionSummary}</p>
-          {draft.suggestedTags.length > 0 && <div className="post-ai-tags" aria-label={language === "ko" ? "추천 검색 태그" : "Suggested search tags"}>{draft.suggestedTags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
-          {draft.warnings.length > 0 && <ul className="post-ai-warnings">{draft.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>}
+          <p><strong>{language === "ko" ? "상품 상태:" : "Condition:"}</strong> {draft.condition} — {draft.conditionReason}</p>
+          {draft.suggestedSearchKeywords.length > 0 && <div className="post-ai-tags" aria-label={language === "ko" ? "추천 검색 태그" : "Suggested search tags"}>{draft.suggestedSearchKeywords.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
+          {draft.visibleDefects.length > 0 && <ul className="post-ai-warnings">{draft.visibleDefects.map((defect) => <li key={defect}>{defect}</li>)}</ul>}
+          {draft.missingInformation.length > 0 && <ul className="post-ai-warnings">{draft.missingInformation.map((item) => <li key={item}>{item}</li>)}</ul>}
+          {draft.requiresManualReview && draft.reviewReason ? <p className="post-ai-error" role="status">{draft.reviewReason}</p> : null}
         </aside>
       )}
     </section>
