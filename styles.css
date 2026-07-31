@@ -7010,6 +7010,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   }
 
   .primary-nav { grid-column: 2; }
+
+  .listing-gallery-lightbox .dialog-overlay-dismiss-hint { display: none; }
 }
 
 /* Keep every touch-device form control at 16px or larger to prevent iOS focus zoom. */
