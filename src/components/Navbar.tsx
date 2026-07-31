@@ -204,6 +204,14 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    const hasMobileDock = !authlessRoutes.has(pathname) && !pathname.startsWith("/market/dashboard/messages");
+    document.body.classList.toggle("has-mobile-bottom-dock", hasMobileDock);
+    return () => {
+      document.body.classList.remove("has-mobile-bottom-dock");
+    };
+  }, [pathname]);
+
+  useEffect(() => {
     const root = document.documentElement;
     const mobileQuery = window.matchMedia("(max-width: 767.98px)");
     const visualViewport = window.visualViewport;

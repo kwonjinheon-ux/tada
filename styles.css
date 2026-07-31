@@ -4971,6 +4971,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     will-change: transform;
   }
 
+  /* Shared content clearance for every mobile screen that renders the fixed dock. */
+  body.has-mobile-bottom-dock {
+    --mobile-dock-content-clearance: calc(var(--mobile-dock-height) + var(--mobile-dock-bottom-offset) + 32px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+  }
+
+  body.has-mobile-bottom-dock > main {
+    padding-bottom: var(--mobile-dock-content-clearance) !important;
+    scroll-padding-bottom: var(--mobile-dock-content-clearance);
+  }
+
+  body.has-mobile-bottom-dock > main.dashboard-layout > .dashboard-content {
+    padding-bottom: var(--mobile-dock-content-clearance) !important;
+  }
+
   .mobile-bottom-dock a,
   .mobile-bottom-dock button {
     width: 100%;
