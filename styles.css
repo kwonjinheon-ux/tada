@@ -6711,10 +6711,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 @media (max-width: 767.98px) {
   .listing-detail-mobile-only { display: flex; }
   .listing-detail-page {
-    padding: 0 0 var(--mobile-dock-content-clearance, calc(164px + env(safe-area-inset-bottom)));
+    padding: 0 0 calc(
+      var(--mobile-dock-content-clearance, calc(164px + env(safe-area-inset-bottom)))
+      + var(--mobile-dock-height, 64px)
+    );
   }
   body.listing-detail-screen .listing-detail-page {
-    padding-bottom: var(--mobile-dock-content-clearance, calc(164px + env(safe-area-inset-bottom)));
+    padding-bottom: calc(
+      var(--mobile-dock-content-clearance, calc(164px + env(safe-area-inset-bottom)))
+      + var(--mobile-dock-height, 64px)
+    );
   }
   .listing-detail-back-row, .listing-detail-summary { display: none; }
   .listing-detail-gallery-safety { display: none; }
