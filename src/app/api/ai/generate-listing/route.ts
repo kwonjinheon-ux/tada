@@ -115,17 +115,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await generateListingDraft({
+    const draft = await generateListingDraft({
       input,
       imageUrls,
       safetyIdentifier: createSafetyIdentifier(user.id),
     });
     await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
-    return NextResponse.json({
-      success: true,
-      data: result.draft,
-      ...(result.fallback ? { fallback: true } : {}),
-    });
+    return NextResponse.json({ success: true, data: draft });
   } catch (error) {
     console.error("AI listing generation failed", error);
 

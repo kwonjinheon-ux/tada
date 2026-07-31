@@ -24,48 +24,16 @@ export const listingAiRequestSchema = z
 
 export const generatedListingSchema = z
   .object({
-    title: z.string().trim().min(1).max(70),
-    category: z.string().trim().min(1).max(100).nullable(),
-    subcategory: z.string().trim().min(1).max(100).nullable(),
-    brand: z.string().trim().min(1).max(100).nullable(),
-    model: z.string().trim().min(1).max(120).nullable(),
-    condition: z.enum(["New", "Like New", "Good", "Fair", "For Parts", "Unknown"]),
-    conditionReason: z.string().trim().min(1).max(500),
+    title: z.string().trim().min(1).max(100),
     description: z.string().trim().min(1).max(1_800),
-    keyFeatures: z.array(z.string().trim().min(1).max(180)).max(12),
-    visibleDefects: z.array(z.string().trim().min(1).max(240)).max(12),
-    colour: z.string().trim().min(1).max(100).nullable(),
-    includedItems: z.array(z.string().trim().min(1).max(160)).max(12),
-    suggestedSearchKeywords: z.array(z.string().trim().min(1).max(64)).max(10),
-    confidence: z.enum(["low", "medium", "high"]),
-    missingInformation: z.array(z.string().trim().min(1).max(240)).max(12),
-    requiresManualReview: z.boolean(),
-    reviewReason: z.string().trim().min(1).max(500).nullable(),
-  })
-  .strict();
-
-const itemIdentitySchema = z
-  .object({
-    title: z.string().trim().min(1).max(70),
-    category: z.string().trim().min(1).max(100).nullable(),
-    subcategory: z.string().trim().min(1).max(100).nullable(),
-    brand: z.string().trim().min(1).max(100).nullable(),
-    model: z.string().trim().min(1).max(120).nullable(),
-    colour: z.string().trim().min(1).max(100).nullable(),
-    itemType: z.string().trim().min(1).max(120),
-    confidence: z.enum(["low", "medium", "high"]),
-    missingInformation: z.array(z.string().trim().min(1).max(240)).max(8),
+    conditionSummary: z.string().trim().min(1).max(400),
+    suggestedTags: z.array(z.string().trim().min(1).max(64)).max(5),
+    warnings: z.array(z.string().trim().min(1).max(300)).max(6),
   })
   .strict();
 
 export type ListingAiRequest = z.infer<typeof listingAiRequestSchema>;
 export type GeneratedListing = z.infer<typeof generatedListingSchema>;
-type ItemIdentity = z.infer<typeof itemIdentitySchema>;
-
-export type ListingGenerationResult = {
-  draft: GeneratedListing;
-  fallback: boolean;
-};
 
 export class ListingAiError extends Error {
   constructor(
@@ -75,73 +43,48 @@ export class ListingAiError extends Error {
   }
 }
 
-const genericListingTitles = new Set([
-  "item",
-  "item for sale",
-  "listing item",
-  "marketplace item",
-  "marketplace listing",
-  "product",
-  "product for sale",
-  "selling item",
-  "title needs review",
-  "판매 상품",
-  "판매 물품",
-  "중고 물품",
-]);
-
-export function isGenericListingTitle(value: string) {
-  const normalized = value.trim().toLocaleLowerCase().replace(/[.!?]+$/g, "");
-  return !normalized || genericListingTitles.has(normalized);
+function includesKorean(input: ListingAiRequest) {
+  return /[\u3131-\uD79D]/.test(
+    [input.title, input.category, input.condition, input.location, input.description, ...input.additionalDetails.flatMap(({ label, value }) => [label, value])]
+      .join(" "),
+  );
 }
 
-function buildIdentityPrompt(input: ListingAiRequest) {
-  return [
-    "Identify the single main second-hand item shown across the supplied photographs before writing any listing copy.",
-    "Return only the required JSON. Use the first photograph as the primary view and the others only as supporting views.",
-    "Inspect the dominant object, visible labels, logos, printed text, controls, shape, materials, colour, and included parts. Use these clues to determine the most precise supported item name.",
-    "Create a specific, searchable title of at most 70 characters. The title must name the actual object, not merely its marketplace category. Use brand + model + item type + distinguishing feature only when visible.",
-    "If brand or model text is not clearly readable, return null instead of guessing, but still identify the concrete item type. A broad but visually supported title such as 'Black dual-camera smartphone' is acceptable.",
-    "Never return a placeholder such as 'Marketplace item', 'Item for sale', 'Product', or 'Unknown item'.",
-    "Treat the existing title as an unverified clue. Correct it when the photographs support a more accurate name; do not copy a generic, unrelated, or inaccurate title.",
-    "Do not infer operation, authenticity, capacity, size, age, ownership, or accessories that are not visible.",
-    "If several possible sale items appear, choose the most visually prominent item and record the ambiguity in missingInformation.",
-    `Preferred title language: ${input.language ?? "en"}. Keep recognised brand and model names unchanged.`,
-    "Seller-provided clues are context, not proof:",
-    JSON.stringify({
-      title: input.title,
-      category: input.category,
-      condition: input.condition,
-      additionalDetails: input.additionalDetails,
-    }),
-  ].join("\n");
-}
-
-function buildListingPrompt(input: ListingAiRequest, identity: ItemIdentity | null) {
-  const languageInstruction = input.language === "ko"
-    ? "Write the title and description in natural Korean as a local private seller would write them."
-    : `Write the title and description in natural ${input.language ?? "en"} for the selected app language. Use New Zealand English when the language is en.`;
+function buildListingPrompt(input: ListingAiRequest) {
+  const language = input.language ?? (includesKorean(input) ? "ko" : "en");
+  const localeInstructions: Record<NonNullable<ListingAiRequest["language"]>, string> = {
+    ko: "title, description, conditionSummary, suggestedTags, warnings를 모두 자연스럽고 부드러운 한국어로 작성하고 본문은 약 150~300자로 제한하세요. 입력의 카테고리, 상태, 옵션 값이 영어여도 결과에서는 일반적인 한국어 표현으로 번역하세요. 단, 브랜드, 모델, 규격, 고유명사는 원문을 유지하세요.",
+    en: "Write the title, description, conditionSummary, suggestedTags, and warnings in natural New Zealand English. Write a genuinely useful 160–240 word description when the supplied facts support it; otherwise use only the supported details without guessing.",
+    zh: "Write every human-facing field in natural Simplified Chinese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    ja: "Write every human-facing field in natural Japanese. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    es: "Write every human-facing field in natural, neutral Spanish. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    hi: "Write every human-facing field in clear, natural Hindi. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+    ar: "Write every human-facing field in clear Modern Standard Arabic. Keep brand names, model numbers, measurements, and proper nouns in their customary form.",
+  };
+  const localeInstruction = localeInstructions[language];
 
   return [
-    "You create accurate second-hand marketplace listings from product photographs.",
-    "Return only valid JSON matching the required schema. Analyse the photographs and use the verified identity supplied below.",
-    "Describe only details supported by the photographs, verified identity, or explicit seller inputs. If text or a logo is unclear, return null.",
-    "Never invent a brand, model, specification, size, age, capacity, material, condition, function, accessory, authenticity, price, purchase history, warranty, shipping, payment, or collection detail.",
-    "Do not claim an electronic or mechanical item works unless operation is visibly demonstrated or explicitly confirmed by the seller. When working condition cannot be confirmed, say so in the description and add it to missingInformation.",
-    "If multiple items appear, identify the most likely primary item and record the ambiguity in missingInformation.",
-    "Record every visible scratch, stain, dent, crack, missing part, fading, or other wear in visibleDefects. Do not hide defects or use misleading advertising language.",
-    languageInstruction,
-    "Write a genuine, fluent private-seller listing, not a product specification sheet or a list of form fields. Open naturally with what is being offered, then weave the confirmed strengths and practical buyer value into complete sentences, honestly describe visible condition, and close with a simple invitation to ask questions.",
-    "Use a warm first-person seller voice such as 'I'm selling...' when appropriate, but never invent a reason for selling, ownership history, use history, or performance claim. Do not use robotic phrases such as 'visible details support', 'the seller selected', or 'according to the image'.",
-    "Use two or three short paragraphs when the available facts support them. Keep the description concise, easy to scan, and buyer-friendly without exaggerated marketing language.",
-    "Use these condition definitions exactly: New = appears unused and in original or equivalent new condition; Like New = minimal or no visible use but cannot be confirmed unused; Good = normal light wear with no major visible damage; Fair = noticeable wear, marks, damage, or missing elements but still potentially usable; For Parts = significant damage or visible incompleteness suggesting repair or parts use; Unknown = insufficient photographic evidence.",
-    "Clearly separate confirmed facts from uncertainty using conditionReason and missingInformation. Set confidence to low, medium, or high based on identification certainty.",
-    "Set requiresManualReview to true and explain reviewReason for goods that may require legal, safety, authenticity, or marketplace-policy review. Otherwise set requiresManualReview to false and reviewReason to null.",
-    "Never use generic titles such as 'Marketplace item', 'Item for sale', 'Product', or equivalent placeholders. Avoid emojis, excessive capitalisation, promotional language, and unsupported claims such as 'perfect condition'.",
-    "Do not generate or recommend a selling price. Return a draft only and never claim it has been published.",
+    "Polish the supplied marketplace description for Tada, a New Zealand second-hand marketplace.",
+    "Write in the seller's own warm, natural first-person voice, as though they wrote the polished listing themselves.",
+    "Use first-person wording where it fits naturally, such as 'I've used it for...' or 'I'm selling it because...'.",
+    "Inspect the supplied photos before writing. Identify the item as specifically as the visible evidence supports, using the selected primary photo first. Treat the existing title as a clue, not proof: improve or correct it when the images and confirmed details support a clearer name. If brand, model, material, size, colour, or included accessories are unclear, use a precise generic item type instead of guessing.",
+    "Write the title and every human-facing field entirely in the requested language. Preserve established brand names, model numbers, measurements, and proper nouns where translating them would make them less accurate.",
+    "Never refer to the seller in the third person or write phrases such as 'the seller says', 'according to the seller', '판매자 설명상', or '판매자가 언급하지 않았습니다'.",
+    "Preserve the seller's facts, correct clear grammar and structure, and make the writing easy for buyers to scan. Make it feel polished, approachable, and professionally presented by highlighting real, verifiable benefits without hype.",
+    "Give the description real care: organise the confirmed facts into a friendly, detailed listing that a buyer can confidently revisit until the item sells. Weave the selected category, condition, price, location, trade method, meeting place, and other chosen options into natural seller wording rather than listing field labels mechanically. Where supported, cover condition, practical features, what is included, honest flaws, collection or delivery, and the reason for selling. Do not add any missing details.",
+    "Explain practical, evidence-based reasons a buyer may value the item, such as visible features, condition, usefulness, compatibility, or convenience. Present these as grounded benefits, never as unsupported promises or generic marketing claims.",
+    "Create a concise, buyer-attracting title that is specific to this item. Prefer a concrete brand, model, type, colour, condition, or useful detail when it is supplied or clearly visible. Avoid generic category-only titles and repetitive marketplace templates.",
+    "Vary the title's wording and structure naturally instead of relying on familiar sales phrases. Do not use unsupported superlatives, urgency, scarcity, discounts, gifts, guarantees, or claims such as 'best', 'perfect', 'must-have', 'limited', 'rare', or 'like new' unless those facts are directly supplied.",
+    "Use only facts directly supplied in the listing details or clearly visible in the supplied images.",
+    "When the written description is empty, create a concise buyer-friendly draft from the title, selected options, and clearly visible image details only. Do not fill gaps by guessing.",
+    "Do not invent a brand, exact model, original price, purchase date, working condition, authenticity, material, dimensions, hidden damage, included accessories, warranty, safety claims, rarity, or delivery availability.",
+    "State user-provided defects clearly. Do not use exaggerated marketing language or change the stated price.",
+    "For conditionSummary, write a brief neutral summary of the provided condition only; do not attribute it to the seller or speculate about anything they did not mention.",
+    "Do not repeat phone numbers, emails, addresses, or other sensitive personal information.",
+    "Return a draft only. Never claim the listing has been published.",
+    localeInstruction,
     "Listing details:",
     JSON.stringify({
-      verifiedPhotoIdentity: identity,
       title: input.title,
       category: input.category,
       price: input.price,
@@ -151,49 +94,6 @@ function buildListingPrompt(input: ListingAiRequest, identity: ItemIdentity | nu
       additionalDetails: input.additionalDetails,
     }),
   ].join("\n");
-}
-
-async function identifyListingItem({
-  apiKey,
-  input,
-  imageUrls,
-  safetyIdentifier,
-}: {
-  apiKey: string;
-  input: ListingAiRequest;
-  imageUrls: string[];
-  safetyIdentifier: string;
-}) {
-  if (!imageUrls.length) return null;
-
-  const openai = new OpenAI({ apiKey, timeout: 18_000, maxRetries: 0 });
-  const response = await openai.responses.parse({
-    model: process.env.OPENAI_LISTING_VISION_MODEL?.trim()
-      || process.env.OPENAI_LISTING_MODEL?.trim()
-      || "gpt-5-mini",
-    safety_identifier: safetyIdentifier,
-    max_output_tokens: 500,
-    input: [{
-      role: "user",
-      content: [
-        { type: "input_text", text: buildIdentityPrompt(input) },
-        ...imageUrls.map((imageUrl, index) => ({
-          type: "input_image" as const,
-          image_url: imageUrl,
-          detail: index === 0 ? "high" as const : "low" as const,
-        })),
-      ],
-    }],
-    text: {
-      format: zodTextFormat(itemIdentitySchema, "tada_item_identity"),
-    },
-  });
-
-  const identity = itemIdentitySchema.parse(response.output_parsed);
-  if (isGenericListingTitle(identity.title)) {
-    throw new ListingAiError("AI_RESPONSE_INVALID");
-  }
-  return identity;
 }
 
 export function createListingInputHash(input: ListingAiRequest) {
@@ -214,19 +114,24 @@ export function isOwnedAiDraftImagePath(path: string, userId: string) {
     && /^[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/.test(fileName);
 }
 
-export function createListingFallbackDraft(
-  input: ListingAiRequest,
-  identity: ItemIdentity | null = null,
-): GeneratedListing {
-  const categoryTitle = input.category.split("/").map((part) => part.trim()).filter(Boolean).at(-1);
-  const title = (identity?.title || input.title || categoryTitle || "Title needs review").slice(0, 70);
+export function createListingFallbackDraft(input: ListingAiRequest): GeneratedListing {
+  const isKorean = input.language === "ko";
+  const title = input.title || (isKorean ? "판매 상품" : "Marketplace item");
+  const condition = input.condition || (isKorean ? "사진과 설명을 확인해 주세요" : "Please review the photos and description");
   const detailLines = input.additionalDetails.map(({ label, value }) => `${label}: ${value}.`);
-  const description = [
-    `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
-    input.description || "Please review the photos carefully and get in touch if you would like to know more.",
-    detailLines.length ? `A few details worth noting: ${detailLines.join(" ")}` : "",
-    "Please check the photos and confirm any details that matter to you before posting.",
-  ]
+  const description = (isKorean
+    ? [
+      `${title} 판매합니다${input.condition ? ` 상태는 ${input.condition}입니다` : ""}.`,
+      input.description || "사진을 꼼꼼히 확인해 보시고 궁금한 점이 있으면 편하게 문의해 주세요.",
+      ...detailLines,
+      input.location ? `${input.location} 인근에서 픽업 또는 배송 여부를 협의할 수 있습니다.` : "",
+    ]
+    : [
+      `I'm selling ${title}${input.condition ? ` in ${input.condition} condition` : ""}.`,
+      input.description || "Please review the photos carefully and get in touch if you would like to know more.",
+      ...detailLines,
+      input.location ? `Pickup or delivery can be discussed around ${input.location}.` : "",
+    ])
     .filter(Boolean)
     .join(" ")
     .slice(0, 1_800);
@@ -235,41 +140,15 @@ export function createListingFallbackDraft(
     .map((value) => value.trim().slice(0, 64))
     .filter(Boolean)
     .slice(0, 5);
-  const categoryParts = input.category.split("/").map((part) => part.trim()).filter(Boolean);
-  const selectedCondition = input.condition.toLocaleLowerCase();
-  const condition = selectedCondition.includes("brand new") || selectedCondition === "new"
-    ? "New"
-    : selectedCondition.includes("like new")
-      ? "Like New"
-      : selectedCondition.includes("good")
-        ? "Good"
-        : selectedCondition.includes("fair")
-          ? "Fair"
-          : "Unknown";
 
   return generatedListingSchema.parse({
     title,
-    category: identity?.category || categoryParts[0] || null,
-    subcategory: identity?.subcategory || categoryParts[1] || null,
-    brand: identity?.brand || null,
-    model: identity?.model || null,
-    condition,
-    conditionReason: input.condition
-      ? `The seller selected ${input.condition}; this could not be independently verified while image analysis was unavailable.`
-      : "The available details are not sufficient to assess condition.",
     description,
-    keyFeatures: [],
-    visibleDefects: [],
-    colour: identity?.colour || null,
-    includedItems: [],
-    suggestedSearchKeywords: suggestedTags.length ? suggestedTags : ["marketplace"],
-    confidence: identity?.confidence || "low",
-    missingInformation: [
-      ...(identity?.missingInformation ?? []),
-      "Confirm the visible condition, included items, and working operation before posting.",
-    ].slice(0, 12),
-    requiresManualReview: true,
-    reviewReason: "ChatGPT was temporarily unavailable, so the photo analysis must be reviewed manually.",
+    conditionSummary: condition,
+    suggestedTags: suggestedTags.length ? suggestedTags : ["marketplace"],
+    warnings: [isKorean
+      ? "ChatGPT를 일시적으로 사용할 수 없어 입력한 정보만으로 초안을 만들었습니다. 게시 전 내용을 확인해 주세요."
+      : "ChatGPT was temporarily unavailable, so this starter draft was created from your confirmed details. Please review it before posting."],
   });
 }
 
@@ -281,88 +160,55 @@ export async function generateListingDraft({
   input: ListingAiRequest;
   imageUrls: string[];
   safetyIdentifier: string;
-}): Promise<ListingGenerationResult> {
+}): Promise<GeneratedListing> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new ListingAiError("AI_NOT_CONFIGURED");
   }
 
-  let identity: ItemIdentity | null = null;
-  try {
-    identity = await identifyListingItem({ apiKey, input, imageUrls, safetyIdentifier });
-  } catch (error) {
-    console.warn("Focused AI item identification did not complete; continuing with full analysis", error);
+  const openai = new OpenAI({ apiKey, timeout: 24_000, maxRetries: 1 });
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
+    safety_identifier: safetyIdentifier,
+    max_output_tokens: 900,
+    input: [
+      {
+        role: "developer",
+        content: "You create careful, factual listing drafts. Follow the supplied instructions exactly.",
+      },
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: buildListingPrompt(input) },
+          ...imageUrls.map((imageUrl, index) => ({
+            type: "input_image" as const,
+            image_url: imageUrl,
+            detail: index === 0 ? "high" as const : "low" as const,
+          })),
+        ],
+      },
+    ],
+    text: {
+      format: zodTextFormat(generatedListingSchema, "tada_listing_draft"),
+    },
+  });
+
+  if (!response.output_parsed) {
+    console.error("AI listing response could not be parsed", {
+      status: response.status,
+      incompleteReason: response.incomplete_details?.reason,
+      outputCount: response.output.length,
+      hasRefusal: response.output.some(
+        (item) => item.type === "message" && item.content.some((content) => content.type === "refusal"),
+      ),
+    });
+    throw new ListingAiError("AI_RESPONSE_INVALID");
   }
 
-  const openai = new OpenAI({ apiKey, timeout: 36_000, maxRetries: 0 });
   try {
-    const response = await openai.responses.parse({
-      model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
-      safety_identifier: safetyIdentifier,
-      max_output_tokens: 1_400,
-      input: [
-        {
-          role: "developer",
-          content: "Create a careful, factual marketplace draft. Follow the evidence rules and output schema exactly.",
-        },
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: buildListingPrompt(input, identity) },
-            ...imageUrls.map((imageUrl, index) => ({
-              type: "input_image" as const,
-              image_url: imageUrl,
-              detail: index === 0 ? "high" as const : "low" as const,
-            })),
-          ],
-        },
-      ],
-      text: {
-        format: zodTextFormat(generatedListingSchema, "tada_listing_draft"),
-      },
-    });
-
-    if (!response.output_parsed) {
-      console.error("AI listing response could not be parsed", {
-        status: response.status,
-        incompleteReason: response.incomplete_details?.reason,
-        outputCount: response.output.length,
-        hasRefusal: response.output.some(
-          (item) => item.type === "message" && item.content.some((content) => content.type === "refusal"),
-        ),
-      });
-      throw new ListingAiError("AI_RESPONSE_INVALID");
-    }
-
-    const draft = generatedListingSchema.parse(response.output_parsed);
-    const resolvedDraft = identity
-      ? generatedListingSchema.parse({
-        ...draft,
-        title: identity.title,
-        category: draft.category || identity.category,
-        subcategory: draft.subcategory || identity.subcategory,
-        brand: draft.brand || identity.brand,
-        model: draft.model || identity.model,
-        colour: draft.colour || identity.colour,
-        confidence: identity.confidence,
-        missingInformation: [...new Set([
-          ...draft.missingInformation,
-          ...identity.missingInformation,
-        ])].slice(0, 12),
-      })
-      : draft;
-
-    if (imageUrls.length > 0 && isGenericListingTitle(resolvedDraft.title)) {
-      console.error("AI listing response used a generic title despite image input", { title: draft.title });
-      throw new ListingAiError("AI_RESPONSE_INVALID");
-    }
-    return { draft: resolvedDraft, fallback: false };
-  } catch (error) {
-    if (identity) {
-      console.warn("Full AI listing generation failed; preserving focused photo identification", error);
-      return { draft: createListingFallbackDraft(input, identity), fallback: true };
-    }
-    console.error("AI listing generation did not produce a valid structured response", error);
-    throw error instanceof ListingAiError ? error : new ListingAiError("AI_RESPONSE_INVALID");
+    return generatedListingSchema.parse(response.output_parsed);
+  } catch {
+    console.error("AI listing parsed response did not match the expected shape");
+    throw new ListingAiError("AI_RESPONSE_INVALID");
   }
 }

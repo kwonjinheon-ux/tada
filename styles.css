@@ -5134,6 +5134,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     color: #00845a;
   }
 
+  .mobile-bottom-dock .mobile-dock-create:hover i,
+  .mobile-bottom-dock .mobile-dock-create:focus-visible i {
+    background: #079867;
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  .mobile-bottom-dock .mobile-dock-create:active i {
+    animation: mobile-dock-create-press 220ms ease-out;
+  }
+
   .mobile-bottom-dock .mobile-dock-create i,
   .mobile-bottom-dock .mobile-dock-offer i {
     width: 44px;
@@ -5161,9 +5171,18 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     box-shadow: none;
   }
 
-  .mobile-bottom-dock .mobile-dock-create i,
+  .mobile-bottom-dock .mobile-dock-create i {
+    box-shadow: none;
+  }
+
   .mobile-bottom-dock .mobile-dock-offer i {
     box-shadow: 0 5px 12px rgba(0, 132, 90, .34);
+  }
+
+  @keyframes mobile-dock-create-press {
+    0% { transform: translateY(0) scale(1); }
+    45% { transform: translateY(1px) scale(.9); }
+    100% { transform: translateY(0) scale(1); }
   }
 
   .mobile-bottom-dock .mobile-dock-create.is-active {
@@ -5183,6 +5202,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     .mobile-bottom-dock,
     .mobile-bottom-dock a,
     .mobile-bottom-dock button { transition: none; }
+
+    .mobile-bottom-dock .mobile-dock-create:active i { animation: none; }
   }
 
   .marketplace-page {
