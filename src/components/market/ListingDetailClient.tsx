@@ -8,7 +8,7 @@ import { marketConversationResponseSchema, marketWishlistResponseSchema } from "
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
-import { DialogDismissHint, DialogOverlay } from "@/components/ui/DialogOverlay";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
@@ -426,7 +426,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         </div>
         {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
         <span className="listing-gallery-lightbox-count">{activeImage + 1} / {listing.images.length}</span>
-        <DialogDismissHint />
       </div> : null}
 
       <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-stack" : ""}`}>
