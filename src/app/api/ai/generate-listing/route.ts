@@ -18,6 +18,7 @@ const FEATURE = "listing_description";
 const MAX_GENERATIONS_PER_WINDOW = 3;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
 const IMAGE_BUCKET = "market-listing-images";
+const AI_IMAGE_URL_TTL_SECONDS = 5 * 60;
 const isRateLimitEnabled = process.env.AI_LISTING_RATE_LIMIT_ENABLED !== "false";
 
 function failure(code: string, message: string, status = 500) {
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
   if (input.imagePaths.length) {
     const { data: signedImages, error: signedImagesError } = await supabase.storage
       .from(IMAGE_BUCKET)
-      .createSignedUrls(input.imagePaths, 60);
+      .createSignedUrls(input.imagePaths, AI_IMAGE_URL_TTL_SECONDS);
 
     imageUrls = signedImages?.flatMap((image) => image.signedUrl ? [image.signedUrl] : []) ?? [];
     if (signedImagesError || imageUrls.length !== input.imagePaths.length) {
@@ -119,6 +120,16 @@ export async function POST(request: Request) {
     if (error instanceof ListingAiError && error.code === "AI_NOT_CONFIGURED") {
       await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
       return failure("AI_NOT_CONFIGURED", "AI description generation is not configured yet.");
+    }
+
+    if (error instanceof ListingAiError && error.code === "AI_REQUEST_TIMED_OUT") {
+      await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
+      return failure("AI_REQUEST_TIMED_OUT", "Photo analysis took too long. Please try again; your uploaded photos are ready to use.", 504);
+    }
+
+    if (error instanceof ListingAiError && error.code === "AI_RESPONSE_INVALID") {
+      await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
+      return failure("AI_RESPONSE_INVALID", "We could not finish the photo-based draft. Please try again with the same photos.", 502);
     }
 
     await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);

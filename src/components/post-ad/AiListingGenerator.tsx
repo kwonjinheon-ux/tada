@@ -104,7 +104,7 @@ export function AiListingGenerator({
     } catch (generationError) {
       setStatus(null);
       setError(generationError instanceof Error && generationError.name === "AbortError"
-        ? "Generation took longer than expected. Please try again with a clear main photo."
+        ? "Generation took longer than expected. Your photos are still ready to use, so please try again."
         : generationError instanceof Error ? generationError.message : "We could not create a photo-based draft. Please try again.");
     } finally {
       window.clearTimeout(timeout);

@@ -28,7 +28,9 @@ export type ListingAiRequest = z.infer<typeof listingAiRequestSchema>;
 export type GeneratedListing = z.infer<typeof generatedListingSchema>;
 
 export class ListingAiError extends Error {
-  constructor(public readonly code: "AI_NOT_CONFIGURED" | "AI_GENERATION_FAILED" | "AI_RESPONSE_INVALID") {
+  constructor(
+    public readonly code: "AI_NOT_CONFIGURED" | "AI_GENERATION_FAILED" | "AI_RESPONSE_INVALID" | "AI_REQUEST_TIMED_OUT",
+  ) {
     super(code);
   }
 }
@@ -95,27 +97,39 @@ export async function generateListingDraft({
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new ListingAiError("AI_NOT_CONFIGURED");
 
-  const openai = new OpenAI({ apiKey, timeout: 48_000, maxRetries: 2 });
-  const response = await openai.responses.parse({
-    model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
-    safety_identifier: safetyIdentifier,
-    max_output_tokens: 1_200,
-    input: [
-      { role: "developer", content: "Create accurate, photo-led marketplace drafts. Never guess facts to make a listing sound better." },
-      {
-        role: "user",
-        content: [
-          { type: "input_text", text: buildListingPrompt(input) },
-          ...imageUrls.map((imageUrl, index) => ({
-            type: "input_image" as const,
-            image_url: imageUrl,
-            detail: index === 0 ? "high" as const : "low" as const,
-          })),
-        ],
-      },
-    ],
-    text: { format: zodTextFormat(generatedListingSchema, "tada_photo_listing_draft") },
-  });
+  // SDK retries can consume the entire serverless execution window. A bounded
+  // single attempt leaves room for the client to retry with the same uploaded photos.
+  const openai = new OpenAI({ apiKey, timeout: 45_000, maxRetries: 0 });
+
+  let response;
+  try {
+    response = await openai.responses.parse({
+      model: process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini",
+      safety_identifier: safetyIdentifier,
+      reasoning: { effort: "low" },
+      max_output_tokens: 1_200,
+      input: [
+        { role: "developer", content: "Create accurate, photo-led marketplace drafts. Never guess facts to make a listing sound better." },
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: buildListingPrompt(input) },
+            ...imageUrls.map((imageUrl, index) => ({
+              type: "input_image" as const,
+              image_url: imageUrl,
+              detail: index === 0 ? "high" as const : "low" as const,
+            })),
+          ],
+        },
+      ],
+      text: { format: zodTextFormat(generatedListingSchema, "tada_photo_listing_draft") },
+    });
+  } catch (error) {
+    if (error instanceof Error && (error.name === "APIConnectionTimeoutError" || error.name === "AbortError")) {
+      throw new ListingAiError("AI_REQUEST_TIMED_OUT");
+    }
+    throw new ListingAiError("AI_GENERATION_FAILED");
+  }
 
   if (!response.output_parsed) {
     console.error("AI listing response could not be parsed", {
