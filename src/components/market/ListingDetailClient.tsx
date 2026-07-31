@@ -9,6 +9,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { DialogDismissHint, DialogOverlay } from "@/components/ui/DialogOverlay";
+import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { readApiResponse } from "@/lib/api/client";
 
 export type ListingDetail = {
@@ -434,12 +435,11 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
-      <section className="listing-detail-description">
-        <h2>Description</h2>
+      <TextSizeSection className="listing-detail-description" title="Description">
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
-      </section>
+      </TextSizeSection>
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>로컬 멤버</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
       </section>
 
       <ListingComments listingId={listing.id} />

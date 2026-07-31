@@ -2652,17 +2652,59 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   border-top: 1px solid #d7e1df;
 }
 
+.text-size-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .listing-detail-description h2 {
-  margin: 0 0 16px;
+  margin: 0;
   color: #0b1c30;
   font-size: 21px;
   line-height: 1.25;
 }
 
+.text-size-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.text-size-controls button {
+  display: grid;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dbe5ee;
+  border-radius: 50%;
+  background: #f7f9fc;
+  color: #264969;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.text-size-controls button:hover:not(:disabled) {
+  border-color: #b8cad9;
+  background: #edf3f8;
+  transform: scale(1.04);
+}
+
+.text-size-controls button:focus-visible {
+  outline: 3px solid rgba(0, 132, 93, .28);
+  outline-offset: 2px;
+}
+
+.text-size-controls button:disabled { opacity: .42; cursor: not-allowed; }
+.text-size-section-content { margin-top: 16px; }
+
 .listing-detail-description p {
   margin: 0 0 14px;
   color: #394b60;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   line-height: 1.7;
   white-space: pre-line;
 }
@@ -6675,7 +6717,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .listing-detail-description { width: auto; margin: 0 20px; padding-top: 26px; border-top: 0; }
   .listing-detail-description h2 { font-size: 19px; }
-  .listing-detail-description p { font-size: 14px; line-height: 1.75; }
+  .listing-detail-description p { font-size: calc(14px * var(--text-scale, 1)); line-height: 1.75; }
   .listing-detail-mobile-seller { display: block; margin: 18px 20px 0; padding: 14px 0; border-top: 1px solid rgba(225, 231, 235, .16); border-bottom: 1px solid #e1e7eb; border-radius: 0; background: transparent; }
   .listing-detail-mobile-seller-profile { display: flex; align-items: center; gap: 10px; }
   .listing-detail-mobile-seller-avatar-wrap { display: grid; width: 56px; height: 56px; flex: 0 0 auto; padding: 2px; border-radius: 50%; background: #e3e8ee; }
@@ -6684,7 +6726,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   img.listing-detail-mobile-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-avatar-wrap .listing-detail-mobile-seller-avatar { width: 100%; height: 100%; border: 0; }
   .listing-detail-mobile-seller-profile > div:not(.listing-detail-mobile-seller-actions) { display: grid; flex: 1; gap: 3px; min-width: 0; }
-  .listing-detail-mobile-seller strong { color: #10243d; font-size: 17px; }
+  .listing-detail-mobile-seller strong { color: #10243d; font-size: 17px; font-weight: 400; }
   .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: #65758a; font-size: 12px; }
   .listing-detail-mobile-seller span i { color: #ff9200; }
   .listing-detail-mobile-seller-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
