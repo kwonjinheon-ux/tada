@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import {
   ListingAiError,
-  createListingFallbackDraft,
   createListingInputHash,
   createSafetyIdentifier,
   generateListingDraft,
-  isOwnedAiDraftImagePath,
+  isOwnedListingDraftImagePath,
   listingAiRequestSchema,
 } from "@/lib/ai/listing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -18,7 +17,6 @@ export const maxDuration = 60;
 const FEATURE = "listing_description";
 const MAX_GENERATIONS_PER_WINDOW = 3;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
-const DUPLICATE_WINDOW_MS = 45 * 1_000;
 const IMAGE_BUCKET = "market-listing-images";
 const isRateLimitEnabled = process.env.AI_LISTING_RATE_LIMIT_ENABLED !== "false";
 
@@ -51,13 +49,13 @@ export async function POST(request: Request) {
   const parsed = listingAiRequestSchema.safeParse(body);
   if (!parsed.success) {
     const message = parsed.error instanceof ZodError
-      ? "Please add a description before asking AI to refine it."
+      ? "Please add at least one listing photo before generating a draft."
       : "Please check the listing details and try again.";
     return failure("INVALID_REQUEST", message, 400);
   }
 
   const input = parsed.data;
-  if (new Set(input.imagePaths).size !== input.imagePaths.length || !input.imagePaths.every((path) => isOwnedAiDraftImagePath(path, user.id))) {
+  if (new Set(input.imagePaths).size !== input.imagePaths.length || !input.imagePaths.every((path) => isOwnedListingDraftImagePath(path, user.id))) {
     return failure("INVALID_IMAGE", "One or more listing images could not be verified.", 400);
   }
 
@@ -66,7 +64,7 @@ export async function POST(request: Request) {
   const rateWindowStart = new Date(now - RATE_LIMIT_WINDOW_MS).toISOString();
   const { data: recentUsage, error: usageReadError } = await supabase
     .from("ai_generation_usage")
-    .select("id, input_hash, created_at")
+    .select("id, created_at")
     .eq("user_id", user.id)
     .eq("feature", FEATURE)
     .gte("created_at", rateWindowStart)
@@ -79,13 +77,6 @@ export async function POST(request: Request) {
 
   if (isRateLimitEnabled && recentUsage.length >= MAX_GENERATIONS_PER_WINDOW) {
     return failure("RATE_LIMITED", "You can generate up to 3 drafts every 10 minutes. Please try again shortly.", 429);
-  }
-
-  const duplicateRequest = recentUsage.find(
-    (usage) => usage.input_hash === inputHash && now - new Date(usage.created_at).getTime() < DUPLICATE_WINDOW_MS,
-  );
-  if (duplicateRequest) {
-    return failure("RATE_LIMITED", "This draft was requested very recently. Please wait a moment before trying again.", 429);
   }
 
   const model = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-5-mini";
@@ -130,12 +121,7 @@ export async function POST(request: Request) {
       return failure("AI_NOT_CONFIGURED", "AI description generation is not configured yet.");
     }
 
-    if (typeof error === "object" && error && "status" in error && error.status === 429) {
-      await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
-      return NextResponse.json({ success: true, data: createListingFallbackDraft(input), fallback: true });
-    }
-
-    await supabase.from("ai_generation_usage").update({ status: "success" }).eq("id", usage.id);
-    return NextResponse.json({ success: true, data: createListingFallbackDraft(input), fallback: true });
+    await supabase.from("ai_generation_usage").update({ status: "failed" }).eq("id", usage.id);
+    return failure("AI_GENERATION_FAILED", "We could not create a photo-based draft just now. Please try again in a moment.", 503);
   }
 }

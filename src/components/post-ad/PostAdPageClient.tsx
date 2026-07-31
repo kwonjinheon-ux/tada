@@ -275,7 +275,6 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
   const [description, setDescription] = useState(initialListing?.description ?? "");
   const [smartphoneSpecs, setSmartphoneSpecs] = useState<SmartphoneSpecs>(emptySmartphoneSpecs);
-  const [previousDescription, setPreviousDescription] = useState<string | null>(null);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [textColor, setTextColor] = useState("#314254");
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
@@ -514,16 +513,8 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setIsHtmlMode((current) => !current);
   };
 
-  const useAiDraft = (draft: string, mode: "append" | "replace") => {
-    setPreviousDescription(description);
-    const nextDraft = aiDescriptionToHtml(draft);
-    setDescription((current) => mode === "append" && current.trim() ? `${current}<br />${nextDraft}` : nextDraft);
-  };
-
-  const restorePreviousDescription = () => {
-    if (previousDescription === null) return;
-    setDescription(previousDescription);
-    setPreviousDescription(null);
+  const useAiDraft = (draft: string) => {
+    setDescription(aiDescriptionToHtml(draft));
   };
 
   const uploadPhotos = async ({
@@ -791,7 +782,6 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setMeetingPlace("");
     setDescription("");
     setSmartphoneSpecs(emptySmartphoneSpecs);
-    setPreviousDescription(null);
     setTitle("");
     setPrice("");
     setIsHtmlMode(false);
@@ -956,8 +946,6 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
             <div className="post-ai-field">
               <AiListingGenerator
                 title={title}
-                category={[mainCategories.find((category) => category.value === mainCategory)?.label ?? mainCategory, subCategoryOptions.find((category) => category.value === subCategory)?.label ?? subCategory].filter(Boolean).join(" / ")}
-                price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
                 language={locale}
@@ -966,17 +954,14 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                   { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
                   ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
                 ].filter(({ value }) => value.length > 0)}
-                photos={photos
-                  .filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file))
-                  .map((photo, index) => ({
-                    file: photo.file,
-                    isPrimary: photo.id === primaryPhotoId || (!primaryPhotoId && index === 0),
-                  }))}
-                currentDescription={description}
-                hasPreviousDescription={Boolean(previousDescription)}
+                imagePaths={photos
+                  .filter((photo) => Boolean(photo.draftPath))
+                  .sort((left, right) => Number(right.id === primaryPhotoId) - Number(left.id === primaryPhotoId))
+                  .slice(0, 3)
+                  .flatMap((photo) => photo.draftPath ? [photo.draftPath] : [])}
+                isImagesProcessing={isProcessingPhotos}
                 onUseDraft={useAiDraft}
                 onUseTitle={handleTitleChange}
-                onRestorePreviousDescription={restorePreviousDescription}
               />
             </div>
 
