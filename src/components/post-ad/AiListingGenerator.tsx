@@ -13,6 +13,8 @@ type GeneratedListing = {
 
 type AiListingGeneratorProps = {
   title: string;
+  description: string;
+  price: string;
   condition: string;
   location: string;
   language: "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar";
@@ -42,6 +44,8 @@ function getGeneratedListing(payload: unknown): GeneratedListing | null {
 
 export function AiListingGenerator({
   title,
+  description,
+  price,
   condition,
   location,
   language,
@@ -90,7 +94,16 @@ export function AiListingGenerator({
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
         signal: controller.signal,
-        body: JSON.stringify({ title: title.trim(), condition: condition.trim(), location: location.trim(), additionalDetails, imagePaths, language }),
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+          price: price.trim(),
+          condition: condition.trim(),
+          location: location.trim(),
+          additionalDetails,
+          imagePaths,
+          language,
+        }),
       });
       const payload: unknown = await response.json().catch(() => null);
       const generated = getGeneratedListing(payload);
@@ -122,11 +135,11 @@ export function AiListingGenerator({
           </div>
         ) : (
           <button className="post-ai-generate-button" type="button" onClick={() => void generate()} disabled={isImagesProcessing}>
-            <i className="fa-brands fa-openai" aria-hidden="true" />
+            <span className="post-ai-gpt-mark" aria-hidden="true">GPT</span>
             <span>Generate title & description with ChatGPT</span>
           </button>
         )}
-        <p>Upload a clear main photo and ChatGPT will identify the item, write a title, and create a natural seller-style description. It never publishes automatically.</p>
+        <p>ChatGPT uses your title, price and any notes you have entered. If they are blank, it identifies the item from your photos and creates a natural seller-style draft. It never publishes automatically.</p>
       </div>
 
       <div className="post-ai-live-region" aria-live="polite" aria-atomic="true">

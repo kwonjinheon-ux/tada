@@ -946,6 +946,8 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
             <div className="post-ai-field">
               <AiListingGenerator
                 title={title}
+                description={description}
+                price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                 location={[region, area].filter(Boolean).join(", ")}
                 language={locale}

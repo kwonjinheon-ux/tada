@@ -7,6 +7,8 @@ import { z } from "zod";
 
 export const listingAiRequestSchema = z.object({
   title: z.string().trim().max(100).optional().default(""),
+  description: z.string().trim().max(5_000).optional().default(""),
+  price: z.string().trim().max(64).optional().default(""),
   condition: z.string().trim().max(100).optional().default(""),
   location: z.string().trim().max(160).optional().default(""),
   additionalDetails: z.array(z.object({
@@ -50,16 +52,18 @@ function buildListingPrompt(input: ListingAiRequest) {
     "You are the photo-first listing writer for Tada, a New Zealand second-hand marketplace.",
     "Start by carefully analysing the supplied photographs. Identify the primary item being sold, then write a precise, searchable title and a natural listing description in the requested language.",
     `Write all customer-facing output in ${languageNames[input.language]}. Preserve a clearly visible brand name or model number in its usual spelling.`,
-    "The seller may not have written a title or description. That is expected: use the photos as the primary source of truth and create the title yourself.",
+    "When the seller has supplied a title, price, or description, treat those details as useful context and retain them when they agree with the photos. Use the photos as the source of truth when that context is blank. Never replace a specific seller-provided title with a generic title.",
     "Write the description in a warm first-person seller voice. It should read like a helpful real seller, not like an inventory report or an AI response. Briefly introduce the item, describe only visible or provided details, explain grounded practical appeal, and invite buyers to ask about details that cannot be confirmed.",
     "The title must name the actual item. Never use generic placeholders such as 'Marketplace item', 'Item for sale', or 'Product'. If the exact brand or model is not visible, use the most specific honest item type you can identify.",
     "Use only facts that are clearly visible in the images or explicitly provided below. Do not invent a brand, model, dimensions, age, material, included accessory, working condition, authenticity, defect, reason for sale, delivery promise, or history.",
-    "Do not claim an electronic or mechanical item works unless operation is explicitly provided. Mention visible wear only if it is clear enough to support. Do not add a price.",
+    "Do not claim an electronic or mechanical item works unless operation is explicitly provided. Mention visible wear only if it is clear enough to support. Do not invent a price; a seller-provided price may be used as context but does not need to be repeated in the description.",
     "visibleDetails must contain only short confirmed observations. sellerConfirmation must list only details the seller should verify before publishing, such as operation, exact model, measurements, included accessories, or less-visible condition. Keep either array empty if none apply.",
     "Return only the requested JSON structure.",
     "Seller-provided context (use only when it agrees with the photos):",
     JSON.stringify({
       existingTitle: input.title,
+      sellerDescription: input.description,
+      listedPrice: input.price,
       selectedCondition: input.condition,
       location: input.location,
       additionalDetails: input.additionalDetails,
