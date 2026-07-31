@@ -10,6 +10,7 @@ import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { DialogDismissHint, DialogOverlay } from "@/components/ui/DialogOverlay";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
+import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
 
 export type ListingDetail = {
@@ -438,11 +439,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <TextSizeSection className="listing-detail-description" title="Description">
         {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
       </TextSizeSection>
+      <AdSlot placement="product_detail_middle" />
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">
         <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
       </section>
 
       <ListingComments listingId={listing.id} />
+      <AdSlot placement="product_detail_bottom" />
 
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></DialogOverlay> : null}

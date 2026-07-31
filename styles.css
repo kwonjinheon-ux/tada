@@ -5418,6 +5418,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   scrollbar-width: thin;
 }
 
+.ad-slot { position: relative; margin: 18px 0; overflow: hidden; border: 1px solid #dbe5ee; border-radius: 12px; background: #f8fbfd; }
+.ad-slot > span { position: absolute; z-index: 1; top: 7px; left: 8px; padding: 3px 6px; border-radius: 99px; background: rgba(255,255,255,.88); color: #60758c; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.ad-slot-sponsor a { display: block; }.ad-slot-sponsor img { display: block; width: 100%; height: auto; min-height: 90px; object-fit: cover; }.ad-slot-adsense { min-height: 90px; }.product-grid > .ad-slot { grid-column: 1 / -1; margin: 0; }
+
 .market-filter-panel::-webkit-scrollbar {
   width: 10px;
   }

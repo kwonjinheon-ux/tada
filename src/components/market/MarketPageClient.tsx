@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { marketFeedResponseSchema } from "@/contracts/api";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
+import { AdSlot } from "@/components/advertising/AdSlot";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -370,10 +371,13 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
           </div>
         </div>
 
+        <AdSlot placement="market_top" />
+
         {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {listings.map((listing, index) => (
-            <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />
-          ))}
+          {listings.flatMap((listing, index) => [
+            <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />,
+            (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,
+          ])}
           {nextPageCursor ? (
             <div ref={loadMoreRef} className={`market-list-load-more ${isLoadingMore ? "is-loading" : ""}`} role="status" aria-live="polite">
               {isLoadingMore && <><span className="market-list-load-spinner" aria-hidden="true" /><span>새 콘텐츠를 불러오는 중...</span></>}
