@@ -74,9 +74,10 @@ export function createSafetyIdentifier(userId: string) {
 }
 
 export function isOwnedListingDraftImagePath(path: string, userId: string) {
-  const prefix = `${userId}/drafts/`;
-  const fileName = path.slice(prefix.length);
-  return path.startsWith(prefix)
+  const prefix = `${userId}/`;
+  const ownedDraftPath = path.startsWith(`${prefix}drafts/`) || path.startsWith(`${prefix}ai-drafts/`);
+  const fileName = path.slice(path.lastIndexOf("/") + 1);
+  return ownedDraftPath
     && !path.includes("\\")
     && !path.includes("..")
     && /^[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/.test(fileName);
