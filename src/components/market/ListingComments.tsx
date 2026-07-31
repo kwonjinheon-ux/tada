@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { descriptionTextScale } from "@/components/ui/TextSizeSection";
 
 type ListingComment = {
   id: string;
@@ -39,7 +40,7 @@ function CommentAvatar({ comment }: { comment: ListingComment }) {
   return comment.authorAvatarUrl ? <img className="listing-comment-avatar" src={comment.authorAvatarUrl} alt="" /> : <span className="listing-comment-avatar">{initials(comment.authorName)}</span>;
 }
 
-export function ListingComments({ listingId }: { listingId: string }) {
+export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: string; textSizeStep?: number }) {
   const [comments, setComments] = useState<ListingComment[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,7 +211,7 @@ export function ListingComments({ listingId }: { listingId: string }) {
     </article>;
   };
 
-  return <section className="listing-comments" aria-labelledby="listing-comments-title">
+  return <section className="listing-comments" aria-labelledby="listing-comments-title" style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
     <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeRootCount} {activeRootCount === 1 ? "comment" : "comments"}</span></div>
     <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
