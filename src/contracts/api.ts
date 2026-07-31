@@ -69,6 +69,8 @@ export const marketFeedQuerySchema = z.object({
   q: z.string().trim().max(60).default(""),
   category: z.string().trim().max(80).optional(),
   subcategory: z.string().trim().max(80).optional(),
+  maxPrice: z.coerce.number().int().min(50).max(100_000).optional(),
+  condition: z.enum(["brand_new", "like_new", "excellent", "good", "fair"]).optional(),
   sort: z.enum(["newest", "priceAsc", "priceDesc"]).default("newest"),
   cursor: z.string().min(1).max(500).optional(),
 });

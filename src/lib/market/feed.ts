@@ -9,7 +9,7 @@ import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
-type Row = { id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
+type Row = { id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair"; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 type Cursor = { value: string | number; id: string };
 
@@ -31,9 +31,11 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const sortColumn = query.sort === "newest" ? "created_at" : "price_cents";
   const ascending = query.sort === "priceAsc";
   const cursor = decodeCursor(query.cursor);
-  let request = supabase.from("market_listings").select("id,title,price_cents,region_city,region_suburb,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+  let request = supabase.from("market_listings").select("id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
   if (category) request = request.eq("category_slug", category);
   if (subcategory) request = request.eq("subcategory_slug", subcategory);
+  if (query.maxPrice) request = request.lte("price_cents", query.maxPrice * 100);
+  if (query.condition) request = request.eq("item_condition", query.condition);
   const search = safeSearch(query.q);
   if (search) request = request.or(`title.ilike.%${search}%,region_city.ilike.%${search}%,region_suburb.ilike.%${search}%`);
   if (cursor) {

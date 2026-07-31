@@ -21,7 +21,7 @@ type MarketListingRow = {
   subcategory_slug: string | null;
   region_city: string | null;
   region_suburb: string | null;
-  item_condition: "brand_new" | "like_new" | "good" | "fair";
+  item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair";
   trade_method: "pickup_delivery" | "pickup" | "delivery";
   meeting_place: string | null;
   status: "published" | "pending" | "sold";
@@ -34,7 +34,7 @@ type RelatedListingRow = Pick<MarketListingRow, "id" | "title" | "price_cents" |
 type RelatedPhotoRow = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 type SellerRow = { id: string; display_name: string | null; avatar_path: string | null; rating_average?: number | string; rating_count?: number };
 
-const conditionLabels = { brand_new: "Brand new", like_new: "Like new", good: "Good", fair: "Fair" } as const;
+const conditionLabels = { brand_new: "Brand new", like_new: "Like new", excellent: "Excellent", good: "Good", fair: "Fair" } as const;
 const tradeMethodLabels = { pickup_delivery: "Pickup or delivery", pickup: "Pickup", delivery: "Delivery" } as const;
 
 function formatLocation(city: string | null, suburb: string | null) {

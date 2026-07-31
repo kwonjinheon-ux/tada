@@ -47,7 +47,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   const regionCity = typeof payload?.regionCity === "string" ? payload.regionCity.trim() || null : null;
   const regionSuburb = typeof payload?.regionSuburb === "string" ? payload.regionSuburb.trim() || null : null;
   const meetingPlace = typeof payload?.meetingPlace === "string" ? payload.meetingPlace.trim() || null : null;
-  const validConditions = new Set(["brand_new", "like_new", "good", "fair"]);
+  const validConditions = new Set(["brand_new", "like_new", "excellent", "good", "fair"]);
   const validTradeMethods = new Set(["pickup_delivery", "pickup", "delivery"]);
   if (title.length < 2 || title.length > 120) return NextResponse.json({ error: "Title must be between 2 and 120 characters." }, { status: 400 });
   if (description.length < 20 || description.length > 5000) return NextResponse.json({ error: "Description must be between 20 and 5,000 characters." }, { status: 400 });

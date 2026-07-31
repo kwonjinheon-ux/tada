@@ -4657,7 +4657,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-dashboard-menu .mobile-dashboard-logout {
     width: 100%;
-    min-height: 28px;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4669,7 +4669,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     background: #f1f4f8;
     color: #53657a;
     font: inherit;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 400;
     cursor: pointer;
   }
@@ -6990,7 +6990,26 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 @media (min-width: 1024px) {
-  .site-nav { height: var(--desktop-header-height); min-height: var(--desktop-header-height); grid-auto-rows: 48px; padding-block: 6px; }
+  .site-nav {
+    position: relative;
+    height: var(--desktop-header-height);
+    min-height: var(--desktop-header-height);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-auto-rows: 48px;
+    padding-block: 6px;
+    padding-inline: 16px;
+  }
+
+  .site-logo { justify-self: start; }
+
+  .nav-search {
+    position: absolute;
+    left: 50%;
+    width: min(100%, 406px);
+    transform: translateX(-50%);
+  }
+
+  .primary-nav { grid-column: 2; }
 }
 
 /* Keep every touch-device form control at 16px or larger to prevent iOS focus zoom. */

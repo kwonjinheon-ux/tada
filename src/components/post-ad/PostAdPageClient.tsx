@@ -36,7 +36,7 @@ export type EditableListingInitialValues = {
   mainCategory: string;
   subCategory: string;
   tradeMethod: "pickup_delivery" | "pickup" | "delivery";
-  itemCondition: "brand_new" | "like_new" | "good" | "fair";
+  itemCondition: "brand_new" | "like_new" | "excellent" | "good" | "fair";
   region: string;
   area: string;
   meetingPlace: string;
@@ -63,6 +63,7 @@ const tradeMethods: SelectOption[] = [
 const conditions: SelectOption[] = [
   { label: "Brand new", value: "brand_new" },
   { label: "Like new", value: "like_new" },
+  { label: "Excellent", value: "excellent" },
   { label: "Good", value: "good" },
   { label: "Fair", value: "fair" },
 ];

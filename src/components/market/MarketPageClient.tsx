@@ -30,6 +30,16 @@ const categoryIcons: Record<string, string> = {
 };
 
 const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
+const priceFilterMinimum = 50;
+const priceFilterMaximum = 5000;
+const conditionFilters = [
+  { label: "Any", value: "all" },
+  { label: "New", value: "brand_new" },
+  { label: "Like New", value: "like_new" },
+  { label: "Excellent", value: "excellent" },
+  { label: "Good", value: "good" },
+  { label: "Fair", value: "fair" },
+] as const;
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [], nextCursor = null }: { postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { t } = useLanguage();
@@ -38,11 +48,15 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const urlSearchQuery = searchParams.get("q") ?? "";
   const selectedCategory = searchParams.get("category") ?? "all";
   const selectedSubcategory = searchParams.get("subcategory") ?? "all";
+  const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
+  const appliedCondition = conditionFilters.some((filter) => filter.value === searchParams.get("condition")) ? searchParams.get("condition")! : "all";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+  const [maxPrice, setMaxPrice] = useState(appliedMaxPrice);
+  const [condition, setCondition] = useState(appliedCondition);
   const [applyingChip, setApplyingChip] = useState<string | null>(null);
   const [listings, setListings] = useState(postedListings);
   const [savedIds, setSavedIds] = useState(savedListingIds);
@@ -65,6 +79,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
   }, [urlSearchQuery]);
+
+  useEffect(() => {
+    setMaxPrice(appliedMaxPrice);
+    setCondition(appliedCondition);
+  }, [appliedCondition, appliedMaxPrice]);
 
   useEffect(() => {
     setListings(postedListings);
@@ -243,6 +262,14 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     if (selectedCategoryDefinition) chooseSubcategory(categorySlug);
     else chooseCategory(categorySlug);
   };
+  const applyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("cursor");
+    if (maxPrice >= priceFilterMaximum) params.delete("maxPrice"); else params.set("maxPrice", String(maxPrice));
+    if (condition === "all") params.delete("condition"); else params.set("condition", condition);
+    router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
+    setIsFilterOpen(false);
+  };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
       <button
@@ -282,25 +309,25 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
 
         <section className="filter-block price-filter">
           <h2>{t("maxPrice")}</h2>
-          <input type="range" min="50" max="5000" defaultValue="5000" />
+          <input type="range" min={priceFilterMinimum} max={priceFilterMaximum} value={maxPrice} onChange={(event) => setMaxPrice(Number(event.target.value))} aria-valuetext={`$${maxPrice.toLocaleString()}`} />
           <div className="price-range">
-            <span>$50</span>
-            <span>$5,000</span>
+            <span>${priceFilterMinimum}</span>
+            <span>${maxPrice.toLocaleString()}</span>
           </div>
         </section>
 
         <section className="filter-block condition-filter">
           <h2>{t("condition")}</h2>
           <div className="condition-chips">
-            {["Any", "New", "Like New", "Excellent", "Good", "Fair"].map((condition) => (
-              <button key={condition} className={condition === "Any" ? "is-selected" : ""} type="button">
-                {condition}
+            {conditionFilters.map((filter) => (
+              <button key={filter.value} className={condition === filter.value ? "is-selected" : ""} type="button" aria-pressed={condition === filter.value} onClick={() => setCondition(filter.value)}>
+                {filter.label}
               </button>
             ))}
           </div>
         </section>
 
-        <button className="apply-filter-button" type="button" onClick={() => setIsFilterOpen(false)}>
+        <button className="apply-filter-button" type="button" onClick={applyFilters}>
           {t("applyFilters")}
         </button>
       </MobileDrawer>
