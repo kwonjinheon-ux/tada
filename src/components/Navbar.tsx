@@ -345,6 +345,7 @@ export function Navbar() {
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
+  const languageButtonLabel = locale === "en" ? "EN" : locale === "ko" ? "한글" : null;
   const unreadBadge = unreadMessageCount > 99 ? "99+" : String(unreadMessageCount);
   const notificationBadge = unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount);
 
@@ -487,7 +488,7 @@ export function Navbar() {
         </button>
 
         <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-          <i className="fa-solid fa-language" aria-hidden="true" />
+          {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
         </button>
 
         {isAuthReady && (
@@ -513,8 +514,7 @@ export function Navbar() {
 
         <div className="nav-actions">
           <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-            <i className="fa-solid fa-language" aria-hidden="true" />
-            <span>{locale.toUpperCase()}</span>
+            {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
           </button>
           <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />

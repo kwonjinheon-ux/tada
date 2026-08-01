@@ -355,10 +355,16 @@ a {
 }
 
 .nav-language-button {
-  gap: 5px;
-  border: 1px solid var(--line-soft);
-  background: var(--surface);
-  color: var(--primary-dark);
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 !important;
+  border: 1px solid #d9e2f2;
+  border-radius: 50% !important;
+  background: #f7f9ff;
+  color: var(--ink);
+  font-size: 11px !important;
   cursor: pointer;
 }
 
@@ -4697,7 +4703,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-nav {
     position: relative;
-    grid-template-columns: 38px minmax(0, 1fr) 34px 38px 38px;
+    grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;
     grid-template-rows: 58px 48px auto;
     grid-template-areas:
       "menu logo language notification profile"
@@ -4810,17 +4816,22 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     pointer-events: auto;
   }
 
-  .mobile-profile-link {
-    grid-area: profile;
-    justify-self: end;
+  .mobile-profile-link,
+  .nav-notifications.mobile-notifications,
+  .mobile-language-button {
     width: 38px;
     height: 38px;
     display: grid;
     place-items: center;
-    overflow: hidden;
     border: 1px solid #d9e2f2;
     border-radius: 50%;
     background: #f7f9ff;
+  }
+
+  .mobile-profile-link {
+    grid-area: profile;
+    justify-self: end;
+    overflow: hidden;
     color: #5967f2;
     font-size: 18px;
     text-decoration: none;
@@ -4838,9 +4849,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     grid-area: notification;
     justify-self: end;
     display: inline-grid;
-    width: 44px;
-    height: 44px;
-    font-size: 21px;
+    color: var(--ink);
+    font-size: 18px;
+  }
+
+  .nav-notifications.mobile-notifications:hover,
+  .nav-notifications.mobile-notifications:focus-visible {
+    border-color: var(--primary);
+    background: #edf9f4;
   }
 
   .mobile-notifications span {
@@ -4851,21 +4867,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-language-button {
     grid-area: language;
     justify-self: center;
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
     padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--primary-dark);
-    font-size: 17px;
+    color: var(--ink);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
     cursor: pointer;
   }
 
   .mobile-language-button:hover,
   .mobile-language-button:focus-visible {
+    border-color: var(--primary);
     background: #edf9f4;
   }
 
