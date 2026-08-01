@@ -580,14 +580,14 @@ export function Navbar() {
         <DialogOverlay className="language-settings-dialog" onClose={() => setIsLanguageMenuOpen(false)}>
           <section className="language-settings-card" id="language-settings-dialog" aria-label="Language settings">
             <header>
-              <div><i className="fa-solid fa-language" aria-hidden="true" /><div><strong>{t("languageSettings")}</strong><span>{t("displayLanguage")}</span></div></div>
+              <div><i className="fa-solid fa-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
               <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
             </header>
             <div className="language-settings-options" role="radiogroup" aria-label={t("displayLanguage")}>
               {languageOptions.map((option) => (
                 <button className={locale === option.code ? "is-selected" : ""} type="button" role="radio" aria-checked={locale === option.code} key={option.code} disabled={isSavingLanguage} onClick={() => void handleLocaleSelection(option.code)}>
                   <span className="language-settings-flag">{option.flag}</span>
-                  <span><strong>{option.label}</strong><small>{option.nativeLabel}</small></span>
+                  <span><span className="language-settings-option-label">{option.label}</span><small>{option.nativeLabel}</small></span>
                   {locale === option.code ? <i className="fa-solid fa-check" aria-hidden="true" /> : null}
                 </button>
               ))}
@@ -604,9 +604,9 @@ export function Navbar() {
                 {avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               </div>
               <div>
-                <strong>{displayName ?? userEmail}</strong>
+                <span className="desktop-dashboard-name">{displayName ?? userEmail}</span>
                 <span>{userEmail}</span>
-                <b>Member</b>
+                <span className="desktop-dashboard-member">Member</span>
               </div>
             </div>
             {dashboardMenuItems.map(([icon, label, suffix]) => {
@@ -614,12 +614,12 @@ export function Navbar() {
               return (
                 <Link className={`desktop-dashboard-menu-item ${pathname === href ? "is-active" : ""}`} href={href} key={label} onClick={() => setIsDesktopDashboardOpen(false)}>
                   <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                  <span><strong>{label}</strong><small>{dashboardMenuDescriptions[label]}</small></span>
+                  <span className="desktop-dashboard-menu-label">{label}</span>
                   {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : <i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" />}
                 </Link>
               );
             })}
-            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span><strong>Admin centre</strong><small>Moderation and administration</small></span><i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /></Link> : null}
+            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span className="desktop-dashboard-menu-label">Admin centre</span><i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /></Link> : null}
             <button className="desktop-dashboard-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
           </nav>
         </DialogOverlay>
