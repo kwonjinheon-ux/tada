@@ -867,6 +867,14 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
             </fieldset>
 
+            <div className="post-field post-field-full post-price-field">
+              <label htmlFor="listing-price">Price (NZD)</label>
+              <div className="post-price-input">
+                <span>$</span>
+                <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
+              </div>
+            </div>
+
             <div className="post-field post-field-full post-description-field">
               <label htmlFor="post-description">Description</label>
               <div className="post-editor">
@@ -965,14 +973,6 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 onUseDraft={useAiDraft}
                 onUseTitle={handleTitleChange}
               />
-            </div>
-
-            <div className="post-field post-field-full post-price-field">
-              <label htmlFor="listing-price">Price (NZD)</label>
-              <div className="post-price-input">
-                <span>$</span>
-                <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
-              </div>
             </div>
 
             <div className="post-form-grid post-location-grid">
