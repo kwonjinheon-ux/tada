@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
@@ -294,24 +294,18 @@ export function Navbar() {
   useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
-    window.addEventListener(mobileDrawerEvents.dashboardClose, closeDashboardDrawer);
     return () => {
       window.removeEventListener("mobile-category-menu-request", closeDashboardDrawer);
-      window.removeEventListener(mobileDrawerEvents.dashboardClose, closeDashboardDrawer);
     };
   }, []);
 
   useEffect(() => {
     const isMobileMenuOpen = isDashboardMenuOpen && window.matchMedia("(max-width: 767.98px)").matches;
-    const isDashboardDrawerOpen = isMobileMenuOpen && Boolean(userEmail);
     const isGuestMenuOpen = isMobileMenuOpen && !userEmail;
 
-    document.body.classList.toggle("has-mobile-dashboard-drawer", isDashboardDrawerOpen);
     document.body.classList.toggle("has-open-mobile-drawer", isGuestMenuOpen);
-    window.dispatchEvent(new CustomEvent(mobileDrawerEvents.dashboardState, { detail: isDashboardDrawerOpen }));
 
     return () => {
-      document.body.classList.remove("has-mobile-dashboard-drawer");
       document.body.classList.remove("has-open-mobile-drawer");
     };
   }, [isDashboardMenuOpen, userEmail]);
@@ -549,19 +543,23 @@ export function Navbar() {
         </nav>
 
         {userEmail && (
-          <>
-            <MobileDrawer open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop" panelClassName="mobile-dashboard-menu" as="nav" id="mobile-dashboard-menu">
-            <button className={`mobile-dashboard-close ${mobileDrawerClasses.closeButton} ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close dashboard menu" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+          isDashboardMenuOpen ? <DialogOverlay className="mobile-profile-popover-dialog" onClose={() => setIsDashboardMenuOpen(false)}>
+            <nav className="mobile-profile-popover" id="mobile-dashboard-menu" aria-label="Dashboard menu">
+              <div className="mobile-profile-popover-header">
+                <div className="mobile-profile-popover-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}</div>
+                <div><span>{displayName ?? userEmail}</span><small>{userEmail}</small></div>
+              </div>
             {dashboardMenuItems.map(([icon, label, suffix]) => (
-              <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname === (label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`) ? "is-active" : ""}`} href={label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
+              <Link className={`mobile-profile-popover-item ${pathname === (label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`) ? "is-active" : ""}`} href={label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span className={mobileDrawerClasses.menuLabel}>{label}{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}</span>
+                <span>{label}</span>
+                {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
               </Link>
             ))}
-            {isAdmin ? <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span className={mobileDrawerClasses.menuLabel}>Admin centre</span></Link> : null}
-            <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
-            </MobileDrawer>
-          </>
+            {isAdmin ? <Link className={`mobile-profile-popover-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin centre</span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link> : null}
+            <button className="mobile-profile-popover-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+            </nav>
+          </DialogOverlay> : null
         )}
         {isAuthReady && !userEmail && (
           <>
