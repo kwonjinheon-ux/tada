@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -33,6 +34,7 @@ export function Navbar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
+  const [isDesktopDashboardOpen, setIsDesktopDashboardOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -249,7 +251,19 @@ export function Navbar() {
   useEffect(() => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
+    setIsDesktopDashboardOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isDesktopDashboardOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDesktopDashboardOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [isDesktopDashboardOpen]);
 
   useEffect(() => {
     const syncListingDock = () => setListingDockConfig(window.__tadaListingDockConfig ?? null);
@@ -324,7 +338,7 @@ export function Navbar() {
     setIsDashboardMenuOpen((current) => !current);
   };
 
-  const handleMobileSignOut = async () => {
+  const handleSignOut = async () => {
     const supabase = createBrowserSupabaseClient();
     if (!supabase) return;
 
@@ -337,6 +351,7 @@ export function Navbar() {
     setAvatarUrl(null);
     setUnreadNotificationCount(0);
     setIsDashboardMenuOpen(false);
+    setIsDesktopDashboardOpen(false);
   };
 
   const triggerListingDockAction = (action: "message" | "offer" | "share" | "save" | "edit" | "delete") => {
@@ -448,9 +463,9 @@ export function Navbar() {
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
           </Link>
           {isAuthReady && userEmail ? (
-            <Link className="nav-profile-link" href={pathname.startsWith("/jobs") ? "/jobs/dashboard" : "/market/dashboard"} title={userEmail} aria-label="Open my dashboard">
+            <button className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => setIsDesktopDashboardOpen(true)}>
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
-            </Link>
+            </button>
           ) : isAuthReady ? (
             <>
               <Link className="nav-signup" href="/login">Log in</Link>
@@ -482,7 +497,7 @@ export function Navbar() {
               </Link>
             ))}
             {isAdmin ? <Link className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span className={mobileDrawerClasses.menuLabel}>Admin centre</span></Link> : null}
-            <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleMobileSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+            <button className={`mobile-dashboard-logout ${mobileDrawerClasses.staggerItem}`} type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
             </MobileDrawer>
           </>
         )}
@@ -499,6 +514,28 @@ export function Navbar() {
 
       </div>
       </header>
+      {userEmail && isDesktopDashboardOpen ? (
+        <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
+          <nav className="desktop-dashboard-menu" id="desktop-dashboard-menu" aria-label="Dashboard menu">
+            <div className="desktop-dashboard-menu-heading">
+              <span>Dashboard</span>
+              <strong>{displayName ?? userEmail}</strong>
+            </div>
+            {dashboardMenuItems.map(([icon, label, suffix]) => {
+              const href = label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`;
+              return (
+                <Link className={`desktop-dashboard-menu-item ${pathname === href ? "is-active" : ""}`} href={href} key={label} onClick={() => setIsDesktopDashboardOpen(false)}>
+                  <i className={`fa-solid ${icon}`} aria-hidden="true" />
+                  <span>{label}</span>
+                  {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
+                </Link>
+              );
+            })}
+            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin centre</span></Link> : null}
+            <button className="desktop-dashboard-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+          </nav>
+        </DialogOverlay>
+      ) : null}
       {!isMessagesPage ? <MobileDock items={listingDockItems ?? standardDockItems} /> : null}
     </>
   );
