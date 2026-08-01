@@ -21,6 +21,15 @@ const dashboardMenuItems = [
   ["fa-key", "Keywords", "/keywords"],
   ["fa-rectangle-list", "Manage Listings", "/listings"],
 ] as const;
+const dashboardMenuDescriptions = {
+  Dashboard: "Overview and account activity",
+  "Profile Settings": "Profile, language and preferences",
+  Notifications: "Updates and account alerts",
+  Messages: "Your conversations",
+  Wishlist: "Listings you have saved",
+  Keywords: "Saved search alerts",
+  "Manage Listings": "Create and manage listings",
+} as const;
 
 declare global {
   interface Window {
@@ -517,21 +526,27 @@ export function Navbar() {
       {userEmail && isDesktopDashboardOpen ? (
         <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
           <nav className="desktop-dashboard-menu" id="desktop-dashboard-menu" aria-label="Dashboard menu">
-            <div className="desktop-dashboard-menu-heading">
-              <span>Dashboard</span>
-              <strong>{displayName ?? userEmail}</strong>
+            <div className="desktop-dashboard-profile">
+              <div className="desktop-dashboard-avatar" aria-hidden="true">
+                {avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
+              </div>
+              <div>
+                <strong>{displayName ?? userEmail}</strong>
+                <span>{userEmail}</span>
+                <b>Member</b>
+              </div>
             </div>
             {dashboardMenuItems.map(([icon, label, suffix]) => {
               const href = label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`;
               return (
                 <Link className={`desktop-dashboard-menu-item ${pathname === href ? "is-active" : ""}`} href={href} key={label} onClick={() => setIsDesktopDashboardOpen(false)}>
                   <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                  <span>{label}</span>
-                  {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
+                  <span><strong>{label}</strong><small>{dashboardMenuDescriptions[label]}</small></span>
+                  {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : <i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" />}
                 </Link>
               );
             })}
-            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin centre</span></Link> : null}
+            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span><strong>Admin centre</strong><small>Moderation and administration</small></span><i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /></Link> : null}
             <button className="desktop-dashboard-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
           </nav>
         </DialogOverlay>
