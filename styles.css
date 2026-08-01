@@ -3405,10 +3405,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-title-field { order: 1; }
 .post-photo-field { order: 2; }
 .post-price-field { order: 3; }
-.post-description-field { order: 4; }
-.post-ai-field { order: 5; }
-.post-category-fields { order: 6; }
-.post-location-grid { order: 7; }
+.post-category-fields { order: 4; }
+.post-location-grid { order: 5; }
+.post-description-field { order: 6; }
+.post-ai-field { order: 7; }
 .post-create-status { order: 8; }
 .post-submit-row { order: 9; }
 
