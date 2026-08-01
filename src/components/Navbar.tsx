@@ -481,10 +481,6 @@ export function Navbar() {
           <span />
         </button>
 
-        <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-          {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
-        </button>
-
         {isAuthReady && (
           <button className={`mobile-profile-link ${!isSignedIn ? "is-guest" : ""} ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close account menu" : isSignedIn ? "Open my dashboard menu" : "Open account menu"} aria-expanded={isDashboardMenuOpen} aria-controls={isSignedIn ? "mobile-dashboard-menu" : "mobile-account-menu"} title={userEmail ?? "Account"} onClick={handleMobileProfileClick}>
             {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
@@ -494,6 +490,9 @@ export function Navbar() {
           <i className="fa-regular fa-bell" aria-hidden="true" />
           {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
         </Link>
+        <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+          {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
+        </button>
 
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
@@ -507,9 +506,6 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-            {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
-          </button>
           <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>{t("create")}</span>
@@ -518,6 +514,9 @@ export function Navbar() {
             <i className="fa-regular fa-bell" aria-hidden="true" />
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
           </Link>
+          <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+            {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
+          </button>
           {isAuthReady && userEmail ? (
             <button className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => setIsDesktopDashboardOpen(true)}>
               {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
