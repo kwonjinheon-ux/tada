@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
-import { useLanguage } from "@/components/LanguageProvider";
+import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
@@ -44,6 +44,9 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isDesktopDashboardOpen, setIsDesktopDashboardOpen] = useState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+  const [languageStatus, setLanguageStatus] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -59,7 +62,7 @@ export function Navbar() {
   const [isListingShareCopied, setIsListingShareCopied] = useState(false);
   const dockHeartTimer = useRef<number | null>(null);
   const shareCopiedTimer = useRef<number | null>(null);
-  const { t } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get("q") ?? "";
@@ -261,18 +264,21 @@ export function Navbar() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsDesktopDashboardOpen(false);
+    setIsLanguageMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!isDesktopDashboardOpen) return;
+    if (!isDesktopDashboardOpen && !isLanguageMenuOpen) return;
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsDesktopDashboardOpen(false);
+      if (event.key !== "Escape") return;
+      setIsDesktopDashboardOpen(false);
+      setIsLanguageMenuOpen(false);
     };
 
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [isDesktopDashboardOpen]);
+  }, [isDesktopDashboardOpen, isLanguageMenuOpen]);
 
   useEffect(() => {
     const syncListingDock = () => setListingDockConfig(window.__tadaListingDockConfig ?? null);
@@ -344,7 +350,44 @@ export function Navbar() {
 
   const handleMobileProfileClick = () => {
     setIsOpen(false);
+    setIsLanguageMenuOpen(false);
     setIsDashboardMenuOpen((current) => !current);
+  };
+
+  const handleLocaleSelection = async (nextLocale: SupportedLocale) => {
+    if (nextLocale === locale || isSavingLanguage) {
+      setIsLanguageMenuOpen(false);
+      return;
+    }
+
+    setLocale(nextLocale);
+    setLanguageStatus("");
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setLanguageStatus("Saved on this device.");
+      return;
+    }
+
+    setIsSavingLanguage(true);
+    try {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      if (!user) {
+        setLanguageStatus("Saved on this device. Sign in to save it to your account.");
+        return;
+      }
+
+      const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
+      const fallbackName = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Tada member";
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id,
+        display_name: profile?.display_name ?? displayName ?? fallbackName,
+        preferred_locale: nextLocale,
+      });
+      setLanguageStatus(error ? "Language saved on this device. Account sync will retry next time." : "Language saved to your account.");
+    } finally {
+      setIsSavingLanguage(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -399,6 +442,7 @@ export function Navbar() {
   function openMobileCategories() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
+    setIsLanguageMenuOpen(false);
     if (pathname !== "/market") {
       router.push("/market?filters=open");
       return;
@@ -408,6 +452,7 @@ export function Navbar() {
 
   function openMobileDashboard() {
     setIsOpen(false);
+    setIsLanguageMenuOpen(false);
     window.dispatchEvent(new Event("mobile-category-menu-close"));
     setIsDashboardMenuOpen(true);
   }
@@ -441,6 +486,10 @@ export function Navbar() {
           <span />
         </button>
 
+        <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+          <i className="fa-solid fa-language" aria-hidden="true" />
+        </button>
+
         {isAuthReady && (
           <button className={`mobile-profile-link ${!isSignedIn ? "is-guest" : ""} ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close account menu" : isSignedIn ? "Open my dashboard menu" : "Open account menu"} aria-expanded={isDashboardMenuOpen} aria-controls={isSignedIn ? "mobile-dashboard-menu" : "mobile-account-menu"} title={userEmail ?? "Account"} onClick={handleMobileProfileClick}>
             {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
@@ -463,6 +512,10 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
+          <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+            <i className="fa-solid fa-language" aria-hidden="true" />
+            <span>{locale.toUpperCase()}</span>
+          </button>
           <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>{t("create")}</span>
@@ -523,6 +576,26 @@ export function Navbar() {
 
       </div>
       </header>
+      {isLanguageMenuOpen ? (
+        <DialogOverlay className="language-settings-dialog" onClose={() => setIsLanguageMenuOpen(false)}>
+          <section className="language-settings-card" id="language-settings-dialog" aria-label="Language settings">
+            <header>
+              <div><i className="fa-solid fa-language" aria-hidden="true" /><div><strong>{t("languageSettings")}</strong><span>{t("displayLanguage")}</span></div></div>
+              <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+            </header>
+            <div className="language-settings-options" role="radiogroup" aria-label={t("displayLanguage")}>
+              {languageOptions.map((option) => (
+                <button className={locale === option.code ? "is-selected" : ""} type="button" role="radio" aria-checked={locale === option.code} key={option.code} disabled={isSavingLanguage} onClick={() => void handleLocaleSelection(option.code)}>
+                  <span className="language-settings-flag">{option.flag}</span>
+                  <span><strong>{option.label}</strong><small>{option.nativeLabel}</small></span>
+                  {locale === option.code ? <i className="fa-solid fa-check" aria-hidden="true" /> : null}
+                </button>
+              ))}
+            </div>
+            <p className="language-settings-status" role="status">{languageStatus || t("supportedNow")}</p>
+          </section>
+        </DialogOverlay>
+      ) : null}
       {userEmail && isDesktopDashboardOpen ? (
         <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
           <nav className="desktop-dashboard-menu" id="desktop-dashboard-menu" aria-label="Dashboard menu">

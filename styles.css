@@ -318,7 +318,8 @@ a {
 
 .mobile-notifications { display: none; }
 
-.nav-actions a {
+.nav-actions a,
+.nav-actions button {
   min-height: 34px;
   display: inline-flex;
   align-items: center;
@@ -352,6 +353,21 @@ a {
   background: #f2f2f2;
   color: #0f0f0f;
 }
+
+.nav-language-button {
+  gap: 5px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  color: var(--primary-dark);
+  cursor: pointer;
+}
+
+.nav-language-button:hover {
+  border-color: var(--primary);
+  background: #f0fbf6;
+}
+
+.mobile-language-button { display: none; }
 
 .nav-notifications.has-unread > i {
   transform-origin: 50% 8%;
@@ -2455,6 +2471,93 @@ body.listing-gallery-open { overflow: hidden; }
 .desktop-dashboard-logout:hover {
   background: #fff2f4;
 }
+
+.language-settings-dialog {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(14 30 55 / .1);
+}
+
+.language-settings-card {
+  width: min(440px, 100%);
+  max-height: min(620px, calc(100dvh - 40px));
+  overflow-y: auto;
+  padding: 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.language-settings-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.language-settings-card > header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.language-settings-card > header > div > i { color: var(--primary-dark); font-size: 20px; }
+.language-settings-card > header strong, .language-settings-card > header span { display: block; }
+.language-settings-card > header strong { color: var(--ink); font-size: 17px; }
+.language-settings-card > header span { margin-top: 2px; color: var(--muted); font-size: 13px; }
+
+.language-settings-card > header > button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.language-settings-options { display: grid; gap: 6px; padding-top: 14px; }
+
+.language-settings-options > button {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-ui);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.language-settings-options > button:hover,
+.language-settings-options > button.is-selected {
+  border-color: rgb(16 185 129 / .28);
+  background: rgb(16 185 129 / .09);
+}
+
+.language-settings-options > button:disabled { cursor: wait; opacity: .65; }
+.language-settings-flag { font-size: 21px; }
+.language-settings-options > button > span:nth-child(2) { display: grid; gap: 2px; }
+.language-settings-options strong { font-size: 14px; }
+.language-settings-options small { color: var(--muted); font-size: 12px; }
+.language-settings-options i { color: var(--primary-dark); font-size: 13px; }
+.language-settings-status { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
 .listing-gallery-lightbox {
   position: fixed;
@@ -4594,12 +4697,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .site-nav {
     position: relative;
-    grid-template-columns: 38px minmax(0, 1fr) 38px 38px;
+    grid-template-columns: 38px minmax(0, 1fr) 34px 38px 38px;
     grid-template-rows: 58px 48px auto;
     grid-template-areas:
-      "menu logo notification profile"
-      "search search search search"
-      "mobile mobile mobile mobile";
+      "menu logo language notification profile"
+      "search search search search search"
+      "mobile mobile mobile mobile mobile";
     row-gap: 4px;
     column-gap: 8px;
     padding: 3px 16px;
@@ -4743,6 +4846,27 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-notifications span {
     top: 6px;
     right: 6px;
+  }
+
+  .mobile-language-button {
+    grid-area: language;
+    justify-self: center;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--primary-dark);
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  .mobile-language-button:hover,
+  .mobile-language-button:focus-visible {
+    background: #edf9f4;
   }
 
   .mobile-profile-link img {
