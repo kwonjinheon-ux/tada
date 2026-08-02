@@ -14,6 +14,11 @@ type SelectOption = {
   value: string;
 };
 
+type ImportedCategoryKeyword = {
+  keyword: string;
+  tadaCategory: string;
+};
+
 type PhotoPreview = {
   id: string;
   url: string;
@@ -283,6 +288,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const [submitProgress, setSubmitProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [importedCategoryKeywords, setImportedCategoryKeywords] = useState<ImportedCategoryKeyword[]>([]);
   const isEditing = Boolean(initialListing);
   const subCategoryOptions = mainCategory
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
@@ -296,6 +302,26 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       setSubCategory("");
     }
   }, [subCategory, subCategoryOptions]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadImportedCategories = async () => {
+      try {
+        const response = await fetch("/api/market/categories/trademe");
+        if (!response.ok) return;
+        const payload = (await response.json()) as { categories?: ImportedCategoryKeyword[] };
+        if (isCurrent && Array.isArray(payload.categories)) setImportedCategoryKeywords(payload.categories);
+      } catch {
+        // The existing Tada dictionary remains available if the public catalogue is unavailable.
+      }
+    };
+
+    void loadImportedCategories();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     photosRef.current = photos;
@@ -368,10 +394,22 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     }
 
     const suggestion = suggestCategoryFromTitle(nextTitle);
-    if (!suggestion) return;
+    if (suggestion) {
+      setMainCategory(suggestion.mainCategory);
+      setSubCategory(suggestion.subCategory);
+      return;
+    }
 
-    setMainCategory(suggestion.mainCategory);
-    setSubCategory(suggestion.subCategory);
+    const normalizedTitle = nextTitle.trim().toLocaleLowerCase();
+    const importedSuggestion = importedCategoryKeywords
+      .map((category) => ({ ...category, normalizedKeyword: category.keyword.trim().toLocaleLowerCase() }))
+      .filter(({ normalizedKeyword }) => normalizedKeyword.length >= 3 && normalizedTitle.includes(normalizedKeyword))
+      .sort((left, right) => right.normalizedKeyword.length - left.normalizedKeyword.length)[0];
+
+    if (importedSuggestion) {
+      setMainCategory(importedSuggestion.tadaCategory);
+      setSubCategory("");
+    }
   };
 
   const updateSmartphoneSpec = (key: keyof SmartphoneSpecs, value: string) => {

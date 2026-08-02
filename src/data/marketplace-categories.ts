@@ -1,3 +1,5 @@
+import { getTradeMeKeywordsForCategory, tradeMeMappedKeywordCount } from "@/data/trademe-category-mapping";
+
 export type MarketplaceSubcategory = {
   label: string;
   value: string;
@@ -14,7 +16,7 @@ export type MarketplaceCategory = {
 const category = (label: string, value: string, keywords: string[], subcategories: Array<[string, string, string[]]>): MarketplaceCategory => ({
   label,
   value,
-  keywords,
+  keywords: [...new Set([...keywords, ...getTradeMeKeywordsForCategory(value)])],
   subcategories: subcategories.map(([subcategoryLabel, subcategoryValue, subcategoryKeywords]) => ({ label: subcategoryLabel, value: subcategoryValue, keywords: subcategoryKeywords })),
 });
 
@@ -163,6 +165,18 @@ export const marketplaceCategories: MarketplaceCategory[] = [
     ["Mobility & Daily Living Aids", "mobility-daily-living-aids", ["wheelchair", "walker", "crutches", "shower chair", "휠체어", "보행기"]],
   ]),
 ];
+
+export const marketplaceKeywordCount = new Set(
+  marketplaceCategories.flatMap((category) => [
+    ...category.keywords,
+    ...category.subcategories.flatMap((subcategory) => subcategory.keywords),
+  ]).map((keyword) => keyword.trim().toLocaleLowerCase()),
+).size;
+
+export const marketplaceKeywordSummary = {
+  total: marketplaceKeywordCount,
+  tradeMeImported: tradeMeMappedKeywordCount,
+};
 
 export function getSubcategories(mainCategory: string) {
   return marketplaceCategories.find((category) => category.value === mainCategory)?.subcategories ?? [];
