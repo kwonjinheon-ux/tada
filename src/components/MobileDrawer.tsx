@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { PopupBackdrop } from "@/components/ui/DialogOverlay";
 
 export const mobileDrawerClasses = {
   panel: "mobile-side-drawer",
@@ -34,11 +35,11 @@ const joinClasses = (...classes: Array<string | false | undefined>) => classes.f
 
 export function MobileDrawerBackdrop({ open, onClose, ariaLabel, className }: MobileDrawerBackdropProps) {
   return (
-    <button
+    <PopupBackdrop
       className={joinClasses(className, mobileDrawerClasses.backdrop, open && "is-open")}
-      type="button"
       aria-label={ariaLabel}
-      onClick={onClose}
+      aria-hidden={!open}
+      onClose={onClose}
     />
   );
 }

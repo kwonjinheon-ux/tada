@@ -528,7 +528,7 @@ export function Navbar() {
           ) : null}
         </div>
 
-        <button className={`mobile-menu-backdrop ${isOpen ? "is-open" : ""}`} type="button" aria-label="Close navigation menu" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); }} />
+        <MobileDrawerBackdrop open={isOpen} ariaLabel="Close navigation menu" className="mobile-menu-backdrop" onClose={() => { setIsOpen(false); setIsDashboardMenuOpen(false); }} />
 
         <nav className={`mobile-nav-menu ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>

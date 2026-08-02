@@ -2,10 +2,14 @@
 
 import type { HTMLAttributes, ReactNode } from "react";
 
-type DialogOverlayProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "onPointerDown"> & {
-  children: ReactNode;
+type PopupBackdropProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "onClick" | "onPointerDown"> & {
+  children?: ReactNode;
   onClose: () => void;
   isDismissible?: boolean;
+};
+
+type DialogOverlayProps = PopupBackdropProps & {
+  children: ReactNode;
   dismissHint?: string;
 };
 
@@ -13,19 +17,44 @@ export function DialogDismissHint({ children = "Click outside to close" }: { chi
   return <p className="dialog-overlay-dismiss-hint" aria-hidden="true">{children}</p>;
 }
 
-export function DialogOverlay({ children, className, onClose, isDismissible = true, dismissHint, ...props }: DialogOverlayProps) {
+/**
+ * Shared popup backdrop. It consumes outside clicks before dismissing so a
+ * pointer action can never continue through to controls behind an open popup.
+ */
+export function PopupBackdrop({ children, className, onClose, isDismissible = true, ...props }: PopupBackdropProps) {
   return (
     <div
+      {...props}
+      className={["popup-backdrop", className].filter(Boolean).join(" ")}
+      role={props.role ?? "presentation"}
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) event.stopPropagation();
+      }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        if (isDismissible) onClose();
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function DialogOverlay({ children, className, onClose, isDismissible = true, dismissHint, ...props }: DialogOverlayProps) {
+  return (
+    <PopupBackdrop
       {...props}
       className={["dialog-overlay", className].filter(Boolean).join(" ")}
       role="dialog"
       aria-modal="true"
-      onPointerDown={(event) => {
-        if (isDismissible && event.target === event.currentTarget) onClose();
-      }}
+      onClose={onClose}
+      isDismissible={isDismissible}
     >
       {children}
       {isDismissible ? <DialogDismissHint>{dismissHint}</DialogDismissHint> : null}
-    </div>
+    </PopupBackdrop>
   );
 }

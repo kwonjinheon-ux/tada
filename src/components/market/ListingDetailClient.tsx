@@ -8,7 +8,7 @@ import { marketConversationResponseSchema, marketWishlistResponseSchema } from "
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
-import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
@@ -418,7 +418,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         </aside>
       </div>
 
-      {isGalleryOpen ? <div className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`}>
+      {isGalleryOpen ? <PopupBackdrop className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}>
         <Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" onClick={() => setIsGalleryOpen(false)} />
         <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
         <div className="listing-gallery-lightbox-stage" onClick={(event) => { if (event.target === event.currentTarget) setIsGalleryOpen(false); }}>
@@ -426,7 +426,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         </div>
         {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
         <span className="listing-gallery-lightbox-count">{activeImage + 1} / {listing.images.length}</span>
-      </div> : null}
+      </PopupBackdrop> : null}
 
       <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-stack" : ""}`}>
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
