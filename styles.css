@@ -2479,9 +2479,9 @@ body.listing-gallery-open { overflow: hidden; }
   align-items: flex-start;
   justify-content: flex-end;
   padding: calc(var(--desktop-header-height) + 8px) 64px 16px 16px;
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  background: rgb(16 31 52 / .04);
+  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(1px);
 }
 
 .language-settings-dialog .dialog-overlay-dismiss-hint,
@@ -2565,6 +2565,26 @@ body.listing-gallery-open { overflow: hidden; }
 .language-settings-options small { color: var(--muted); font-size: 12px; }
 .language-settings-options i { color: var(--primary-dark); font-size: 13px; }
 .language-settings-status { margin: 8px 6px 4px; color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.45; }
+
+@keyframes menu-popover-item-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.language-settings-card > header,
+.language-settings-options > button,
+.language-settings-status {
+  animation: menu-popover-item-in 180ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.language-settings-options > button:nth-child(1) { animation-delay: 30ms; }
+.language-settings-options > button:nth-child(2) { animation-delay: 55ms; }
+.language-settings-options > button:nth-child(3) { animation-delay: 80ms; }
+.language-settings-options > button:nth-child(4) { animation-delay: 105ms; }
+.language-settings-options > button:nth-child(5) { animation-delay: 130ms; }
+.language-settings-options > button:nth-child(6) { animation-delay: 155ms; }
+.language-settings-options > button:nth-child(7) { animation-delay: 180ms; }
+.language-settings-status { animation-delay: 205ms; }
 
 .listing-gallery-lightbox {
   position: fixed;
@@ -4927,6 +4947,34 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-profile-popover { display: grid; gap: 1px; padding: 8px; }
 
+  .mobile-profile-popover > *,
+  .mobile-nav-menu.is-open a,
+  .mobile-auth-menu.is-open > * {
+    animation: menu-popover-item-in 180ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  .mobile-profile-popover > :nth-child(1),
+  .mobile-nav-menu.is-open a:nth-child(1),
+  .mobile-auth-menu.is-open > :nth-child(1) { animation-delay: 30ms; }
+  .mobile-profile-popover > :nth-child(2),
+  .mobile-nav-menu.is-open a:nth-child(2),
+  .mobile-auth-menu.is-open > :nth-child(2) { animation-delay: 55ms; }
+  .mobile-profile-popover > :nth-child(3),
+  .mobile-nav-menu.is-open a:nth-child(3),
+  .mobile-auth-menu.is-open > :nth-child(3) { animation-delay: 80ms; }
+  .mobile-profile-popover > :nth-child(4),
+  .mobile-nav-menu.is-open a:nth-child(4),
+  .mobile-auth-menu.is-open > :nth-child(4) { animation-delay: 105ms; }
+  .mobile-profile-popover > :nth-child(5),
+  .mobile-nav-menu.is-open a:nth-child(5),
+  .mobile-auth-menu.is-open > :nth-child(5) { animation-delay: 130ms; }
+  .mobile-profile-popover > :nth-child(6),
+  .mobile-nav-menu.is-open a:nth-child(6),
+  .mobile-auth-menu.is-open > :nth-child(6) { animation-delay: 155ms; }
+  .mobile-profile-popover > :nth-child(7),
+  .mobile-nav-menu.is-open a:nth-child(7),
+  .mobile-auth-menu.is-open > :nth-child(7) { animation-delay: 180ms; }
+
   .mobile-profile-popover-header {
     min-height: 64px;
     display: grid;
@@ -5038,14 +5086,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     min-height: 42px;
     font-weight: 400;
   }
-
-  .mobile-nav-menu.is-open a {
-    animation: mobile-menu-item-in 220ms ease both;
-  }
-
-  .mobile-nav-menu.is-open a:nth-child(2) { animation-delay: 35ms; }
-  .mobile-nav-menu.is-open a:nth-child(3) { animation-delay: 70ms; }
-  .mobile-nav-menu.is-open a:nth-child(4) { animation-delay: 105ms; }
 
   .mobile-dashboard-menu,
   .mobile-auth-menu {
@@ -5645,11 +5685,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   @keyframes mobile-drawer-item-in {
     from { opacity: 0; transform: translateY(-7px); }
     to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes mobile-menu-item-in {
-    from { opacity: 0; transform: translateX(-8px); }
-    to { opacity: 1; transform: translateX(0); }
   }
 
   .marketplace-page {
