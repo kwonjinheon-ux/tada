@@ -4827,6 +4827,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     transition: opacity 180ms ease;
   }
 
+  /* The shared drawer backdrop normally sits above page drawers (z-index: 121).
+     Header navigation is a popover, so its panel must remain above its own
+     backdrop instead of being blurred or blocked by it. */
+  .mobile-menu-backdrop.mobile-drawer-backdrop {
+    z-index: 29;
+  }
+
   .mobile-menu-backdrop.is-open {
     opacity: 1;
     pointer-events: auto;
