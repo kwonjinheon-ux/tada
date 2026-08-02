@@ -4770,7 +4770,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     height: 38px;
     padding: 9px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 50%;
     background: var(--primary);
     color: #fff;
     box-shadow: none;
@@ -4848,11 +4848,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     border: 1px solid #d9e2f2;
     border-radius: 50%;
     background: #f7f9ff;
-  }
-
-  .mobile-profile-link,
-  .mobile-language-button {
-    border-radius: 6px;
   }
 
   .mobile-profile-link {
