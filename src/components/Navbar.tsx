@@ -490,7 +490,7 @@ export function Navbar() {
           <i className="fa-regular fa-bell" aria-hidden="true" />
           {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
         </Link>
-        <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+        <button className={`mobile-language-button ${isLanguageMenuOpen ? "is-open" : ""}`} type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
           {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="fa-solid fa-language" aria-hidden="true" />}
         </button>
 
