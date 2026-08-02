@@ -2311,17 +2311,6 @@ body.listing-gallery-open { overflow: hidden; }
   background: var(--popup-backdrop-color);
   -webkit-backdrop-filter: blur(var(--popup-backdrop-blur));
   backdrop-filter: blur(var(--popup-backdrop-blur));
-  isolation: isolate;
-}
-
-/* Keep every popup surface sharp: the backdrop is the only blurred layer. */
-.popup-backdrop > * {
-  position: relative;
-  z-index: 1;
-  isolation: isolate;
-  filter: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
 }
 
 .dialog-overlay-dismiss-hint {
@@ -4808,9 +4797,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     position: relative;
     z-index: 31;
     gap: 0;
-    filter: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
   }
 
   .nav-menu-button.is-open span {
@@ -4871,11 +4857,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-profile-link.is-open {
-    position: relative;
-    z-index: 91;
-    filter: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     border-color: #b9dfd1;
     background: #f1fbf7;
     box-shadow: none;
@@ -4917,26 +4898,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-language-button:focus-visible {
     border-color: var(--primary);
     background: #edf9f4;
-  }
-
-  .mobile-language-button.is-open {
-    position: relative;
-    z-index: 91;
-    filter: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  /* The active trigger remains clear while its modal backdrop blocks the rest of the page. */
-  .site-header:has(.mobile-profile-link.is-open),
-  .site-header:has(.mobile-language-button.is-open) {
-    z-index: 91;
-    pointer-events: none;
-  }
-
-  .site-header:has(.mobile-profile-link.is-open) .mobile-profile-link,
-  .site-header:has(.mobile-language-button.is-open) .mobile-language-button {
-    pointer-events: auto;
   }
 
   .language-settings-dialog,
@@ -5087,12 +5048,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     position: absolute;
     top: 50px;
     left: 8px;
-    /* Keep the menu in its own compositing layer above the shared backdrop. */
-    z-index: 31;
-    isolation: isolate;
-    filter: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    z-index: 30;
     width: min(250px, calc(100vw - 24px));
     display: grid;
     grid-area: auto;
