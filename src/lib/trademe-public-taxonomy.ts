@@ -1,6 +1,10 @@
 import "server-only";
 
-import { resolveTadaCategoryFromTradeMePath, tradeMeCategoryMappings } from "@/data/trademe-category-mapping";
+import {
+  resolveTadaCategoryFromTradeMePath,
+  resolveTadaSubcategoryFromTradeMePath,
+  tradeMeCategoryMappings,
+} from "@/data/trademe-category-mapping";
 
 type TradeMeCategoryNode = {
   Name: string;
@@ -17,6 +21,7 @@ export type TradeMeMappedLeafCategory = {
   number: string;
   path: string;
   tadaCategory: string;
+  tadaSubcategory: string;
 };
 
 const tradeMeCategoriesUrl = "https://api.trademe.co.nz/v1/Categories.json";
@@ -24,7 +29,10 @@ const tradeMeCategoriesUrl = "https://api.trademe.co.nz/v1/Categories.json";
 function flattenSupportedLeaves(node: TradeMeCategoryNode): TradeMeMappedLeafCategory[] {
   if (node.IsLeaf) {
     const tadaCategory = resolveTadaCategoryFromTradeMePath(node.Path);
-    return tadaCategory ? [{ name: node.Name, number: node.Number, path: node.Path, tadaCategory }] : [];
+    const tadaSubcategory = resolveTadaSubcategoryFromTradeMePath(node.Path, tadaCategory);
+    return tadaCategory && tadaSubcategory
+      ? [{ name: node.Name, number: node.Number, path: node.Path, tadaCategory, tadaSubcategory }]
+      : [];
   }
 
   return (node.Subcategories ?? []).flatMap(flattenSupportedLeaves);

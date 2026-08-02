@@ -1,4 +1,9 @@
-import { getTradeMeKeywordsForCategory, tradeMeMappedKeywordCount } from "@/data/trademe-category-mapping";
+import {
+  getTradeMeKeywordsForCategory,
+  getTradeMeKeywordsForSubcategory,
+  tradeMeMappedKeywordCount,
+  tradeMeSubcategoryMappings,
+} from "@/data/trademe-category-mapping";
 
 export type MarketplaceSubcategory = {
   label: string;
@@ -13,12 +18,36 @@ export type MarketplaceCategory = {
   subcategories: MarketplaceSubcategory[];
 };
 
-const category = (label: string, value: string, keywords: string[], subcategories: Array<[string, string, string[]]>): MarketplaceCategory => ({
-  label,
-  value,
-  keywords: [...new Set([...keywords, ...getTradeMeKeywordsForCategory(value)])],
-  subcategories: subcategories.map(([subcategoryLabel, subcategoryValue, subcategoryKeywords]) => ({ label: subcategoryLabel, value: subcategoryValue, keywords: subcategoryKeywords })),
-});
+const titleFromSlug = (value: string) => value
+  .split("-")
+  .map((part) => part === "diy" ? "DIY" : part === "gps" ? "GPS" : `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+  .join(" ");
+
+const category = (label: string, value: string, keywords: string[], subcategories: Array<[string, string, string[]]>): MarketplaceCategory => {
+  const importedSubcategories = tradeMeSubcategoryMappings
+    .filter((mapping) => mapping.tadaCategory === value)
+    .map((mapping) => mapping.tadaSubcategory);
+  const definedValues = new Set(subcategories.map(([, subcategoryValue]) => subcategoryValue));
+  const generatedSubcategories = [...new Set(importedSubcategories)]
+    .filter((subcategoryValue) => !definedValues.has(subcategoryValue))
+    .map((subcategoryValue): [string, string, string[]] => [titleFromSlug(subcategoryValue), subcategoryValue, []]);
+  const allSubcategories: Array<[string, string, string[]]> = [
+    ...subcategories,
+    ...generatedSubcategories,
+    [`Other ${label}`, `other-${value}`, ["other", "miscellaneous"]],
+  ];
+
+  return {
+    label,
+    value,
+    keywords: [...new Set([...keywords, ...getTradeMeKeywordsForCategory(value)])],
+    subcategories: allSubcategories.map(([subcategoryLabel, subcategoryValue, subcategoryKeywords]) => ({
+      label: subcategoryLabel,
+      value: subcategoryValue,
+      keywords: [...new Set([...subcategoryKeywords, ...getTradeMeKeywordsForSubcategory(value, subcategoryValue)])],
+    })),
+  };
+};
 
 // English labels and stable slugs are canonical. Keywords intentionally include common Korean terms for matching bilingual titles.
 export const marketplaceCategories: MarketplaceCategory[] = [

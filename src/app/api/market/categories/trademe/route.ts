@@ -9,10 +9,17 @@ export async function GET() {
     const categories = await getTradeMeMappedLeafCategories();
     const keywordCount = new Set(categories.map((category) => category.name.trim().toLocaleLowerCase())).size;
 
+    const fallbackSubcategoryCount = categories.filter((category) => category.tadaSubcategory.startsWith("other-")).length;
+
     return NextResponse.json(
       {
-        categories: categories.map(({ name, tadaCategory }) => ({ keyword: name, tadaCategory })),
-        totals: { mappedLeafCategories: categories.length, uniqueKeywords: keywordCount },
+        categories: categories.map(({ name, tadaCategory, tadaSubcategory }) => ({ keyword: name, tadaCategory, tadaSubcategory })),
+        totals: {
+          mappedLeafCategories: categories.length,
+          classifiedToSubcategory: categories.length,
+          fallbackSubcategories: fallbackSubcategoryCount,
+          uniqueKeywords: keywordCount,
+        },
       },
       { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } },
     );
