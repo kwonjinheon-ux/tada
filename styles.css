@@ -2685,6 +2685,17 @@ body.listing-gallery-open { overflow: hidden; }
   border-radius: 50%;
   background: rgba(7, 22, 41, .72);
   font-size: 20px;
+  transition: background-color .18s ease, transform .18s ease;
+}
+
+.listing-gallery-lightbox-close:hover {
+  background: rgba(7, 22, 41, .92);
+  transform: scale(1.08);
+}
+
+.listing-gallery-lightbox-close:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
 }
 
 .listing-gallery-lightbox-arrow {

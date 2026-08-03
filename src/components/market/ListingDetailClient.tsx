@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
@@ -152,6 +152,30 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     if (nextImage === activeImage) return;
     setImageTransition(index > activeImage ? "next" : "previous");
     setActiveImage(nextImage);
+  };
+
+  const closeGalleryWhenClickingOutsidePhoto = (event: MouseEvent<HTMLDivElement>) => {
+    const stage = event.currentTarget;
+    const photo = stage.querySelector<HTMLImageElement>(".listing-gallery-lightbox-photo");
+
+    if (!photo?.naturalWidth || !photo.naturalHeight) {
+      setIsGalleryOpen(false);
+      return;
+    }
+
+    const stageBounds = stage.getBoundingClientRect();
+    const imageRatio = photo.naturalWidth / photo.naturalHeight;
+    const stageRatio = stageBounds.width / stageBounds.height;
+    const renderedWidth = imageRatio >= stageRatio ? stageBounds.width : stageBounds.height * imageRatio;
+    const renderedHeight = imageRatio >= stageRatio ? stageBounds.width / imageRatio : stageBounds.height;
+    const imageLeft = stageBounds.left + (stageBounds.width - renderedWidth) / 2;
+    const imageTop = stageBounds.top + (stageBounds.height - renderedHeight) / 2;
+    const clickedOriginalPhoto = event.clientX >= imageLeft
+      && event.clientX <= imageLeft + renderedWidth
+      && event.clientY >= imageTop
+      && event.clientY <= imageTop + renderedHeight;
+
+    if (!clickedOriginalPhoto) setIsGalleryOpen(false);
   };
   const saveListing = async () => {
     const nextSaved = !isSaved;
@@ -421,7 +445,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       {isGalleryOpen ? <PopupBackdrop className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}>
         <Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" onClick={() => setIsGalleryOpen(false)} />
         <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
-        <div className="listing-gallery-lightbox-stage" onClick={(event) => { if (event.target === event.currentTarget) setIsGalleryOpen(false); }}>
+        <div className="listing-gallery-lightbox-stage" onClick={closeGalleryWhenClickingOutsidePhoto}>
           <Image key={`lightbox-${image.src}-${activeImage}`} className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill priority sizes="100vw" />
         </div>
         {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}
