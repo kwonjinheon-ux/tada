@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
+import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
 import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
@@ -12,25 +13,6 @@ import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
-const dashboardMenuItems = [
-  ["fa-border-all", "Dashboard", ""],
-  ["fa-circle-user", "Profile Settings", "/profile"],
-  ["fa-bell", "Notifications", "/notifications"],
-  ["fa-message", "Messages", "/messages"],
-  ["fa-heart", "Wishlist", "/wishlist"],
-  ["fa-key", "Keywords", "/keywords"],
-  ["fa-rectangle-list", "Manage Listings", "/listings"],
-] as const;
-const dashboardMenuDescriptions = {
-  Dashboard: "Overview and account activity",
-  "Profile Settings": "Profile, language and preferences",
-  Notifications: "Updates and account alerts",
-  Messages: "Your conversations",
-  Wishlist: "Listings you have saved",
-  Keywords: "Saved search alerts",
-  "Manage Listings": "Create and manage listings",
-} as const;
-
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
@@ -340,7 +322,6 @@ export function Navbar() {
   const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
   const languageButtonLabel = locale === "en" ? "EN" : locale === "ko" ? "한글" : null;
-  const unreadBadge = unreadMessageCount > 99 ? "99+" : String(unreadMessageCount);
   const notificationBadge = unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount);
 
   const handleMobileProfileClick = () => {
@@ -548,15 +529,17 @@ export function Navbar() {
                 <div className="mobile-profile-popover-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}</div>
                 <div><span>{displayName ?? userEmail}</span><small>{userEmail}</small></div>
               </div>
-            {dashboardMenuItems.map(([icon, label, suffix]) => (
-              <Link className={`mobile-profile-popover-item ${pathname === (label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`) ? "is-active" : ""}`} href={label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`} key={label} onClick={() => setIsDashboardMenuOpen(false)}>
-                <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span>{label}</span>
-                {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
-              </Link>
-            ))}
-            {isAdmin ? <Link className={`mobile-profile-popover-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin centre</span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link> : null}
-            <button className="mobile-profile-popover-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+              <DashboardMenuItems
+                variant="mobile"
+                pathname={pathname}
+                dashboardBase={dashboardBase}
+                isJobs={isJobs}
+                unreadMessageCount={unreadMessageCount}
+                unreadNotificationCount={unreadNotificationCount}
+                isAdmin={isAdmin}
+                onNavigate={() => setIsDashboardMenuOpen(false)}
+                onSignOut={() => void handleSignOut()}
+              />
             </nav>
           </DialogOverlay> : null
         )}
@@ -606,18 +589,17 @@ export function Navbar() {
                 <span className="desktop-dashboard-member">Member</span>
               </div>
             </div>
-            {dashboardMenuItems.map(([icon, label, suffix]) => {
-              const href = label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`;
-              return (
-                <Link className={`desktop-dashboard-menu-item ${pathname === href ? "is-active" : ""}`} href={href} key={label} onClick={() => setIsDesktopDashboardOpen(false)}>
-                  <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                  <span className="desktop-dashboard-menu-label">{label}</span>
-                  {label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : <i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" />}
-                </Link>
-              );
-            })}
-            {isAdmin ? <Link className={`desktop-dashboard-menu-item ${pathname.startsWith("/admin") ? "is-active" : ""}`} href="/admin" onClick={() => setIsDesktopDashboardOpen(false)}><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span className="desktop-dashboard-menu-label">Admin centre</span><i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /></Link> : null}
-            <button className="desktop-dashboard-logout" type="button" onClick={() => void handleSignOut()}><i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out</button>
+            <DashboardMenuItems
+              variant="desktop"
+              pathname={pathname}
+              dashboardBase={dashboardBase}
+              isJobs={isJobs}
+              unreadMessageCount={unreadMessageCount}
+              unreadNotificationCount={unreadNotificationCount}
+              isAdmin={isAdmin}
+              onNavigate={() => setIsDesktopDashboardOpen(false)}
+              onSignOut={() => void handleSignOut()}
+            />
           </nav>
         </DialogOverlay>
       ) : null}
