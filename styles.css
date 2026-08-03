@@ -6104,26 +6104,26 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-saved-heading h2 { margin: 0; color: #10243d; font-size: 22px; }
 .keywords-saved-heading h2 small { color: #7a8999; font-size: 14px; font-weight: 600; }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
-.keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 700; }
-.keyword-chip small { padding-left: 8px; border-left: 1px solid currentColor; font-size: 10px; font-weight: 800; line-height: 1.2; opacity: .74; }
+.keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 800; }
+.keyword-chip small { padding-left: 8px; border-left: 1px solid currentColor; font-size: 10px; font-weight: 800; line-height: 1.2; opacity: .86; }
 .keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .keyword-chip button:hover { background: rgba(255,255,255,.62); }
-.keyword-chip-general { background: #f0f2f5; color: #566273; }
-.keyword-chip-mobile-phones-tablets { background: #e3f0ff; color: #155da8; }
-.keyword-chip-computers-laptops { background: #e8eaff; color: #4d4fa3; }
-.keyword-chip-electronics-appliances { background: #dff5f5; color: #0d7177; }
-.keyword-chip-furniture-home-decor { background: #eee7ff; color: #6945a1; }
-.keyword-chip-home-kitchen { background: #fff0dc; color: #9a5700; }
-.keyword-chip-clothing-fashion { background: #fde7f0; color: #a42c5d; }
-.keyword-chip-baby-kids { background: #fff2d7; color: #946000; }
-.keyword-chip-books-music-media { background: #e8f4ea; color: #347043; }
-.keyword-chip-hobbies-collectables { background: #f4e9dc; color: #80542b; }
-.keyword-chip-games-toys { background: #ffe8e4; color: #a43f32; }
-.keyword-chip-sports-leisure { background: #e2f5e9; color: #267044; }
-.keyword-chip-musical-instruments { background: #f3e7fa; color: #774397; }
-.keyword-chip-garden-tools-diy { background: #e9f2d9; color: #55731d; }
-.keyword-chip-pet-supplies { background: #fff0e7; color: #97502f; }
-.keyword-chip-health-beauty { background: #fce8f4; color: #9b396f; }
+.keyword-chip-general { background: #dfe5ec; color: #364458; }
+.keyword-chip-mobile-phones-tablets { background: #c8e1ff; color: #064f9d; }
+.keyword-chip-computers-laptops { background: #d5d8ff; color: #35349a; }
+.keyword-chip-electronics-appliances { background: #c5ecec; color: #00656b; }
+.keyword-chip-furniture-home-decor { background: #ded0ff; color: #5a3299; }
+.keyword-chip-home-kitchen { background: #ffd9a6; color: #8a4700; }
+.keyword-chip-clothing-fashion { background: #f8c9dc; color: #96214f; }
+.keyword-chip-baby-kids { background: #ffe0a3; color: #855400; }
+.keyword-chip-books-music-media { background: #cfe9d4; color: #246934; }
+.keyword-chip-hobbies-collectables { background: #e8d1b8; color: #72451f; }
+.keyword-chip-games-toys { background: #ffcfc8; color: #963025; }
+.keyword-chip-sports-leisure { background: #c9ead6; color: #156936; }
+.keyword-chip-musical-instruments { background: #e6cdf5; color: #6c318e; }
+.keyword-chip-garden-tools-diy { background: #d8e9b7; color: #4d6815; }
+.keyword-chip-pet-supplies { background: #ffd7c2; color: #8a4425; }
+.keyword-chip-health-beauty { background: #f7cde5; color: #8d2f64; }
 .keywords-empty { min-height: 155px; display: grid; place-content: center; justify-items: center; gap: 7px; border: 1px dashed #cbd8d4; border-radius: 8px; background: #fbfefd; color: #718198; text-align: center; }
 .keywords-empty i { color: #16a877; font-size: 23px; }.keywords-empty strong { color: #1b314d; font-size: 14px; }.keywords-empty span { font-size: 12px; }
 .keywords-notice { display: flex; align-items: center; gap: 11px; margin-top: 34px; padding: 14px 16px; border-top: 1px solid #dbe5e6; color: #627285; font-size: 13px; }

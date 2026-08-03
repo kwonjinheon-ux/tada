@@ -67,7 +67,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
   return <div className="dashboard-content keywords-content">
     <header className="keywords-heading"><div className="keywords-heading-icon"><i className="fa-solid fa-bell" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
     <form className="keywords-add-panel" onSubmit={addKeyword}>
-      <div className="keywords-input-wrap"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder="e.g. Laptop, Sofa, Bicycle" aria-label="Keyword" maxLength={80} /></div>
+      <div className="keywords-input-wrap"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} aria-label={t("keywordInputLabel")} maxLength={80} /></div>
       <button type="submit" disabled={!keyword.trim() || isSaving}><i className="fa-solid fa-plus" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
     </form>
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
@@ -81,6 +81,6 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
         </div>;
       })}</div> : <div className="keywords-empty"><i className="fa-solid fa-bell-slash" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
     </section>
-    <section className="keywords-notice" aria-label="Keyword alert information"><i className="fa-solid fa-lightbulb" aria-hidden="true" /><p>Add up to 20 keywords to make your marketplace search more personal.</p></section>
+    <section className="keywords-notice" aria-label={t("keywordNoticeLabel")}><i className="fa-solid fa-lightbulb" aria-hidden="true" /><p>{t("keywordNotice")}</p></section>
   </div>;
 }
