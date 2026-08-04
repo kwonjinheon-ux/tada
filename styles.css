@@ -5520,13 +5520,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
   .mobile-bottom-dock button:focus-visible {
-    border-color: rgba(97, 113, 132, .4);
-    background: rgba(97, 113, 132, .1);
+    border-color: transparent;
+    background: transparent;
   }
 
   .mobile-bottom-dock a:hover:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a:hover:not(.mobile-dock-create) > i,
+  .mobile-bottom-dock button:hover > svg,
   .mobile-bottom-dock button:hover > i,
+  .mobile-bottom-dock button:focus-visible > svg,
   .mobile-bottom-dock button:focus-visible > i {
     box-sizing: border-box;
     width: 44px;
@@ -5534,8 +5536,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: grid;
     place-items: center;
     padding: 10px;
-    border-radius: 12px;
-    background: transparent;
+    border: 1px solid rgba(97, 113, 132, .4);
+    border-radius: 50%;
+    background: rgba(97, 113, 132, .1);
   }
 
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > svg,
