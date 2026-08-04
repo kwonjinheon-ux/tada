@@ -5451,7 +5451,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     padding: 5px;
     box-sizing: border-box;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: 999px;
     background: rgba(255, 255, 255, .46);
     -webkit-backdrop-filter: blur(24px) saturate(165%);
     backdrop-filter: blur(24px) saturate(165%);
@@ -5577,7 +5577,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: grid;
     place-items: center;
     padding: 10px;
-    border-radius: 12px;
+    border-radius: 50%;
     background: rgba(97, 113, 132, .1);
   }
 
