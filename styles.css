@@ -5461,20 +5461,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   /* Shared content clearance for every mobile screen that renders the fixed dock. */
-  body.has-mobile-bottom-dock {
-    --mobile-dock-content-clearance: calc(var(--mobile-dock-height) + var(--mobile-dock-bottom-offset) + 32px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
-  }
-
   body.has-mobile-bottom-dock > main:not(.dashboard-layout) {
-    padding-bottom: var(--mobile-dock-content-clearance) !important;
-    scroll-padding-bottom: var(--mobile-dock-content-clearance);
+    padding-bottom: var(--mobile-dock-content-clearance, calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px))) !important;
+    scroll-padding-bottom: var(--mobile-dock-content-clearance, calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px)));
   }
 
   body.has-mobile-bottom-dock > main.dashboard-layout > .dashboard-content {
-    /* Keep the final dashboard controls above the fixed dock even when the
-       runtime clearance custom property is unavailable. */
-    padding-bottom: calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px)) !important;
-    scroll-padding-bottom: calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+    padding-bottom: var(--mobile-dock-content-clearance, calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px))) !important;
+    scroll-padding-bottom: var(--mobile-dock-content-clearance, calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px)));
   }
 
   .mobile-bottom-dock a,
@@ -6111,8 +6105,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-saved-heading h2 { margin: 0; color: #10243d; font-size: 22px; }
 .keywords-saved-heading h2 small { color: #7a8999; font-size: 14px; font-weight: 600; }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
-.keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 800; }
-.keyword-chip small { padding-left: 8px; border-left: 1px solid currentColor; font-size: 10px; font-weight: 800; line-height: 1.2; opacity: .86; }
+.keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border: 1px solid color-mix(in srgb, currentColor 72%, transparent); border-radius: 999px; font-size: 13px; }
+.keyword-chip > span { font-weight: 800; }
+.keyword-chip small { padding-left: 8px; border-left: 1px solid color-mix(in srgb, currentColor 56%, transparent); font-size: 10px; font-weight: 400; line-height: 1.2; opacity: .86; }
 .keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .keyword-chip button:hover { background: rgba(255,255,255,.62); }
 .keyword-chip-general { background: #dfe5ec; color: #364458; }

@@ -243,6 +243,51 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const mobileQuery = window.matchMedia("(max-width: 767.98px)");
+    const visualViewport = window.visualViewport;
+    let animationFrame: number | null = null;
+
+    const updateMobileDockClearance = () => {
+      if (!mobileQuery.matches) {
+        root.style.removeProperty("--mobile-dock-content-clearance");
+        return;
+      }
+
+      const dock = document.querySelector<HTMLElement>(".mobile-bottom-dock");
+      if (!dock) {
+        root.style.removeProperty("--mobile-dock-content-clearance");
+        return;
+      }
+
+      const dockRect = dock.getBoundingClientRect();
+      const dockBottomInset = Math.max(0, Math.round(window.innerHeight - dockRect.bottom));
+      const clearance = Math.ceil(dockRect.height + dockBottomInset + 32);
+      root.style.setProperty("--mobile-dock-content-clearance", `${clearance}px`);
+    };
+
+    const scheduleMobileDockClearanceUpdate = () => {
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(updateMobileDockClearance);
+    };
+
+    scheduleMobileDockClearanceUpdate();
+    visualViewport?.addEventListener("resize", scheduleMobileDockClearanceUpdate);
+    visualViewport?.addEventListener("scroll", scheduleMobileDockClearanceUpdate);
+    window.addEventListener("resize", scheduleMobileDockClearanceUpdate);
+    mobileQuery.addEventListener("change", scheduleMobileDockClearanceUpdate);
+
+    return () => {
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      visualViewport?.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
+      visualViewport?.removeEventListener("scroll", scheduleMobileDockClearanceUpdate);
+      window.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
+      mobileQuery.removeEventListener("change", scheduleMobileDockClearanceUpdate);
+      root.style.removeProperty("--mobile-dock-content-clearance");
+    };
+  }, [pathname]);
+
+  useEffect(() => {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsDesktopDashboardOpen(false);
