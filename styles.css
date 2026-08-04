@@ -5465,13 +5465,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     --mobile-dock-content-clearance: calc(var(--mobile-dock-height) + var(--mobile-dock-bottom-offset) + 32px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
   }
 
-  body.has-mobile-bottom-dock > main {
+  body.has-mobile-bottom-dock > main:not(.dashboard-layout) {
     padding-bottom: var(--mobile-dock-content-clearance) !important;
     scroll-padding-bottom: var(--mobile-dock-content-clearance);
   }
 
   body.has-mobile-bottom-dock > main.dashboard-layout > .dashboard-content {
-    padding-bottom: var(--mobile-dock-content-clearance) !important;
+    /* Keep the final dashboard controls above the fixed dock even when the
+       runtime clearance custom property is unavailable. */
+    padding-bottom: calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px)) !important;
+    scroll-padding-bottom: calc(108px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
   }
 
   .mobile-bottom-dock a,
