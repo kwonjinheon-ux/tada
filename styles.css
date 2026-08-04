@@ -5450,12 +5450,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     margin: 0 auto;
     padding: 5px;
     box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, .72);
-    border-radius: 999px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
     background: rgba(255, 255, 255, .46);
-    -webkit-backdrop-filter: blur(32px) saturate(165%);
-    backdrop-filter: blur(32px) saturate(165%);
-    box-shadow: 0 14px 32px rgba(37, 58, 82, .14), inset 0 1px 0 rgba(255, 255, 255, .86);
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+    backdrop-filter: blur(24px) saturate(165%);
+    box-shadow: none;
     transition: transform 260ms cubic-bezier(.22, .61, .36, 1), opacity 180ms ease;
     will-change: transform;
   }
@@ -5485,17 +5485,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     justify-content: center;
     gap: 4px;
     justify-self: center;
-    border: 0;
-    border-radius: 50%;
+    border: 1px solid transparent;
+    border-radius: 14px;
     background: transparent;
-    color: #596f87;
+    color: var(--ink);
     font: inherit;
     font-size: 20px;
     text-decoration: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+    transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
   }
 
   .mobile-bottom-dock svg {
@@ -5520,7 +5520,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
   .mobile-bottom-dock button:focus-visible {
-    background: transparent;
+    border-color: rgba(97, 113, 132, .4);
+    background: rgba(97, 113, 132, .1);
   }
 
   .mobile-bottom-dock a:hover:not(.mobile-dock-create) > svg,
@@ -5533,8 +5534,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: grid;
     place-items: center;
     padding: 10px;
-    border-radius: 50%;
-    background: rgba(84, 109, 141, .12);
+    border-radius: 12px;
+    background: transparent;
   }
 
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > svg,
@@ -5546,8 +5547,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: grid;
     place-items: center;
     padding: 10px;
-    border-radius: 50%;
-    background: rgba(46, 100, 208, .13);
+    border-radius: 12px;
+    background: transparent;
   }
 
   .mobile-bottom-dock a:focus-visible,
@@ -5560,7 +5561,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock button.is-active {
     width: 100%;
     background: transparent;
-    color: #1c61cc;
+    color: var(--ink);
     box-shadow: none;
   }
 
@@ -5576,8 +5577,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: grid;
     place-items: center;
     padding: 10px;
-    border-radius: 50%;
-    background: rgba(46, 100, 208, .13);
+    border-radius: 12px;
+    background: rgba(97, 113, 132, .1);
   }
 
   .mobile-bottom-dock .mobile-dock-create {
