@@ -5,7 +5,7 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const PREVIEW_SIZE = 300;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
@@ -64,7 +64,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
     event.target.value = "";
     if (!file) return;
     if (!file.type.startsWith("image/")) { setStatus("Please select an image file."); return; }
-    if (file.size > MAX_FILE_SIZE) { setStatus("The photo must be 2MB or smaller."); return; }
+    if (file.size > MAX_FILE_SIZE) { setStatus("The photo must be 5MB or smaller."); return; }
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     objectUrlRef.current = URL.createObjectURL(file);
     openEditor(objectUrlRef.current);
@@ -191,7 +191,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
         {email && <p className="profile-photo-email">{email}</p>}
         {locationLabel && <p className="profile-photo-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {locationLabel}</p>}
         {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
-        <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 2MB</p>
+        <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 5MB</p>
         {status && <p className="profile-upload-status" role="status">{status}</p>}
       </div>
 
