@@ -623,19 +623,18 @@ export function Navbar() {
       ) : null}
       {userEmail && isDesktopDashboardOpen ? (
         <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
-          <nav className="desktop-dashboard-menu" id="desktop-dashboard-menu" aria-label="Dashboard menu">
-            <div className="desktop-dashboard-profile">
-              <div className="desktop-dashboard-avatar" aria-hidden="true">
+          <nav className="mobile-profile-popover desktop-profile-popover" id="desktop-dashboard-menu" aria-label="Dashboard menu">
+            <div className="mobile-profile-popover-header">
+              <div className="mobile-profile-popover-avatar" aria-hidden="true">
                 {avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
               </div>
               <div>
-                <span className="desktop-dashboard-name">{displayName ?? userEmail}</span>
-                <span>{userEmail}</span>
-                <span className="desktop-dashboard-member">Member</span>
+                <span>{displayName ?? userEmail}</span>
+                <small>{userEmail}</small>
               </div>
             </div>
             <DashboardMenuItems
-              variant="desktop"
+              variant="mobile"
               pathname={pathname}
               dashboardBase={dashboardBase}
               isJobs={isJobs}
