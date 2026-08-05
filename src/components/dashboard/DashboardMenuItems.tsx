@@ -61,9 +61,9 @@ export function DashboardMenuItems({
             <span className={labelClassName}>{label}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
-            ) : (
+            ) : !isMobile ? (
               <i className={`fa-solid fa-chevron-right ${isMobile ? "" : "desktop-dashboard-chevron"}`} aria-hidden="true" />
-            )}
+            ) : null}
           </Link>
         );
       })}
@@ -75,7 +75,7 @@ export function DashboardMenuItems({
         >
           <i className="fa-solid fa-shield-halved" aria-hidden="true" />
           <span className={labelClassName}>Admin centre</span>
-          <i className={`fa-solid fa-chevron-right ${isMobile ? "" : "desktop-dashboard-chevron"}`} aria-hidden="true" />
+          {!isMobile ? <i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /> : null}
         </Link>
       ) : null}
       <button className={logoutClassName} type="button" onClick={onSignOut}>
