@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { AdPlacementPreview } from "@/components/advertising/AdPlacementPreview";
 import { AD_PLACEMENTS, AD_PLACEMENT_GUIDANCE, type AdPlacement, type AdProvider } from "@/lib/advertising/types";
 
 export type AdminAd = {
@@ -146,7 +147,7 @@ export function AdminAdvertisingClient({ initialAds }: { initialAds: AdminAd[] }
         const ads = initialAds.filter((ad) => ad.placement === placement);
         const guidance = AD_PLACEMENT_GUIDANCE[placement];
         const isSelected = selectedPlacement === placement;
-        return <div className="admin-advertising-placement-group" key={placement}><article className={`admin-advertising-placement${isSelected ? " is-selected" : ""}`}><div className="admin-advertising-placement-heading"><i className="fa-solid fa-rectangle-ad" aria-hidden="true" /><div><h3>{placementLabels[placement]}</h3><span>{ads.filter((ad) => ad.isActive).length} active · {ads.length} total</span></div></div><dl><div><dt>Desktop</dt><dd>{guidance.desktop}</dd></div><div><dt>Mobile</dt><dd>{guidance.mobile}</dd></div></dl><Button variant="secondary" className="admin-advertising-placement-action" onClick={() => openCreate(placement)} aria-expanded={isSelected} aria-controls={`advertising-create-form-${placement}`}>{isSelected ? "Creating here" : "Add to placement"}</Button></article><div id={`advertising-create-form-${placement}`} className="admin-advertising-inline-form-mount" /></div>;
+        return <div className="admin-advertising-placement-group" key={placement}><article className={`admin-advertising-placement${isSelected ? " is-selected" : ""}`}><div className="admin-advertising-placement-heading"><i className="fa-solid fa-rectangle-ad" aria-hidden="true" /><div><h3>{placementLabels[placement]}</h3><span>{ads.filter((ad) => ad.isActive).length} active · {ads.length} total</span></div></div><AdPlacementPreview placement={placement} /><dl><div><dt>Desktop</dt><dd>{guidance.desktop}</dd></div><div><dt>Mobile</dt><dd>{guidance.mobile}</dd></div></dl><Button variant="secondary" className="admin-advertising-placement-action" onClick={() => openCreate(placement)} aria-expanded={isSelected} aria-controls={`advertising-create-form-${placement}`}>{isSelected ? "Creating here" : "Add to placement"}</Button></article><div id={`advertising-create-form-${placement}`} className="admin-advertising-inline-form-mount" /></div>;
       })}</div>
     </section>
 
