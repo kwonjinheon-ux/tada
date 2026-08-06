@@ -1,25 +1,102 @@
 # Design Foundations
 
-## Single visual reference
+## The layering rule
 
-All new screens use `src/app/globals.css` as the token source. Do not introduce arbitrary colors, font stacks, radius values or spacing values in individual components unless a token is added first.
+Styling flows in one direction. A layer may only use the layer above it.
 
-Before production launch, place the licensed Inter WOFF2 files in `public/fonts/` and define a local `@font-face` for `--font-app`. This keeps a single font reference without making the production build depend on Google Fonts.
+```
+1. Palette      src/app/globals.css  — the only raw colour values in the repo
+2. Semantic     src/app/globals.css  — --color-*, what a colour means
+3. Scales       src/app/globals.css  — radius, type, weight, shadow, height, space
+4. Primitives   src/app/globals.css  — .ui-button, .ui-card, .ui-field, .ui-pill …
+5. Components   src/components/ui/   — Button, PageContainer, DialogOverlay
+6. Feature CSS  styles.css           — per-screen classes, layered on primitives
+```
 
-| Token | Current value | Use |
-| --- | --- | --- |
-| `--font-app` | Inter with system fallbacks | All product UI text |
-| `--color-background` | `#f7f9ff` | App background |
-| `--color-surface` | `#ffffff` | Cards and inputs |
-| `--color-ink` | `#07172d` | Primary text |
-| `--color-primary` | `#10b981` | Primary action and positive state |
-| `--color-brand` | `#2546c7` | Tada brand accent |
-| `--radius-ui` | `8px` | Inputs and buttons |
-| `--radius-card` | `12px` | Panels and cards |
+`styles.css` loads after `globals.css`, so a feature class always wins over a
+primitive it redeclares. That is deliberate: adding a primitive to an existing
+element is safe, because the element keeps whatever the feature class already
+sets and only gains the shared base it was missing.
+
+`npm run check:tokens` fails the build if a raw hex value appears anywhere
+outside the palette block.
+
+## 1. Palette
+
+131 steps, grouped by hue family and numbered by lightness: `--neutral-*`,
+`--green-*`, `--blue-*`, `--red-*`, `--rose-*`, `--amber-*`, `--teal-*`,
+`--violet-*`, plus a `-soft-` variant of each family for the desaturated shades.
+Lower number = lighter.
+
+These were derived from the 616 distinct colours the product already used, so
+every step is a real shade from the existing design. Never add a hex here by
+hand without checking whether a neighbouring step already covers it.
+
+Never reference a palette step from a component. Reference a semantic role.
+
+## 2. Semantic roles
+
+| Token | Use |
+| --- | --- |
+| `--color-surface` | Cards, inputs, anything raised |
+| `--color-surface-soft` | Subtle fills, hover backgrounds |
+| `--color-background` | Page background |
+| `--color-ink` / `--color-ink-soft` | Primary and secondary text |
+| `--color-muted` / `--color-muted-soft` | Labels, metadata, placeholders |
+| `--color-line` / `--color-line-soft` | Borders and dividers |
+| `--color-primary` (+ `-hover` `-dark` `-strong` `-deep` `-soft`) | Primary action, positive state |
+| `--color-brand` | Tada brand accent |
+| `--color-danger` / `--color-warning` / `--color-success` (+ `-soft`) | Status |
+| `--color-on-primary` / `--color-on-danger` | Text on a filled control |
+
+Adding a vertical (property, community) means adding roles here, not new hexes.
+
+## 3. Scales
+
+| Scale | Steps |
+| --- | --- |
+| `--radius-*` | `xs 4` `sm 6` `md 8` `lg 12` `xl 16` `2xl 24` `pill` `circle` |
+| `--text-*` | `2xs 10` `xs 11` `sm 12` `base 13` `md 14` `lg 16` `xl 18` `2xl 20` `3xl 24` `4xl 28` `5xl 32` |
+| `--weight-*` | `regular 400` `medium 500` `semibold 600` `bold 700` `extrabold 800` |
+| `--shadow-*` | `xs` `sm` `md` `lg` `xl` `card` `primary` |
+| `--ring-focus`, `--ring-focus-strong` | Focus states — never `outline: none` without one |
+| `--control-h-*` | `xs 28` `sm 32` `md 36` `lg 40` `xl 44` `2xl 48` |
+| `--space-*` | `1 4` `2 8` `3 12` `4 16` `5 20` `6 24` `8 32` `10 40` `12 48` |
+
+`--radius-ui` and `--radius-card` remain as aliases of `md` and `lg`.
+
+A value that is not on a scale does not go in. If a design genuinely needs a
+new step, add it to the scale first so the next screen can reuse it.
+
+## 4. Primitives
+
+`.ui-button` (`--primary` `--secondary` `--ghost` `--danger`, sizes `--sm`
+`--lg`, plus `--pill` `--block`), `.ui-card`, `.ui-panel`, `.ui-field`,
+`.ui-input`, `.ui-pill` (`--success` `--danger` `--warning`), `.ui-avatar`
+(`--sm` `--lg`), `.ui-backdrop`.
+
+Build a new surface by composing these. Do not create another `*-button`,
+`*-card`, `*-panel`, `*-status` or `*-backdrop` class — that is how the
+codebase ended up with 8 card classes, 9 panel classes and 13 status pills that
+each redeclared the same recipe.
+
+When an existing feature class duplicates a primitive, add the primitive class
+to the element and delete the duplicated declarations from the feature class.
+
+## 5. Components
+
+Reach for the component before the class:
+
+| Component | Replaces |
+| --- | --- |
+| `Button` | Any `<button>` that looks like a button |
+| `PageContainer` | Page-level `max-width` + `margin auto` + safe-area padding |
+| `DialogOverlay` | Any `position: fixed; inset: 0` backdrop |
+| `IconButton` | Icon-only controls |
 
 ## Responsive standard
 
-The project follows mobile first styling:
+Mobile first. One column by default; add density at `md` and above.
 
 | Name | Minimum width | Typical target |
 | --- | ---: | --- |
@@ -28,13 +105,27 @@ The project follows mobile first styling:
 | `lg` | 1024px | Laptop |
 | `xl` | 1280px | Desktop |
 
-Use one column as the default. Add density only at `md` and above. Inputs must be at least `16px` on mobile so Safari does not zoom on focus.
+Inputs must be at least `16px` on mobile so Safari does not zoom on focus —
+`--font-size-mobile-control` enforces this globally.
 
-Use `MD/design/layout-system.md` for page outer spacing and content width rules. Ordinary pages must use `PageContainer`; avoid direct page-level `max-w-*`, `mx-auto`, and responsive `px-*` combinations.
+Page outer spacing and content width rules live in `MD/design/layout-system.md`.
 
-## Component rules
+## Known exceptions
 
-- Buttons and form controls use shared `button` and `form-field` foundations.
-- Use accessible labels, visible focus states and semantic headings.
-- Avoid hard-coded device-specific layout adjustments. Use container widths and CSS grid instead.
-- Icons must have an accessible label unless they are decorative.
+Four places hold raw colour on purpose and are allowlisted in
+`scripts/check-design-tokens.mjs`:
+
+- `ProfilePhotoUploader.tsx` — canvas `fillStyle` cannot take a CSS variable.
+- `PostAdPageClient.tsx` — the listing colour picker persists its value to the
+  database, so it must store a real colour.
+- `avatar-fallback.ts` — deterministic per-user avatar palette.
+- `AuthForms.tsx` — Google brand marks, which must not be recoloured.
+
+Two SVG data URIs in `styles.css` carry a percent-encoded colour (`%23…`) that
+a variable cannot reach.
+
+## Fonts
+
+Before production launch, place the licensed Inter WOFF2 files in
+`public/fonts/` and define a local `@font-face` for `--font-app`, so the
+production build does not depend on Google Fonts.
