@@ -556,7 +556,7 @@ export function Navbar() {
 
         <MobileDrawerBackdrop open={isOpen} ariaLabel="Close navigation menu" className="mobile-menu-backdrop" onClose={() => { setIsOpen(false); setIsDashboardMenuOpen(false); }} />
 
-        <nav className={`mobile-nav-menu ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
+        <nav className={`mobile-nav-menu profile-popup-surface ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-store" aria-hidden="true" />
             {t("market")}
@@ -569,7 +569,7 @@ export function Navbar() {
 
         {userEmail && (
           isDashboardMenuOpen ? <DialogOverlay className="mobile-profile-popover-dialog" onClose={() => setIsDashboardMenuOpen(false)}>
-            <nav className="mobile-profile-popover" id="mobile-dashboard-menu" aria-label="Dashboard menu">
+            <nav className="mobile-profile-popover profile-popup-surface" id="mobile-dashboard-menu" aria-label="Dashboard menu">
               <div className="mobile-profile-popover-header">
                 <div className="mobile-profile-popover-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}</div>
                 <div><span>{displayName ?? userEmail}</span><small>{userEmail}</small></div>
@@ -603,7 +603,7 @@ export function Navbar() {
       </header>
       {isLanguageMenuOpen ? (
         <DialogOverlay className="language-settings-dialog" onClose={() => setIsLanguageMenuOpen(false)}>
-          <section className="language-settings-card" id="language-settings-dialog" aria-label="Language settings">
+          <section className="language-settings-card profile-popup-surface" id="language-settings-dialog" aria-label="Language settings">
             <header>
               <div><i className="fa-solid fa-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
               <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
@@ -623,7 +623,7 @@ export function Navbar() {
       ) : null}
       {userEmail && isDesktopDashboardOpen ? (
         <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
-          <nav className="mobile-profile-popover desktop-profile-popover" id="desktop-dashboard-menu" aria-label="Dashboard menu">
+          <nav className="mobile-profile-popover desktop-profile-popover profile-popup-surface" id="desktop-dashboard-menu" aria-label="Dashboard menu">
             <div className="mobile-profile-popover-header">
               <div className="mobile-profile-popover-avatar" aria-hidden="true">
                 {avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
