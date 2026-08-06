@@ -5353,10 +5353,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     z-index: 121;
   }
 
+  /* Anchored just under the header profile button, on the same edge as the
+     signed-in dashboard popover. Pinning it to the top of the viewport put the
+     panel on top of the very button that opens it. */
   .mobile-auth-menu {
     position: fixed;
-    top: calc(14px + env(safe-area-inset-top));
-    right: 14px;
+    top: 54px;
+    right: 16px;
     z-index: 122;
   }
 
