@@ -212,6 +212,8 @@ export function Navbar() {
     const mobileQuery = window.matchMedia("(max-width: 767.98px)");
     const visualViewport = window.visualViewport;
 
+    let animationFrame: number | null = null;
+
     const updateMobileViewportInset = () => {
       if (!mobileQuery.matches || !visualViewport) {
         root.style.removeProperty("--mobile-viewport-bottom-inset");
@@ -223,21 +225,31 @@ export function Navbar() {
       // newly available space as the controls collapse on scroll.
       const layoutViewportHeight = document.documentElement.clientHeight;
       const visibleViewportBottom = visualViewport.offsetTop + visualViewport.height;
-      const bottomInset = Math.max(0, Math.round(layoutViewportHeight - visibleViewportBottom));
-      root.style.setProperty("--mobile-viewport-bottom-inset", `${bottomInset}px`);
+      const next = `${Math.max(0, Math.round(layoutViewportHeight - visibleViewportBottom))}px`;
+
+      // This drives the `bottom` of the dock and the listing action bar. Writing
+      // it when nothing moved invalidates style on every scroll frame.
+      if (root.style.getPropertyValue("--mobile-viewport-bottom-inset") === next) return;
+      root.style.setProperty("--mobile-viewport-bottom-inset", next);
+    };
+
+    const scheduleMobileViewportInsetUpdate = () => {
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(updateMobileViewportInset);
     };
 
     updateMobileViewportInset();
-    visualViewport?.addEventListener("resize", updateMobileViewportInset);
-    visualViewport?.addEventListener("scroll", updateMobileViewportInset);
-    window.addEventListener("resize", updateMobileViewportInset);
-    mobileQuery.addEventListener("change", updateMobileViewportInset);
+    visualViewport?.addEventListener("resize", scheduleMobileViewportInsetUpdate);
+    visualViewport?.addEventListener("scroll", scheduleMobileViewportInsetUpdate);
+    window.addEventListener("resize", scheduleMobileViewportInsetUpdate);
+    mobileQuery.addEventListener("change", scheduleMobileViewportInsetUpdate);
 
     return () => {
-      visualViewport?.removeEventListener("resize", updateMobileViewportInset);
-      visualViewport?.removeEventListener("scroll", updateMobileViewportInset);
-      window.removeEventListener("resize", updateMobileViewportInset);
-      mobileQuery.removeEventListener("change", updateMobileViewportInset);
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      visualViewport?.removeEventListener("resize", scheduleMobileViewportInsetUpdate);
+      visualViewport?.removeEventListener("scroll", scheduleMobileViewportInsetUpdate);
+      window.removeEventListener("resize", scheduleMobileViewportInsetUpdate);
+      mobileQuery.removeEventListener("change", scheduleMobileViewportInsetUpdate);
       root.style.removeProperty("--mobile-viewport-bottom-inset");
     };
   }, []);
@@ -262,8 +274,12 @@ export function Navbar() {
 
       const dockRect = dock.getBoundingClientRect();
       const dockBottomInset = Math.max(0, Math.round(window.innerHeight - dockRect.bottom));
-      const clearance = Math.ceil(dockRect.height + dockBottomInset + 32);
-      root.style.setProperty("--mobile-dock-content-clearance", `${clearance}px`);
+      const next = `${Math.ceil(dockRect.height + dockBottomInset + 32)}px`;
+
+      // Compare against what is actually set rather than a cached number, so
+      // the value is still restored if anything else clears the property.
+      if (root.style.getPropertyValue("--mobile-dock-content-clearance") === next) return;
+      root.style.setProperty("--mobile-dock-content-clearance", next);
     };
 
     const scheduleMobileDockClearanceUpdate = () => {
@@ -272,16 +288,21 @@ export function Navbar() {
     };
 
     scheduleMobileDockClearanceUpdate();
+    // Deliberately not listening to viewport scroll. This value becomes the
+    // bottom padding of the scrolling content, so recomputing it mid-scroll
+    // changes the document height, which nudges the scroll offset, which fires
+    // another scroll event — the page visibly shakes near the bottom. The dock
+    // is a fixed-size element, so resize and orientation changes are enough.
     visualViewport?.addEventListener("resize", scheduleMobileDockClearanceUpdate);
-    visualViewport?.addEventListener("scroll", scheduleMobileDockClearanceUpdate);
     window.addEventListener("resize", scheduleMobileDockClearanceUpdate);
+    window.addEventListener("orientationchange", scheduleMobileDockClearanceUpdate);
     mobileQuery.addEventListener("change", scheduleMobileDockClearanceUpdate);
 
     return () => {
       if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
       visualViewport?.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
-      visualViewport?.removeEventListener("scroll", scheduleMobileDockClearanceUpdate);
       window.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
+      window.removeEventListener("orientationchange", scheduleMobileDockClearanceUpdate);
       mobileQuery.removeEventListener("change", scheduleMobileDockClearanceUpdate);
       root.style.removeProperty("--mobile-dock-content-clearance");
     };
