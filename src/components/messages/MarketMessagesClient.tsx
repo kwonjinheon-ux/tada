@@ -95,6 +95,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ConversationFilter>("all");
+  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -102,6 +103,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const refreshFrameRef = useRef<number | null>(null);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
   const visibleConversations = useMemo(() => conversations.filter((conversation) => matchesFilter(conversation, filter)), [conversations, filter]);
+  const totalUnreadCount = useMemo(() => conversations.reduce((total, conversation) => total + conversation.unreadCount, 0), [conversations]);
 
   useEffect(() => {
     setConversations(initialConversations);
@@ -313,6 +315,15 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       setUpdatingOfferId(null);
     }
   };
+  const markAllRead = async () => {
+    if (!totalUnreadCount || isMarkingAllRead) return;
+    setIsMarkingAllRead(true);
+    const readAt = new Date().toISOString();
+    setConversations((current) => current.map((conversation) => conversation.unreadCount ? { ...conversation, unreadCount: 0 } : conversation));
+    setMessages((current) => current.map((message) => message.recipientId === currentUserId && !message.readAt ? { ...message, readAt } : message));
+    await fetch("/api/market/messages/read-all", { method: "PATCH" }).catch(() => undefined);
+    setIsMarkingAllRead(false);
+  };
   const prepareOffer = () => {
     setDraft((current) => current.trim() ? current : "Hi, I'd like to make an offer for this item.");
     requestAnimationFrame(() => composerRef.current?.focus());
@@ -365,7 +376,13 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   return (
     <main className={`messages-page ${selectedConversation ? "has-selected-conversation" : ""}`}>
       <section className="messages-list-panel" aria-label="Conversations">
-        <header className="messages-list-header"><div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{conversations.reduce((total, conversation) => total + conversation.unreadCount, 0) || ""}</span></div></div></header>
+        <header className="messages-list-header">
+          <div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div></div>
+          <button className="messages-read-all" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
+            <i className="fa-regular fa-envelope-open" aria-hidden="true" />
+            {t("markAllRead")}
+          </button>
+        </header>
         <div className="messages-filter-row" role="tablist" aria-label="Filter conversations">
           {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => setFilter(option)}>{t(option)}</button>)}
         </div>

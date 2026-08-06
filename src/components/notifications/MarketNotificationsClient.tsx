@@ -74,6 +74,8 @@ export function MarketNotificationsClient({
   const [notifications, setNotifications] = useState(initialNotifications);
   const [filter, setFilter] = useState<Filter>("all");
   const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
   const unreadCount = notifications.filter((notification) => !notification.readAt).length;
 
   useEffect(() => {
@@ -122,14 +124,45 @@ export function MarketNotificationsClient({
     setIsMarkingAll(false);
   };
 
+  // Clearing is permanent, so it takes a second tap to confirm and the list comes back if the call fails.
+  const deleteAll = async () => {
+    if (!notifications.length || isDeletingAll) return;
+    setIsDeletingAll(true);
+    const snapshot = notifications;
+    setNotifications([]);
+    const response = await fetch("/api/market/notifications/delete-all", { method: "DELETE" }).catch(() => null);
+    if (!response?.ok) setNotifications(snapshot);
+    setIsDeletingAll(false);
+    setIsConfirmingDeleteAll(false);
+  };
+
   return (
     <div className="dashboard-content notifications-content">
       <header className="notifications-heading">
         <h1>{t("notifications")}</h1>
-        <button type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
-          <i className="fa-regular fa-envelope-open" aria-hidden="true" />
-          {t("markAllRead")}
-        </button>
+        <div className="notifications-heading-actions">
+          <button type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
+            <i className="fa-regular fa-envelope-open" aria-hidden="true" />
+            {t("markAllRead")}
+          </button>
+          {isConfirmingDeleteAll ? (
+            <>
+              <button className="is-danger" type="button" disabled={isDeletingAll} onClick={() => void deleteAll()}>
+                <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+                {t("deleteAllConfirm")}
+              </button>
+              <button type="button" disabled={isDeletingAll} onClick={() => setIsConfirmingDeleteAll(false)}>
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+                {t("cancel")}
+              </button>
+            </>
+          ) : (
+            <button className="is-danger" type="button" disabled={!notifications.length} onClick={() => setIsConfirmingDeleteAll(true)}>
+              <i className="fa-regular fa-trash-can" aria-hidden="true" />
+              {t("deleteAll")}
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="notifications-filter-row" role="tablist" aria-label="Notification filters">
