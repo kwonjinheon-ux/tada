@@ -5982,6 +5982,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     padding: 0;
   }
 
+  /* Centre within the results column, not the whole viewport, now that a
+     sidebar occupies the left 220px. */
+  .market-load-overlay {
+    left: calc(50% + 110px);
+  }
+
   .market-results {
     min-height: calc(100vh - 70px);
     padding: 20px max(var(--page-padding-inline), env(safe-area-inset-right)) 42px max(var(--page-padding-inline), env(safe-area-inset-left));
@@ -6134,6 +6140,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .marketplace-page {
     grid-template-columns: 272px minmax(0, 1fr);
     gap: 0;
+  }
+
+  /* Sidebar widens to 272px at this breakpoint; keep the overlay centred on
+     the results column instead of the full window. */
+  .market-load-overlay {
+    left: calc(50% + 136px);
   }
 
   .product-grid {
