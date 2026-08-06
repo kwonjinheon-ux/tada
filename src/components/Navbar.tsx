@@ -549,7 +549,7 @@ export function Navbar() {
             </button>
           ) : isAuthReady ? (
             <>
-              <Link className="nav-signup" href="/login">Log in</Link>
+              <Link className="nav-signup" href="/login">{t("logIn")}</Link>
             </>
           ) : null}
         </div>
@@ -559,11 +559,11 @@ export function Navbar() {
         <nav className={`mobile-nav-menu ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-store" aria-hidden="true" />
-            Market
+            {t("market")}
           </Link>
           <Link className={isJobs ? "is-active" : ""} href="/jobs" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-briefcase" aria-hidden="true" />
-            Jobs
+            {t("jobs")}
           </Link>
         </nav>
 
@@ -592,9 +592,9 @@ export function Navbar() {
           <>
             <MobileDrawerBackdrop open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close account menu" className="mobile-auth-backdrop" />
             <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
-              <p>Account</p>
-              <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-right-to-bracket" aria-hidden="true" /> Log in</Link>
-              <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> Sign up</Link>
+              <p>{t("accountMenu")}</p>
+              <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-right-to-bracket" aria-hidden="true" /> {t("logIn")}</Link>
+              <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="fa-solid fa-user-plus" aria-hidden="true" /> {t("signUp")}</Link>
             </nav>
           </>
         )}

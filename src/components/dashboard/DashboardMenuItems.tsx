@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const dashboardMenuItems = [
-  ["fa-border-all", "Dashboard", ""],
-  ["fa-circle-user", "Profile Settings", "/profile"],
-  ["fa-bell", "Notifications", "/notifications"],
-  ["fa-message", "Messages", "/messages"],
-  ["fa-heart", "Wishlist", "/wishlist"],
-  ["fa-key", "Keywords", "/keywords"],
-  ["fa-rectangle-list", "Manage Listings", "/listings"],
+  ["fa-border-all", "dashboard", ""],
+  ["fa-circle-user", "profileSettings", "/profile"],
+  ["fa-bell", "notifications", "/notifications"],
+  ["fa-message", "messages", "/messages"],
+  ["fa-heart", "wishlist", "/wishlist"],
+  ["fa-key", "keywords", "/keywords"],
+  ["fa-rectangle-list", "manageListings", "/listings"],
 ] as const;
 
 type DashboardMenuItemsProps = {
@@ -35,30 +36,31 @@ export function DashboardMenuItems({
   onNavigate,
   onSignOut,
 }: DashboardMenuItemsProps) {
+  const { t } = useLanguage();
   const isMobile = variant === "mobile";
   const itemClassName = isMobile ? "mobile-profile-popover-item" : "desktop-dashboard-menu-item";
   const labelClassName = isMobile ? undefined : "desktop-dashboard-menu-label";
   const logoutClassName = isMobile ? "mobile-profile-popover-logout" : "desktop-dashboard-logout";
 
-  const getHref = (label: string, suffix: string) => (
-    label === "Wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`
+  const getHref = (translationKey: string, suffix: string) => (
+    translationKey === "wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`
   );
 
   return (
     <>
-      {dashboardMenuItems.map(([icon, label, suffix]) => {
-        const href = getHref(label, suffix);
-        const unreadCount = label === "Messages" ? unreadMessageCount : label === "Notifications" ? unreadNotificationCount : 0;
+      {dashboardMenuItems.map(([icon, translationKey, suffix]) => {
+        const href = getHref(translationKey, suffix);
+        const unreadCount = translationKey === "messages" ? unreadMessageCount : translationKey === "notifications" ? unreadNotificationCount : 0;
 
         return (
           <Link
             className={`${itemClassName} ${pathname === href ? "is-active" : ""}`}
             href={href}
-            key={label}
+            key={translationKey}
             onClick={onNavigate}
           >
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
-            <span className={labelClassName}>{label}</span>
+            <span className={labelClassName}>{t(translationKey)}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
             ) : !isMobile ? (
@@ -74,12 +76,12 @@ export function DashboardMenuItems({
           onClick={onNavigate}
         >
           <i className="fa-solid fa-shield-halved" aria-hidden="true" />
-          <span className={labelClassName}>Admin centre</span>
+          <span className={labelClassName}>{t("adminCentre")}</span>
           {!isMobile ? <i className="fa-solid fa-chevron-right desktop-dashboard-chevron" aria-hidden="true" /> : null}
         </Link>
       ) : null}
       <button className={logoutClassName} type="button" onClick={onSignOut}>
-        <i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> Log out
+        <i className="fa-solid fa-right-from-bracket" aria-hidden="true" /> {t("logOut")}
       </button>
     </>
   );

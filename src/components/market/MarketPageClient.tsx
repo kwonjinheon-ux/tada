@@ -30,17 +30,11 @@ const categoryIcons: Record<string, string> = {
   "health-beauty": "fa-heart-pulse",
 };
 
-const quickCategories = [{ label: "All", value: "all" }, ...marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }))];
+const quickCategories = marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }));
 const priceFilterMinimum = 50;
 const priceFilterMaximum = 5000;
-const conditionFilters = [
-  { label: "Any", value: "all" },
-  { label: "New", value: "brand_new" },
-  { label: "Like New", value: "like_new" },
-  { label: "Excellent", value: "excellent" },
-  { label: "Good", value: "good" },
-  { label: "Fair", value: "fair" },
-] as const;
+const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
+const conditionTranslationKeys = { all: "any", brand_new: "brandNew", like_new: "likeNew", excellent: "excellent", good: "good", fair: "fair" } as const;
 
 export function MarketPageClient({ postedListings = [], savedListingIds = [], nextCursor = null }: { postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { t } = useLanguage();
@@ -50,7 +44,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const selectedCategory = searchParams.get("category") ?? "all";
   const selectedSubcategory = searchParams.get("subcategory") ?? "all";
   const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
-  const appliedCondition = conditionFilters.some((filter) => filter.value === searchParams.get("condition")) ? searchParams.get("condition")! : "all";
+  const appliedCondition = conditionFilters.includes(searchParams.get("condition") as typeof conditionFilters[number]) ? searchParams.get("condition")! : "all";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -69,11 +63,12 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     () => marketplaceCategories.find((category) => category.value === selectedCategory),
     [selectedCategory],
   );
+  const conditionLabel = (value: typeof conditionFilters[number]) => t(conditionTranslationKeys[value]);
   const toolbarCategories = useMemo(
     () => selectedCategoryDefinition
-      ? [{ label: "All", value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
-      : quickCategories,
-    [selectedCategoryDefinition],
+      ? [{ label: t("all"), value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
+      : [{ label: t("all"), value: "all" }, ...quickCategories],
+    [selectedCategoryDefinition, t],
   );
   const savedListingIdSet = useMemo(() => new Set(savedIds), [savedIds]);
 
@@ -299,7 +294,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
         <section className="filter-block category-filter">
           <h2>{t("category")}</h2>
           <div className="filter-list">
-            {[{ label: "All", value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+            {[{ label: t("all"), value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
               <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${selectedCategory === value ? "is-selected" : ""}`} type="button" onClick={() => chooseCategory(value)}>
                 <i className={`fa-solid ${icon}`} aria-hidden="true" />
                 <span className={mobileDrawerClasses.menuLabel}>{label}</span>
@@ -320,9 +315,9 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
         <section className="filter-block condition-filter">
           <h2>{t("condition")}</h2>
           <div className="condition-chips">
-            {conditionFilters.map((filter) => (
-              <button key={filter.value} className={condition === filter.value ? "is-selected" : ""} type="button" aria-pressed={condition === filter.value} onClick={() => setCondition(filter.value)}>
-                {filter.label}
+            {conditionFilters.map((value) => (
+              <button key={value} className={condition === value ? "is-selected" : ""} type="button" aria-pressed={condition === value} onClick={() => setCondition(value)}>
+                {conditionLabel(value)}
               </button>
             ))}
           </div>
@@ -336,16 +331,16 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
 
       <section className="market-results" aria-label="Fresh finds" aria-busy={Boolean(applyingChip)}>
         <div className="market-toolbar">
-          <div className="view-toggle" aria-label="View mode">
-            <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label="List view" aria-pressed={viewMode === "list"} onClick={() => chooseView("list")}>
+          <div className="view-toggle" aria-label={t("viewMode")}>
+            <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => chooseView("list")}>
               <i className="fa-solid fa-list" aria-hidden="true" />
             </button>
-            <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label="Grid view" aria-pressed={viewMode === "grid"} onClick={() => chooseView("grid")}>
+            <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => chooseView("grid")}>
               <i className="fa-solid fa-border-all" aria-hidden="true" />
             </button>
           </div>
 
-          <div className="market-chip-row" aria-label="Quick categories">
+          <div className="market-chip-row" aria-label={t("quickCategories")}>
             {toolbarCategories.map((category) => {
               const isSelected = selectedCategoryDefinition ? category.value === selectedSubcategory : category.value === selectedCategory;
               return <button
@@ -361,11 +356,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
           </div>
 
           <div className="market-tools">
-            <label className="sort-control" aria-label="Sort listings">
+            <label className="sort-control" aria-label={t("sortListings")}>
               <select value={searchParams.get("sort") ?? "newest"} onChange={(event) => { const params = new URLSearchParams(searchParams.toString()); params.delete("cursor"); if (event.target.value === "newest") params.delete("sort"); else params.set("sort", event.target.value); router.push(`/market${params.size ? `?${params.toString()}` : ""}`); }}>
-                <option value="newest">Newest</option>
-                <option value="priceAsc">Low to High</option>
-                <option value="priceDesc">High to Low</option>
+                <option value="newest">{t("newest")}</option>
+                <option value="priceAsc">{t("lowToHigh")}</option>
+                <option value="priceDesc">{t("highToLow")}</option>
               </select>
             </label>
           </div>

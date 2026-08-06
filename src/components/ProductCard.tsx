@@ -7,6 +7,7 @@ import { marketWishlistResponseSchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { readApiResponse } from "@/lib/api/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type ProductCardProps = {
   listing: Listing;
@@ -15,6 +16,7 @@ type ProductCardProps = {
 };
 
 function ProductCardComponent({ listing, priority = false, initialIsSaved = false }: ProductCardProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isPopping, setIsPopping] = useState(false);
@@ -23,7 +25,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const burstTimer = useRef<number | null>(null);
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
-  const statusLabel = listing.status === "sold" ? "Sold out" : listing.status.charAt(0).toUpperCase() + listing.status.slice(1);
+  const statusLabel = listing.status === "sold" ? t("soldOut") : listing.status === "pending" ? t("pending") : t("available");
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
@@ -77,7 +79,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       className={`product-card product-card-link ${listing.status === "sold" ? "is-sold" : ""}`}
       role="link"
       tabIndex={0}
-      aria-label={`View ${listing.title}`}
+      aria-label={`${t("viewListing")}: ${listing.title}`}
       onClick={openListing}
       onPointerEnter={prefetchListing}
       onTouchStart={prefetchListing}
@@ -91,7 +93,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     >
       <div className="product-media">
         {imageFailed ? (
-          <div className="product-image-unavailable" role="img" aria-label={`${listing.title} image unavailable`}>
+          <div className="product-image-unavailable" role="img" aria-label={`${listing.title}: ${t("imageUnavailable")}`}>
             <i className="fa-regular fa-image" aria-hidden="true" />
           </div>
         ) : (
@@ -108,13 +110,13 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         {listing.badge ? (
           <span
             className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}
-            aria-label={listing.badge}
+            aria-label={listing.badge === "Promotion" ? t("promotion") : t("newlyListed")}
           >
-            <span className="product-badge-label">{listing.badge}</span>
+            <span className="product-badge-label">{listing.badge === "Promotion" ? t("promotion") : t("newlyListed")}</span>
             {listing.badge === "Newly Listed" ? <span className="product-badge-mobile-label" aria-hidden="true">N</span> : null}
           </span>
         ) : null}
-        {listing.status === "sold" ? <span className="product-sold-out">Sold out</span> : null}
+        {listing.status === "sold" ? <span className="product-sold-out">{t("soldOut")}</span> : null}
       </div>
       <div className="product-body">
         <div className="price-row">
@@ -130,7 +132,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       <button
         className={`save-button ${saveFeedbackClasses.root} ${isSaved ? "is-saved" : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
-        aria-label={`Save ${listing.title}`}
+        aria-label={`${t("saveListing")}: ${listing.title}`}
         aria-pressed={isSaved}
         onClick={(event) => {
           event.stopPropagation();
