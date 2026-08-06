@@ -13,19 +13,22 @@ export type HeartParticle = {
 
 export const saveFeedbackClasses = {
   root: "save-feedback",
+  saved: "is-saved",
   popping: "is-popping",
 } as const;
 
 const heartColors = ["#ff3b6b", "#ff5d8f", "#ff8a5b", "#ffbd4a", "#e94683"];
 
+// Travel is kept inside the --save-burst-reach the buttons paint into (52px
+// past their own edge), so no heart is ever cut off mid-flight.
 export function createHeartParticles() {
   return Array.from({ length: 12 }, (_, index): HeartParticle => {
     const angle = (Math.PI * 2 * index) / 12 + (Math.random() - 0.5) * 0.45;
-    const distance = 34 + Math.random() * 34;
+    const distance = 20 + Math.random() * 18;
     return {
       id: `${Date.now()}-${index}-${Math.random()}`,
       x: Math.cos(angle) * distance,
-      y: Math.sin(angle) * distance - 10 - Math.random() * 18,
+      y: Math.sin(angle) * distance - 6 - Math.random() * 10,
       delay: Math.random() * 80,
       duration: 620 + Math.random() * 300,
       size: 11 + Math.random() * 10,

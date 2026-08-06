@@ -478,7 +478,7 @@ export function Navbar() {
     { id: "share", label: isListingShareCopied ? "Listing link copied" : "Copy listing link", icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
     listingDockConfig.isOwner
       ? { id: "delete", label: "Delete listing", icon: "delete", onClick: () => triggerListingDockAction("delete") }
-      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
+      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
 
   function openMobileCategories() {

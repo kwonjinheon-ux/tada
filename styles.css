@@ -1618,7 +1618,11 @@ a {
   padding-top: 2px;
 }
 
+/* The card is the anchor for the save heart. Without it the absolutely
+   positioned button escapes to the page corner, where every card's heart piles
+   up behind the header and its burst reaches past the viewport edge. */
 .product-card {
+  position: relative;
   overflow: hidden;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
@@ -1668,7 +1672,32 @@ a {
 
 /* The single save-heart recipe. Every context — feed card, list row, listing
    detail, mobile dock — uses this look and this burst; only --save-button-size
-   changes. Do not restyle the heart locally. */
+   changes. Do not restyle the heart locally.
+
+   .save-feedback carries the behaviour (burst room, pop, saved colour) so the
+   dock heart, which keeps the dock's own shape instead of this circle, still
+   gets exactly the same feedback. */
+.save-feedback {
+  --save-burst-reach: 52px;
+  isolation: isolate;
+  /* The burst has to escape the button, but it must not escape into the page:
+     a heart landing past the viewport edge grows the document's scrollable
+     width, which on mobile turns into sideways scrolling and a layout that
+     drifts out from under the fixed header and dock. Clipping keeps the
+     particles out of that scroll area; the clip margin is the room they are
+     allowed to paint into, and it costs the page nothing. Browsers without a
+     clip margin fall back to clipping at the button itself — a smaller burst,
+     never a broken page. */
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: var(--save-burst-reach);
+}
+
+.save-feedback.is-saved,
+.save-feedback.is-saved > i {
+  color: var(--rose-600);
+}
+
 .save-button {
   position: absolute;
   top: 10px;
@@ -1683,17 +1712,8 @@ a {
   color: var(--color-muted);
   cursor: pointer;
   font-size: calc(var(--save-button-size, 36px) * 0.45);
-  /* The burst has to escape the button, so the element cannot clip or contain
-     its paint. It is isolated instead, to keep particles above sibling media. */
-  overflow: visible;
-  isolation: isolate;
   box-shadow: var(--shadow-xs);
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
-}
-
-.save-button.is-saved {
-  background: var(--color-surface-soft);
-  color: var(--rose-600);
 }
 
 .save-heart-particles,
@@ -1702,12 +1722,11 @@ a {
   pointer-events: none;
 }
 
-/* Negative inset gives the particles room to travel past the button's own
-   circle and scatter across the card. */
+/* Only a coordinate origin — the particles are centred on it and travel by
+   transform, and how far they may show is set by --save-burst-reach. */
 .save-heart-particles {
-  inset: -36px;
+  inset: 0;
   z-index: 3;
-  overflow: visible;
 }
 
 .save-heart-particle {
@@ -1960,9 +1979,7 @@ a {
     --save-button-size: 32px;
   }
 
-  /* Fixed track keeps the row from reflowing while the heart animates. The
-     button must not clip or contain its paint, or the burst is trapped inside
-     the 36px circle instead of scattering across the card. */
+  /* Fixed track keeps the row from reflowing while the heart animates. */
   .product-grid.is-list-view .save-button {
     min-width: 36px;
     min-height: var(--control-h-md);
@@ -2816,8 +2833,9 @@ body.listing-gallery-open { overflow: hidden; }
 }
 
 /* Shape for the two buttons that share this slot: the heart, which also carries
-   .save-button and takes its colour and burst from there, and the owner's
-   delete action, which only recolours. Same heart as the feed, one size up. */
+   .save-button and .save-feedback and takes its colour and burst from there,
+   and the owner's delete action, which only recolours. Same heart as the feed,
+   one size up. */
 .listing-detail-save {
   --save-button-size: 42px;
   position: relative;
@@ -5731,9 +5749,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock .mobile-dock-offer { color: var(--green-700); }
-  /* The dock button keeps the dock's own shape, but the heart and its burst
-     come from the shared .save-button recipe. */
-  .mobile-bottom-dock .mobile-dock-save { position: relative; overflow: visible; isolation: isolate; }
+  /* The dock button keeps the dock's own shape; the heart colour, the pop and
+     the burst all come from the shared .save-feedback recipe. The saved colour
+     is restated here only to beat the dock's own .is-active colour. */
+  .mobile-bottom-dock .mobile-dock-save { position: relative; }
   .mobile-bottom-dock .mobile-dock-save.is-saved,
   .mobile-bottom-dock .mobile-dock-save.is-saved > i { color: var(--rose-600); }
   .mobile-bottom-dock .mobile-dock-save .save-heart-particle { z-index: 4; }
@@ -7365,7 +7384,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-action-icon { width: 42px; height: 42px; display: grid; flex: 0 0 42px; place-items: center; align-self: center; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-850); font-size: var(--text-lg); text-decoration: none; }
   .listing-detail-mobile-actions button.listing-detail-mobile-action-icon { width: 42px; height: 42px; min-height: var(--control-h-lg); display: grid; flex: 0 0 42px; place-items: center; align-self: center; padding: 0; border-radius: var(--radius-circle); }
   .listing-detail-mobile-action-icon.is-saved { color: var(--rose-600); }
-  .listing-detail-mobile-action-icon.save-button { position: relative; top: auto; right: auto; bottom: auto; left: auto; margin: 0; overflow: visible; box-shadow: none; }
+  .listing-detail-mobile-action-icon.save-button { position: relative; top: auto; right: auto; bottom: auto; left: auto; margin: 0; box-shadow: none; }
 }
 
 .listing-detail-message-error { margin: 9px 0 0; color: var(--red-900); font-size: var(--text-sm); font-weight: var(--weight-bold); }

@@ -130,7 +130,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         </p>
       </div>
       <button
-        className={`save-button ${saveFeedbackClasses.root} ${isSaved ? "is-saved" : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
+        className={`save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
         aria-label={`${t("saveListing")}: ${listing.title}`}
         aria-pressed={isSaved}
