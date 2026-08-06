@@ -52,6 +52,16 @@ type Props = {
   currentUserId: string;
 };
 
+type ConversationFilter = "all" | "unread" | "buying" | "selling";
+
+const CONVERSATION_FILTERS: ConversationFilter[] = ["all", "unread", "buying", "selling"];
+
+function matchesFilter(conversation: ConversationSummary, filter: ConversationFilter) {
+  if (filter === "unread") return conversation.unreadCount > 0;
+  if (filter === "buying" || filter === "selling") return conversation.role === filter;
+  return true;
+}
+
 function formatListTime(value: string | null) {
   if (!value) return "";
   const date = new Date(value);
@@ -84,12 +94,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [sendError, setSendError] = useState<string | null>(null);
   const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ConversationFilter>("all");
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const selectedConversationIdRef = useRef(selectedConversationId);
   const refreshFrameRef = useRef<number | null>(null);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
+  const visibleConversations = useMemo(() => conversations.filter((conversation) => matchesFilter(conversation, filter)), [conversations, filter]);
 
   useEffect(() => {
     setConversations(initialConversations);
@@ -125,11 +137,22 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   }, []);
 
   useEffect(() => {
+    let wasKeyboardOpen = false;
     const updateMobileViewport = () => {
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
       document.documentElement.style.setProperty("--messages-viewport-height", `${viewportHeight}px`);
       document.documentElement.style.setProperty("--messages-viewport-offset-top", `${viewportOffsetTop}px`);
+      // window.innerHeight stays at the layout viewport height while the keyboard shrinks the visual one,
+      // so the leftover is the keyboard inset. The thread claims the full visual viewport while it is up.
+      const keyboardInset = Math.max(0, window.innerHeight - viewportHeight - viewportOffsetTop);
+      const isKeyboardOpen = keyboardInset > 120;
+      document.documentElement.classList.toggle("messages-keyboard-open", isKeyboardOpen);
+      if (isKeyboardOpen !== wasKeyboardOpen) {
+        wasKeyboardOpen = isKeyboardOpen;
+        const threadBody = threadBodyRef.current;
+        if (threadBody) window.requestAnimationFrame(() => threadBody.scrollTo({ top: threadBody.scrollHeight }));
+      }
     };
     const updateHeaderHeight = () => {
       const siteHeader = document.querySelector<HTMLElement>(".site-header");
@@ -150,6 +173,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       window.visualViewport?.removeEventListener("scroll", updateMobileViewport);
       if (!window.visualViewport) window.removeEventListener("resize", updateMobileViewport);
       headerObserver?.disconnect();
+      document.documentElement.classList.remove("messages-keyboard-open");
       document.documentElement.style.removeProperty("--messages-viewport-height");
       document.documentElement.style.removeProperty("--messages-viewport-offset-top");
       document.documentElement.style.removeProperty("--messages-site-header-height");
@@ -342,19 +366,25 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     <main className={`messages-page ${selectedConversation ? "has-selected-conversation" : ""}`}>
       <section className="messages-list-panel" aria-label="Conversations">
         <header className="messages-list-header"><div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{conversations.reduce((total, conversation) => total + conversation.unreadCount, 0) || ""}</span></div></div></header>
-        <div className="messages-filter-row"><button className="is-active" type="button">{t("all")}</button><button type="button">{t("unread")}</button><button type="button">{t("buying")}</button><button type="button">{t("selling")}</button></div>
+        <div className="messages-filter-row" role="tablist" aria-label="Filter conversations">
+          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => setFilter(option)}>{t(option)}</button>)}
+        </div>
         <div className="messages-conversation-list">
-          {conversations.length ? conversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId ? "is-active" : ""}`} type="button" key={conversation.id} onClick={() => openConversation(conversation.id)}>
+          {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId ? "is-active" : ""}`} type="button" key={conversation.id} onClick={() => openConversation(conversation.id)}>
             {conversation.listing.imageUrl
               ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
               : <span className="messages-listing-thumbnail"><i className="fa-regular fa-image" aria-hidden="true" /></span>}
             <span className="messages-conversation-copy">
               <span><strong>{conversation.listing.title}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt)}</time></span>
               <em>{conversation.counterpart.name} · {conversation.role === "buying" ? "Seller" : "Buyer"}</em>
-              <small>{conversation.lastMessagePreview || "Start the conversation"}</small>
+              <span className="messages-conversation-preview">
+                <small>{conversation.lastMessagePreview || "Start the conversation"}</small>
+                {conversation.unreadCount ? <b aria-label={`${conversation.unreadCount} unread`}>{conversation.unreadCount}</b> : null}
+              </span>
             </span>
-            {conversation.unreadCount ? <b>{conversation.unreadCount}</b> : null}
-          </button>) : <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
+          </button>) : conversations.length
+            ? <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : "Switch to All to see your other conversations."}</span></div>
+            : <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
         </div>
       </section>
 
@@ -382,7 +412,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             }) : null}
             {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
           </div>
-          <form className="messages-composer" onSubmit={sendMessage}><button className="messages-offer-button" type="button" aria-label="Prepare an offer" onClick={prepareOffer}><i className="fa-solid fa-tag" aria-hidden="true" /></button><textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
+          <form className="messages-composer" onSubmit={sendMessage}><button className="messages-offer-button" type="button" onClick={prepareOffer}>Purchase</button><textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
         </> : <div className="messages-select-empty"><i className="fa-regular fa-comments" aria-hidden="true" /><h2>Select a conversation</h2><p>Your messages about marketplace listings will appear here.</p></div>}
       </section>
     </main>
