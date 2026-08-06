@@ -10,7 +10,12 @@ export async function POST(request: Request) {
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to submit a report.", 401);
   const parsed = marketReportRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", "Choose a valid report reason.", 400);
-  if (!await consumeMarketRateLimit(supabase, "report")) return apiFailure("RATE_LIMITED", "You have submitted too many reports. Please try again later.", 429);
+  const rateLimit = await consumeMarketRateLimit(supabase, "report");
+  if (!rateLimit.allowed) {
+    return rateLimit.reason === "unavailable"
+      ? apiFailure("UNAVAILABLE", "Unable to submit your report right now. Please try again in a moment.", 503)
+      : apiFailure("RATE_LIMITED", "You have submitted too many reports. Please try again later.", 429);
+  }
 
   const { data, error } = await supabase
     .from("market_reports")

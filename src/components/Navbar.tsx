@@ -501,7 +501,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className={`site-header ${isMessagesPage ? "is-messages-page" : ""}`}>
+      <header className="site-header">
       <div className="site-nav">
         <Link className="site-logo" href="/" aria-label="Tada home">
           <img src="/images/logo.png" alt="Tada" />

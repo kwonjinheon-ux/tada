@@ -8,7 +8,12 @@ export async function POST(request: Request) {
   if (!supabase) return apiFailure("UNAVAILABLE", "Messaging is unavailable right now.", 503);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to send a message.", 401);
-  if (!await consumeMarketRateLimit(supabase, "message")) return apiFailure("RATE_LIMITED", "You are sending messages too quickly. Please try again in a minute.", 429);
+  const rateLimit = await consumeMarketRateLimit(supabase, "message");
+  if (!rateLimit.allowed) {
+    return rateLimit.reason === "unavailable"
+      ? apiFailure("UNAVAILABLE", "Unable to send your message right now. Please try again in a moment.", 503)
+      : apiFailure("RATE_LIMITED", "You are sending messages too quickly. Please try again in a minute.", 429);
+  }
 
   const parsed = marketMessageRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", "Messages must be between 1 and 2,000 characters.", 400);

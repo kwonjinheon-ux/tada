@@ -7468,7 +7468,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Marketplace messages: a compact conversation rail paired with a focused thread. */
 body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
-.marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); }
+.marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); transform: translateY(calc(-1 * var(--messages-viewport-offset-top, 0px))); }
 .messages-dashboard-page > .market-filter-panel.dashboard-sidebar { height: 100%; min-height: 0; top: 0; }
 .messages-page { min-width: 0; height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); overflow: hidden; background: var(--neutral-50); color: var(--blue-900); }
 .messages-list-panel { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--neutral-250); background: var(--neutral-50); }
@@ -7575,7 +7575,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 @media (max-width: 767.98px) {
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
-  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; }
+  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(calc(-1 * var(--messages-viewport-offset-top, 0px))); }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
   .messages-dashboard-page .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }

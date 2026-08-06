@@ -11,7 +11,12 @@ export async function POST(request: Request) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to message the seller.", 401);
-  if (!await consumeMarketRateLimit(supabase, "conversation")) return apiFailure("RATE_LIMITED", "Too many conversation requests. Please try again in a minute.", 429);
+  const rateLimit = await consumeMarketRateLimit(supabase, "conversation");
+  if (!rateLimit.allowed) {
+    return rateLimit.reason === "unavailable"
+      ? apiFailure("UNAVAILABLE", "Unable to start this conversation right now. Please try again in a moment.", 503)
+      : apiFailure("RATE_LIMITED", "Too many conversation requests. Please try again in a minute.", 429);
+  }
 
   const parsed = marketConversationRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", "A valid listing is required.", 400);

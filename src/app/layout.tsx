@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../../styles.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
@@ -7,6 +7,12 @@ import { Navbar } from "@/components/Navbar";
 export const metadata: Metadata = {
   title: { default: "Tada", template: "%s | Tada" },
   description: "A modern local marketplace.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

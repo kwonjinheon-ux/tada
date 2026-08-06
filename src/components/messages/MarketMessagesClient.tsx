@@ -84,7 +84,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [sendError, setSendError] = useState<string | null>(null);
   const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -127,22 +126,32 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
   useEffect(() => {
     const updateMobileViewport = () => {
-      const siteHeader = document.querySelector<HTMLElement>(".site-header");
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
       document.documentElement.style.setProperty("--messages-viewport-height", `${viewportHeight}px`);
+      document.documentElement.style.setProperty("--messages-viewport-offset-top", `${viewportOffsetTop}px`);
+    };
+    const updateHeaderHeight = () => {
+      const siteHeader = document.querySelector<HTMLElement>(".site-header");
       document.documentElement.style.setProperty("--messages-site-header-height", `${siteHeader?.getBoundingClientRect().height ?? 0}px`);
     };
     updateMobileViewport();
-    window.addEventListener("resize", updateMobileViewport);
+    updateHeaderHeight();
+    // visualViewport.scroll fires during iOS's pan-into-view on input focus, which changes
+    // offsetTop without necessarily firing resize — both listeners are needed to track it.
     window.visualViewport?.addEventListener("resize", updateMobileViewport);
+    window.visualViewport?.addEventListener("scroll", updateMobileViewport);
+    if (!window.visualViewport) window.addEventListener("resize", updateMobileViewport);
     const siteHeader = document.querySelector<HTMLElement>(".site-header");
-    const headerObserver = siteHeader ? new ResizeObserver(updateMobileViewport) : null;
+    const headerObserver = siteHeader ? new ResizeObserver(updateHeaderHeight) : null;
     if (siteHeader && headerObserver) headerObserver.observe(siteHeader);
     return () => {
-      window.removeEventListener("resize", updateMobileViewport);
       window.visualViewport?.removeEventListener("resize", updateMobileViewport);
+      window.visualViewport?.removeEventListener("scroll", updateMobileViewport);
+      if (!window.visualViewport) window.removeEventListener("resize", updateMobileViewport);
       headerObserver?.disconnect();
       document.documentElement.style.removeProperty("--messages-viewport-height");
+      document.documentElement.style.removeProperty("--messages-viewport-offset-top");
       document.documentElement.style.removeProperty("--messages-site-header-height");
     };
   }, []);
@@ -154,56 +163,103 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   }, [selectedConversationId]);
 
   useEffect(() => {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      if (!supabase) return;
-      const refreshConversationList = () => {
-        if (refreshFrameRef.current !== null) return;
-        refreshFrameRef.current = window.requestAnimationFrame(() => {
-          refreshFrameRef.current = null;
-          router.refresh();
-        });
-      };
-      const channel = supabase
-        .channel(`market-conversation-live:${currentUserId}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages" }, (payload) => {
-          const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
-          if (!row.id || !row.conversation_id || !row.body || !row.created_at) return;
-          const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-          if (incoming.conversationId === selectedConversationIdRef.current) {
-            setMessages((current) => {
-              if (current.some((message) => message.id === incoming.id)) return current;
-              const optimisticIndex = current.findIndex((message) => message.isPending && message.senderId === incoming.senderId && message.body === incoming.body);
-              return optimisticIndex === -1 ? [...current, incoming] : current.map((message, index) => index === optimisticIndex ? incoming : message);
-            });
-            if (incoming.senderId !== currentUserId) void fetch(`/api/market/messages/${incoming.conversationId}/read`, { method: "PATCH" }).catch(() => undefined);
-          }
-          setConversations((current) => {
-            const conversation = current.find((item) => item.id === incoming.conversationId);
-            if (!conversation) {
-              refreshConversationList();
-              return current;
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+
+    let isActive = true;
+    let hasConnectedBefore = false;
+    let reconnectAttempt = 0;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const refreshConversationList = () => {
+      if (refreshFrameRef.current !== null) return;
+      refreshFrameRef.current = window.requestAnimationFrame(() => {
+        refreshFrameRef.current = null;
+        router.refresh();
+      });
+    };
+
+    const handleIncomingMessage = (payload: { new: unknown }) => {
+      const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+      if (!row.id || !row.conversation_id || !row.body || !row.created_at) return;
+      const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
+      if (incoming.conversationId === selectedConversationIdRef.current) {
+        setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
+        void fetch(`/api/market/messages/${incoming.conversationId}/read`, { method: "PATCH" }).catch(() => undefined);
+      }
+      setConversations((current) => {
+        const conversation = current.find((item) => item.id === incoming.conversationId);
+        if (!conversation) {
+          refreshConversationList();
+          return current;
+        }
+        const isActiveConversation = incoming.conversationId === selectedConversationIdRef.current;
+        return current.map((item) => item.id === incoming.conversationId ? { ...item, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: isActiveConversation ? 0 : item.unreadCount + 1 } : item);
+      });
+    };
+
+    const handleReadReceiptUpdate = (payload: { new: unknown }) => {
+      const row = payload.new as { id: string; conversation_id: string; read_at: string | null };
+      if (!row.id || !row.conversation_id || row.conversation_id !== selectedConversationIdRef.current) return;
+      setMessages((current) => current.map((message) => message.id === row.id ? { ...message, readAt: row.read_at } : message));
+    };
+
+    const handleIncomingOffer = (payload: { new: unknown }) => {
+      const row = payload.new as { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
+      if (!row.id || !row.conversation_id || !row.status) return;
+      const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at };
+      if (incoming.conversationId === selectedConversationIdRef.current) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
+      setConversations((current) => {
+        if (current.some((conversation) => conversation.id === incoming.conversationId)) return current;
+        refreshConversationList();
+        return current;
+      });
+    };
+
+    const connect = () => {
+      if (!isActive) return;
+      try {
+        channel = supabase
+          .channel(`market-conversation-live:${currentUserId}`)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `recipient_id=eq.${currentUserId}` }, handleIncomingMessage)
+          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_messages", filter: `sender_id=eq.${currentUserId}` }, handleReadReceiptUpdate)
+          .on("postgres_changes", { event: "*", schema: "public", table: "market_trade_offers", filter: `buyer_id=eq.${currentUserId}` }, handleIncomingOffer)
+          .on("postgres_changes", { event: "*", schema: "public", table: "market_trade_offers", filter: `seller_id=eq.${currentUserId}` }, handleIncomingOffer)
+          .subscribe((status) => {
+            if (!isActive) return;
+            if (status === "SUBSCRIBED") {
+              reconnectAttempt = 0;
+              if (hasConnectedBefore) refreshConversationList();
+              hasConnectedBefore = true;
+              return;
             }
-            const isActive = incoming.conversationId === selectedConversationIdRef.current;
-            return current.map((item) => item.id === incoming.conversationId ? { ...item, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: incoming.senderId === currentUserId || isActive ? 0 : item.unreadCount + 1 } : item);
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+              const failedChannel = channel;
+              channel = null;
+              if (failedChannel) void supabase.removeChannel(failedChannel).catch(() => undefined);
+              const delay = Math.min(1000 * 2 ** reconnectAttempt, 20000);
+              reconnectAttempt += 1;
+              reconnectTimeout = setTimeout(connect, delay);
+            }
           });
-        })
-        .on("postgres_changes", { event: "*", schema: "public", table: "market_trade_offers" }, (payload) => {
-          const row = payload.new as { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
-          if (!row.id || !row.conversation_id || !row.status) return;
-          const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at };
-          if (incoming.conversationId === selectedConversationIdRef.current) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
-          setConversations((current) => {
-            if (current.some((conversation) => conversation.id === incoming.conversationId)) return current;
-            refreshConversationList();
-            return current;
-          });
-        })
-        .subscribe();
-      return () => { void supabase.removeChannel(channel).catch(() => undefined); };
-    } catch {
-      return;
-    }
+      } catch {
+        // Realtime unavailable in this environment; the page still works via server-rendered data and refresh-on-focus below.
+      }
+    };
+    connect();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshConversationList();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isActive = false;
+      if (reconnectTimeout !== null) clearTimeout(reconnectTimeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (channel) void supabase.removeChannel(channel).catch(() => undefined);
+    };
   }, [currentUserId, router]);
 
   const openConversation = (conversationId: string) => {
@@ -325,7 +381,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{offer.status}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offer.status === "completed" ? "Trade complete. Both members received 10 trust points." : offer.status === "accepted" ? "Accepted. Meet safely, then buyer confirms completion." : offer.status === "pending" ? "Waiting for seller response." : "This offer is closed."}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>Accept</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>Decline</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>Cancel offer</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>Confirm trade complete</button> : null}{offer.status === "accepted" && isSeller ? <span>Waiting for buyer confirmation</span> : null}</footer></article>;
             }) : null}
             {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
-            <div ref={bottomRef} />
           </div>
           <form className="messages-composer" onSubmit={sendMessage}><button className="messages-offer-button" type="button" aria-label="Prepare an offer" onClick={prepareOffer}><i className="fa-solid fa-tag" aria-hidden="true" /></button><textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
         </> : <div className="messages-select-empty"><i className="fa-regular fa-comments" aria-hidden="true" /><h2>Select a conversation</h2><p>Your messages about marketplace listings will appear here.</p></div>}

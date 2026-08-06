@@ -85,7 +85,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
   if (!supabase) return NextResponse.json({ error: "Comments are unavailable right now." }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Please log in to post a comment." }, { status: 401 });
-  if (!await consumeMarketRateLimit(supabase, "comment")) return NextResponse.json({ error: "You are posting comments too quickly. Please try again in a minute." }, { status: 429 });
+  const rateLimit = await consumeMarketRateLimit(supabase, "comment");
+  if (!rateLimit.allowed) {
+    return rateLimit.reason === "unavailable"
+      ? NextResponse.json({ error: "Unable to post your comment right now. Please try again in a moment." }, { status: 503 })
+      : NextResponse.json({ error: "You are posting comments too quickly. Please try again in a minute." }, { status: 429 });
+  }
 
   const payload = await request.json().catch(() => null) as { body?: unknown; parentId?: unknown } | null;
   const body = typeof payload?.body === "string" ? payload.body.trim() : "";
