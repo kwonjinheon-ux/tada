@@ -373,13 +373,14 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />,
             (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,
           ])}
-          {nextPageCursor ? (
-            <div ref={loadMoreRef} className={`market-list-load-more ${isLoadingMore ? "is-loading" : ""}`} role="status" aria-live="polite">
-              {isLoadingMore && <><span className="market-list-load-spinner" aria-hidden="true" /><span>새 콘텐츠를 불러오는 중...</span></>}
-            </div>
-          ) : null}
+          {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
-        <div className="market-mobile-bottom-spacer" aria-hidden="true" />
+        {isLoadingMore ? (
+          <div className="market-load-overlay" role="status" aria-live="polite">
+            <span className="market-list-load-spinner" aria-hidden="true" />
+            <span>{t("loadingMoreListings")}</span>
+          </div>
+        ) : null}
 
       </section>
     </main>
