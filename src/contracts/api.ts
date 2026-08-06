@@ -43,8 +43,8 @@ export const marketMessageResponseSchema = z.object({
   senderId: uuidSchema,
   recipientId: uuidSchema,
   body: z.string(),
-  createdAt: z.string().datetime(),
-  readAt: z.string().datetime().nullable(),
+  createdAt: z.string().datetime({ offset: true }),
+  readAt: z.string().datetime({ offset: true }).nullable(),
 });
 
 export const marketReportRequestSchema = z.object({
