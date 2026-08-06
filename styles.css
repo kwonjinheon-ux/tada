@@ -2504,10 +2504,10 @@ body.listing-gallery-open { overflow: hidden; }
   max-height: none;
   overflow: visible;
   padding: 8px;
-  border: 1px solid var(--line-soft);
-  border-radius: 0;
+  border: 1px solid #9eafbf;
+  border-radius: 14px;
   background: var(--surface);
-  box-shadow: 0 8px 24px rgb(16 31 52 / .14);
+  box-shadow: 0 12px 32px rgb(16 33 62 / .16), inset 0 0 0 1px rgb(255 255 255 / .86);
 }
 
 .language-settings-card > header {
@@ -4998,10 +4998,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     width: min(250px, calc(100vw - 32px));
     max-height: calc(100dvh - 80px);
     overflow: auto;
-    border: 1px solid var(--line-soft);
-    border-radius: 0;
+    border: 1px solid #9eafbf;
+    border-radius: 14px;
     background: #fff;
-    box-shadow: 0 12px 32px rgb(16 33 62 / .16);
+    box-shadow: 0 12px 32px rgb(16 33 62 / .16), inset 0 0 0 1px rgb(255 255 255 / .86);
     transform-origin: top right;
   }
 
