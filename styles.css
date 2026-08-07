@@ -6883,7 +6883,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--teal-soft-900);
-  font-size: var(--text-base);
+  /* This rail only ever renders at >=768px (hidden below that), so one step under
+     the 16px web-standard base reads as a deliberately quieter nav, not a mobile gap. */
+  font-size: var(--text-md);
   font-weight: var(--weight-regular);
   line-height: 1.2;
   text-decoration: none;
