@@ -77,6 +77,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
+  const [isUnconfirmedOpen, setIsUnconfirmedOpen] = useState(false);
   const image = listing.images[activeImage] ?? listing.images[0];
   const ratingLabel = listing.seller.ratingCount
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
@@ -464,10 +465,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <TextSizeSection className="listing-detail-description" title="Description" sizeStep={descriptionTextSizeStep}>
         {prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
         {unconfirmed.length ? (
-          <aside className="listing-unconfirmed" aria-label="Details the seller has not confirmed">
-            <strong><i className="fa-regular fa-circle-question" aria-hidden="true" /> {UNCONFIRMED_DETAILS_HEADING}</strong>
-            <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
-            <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+          <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label="Details the seller has not confirmed">
+            <button type="button" className="listing-unconfirmed-toggle" aria-expanded={isUnconfirmedOpen} onClick={() => setIsUnconfirmedOpen((current) => !current)}>
+              <span>{UNCONFIRMED_DETAILS_HEADING}</span>
+              <i className="fa-solid fa-chevron-down" aria-hidden="true" />
+            </button>
+            {isUnconfirmedOpen ? <div className="listing-unconfirmed-body">
+              <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
+              <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+            </div> : null}
           </aside>
         ) : null}
       </TextSizeSection>

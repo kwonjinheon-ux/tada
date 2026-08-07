@@ -7662,11 +7662,18 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 /* Points the AI draft raised that the seller never answered. Amber rather than red:
    this is something to ask about, not a warning about the listing. */
-.listing-unconfirmed { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--amber-soft-250); border-radius: var(--radius-md); background: var(--amber-soft-50); }
-.listing-unconfirmed > strong { display: flex; align-items: center; gap: 8px; color: var(--amber-750); font-size: var(--text-md); }
-.listing-unconfirmed ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
-.listing-unconfirmed li { color: var(--amber-900); font-size: var(--text-base); line-height: 1.5; }
-.listing-unconfirmed > small { display: block; margin-top: 10px; color: var(--blue-soft-650); font-size: var(--text-sm); line-height: 1.45; }
+/* Collapsed by default and toned down on purpose: this is a side note about what
+   the seller hasn't verified, not a warning, and must read quieter than the
+   seller's own description above it. */
+.listing-unconfirmed { margin-top: 18px; border: 1px solid var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-200); overflow: hidden; }
+.listing-unconfirmed-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border: 0; background: transparent; color: var(--blue-soft-600); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); text-align: center; cursor: pointer; }
+.listing-unconfirmed-toggle i { font-size: var(--text-xs); transition: transform 160ms ease; }
+.listing-unconfirmed.is-open .listing-unconfirmed-toggle { border-bottom: 1px solid var(--neutral-250); }
+.listing-unconfirmed.is-open .listing-unconfirmed-toggle i { transform: rotate(180deg); }
+.listing-unconfirmed-body { padding: 4px 16px 14px; }
+.listing-unconfirmed-body ul { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.listing-unconfirmed-body li { color: var(--blue-soft-700); font-size: var(--text-base); line-height: 1.5; }
+.listing-unconfirmed-body > small { display: block; margin-top: 10px; color: var(--blue-soft-550); font-size: var(--text-sm); line-height: 1.45; }
 
 .listing-comments { width: min(100%, 760px); margin-top: 34px; padding-top: 28px; border-top: 1px solid var(--neutral-250); }
 .related-listings { width: min(100% - (var(--page-padding-inline) * 2), var(--page-max-width)); margin: 52px auto 72px; padding-top: 28px; border-top: 1px solid var(--neutral-250); }
