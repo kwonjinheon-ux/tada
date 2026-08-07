@@ -1281,16 +1281,21 @@ a {
 }
 
 .filter-list button {
+  min-width: 0;
   min-height: var(--control-h-lg);
-  display: inline-flex;
+  /* Same grid, size, and colour spec as .dashboard-sidebar .dashboard-nav a — the
+     desktop market sidebar and the dashboard sidebar are meant to read as one rail. */
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 0 10px;
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--teal-soft-900);
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   font-weight: var(--weight-regular);
+  line-height: 1.2;
   text-align: left;
   transition: background-color 160ms ease, color 160ms ease;
 }
@@ -6031,6 +6036,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     align-items: start;
     gap: 0;
     padding: 0;
+  }
+
+  /* One column per row here too, matching .dashboard-sidebar .dashboard-nav at the
+     same breakpoint — this is where the filter panel stops being a mobile drawer. */
+  .filter-list {
+    grid-template-columns: 1fr;
   }
 
   /* Centre within the results column, not the whole viewport, now that a
