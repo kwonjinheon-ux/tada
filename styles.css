@@ -1881,8 +1881,17 @@ a {
   text-transform: uppercase;
 }
 
+.product-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
 .product-body h2 {
   overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   color: var(--blue-soft-975);
   font-size: var(--text-lg);
@@ -1891,6 +1900,30 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Comment-count badge: a plain colour tier by volume, not a status indicator —
+   0-10 yellow, 11-20 green, 21-30 blue, 31+ red. Same markup and colours on
+   mobile and desktop; only the surrounding grid changes size. */
+.product-comment-count {
+  flex: 0 0 auto;
+  min-width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: var(--radius-circle);
+  color: var(--neutral-50);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-extrabold);
+  line-height: 1;
+}
+
+.product-comment-count.is-yellow { background: var(--amber-450); }
+.product-comment-count.is-green { background: var(--green-600); }
+.product-comment-count.is-blue { background: var(--blue-550); }
+.product-comment-count.is-red { background: var(--red-650); }
 
 .product-body p {
   display: inline-flex;

@@ -9,6 +9,13 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
+function commentCountTier(count: number) {
+  if (count > 30) return "red";
+  if (count > 20) return "blue";
+  if (count > 10) return "green";
+  return "yellow";
+}
+
 type ProductCardProps = {
   listing: Listing;
   priority?: boolean;
@@ -119,7 +126,10 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         {listing.status === "sold" ? <span className="product-sold-out">{t("soldOut")}</span> : null}
       </div>
       <div className="product-body">
-        <h2>{listing.title}</h2>
+        <div className="product-title-row">
+          <h2>{listing.title}</h2>
+          {listing.commentCount !== undefined ? <span className={`product-comment-count is-${commentCountTier(listing.commentCount)}`} aria-label={`${listing.commentCount} comments`}>{listing.commentCount}</span> : null}
+        </div>
         <div className="price-row">
           <strong>{listing.price}</strong>
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>

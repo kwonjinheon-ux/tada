@@ -11,6 +11,7 @@ export type Listing = {
   subcategorySlug?: string | null;
   badge?: "Promotion" | "Newly Listed";
   status: ListingStatus;
+  commentCount?: number;
 };
 
 export const listings: Listing[] = [];
