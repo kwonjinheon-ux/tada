@@ -105,7 +105,7 @@ export const marketFeedListingSchema = z.object({
   subcategorySlug: z.string().nullable(),
   badge: z.enum(["Newly Listed", "Promotion"]).optional(),
   status: z.enum(["available", "pending", "sold"]),
-  commentCount: z.number().int().nonnegative().optional(),
+  // commentCount: z.number().int().nonnegative().optional(), // parked for reuse on a different category later
 });
 
 export const marketFeedResponseSchema = z.object({

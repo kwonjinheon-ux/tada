@@ -1881,20 +1881,8 @@ a {
   text-transform: uppercase;
 }
 
-.product-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  min-width: 0;
-}
-
 .product-body h2 {
   overflow: hidden;
-  /* No flex-grow: the row hugs the title's own width so the badge sits right
-     after the text, wherever that ends, instead of pinned to the card edge.
-     flex-shrink stays on so a title long enough to fill the row still ellipses. */
-  flex: 0 1 auto;
-  min-width: 0;
   margin: 0;
   color: var(--blue-soft-975);
   font-size: var(--text-lg);
@@ -1904,9 +1892,25 @@ a {
   white-space: nowrap;
 }
 
-/* Comment-count badge: a plain colour tier by volume, not a status indicator —
-   0-10 yellow, 11-20 green, 21-30 blue, 31+ red. Same markup and colours on
-   mobile and desktop; only the surrounding grid changes size. */
+/* Comment-count badge — parked for reuse on a different category later.
+   Round colour-tiered circle next to the title: 0-10 yellow, 11-20 green,
+   21-30 blue, 31+ red. Same markup and colours on mobile and desktop. To bring
+   it back: uncomment this block, wrap the ProductCard title in
+   .product-title-row again, and restore the commentCount plumbing in
+   feed.ts / [listingId]/page.tsx / the API contract (also commented out).
+
+.product-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.product-title-row h2 {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .product-comment-count {
   flex: 0 0 auto;
   min-width: 22px;
@@ -1927,6 +1931,8 @@ a {
 .product-comment-count.is-green { background: var(--green-600); }
 .product-comment-count.is-blue { background: var(--blue-550); }
 .product-comment-count.is-red { background: var(--red-650); }
+
+*/
 
 .product-body p {
   display: inline-flex;

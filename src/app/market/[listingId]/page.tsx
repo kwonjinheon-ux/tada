@@ -7,7 +7,8 @@ import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
-import { getCommentCounts } from "@/lib/market/comment-counts";
+// Comment-count badge — parked for reuse on a different category later.
+// import { getCommentCounts } from "@/lib/market/comment-counts";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -182,7 +183,7 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
     if (!current || photo.is_primary || (!current.is_primary && photo.display_order < current.display_order)) primaryPhotos.set(photo.listing_id, photo);
   }
   const signedImages = await getSignedStorageImages("market-listing-images", [...primaryPhotos.values()].map((photo) => photo.storage_path as string), "thumbnail");
-  const commentCounts = await getCommentCounts(supabase, ids);
+  // const commentCounts = await getCommentCounts(supabase, ids);
   return rows.map((row) => {
     const photo = primaryPhotos.get(row.id);
     return {
@@ -193,7 +194,7 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
       image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "/images/logo.png" : "/images/logo.png",
       imageAlt: photo?.original_name ?? row.title,
       status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
-      commentCount: commentCounts.get(row.id) ?? 0,
+      // commentCount: commentCounts.get(row.id) ?? 0,
     } satisfies Listing;
   });
 }

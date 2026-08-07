@@ -6,7 +6,8 @@ import { marketFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
-import { getCommentCounts } from "@/lib/market/comment-counts";
+// Comment-count badge — parked for reuse on a different category later.
+// import { getCommentCounts } from "@/lib/market/comment-counts";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
@@ -58,10 +59,10 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const savedListingIds = userId && ids.length
     ? ((await supabase.from("market_wishlist").select("listing_id").eq("user_id", userId).in("listing_id", ids)).data ?? []).map((row) => row.listing_id as string)
     : [];
-  const commentCounts = await getCommentCounts(supabase, ids);
+  // const commentCounts = await getCommentCounts(supabase, ids);
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.region_city, row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", commentCount: commentCounts.get(row.id) ?? 0 } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.region_city, row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available" /* , commentCount: commentCounts.get(row.id) ?? 0 */ } satisfies Listing;
   });
   const last = page.at(-1);
   return { listings, savedListingIds, nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };
