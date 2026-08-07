@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationBulkResponseSchema, marketMessageResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export type ConversationSummary = {
@@ -106,6 +107,11 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [isBulkPending, setIsBulkPending] = useState(false);
   const [pendingDeleteScope, setPendingDeleteScope] = useState<"selection" | "everything" | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [offerAmount, setOfferAmount] = useState("");
+  const [offerNote, setOfferNote] = useState("");
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+  const [offerDialogError, setOfferDialogError] = useState<string | null>(null);
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -403,9 +409,50 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     "Unable to delete these conversations.",
   );
 
-  const prepareOffer = () => {
-    setDraft((current) => current.trim() ? current : "Hi, I'd like to make an offer for this item.");
-    requestAnimationFrame(() => composerRef.current?.focus());
+  // Purchase opens the same offer dialog as the listing page rather than drafting a
+  // message, so a buyer can strike the deal without leaving the thread. The accepted
+  // offer then arrives back in this thread as a trade card over realtime.
+  const openOfferDialog = () => {
+    if (!selectedConversation) return;
+    setOfferAmount((current) => current || selectedConversation.listing.price.replace(/[^0-9.]/g, ""));
+    setOfferNote("");
+    setOfferDialogError(null);
+    setIsOfferDialogOpen(true);
+  };
+
+  const submitOffer = async () => {
+    if (isSubmittingOffer || !selectedConversation) return;
+    const amount = Number(offerAmount);
+    const amountCents = Math.round(amount * 100);
+    if (!offerAmount.trim() || !Number.isFinite(amount) || amountCents < 0) {
+      setOfferDialogError("Enter a valid offer amount.");
+      return;
+    }
+    setIsSubmittingOffer(true);
+    setOfferDialogError(null);
+    try {
+      const response = await fetch("/api/market/offers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: selectedConversation.listing.id, amountCents, note: offerNote }),
+      });
+      const payload = await response.json().catch(() => null) as { conversationId?: string; error?: string } | null;
+      if (response.status === 401) {
+        router.push(`/login?redirectTo=${encodeURIComponent(`/market/dashboard/messages?conversation=${selectedConversation.id}`)}`);
+        return;
+      }
+      if (!response.ok || !payload?.conversationId) {
+        setOfferDialogError(payload?.error ?? "Unable to make an offer right now.");
+        return;
+      }
+      setIsOfferDialogOpen(false);
+      setOfferNote("");
+      router.refresh();
+    } catch {
+      setOfferDialogError("Unable to reach the offers service. Please try again.");
+    } finally {
+      setIsSubmittingOffer(false);
+    }
   };
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -565,9 +612,24 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             }) : null}
             {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`fa-solid ${message.readAt ? "fa-check-double" : "fa-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="fa-regular fa-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
           </div>
-          <form className="messages-composer" onSubmit={sendMessage}><button className="messages-offer-button" type="button" onClick={prepareOffer}>Purchase</button><textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
+          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>Purchase</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="fa-solid fa-paper-plane" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
         </> : <div className="messages-select-empty"><i className="fa-regular fa-comments" aria-hidden="true" /><h2>Select a conversation</h2><p>Your messages about marketplace listings will appear here.</p></div>}
       </section>
+
+      {isOfferDialogOpen && selectedConversation ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="messages-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}>
+        <section className="listing-offer-dialog">
+          <div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div>
+          <h2 id="messages-offer-title">Make an offer</h2>
+          <p>Send a clear price to {selectedConversation.counterpart.name}. If they accept, you can confirm the trade and both members receive trust points.</p>
+          <label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label>
+          <label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>
+          {offerDialogError ? <p className="listing-offer-error" role="alert">{offerDialogError}</p> : null}
+          <div>
+            <button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button>
+            <button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button>
+          </div>
+        </section>
+      </DialogOverlay> : null}
     </main>
   );
 }
