@@ -160,7 +160,10 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       document.documentElement.style.setProperty("--messages-viewport-offset-top", `${viewportOffsetTop}px`);
       // window.innerHeight stays at the layout viewport height while the keyboard shrinks the visual one,
       // so the leftover is the keyboard inset. The thread claims the full visual viewport while it is up.
-      const keyboardInset = Math.max(0, window.innerHeight - viewportHeight - viewportOffsetTop);
+      // Do NOT subtract offsetTop here: iOS Safari pans the layout viewport by roughly the keyboard
+      // height when the composer takes focus, so subtracting it cancels the very thing being measured
+      // and the inset never crosses the threshold.
+      const keyboardInset = Math.max(0, window.innerHeight - viewportHeight);
       const isKeyboardOpen = keyboardInset > 120;
       document.documentElement.classList.toggle("messages-keyboard-open", isKeyboardOpen);
       if (isKeyboardOpen !== wasKeyboardOpen) {

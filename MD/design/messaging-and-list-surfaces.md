@@ -24,16 +24,21 @@ not the document.
 .messages-page.has-selected-conversation .messages-thread-panel {
   --messages-thread-top-inset: var(--messages-site-header-height, 118px);
   position: fixed;
-  top: var(--messages-thread-top-inset);
+  top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset));
   height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset));
 }
 ```
 
-**Do not add `visualViewport.offsetTop` to `top`.** iOS Safari 13+ and Android
-Chrome already anchor `position: fixed` to the *visual* viewport once the
-keyboard pans the page, so compensating again double-counts and leaves a blank
-strip above the header exactly as tall as the pan. This only shows up on a real
-device — a desktop browser never pans, so `offsetTop` stays 0 and the bug hides.
+`top` must carry `visualViewport.offsetTop`. iOS Safari lays `position: fixed`
+out against the **layout** viewport, and the layout viewport does not shrink for
+the keyboard — it only gets panned. Drop the offset and the panel spans the whole
+screen with its composer hidden behind the keyboard.
+
+**A blank strip above the header is not an offset bug.** Measure it: if it is the
+height of the site header, the keyboard-open class simply never applied and the
+top inset never went to zero. Fix the detection, not the offset. Getting this
+backwards trades one real-device bug for another, and neither reproduces on a
+desktop browser.
 
 The three custom properties are written by JS from `window.visualViewport` in
 `MarketMessagesClient`, and removed on unmount. Track both `resize` and `scroll`
@@ -63,12 +68,15 @@ site header was using, or to drop `env(safe-area-inset-bottom)` padding that the
 keyboard now covers — derive it:
 
 ```js
-const keyboardInset = Math.max(0, window.innerHeight - viewportHeight - viewportOffsetTop);
+const keyboardInset = Math.max(0, window.innerHeight - viewportHeight);
 document.documentElement.classList.toggle("messages-keyboard-open", keyboardInset > 120);
 ```
 
 `window.innerHeight` stays at the layout viewport height while the keyboard
-shrinks the visual one, so the difference is the inset. Expose the result as a
+shrinks the visual one, so the difference is the inset. **Do not subtract
+`offsetTop`** — iOS pans the layout viewport by roughly the keyboard height when
+the composer takes focus, so subtracting it cancels the quantity being measured
+and the inset never crosses the threshold. Expose the result as a
 class on `<html>` and let CSS react. Never hardcode a keyboard height, and never
 infer "mobile" from a user-agent string for this.
 
