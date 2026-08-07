@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ActiveJourneyCarousel, type ActiveJourneyItem } from "@/components/dashboard/ActiveJourneyCarousel";
+import { ActiveJourneyCarousel } from "@/components/dashboard/ActiveJourneyCarousel";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { getActiveJourneys } from "@/lib/market/active-journey";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
@@ -76,13 +77,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const unreadMessages = unreadMessageCount.count ?? 0;
   const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
   const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
-  // Design pass only: placeholder cards until Active Journey is wired to real trade-offer
-  // and conversation data. Shape matches ActiveJourneyItem so swapping in live rows later
-  // is a data-fetch change, not a markup change.
-  const activeJourneyItems: ActiveJourneyItem[] = [
-    { id: "sample-buying", role: "buying", title: "Sony WH-1000XM5", imageUrl: null, stage: "accepted", statusLabel: "Offer accepted", meetingLabel: "Meet tomorrow · 4:00 PM", conversationHref: "/market/dashboard/messages" },
-    { id: "sample-selling", role: "selling", title: "Dining Table", imageUrl: null, newOfferCount: 2, bestOfferLabel: "$180", totalViews: 146, reviewHref: "/market/dashboard/messages" },
-  ];
+  const activeJourneyItems = supabase ? await getActiveJourneys(supabase, user.id) : [];
   const quickStats = [
     ["fa-regular fa-rectangle-list", "listings", activeListingCount, "active", "/market/dashboard/listings"],
     ["fa-solid fa-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],

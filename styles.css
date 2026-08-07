@@ -7897,10 +7897,19 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
    buy or sell in flight. Single markup for mobile and desktop — the track scrolls
    and snaps either way, only the card width changes at the mobile breakpoint. */
 .active-journey { margin: 22px 0 28px; }
-.active-journey-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.active-journey-heading h2 { margin: 0; color: var(--blue-900); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.active-journey > h2 { margin: 0 0 16px; color: var(--blue-900); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+
+/* Buying and selling are kept as two clearly separate rows rather than one mixed
+   track, each with its own count and its own scroll — a card never has to be
+   read twice to work out which side of the trade it belongs to. */
+.journey-row + .journey-row { margin-top: 20px; }
+.journey-row-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.journey-row-heading h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--blue-800); font-size: var(--text-md); font-weight: var(--weight-extrabold); letter-spacing: .02em; text-transform: uppercase; }
+.journey-row.is-selling .journey-row-heading h3 { color: var(--amber-700); }
+.journey-row-heading h3 span { min-width: 20px; height: 20px; display: grid; place-items: center; padding: 0 5px; border-radius: var(--radius-pill); background: var(--neutral-200); color: var(--blue-soft-700); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: none; letter-spacing: 0; }
+
 .active-journey-nav { display: flex; gap: 8px; }
-.active-journey-nav button { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--neutral-250); border-radius: var(--radius-circle); background: var(--neutral-50); color: var(--blue-700); cursor: pointer; transition: border-color .18s ease, background-color .18s ease; }
+.active-journey-nav button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--neutral-250); border-radius: var(--radius-circle); background: var(--neutral-50); color: var(--blue-700); cursor: pointer; transition: border-color .18s ease, background-color .18s ease; }
 .active-journey-nav button:hover { border-color: var(--green-300); background: var(--neutral-150); }
 
 .active-journey-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; scrollbar-width: none; }
@@ -8032,7 +8041,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .seller-summary-avatar { width: 152px; height: 152px; font-size: 38px; }.seller-summary-avatar span { width: 22px; height: 22px; }
   .seller-summary-name h1 { font-size: var(--text-2xl); }.seller-summary-name em { font-size: var(--text-2xs); }.seller-summary-copy p, .seller-summary-copy small { font-size: var(--text-md); }
   .seller-trust-card { min-height: 0; padding: 18px; }.seller-trust-meter { margin-top: 10px; }.seller-trust-card p { margin-top: 9px; }
-  .active-journey { margin: 20px 0 26px; }.active-journey-heading h2 { font-size: var(--text-xl); }.journey-card { width: min(340px, 88vw); padding: 16px; gap: 14px; }.journey-thumbnail { width: 52px; height: 52px; }.journey-card-top { grid-template-columns: 52px minmax(0, 1fr); }.journey-card-top h3 { font-size: var(--text-lg); }
+  .active-journey { margin: 20px 0 26px; }.active-journey > h2 { font-size: var(--text-xl); margin-bottom: 12px; }.journey-row-heading h3 { font-size: var(--text-sm); }.journey-card { width: min(340px, 88vw); padding: 16px; gap: 14px; }.journey-thumbnail { width: 52px; height: 52px; }.journey-card-top { grid-template-columns: 52px minmax(0, 1fr); }.journey-card-top h3 { font-size: var(--text-lg); }
   .seller-quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 22px 0 30px; }.seller-quick-stats a { min-height: 98px; padding: 16px; }.seller-quick-stats strong { font-size: var(--text-md); }
   .seller-dashboard-insights { margin-bottom: 30px; }.seller-dashboard-insights h2, .seller-active-listings h2, .seller-activity h2 { font-size: var(--text-xl); }.seller-dashboard-insights > div { display: flex; overflow-x: auto; padding-bottom: 4px; }.seller-dashboard-insights article { min-width: 150px; min-height: 124px; }
   .seller-active-listings > div { grid-template-columns: 1fr; }.seller-active-listings > div > article { min-height: 114px; display: grid; grid-template-columns: 106px minmax(0, 1fr); }.seller-active-listings > div > article img { width: 106px; height: 114px; }.seller-active-listings > div > article > div { align-self: center; padding: 12px 36px 12px 14px; }.seller-active-listings h3 { font-size: var(--text-md); }.seller-new-listing { min-height: 120px; }.seller-activity { padding: 18px; }.seller-boost-card { margin-top: 18px; }

@@ -41,7 +41,7 @@ const copy = {
   },
 } as const;
 
-type TranslationKey = keyof typeof copy.en;
+export type TranslationKey = keyof typeof copy.en;
 type LanguageContextValue = { locale: SupportedLocale; setLocale: (locale: SupportedLocale) => void; t: (key: TranslationKey) => string; isLiveTranslation: boolean };
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 const STORAGE_KEY = "tada-preferred-locale";
