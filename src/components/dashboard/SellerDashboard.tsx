@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ActiveJourneyCarousel, type ActiveJourneyItem } from "@/components/dashboard/ActiveJourneyCarousel";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
@@ -75,6 +76,13 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const unreadMessages = unreadMessageCount.count ?? 0;
   const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
   const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
+  // Design pass only: placeholder cards until Active Journey is wired to real trade-offer
+  // and conversation data. Shape matches ActiveJourneyItem so swapping in live rows later
+  // is a data-fetch change, not a markup change.
+  const activeJourneyItems: ActiveJourneyItem[] = [
+    { id: "sample-buying", role: "buying", title: "Sony WH-1000XM5", imageUrl: null, stage: "accepted", statusLabel: "Offer accepted", meetingLabel: "Meet tomorrow · 4:00 PM", conversationHref: "/market/dashboard/messages" },
+    { id: "sample-selling", role: "selling", title: "Dining Table", imageUrl: null, newOfferCount: 2, bestOfferLabel: "$180", totalViews: 146, reviewHref: "/market/dashboard/messages" },
+  ];
   const quickStats = [
     ["fa-regular fa-rectangle-list", "listings", activeListingCount, "active", "/market/dashboard/listings"],
     ["fa-solid fa-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],
@@ -94,6 +102,8 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
           </article>
           <article className={`seller-trust-card ${trustTone}`}><div><i className="fa-solid fa-bolt" /><span><TranslatedText translationKey="trustPower" /></span><strong>{trustPower}%</strong></div><div className="seller-trust-meter"><span style={{ width: `${trustPower}%` }} /></div><p><TranslatedText translationKey="earnTrade" /></p></article>
         </section>
+
+        <ActiveJourneyCarousel items={activeJourneyItems} />
 
         <section className="seller-quick-stats" aria-label="Account overview">
           {quickStats.map(([icon, label, value, unit, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong><TranslatedText translationKey={label} /></strong><span>{value} <TranslatedText translationKey={unit} /></span></div></Link>)}
