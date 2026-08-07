@@ -1945,9 +1945,11 @@ a {
 
 .product-grid.is-list-view .product-card {
   position: relative;
-  min-height: 110px;
+  min-height: 96px;
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) 44px;
+  /* Thumbnail trimmed from 110px so the title column (the flexible middle
+     track) picks up the freed width — a small, deliberate trade. */
+  grid-template-columns: 96px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 14px;
   padding: 0 14px 0 0;
@@ -1965,8 +1967,8 @@ a {
 }
 
 .product-grid.is-list-view .product-media {
-  width: 110px;
-  height: 110px;
+  width: 96px;
+  height: 96px;
   aspect-ratio: auto;
   border-radius: 0;
 }
