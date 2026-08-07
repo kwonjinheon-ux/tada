@@ -212,10 +212,15 @@
   --radius-ui: var(--radius-md);
   --radius-card: var(--radius-lg);
 
+  /* --text-base matches the browser/user-agent default (16px = 1rem), the de
+     facto web standard for body text. Every var(--text-base) consumer picks
+     this up automatically; --text-lg now coincides with it at 16px too,
+     which is fine — two token names, same value. The other steps are
+     unchanged, so relative hierarchy above and below base is unaffected. */
   --text-2xs: 10px;
   --text-xs: 11px;
   --text-sm: 12px;
-  --text-base: 13px;
+  --text-base: 16px;
   --text-md: 14px;
   --text-lg: 16px;
   --text-xl: 18px;
