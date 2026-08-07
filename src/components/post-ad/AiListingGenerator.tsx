@@ -21,7 +21,7 @@ type AiListingGeneratorProps = {
   additionalDetails: AiDetail[];
   imagePaths: string[];
   isImagesProcessing: boolean;
-  onUseDraft: (description: string, mode: "replace") => void;
+  onUseDraft: (description: string, mode: "replace", sellerConfirmation: string[]) => void;
   onUseTitle: (title: string) => void;
 };
 
@@ -113,7 +113,7 @@ export function AiListingGenerator({
       setProgress(100);
       setStatus("Your title and listing description are ready to review.");
       onUseTitle(generated.title);
-      onUseDraft(generated.description, "replace");
+      onUseDraft(generated.description, "replace", generated.sellerConfirmation);
     } catch (generationError) {
       setStatus(null);
       setError(generationError instanceof Error && generationError.name === "AbortError"

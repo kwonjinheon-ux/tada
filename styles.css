@@ -7660,6 +7660,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .messages-composer .messages-offer-button { width: auto; height: 44px; flex-basis: auto; padding: 0 13px; font-size: var(--text-xs); }
 }
 
+/* Points the AI draft raised that the seller never answered. Amber rather than red:
+   this is something to ask about, not a warning about the listing. */
+.listing-unconfirmed { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--amber-soft-250); border-radius: var(--radius-md); background: var(--amber-soft-50); }
+.listing-unconfirmed > strong { display: flex; align-items: center; gap: 8px; color: var(--amber-750); font-size: var(--text-md); }
+.listing-unconfirmed ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.listing-unconfirmed li { color: var(--amber-900); font-size: var(--text-base); line-height: 1.5; }
+.listing-unconfirmed > small { display: block; margin-top: 10px; color: var(--blue-soft-650); font-size: var(--text-sm); line-height: 1.45; }
+
 .listing-comments { width: min(100%, 760px); margin-top: 34px; padding-top: 28px; border-top: 1px solid var(--neutral-250); }
 .related-listings { width: min(100% - (var(--page-padding-inline) * 2), var(--page-max-width)); margin: 52px auto 72px; padding-top: 28px; border-top: 1px solid var(--neutral-250); }
 .related-listings-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 18px; }

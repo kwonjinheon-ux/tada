@@ -9,6 +9,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
+import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
@@ -75,6 +76,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const burstTimer = useRef<number | null>(null);
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
+  const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
   const image = listing.images[activeImage] ?? listing.images[0];
   const ratingLabel = listing.seller.ratingCount
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
@@ -460,7 +462,14 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </section>
 
       <TextSizeSection className="listing-detail-description" title="Description" sizeStep={descriptionTextSizeStep}>
-        {paragraphs.length ? paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
+        {prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
+        {unconfirmed.length ? (
+          <aside className="listing-unconfirmed" aria-label="Details the seller has not confirmed">
+            <strong><i className="fa-regular fa-circle-question" aria-hidden="true" /> {UNCONFIRMED_DETAILS_HEADING}</strong>
+            <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
+            <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+          </aside>
+        ) : null}
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />
       <section className="listing-detail-mobile-seller listing-detail-mobile-only">

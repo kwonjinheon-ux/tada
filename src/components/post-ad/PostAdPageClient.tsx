@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
+import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 
 type SelectOption = {
   label: string;
@@ -279,6 +280,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(() => initialListing?.photos.find((photo) => photo.isPrimary)?.id ?? initialListing?.photos[0]?.id ?? null);
   const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
   const [description, setDescription] = useState(initialListing?.description ?? "");
+  const [aiDraftState, setAiDraftState] = useState<{ html: string; points: string[] } | null>(null);
   const [smartphoneSpecs, setSmartphoneSpecs] = useState<SmartphoneSpecs>(emptySmartphoneSpecs);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [textColor, setTextColor] = useState("#314254");
@@ -551,8 +553,13 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setIsHtmlMode((current) => !current);
   };
 
-  const useAiDraft = (draft: string) => {
-    setDescription(aiDescriptionToHtml(draft));
+  // Remember exactly what the draft put in the box. If the seller posts it back
+  // untouched, they never answered the AI's questions, so those points travel on
+  // to the buyer instead of being quietly dropped.
+  const useAiDraft = (draft: string, _mode: "replace", sellerConfirmation: string[]) => {
+    const html = aiDescriptionToHtml(draft);
+    setDescription(html);
+    setAiDraftState({ html, points: sellerConfirmation });
   };
 
   const uploadPhotos = async ({
@@ -700,7 +707,9 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     const form = new FormData(formElement);
     const title = String(form.get("title") ?? "").trim();
     const baseBody = String(form.get("body") ?? "").trim();
-    const body = shouldShowSmartphoneTemplate ? appendSmartphoneSpecs(baseBody, smartphoneSpecs) : baseBody;
+    const withSpecs = shouldShowSmartphoneTemplate ? appendSmartphoneSpecs(baseBody, smartphoneSpecs) : baseBody;
+    const isUneditedAiDraft = Boolean(aiDraftState?.points.length) && baseBody.trim() === aiDraftState?.html.trim();
+    const body = isUneditedAiDraft ? appendUnconfirmedDetails(withSpecs, aiDraftState.points) : withSpecs;
     const price = String(form.get("price") ?? "").trim();
     const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
     const priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
