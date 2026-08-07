@@ -141,23 +141,23 @@ export function MarketNotificationsClient({
       <header className="notifications-heading">
         <h1>{t("notifications")}</h1>
         <div className="notifications-heading-actions">
-          <button type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
+          <button className="bulk-action-button" type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
             <i className="fa-regular fa-envelope-open" aria-hidden="true" />
             {t("markAllRead")}
           </button>
           {isConfirmingDeleteAll ? (
             <>
-              <button className="is-danger" type="button" disabled={isDeletingAll} onClick={() => void deleteAll()}>
+              <button className="bulk-action-button is-danger" type="button" disabled={isDeletingAll} onClick={() => void deleteAll()}>
                 <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
                 {t("deleteAllConfirm")}
               </button>
-              <button type="button" disabled={isDeletingAll} onClick={() => setIsConfirmingDeleteAll(false)}>
+              <button className="bulk-action-button" type="button" disabled={isDeletingAll} onClick={() => setIsConfirmingDeleteAll(false)}>
                 <i className="fa-solid fa-xmark" aria-hidden="true" />
                 {t("cancel")}
               </button>
             </>
           ) : (
-            <button className="is-danger" type="button" disabled={!notifications.length} onClick={() => setIsConfirmingDeleteAll(true)}>
+            <button className="bulk-action-button is-danger" type="button" disabled={!notifications.length} onClick={() => setIsConfirmingDeleteAll(true)}>
               <i className="fa-regular fa-trash-can" aria-hidden="true" />
               {t("deleteAll")}
             </button>

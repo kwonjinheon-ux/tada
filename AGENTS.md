@@ -39,6 +39,19 @@ A task is not complete if reusable UI has been duplicated inside a page.
 - Keep an explicit close or cancel control in the dialog for keyboard and assistive-technology users.
 - Reuse `DialogDismissHint` for lightboxes or other overlays that require a custom backdrop structure.
 
+## Surface standards
+
+- `MD/design/foundations.md` — tokens and the styling layer order.
+- `MD/design/layout-system.md` — page containers and outer spacing.
+- `MD/design/mobile-drawer-pattern.md` — drawers and mobile overlays.
+- `MD/design/messaging-and-list-surfaces.md` — viewport-anchored mobile surfaces,
+  the single-scroller rule, row alignment with optional badges, bulk actions and
+  destructive confirmation, filter tabs.
+
+Read the relevant standard before changing a screen it covers, and say in your
+report which rules applied. If a task requires breaking one, say so and why
+rather than working around it silently.
+
 Before completing any UI task:
 
 - Check for duplicate implementations.

@@ -11,6 +11,7 @@ export const revalidate = 0;
 export const metadata = { title: "Messages" };
 
 type ConversationRow = { id: string; listing_id: string; buyer_id: string; seller_id: string; last_message_preview: string | null; last_message_at: string | null };
+type StateRow = { conversation_id: string; archived_at: string | null; deleted_at: string | null };
 type ListingRow = { id: string; title: string; price_cents: number };
 type PhotoRow = { listing_id: string; storage_path: string | null; display_order: number };
 type ProfileRow = { id: string; display_name: string | null; avatar_path: string | null };
@@ -28,12 +29,18 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <main className="messages-unavailable">Messaging is unavailable right now.</main>;
 
-  const { data: rawConversations } = await supabase
-    .from("market_conversations")
-    .select("id,listing_id,buyer_id,seller_id,last_message_preview,last_message_at")
-    .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-    .order("last_message_at", { ascending: false, nullsFirst: false });
-  const conversationRows = (rawConversations ?? []) as ConversationRow[];
+  const [{ data: rawConversations }, { data: rawStates }] = await Promise.all([
+    supabase
+      .from("market_conversations")
+      .select("id,listing_id,buyer_id,seller_id,last_message_preview,last_message_at")
+      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+      .order("last_message_at", { ascending: false, nullsFirst: false }),
+    supabase.from("market_conversation_states").select("conversation_id,archived_at,deleted_at").eq("user_id", user.id),
+  ]);
+  // Archive and delete are per-participant, so the inbox is the intersection of
+  // the conversations the user is in and the state rows they own.
+  const states = new Map(((rawStates ?? []) as StateRow[]).map((state) => [state.conversation_id, state]));
+  const conversationRows = ((rawConversations ?? []) as ConversationRow[]).filter((conversation) => !states.get(conversation.id)?.deleted_at);
   const selectedConversationId = requestedConversationId && conversationRows.some((conversation) => conversation.id === requestedConversationId)
     ? requestedConversationId
     : null;
@@ -80,6 +87,7 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
       lastMessageAt: conversation.last_message_at,
       unreadCount: unreadCounts.get(conversation.id) ?? 0,
       role: conversation.buyer_id === user.id ? "buying" : "selling",
+      archivedAt: states.get(conversation.id)?.archived_at ?? null,
     };
   });
   const initialMessages: MarketMessage[] = ((rawMessages ?? []) as MessageRow[]).map((message) => ({ id: message.id, conversationId: message.conversation_id, senderId: message.sender_id, recipientId: message.recipient_id, body: message.body, createdAt: message.created_at, readAt: message.read_at }));

@@ -119,11 +119,11 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         {listing.status === "sold" ? <span className="product-sold-out">{t("soldOut")}</span> : null}
       </div>
       <div className="product-body">
+        <h2>{listing.title}</h2>
         <div className="price-row">
           <strong>{listing.price}</strong>
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>
         </div>
-        <h2>{listing.title}</h2>
         <p>
           <i className="fa-solid fa-location-dot" aria-hidden="true" />
           {listing.location}

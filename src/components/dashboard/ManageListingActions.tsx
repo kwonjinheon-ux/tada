@@ -40,10 +40,10 @@ export function ManageListingActions({ id, title, status }: { id: string; title:
     }
   };
 
-  if (status === "pending") return <div className="manage-listing-actions"><Link href="/market/dashboard/messages"><i className="fa-regular fa-message" /> View trade</Link><button type="button" disabled>Editing locked</button></div>;
-  if (status === "sold") return <div className="manage-listing-actions"><button type="button" disabled><i className="fa-solid fa-circle-check" /> Sold</button><button type="button" disabled>Sale complete</button></div>;
+  if (status === "pending") return <div className="listing-row-actions manage-listing-actions"><Link href="/market/dashboard/messages"><i className="fa-regular fa-message" /> View trade</Link><button type="button" disabled>Editing locked</button></div>;
+  if (status === "sold") return <div className="listing-row-actions manage-listing-actions"><button type="button" disabled><i className="fa-solid fa-circle-check" /> Sold</button><button type="button" disabled>Sale complete</button></div>;
 
-  return <div className="manage-listing-actions">
+  return <div className="listing-row-actions manage-listing-actions">
     {canRelist ? <button className="manage-listing-relist" type="button" onClick={() => void relistListing()} disabled={isRelisting}><i className="fa-solid fa-arrow-up" /> {isRelisting ? "Relisting..." : "Relist"}</button> : null}
     {canEdit ? <Link href={`/market/${id}/edit`}><i className="fa-solid fa-pen" /> Edit</Link> : null}
     <button type="button" onClick={() => void deleteListing()} disabled={!canDelete || isDeleting}><i className="fa-regular fa-trash-can" /> {isDeleting ? "Deleting..." : "Delete"}</button>

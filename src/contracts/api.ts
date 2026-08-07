@@ -47,6 +47,25 @@ export const marketMessageResponseSchema = z.object({
   readAt: z.string().datetime({ offset: true }).nullable(),
 });
 
+// Bulk inbox housekeeping. `scope` lets the caller act on everything it can
+// currently see without shipping hundreds of ids; `conversationIds` covers the
+// selected-rows case. Exactly one of the two is required.
+export const marketConversationScopeSchema = z.enum(["inbox", "archived"]);
+
+export const marketConversationBulkRequestSchema = z.union([
+  z.object({ conversationIds: z.array(uuidSchema).min(1).max(500) }),
+  z.object({ scope: marketConversationScopeSchema }),
+]);
+
+export const marketConversationArchiveRequestSchema = z.intersection(
+  marketConversationBulkRequestSchema,
+  z.object({ archived: z.boolean() }),
+);
+
+export const marketConversationBulkResponseSchema = z.object({
+  conversationIds: z.array(uuidSchema),
+});
+
 export const marketReportRequestSchema = z.object({
   targetType: z.enum(["listing", "user", "comment", "message"]),
   targetId: uuidSchema,

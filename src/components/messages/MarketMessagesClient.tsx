@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { marketMessageResponseSchema } from "@/contracts/api";
+import { marketConversationBulkResponseSchema, marketMessageResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -17,6 +17,7 @@ export type ConversationSummary = {
   lastMessageAt: string | null;
   unreadCount: number;
   role: "buying" | "selling";
+  archivedAt: string | null;
 };
 
 export type MarketMessage = {
@@ -52,11 +53,15 @@ type Props = {
   currentUserId: string;
 };
 
-type ConversationFilter = "all" | "unread" | "buying" | "selling";
+type ConversationFilter = "all" | "unread" | "buying" | "selling" | "archived";
 
-const CONVERSATION_FILTERS: ConversationFilter[] = ["all", "unread", "buying", "selling"];
+const CONVERSATION_FILTERS: ConversationFilter[] = ["all", "unread", "buying", "selling", "archived"];
 
+// Archived conversations live in their own tab: every other filter describes the
+// inbox, so they would otherwise reappear in the list the user filed them out of.
 function matchesFilter(conversation: ConversationSummary, filter: ConversationFilter) {
+  if (filter === "archived") return Boolean(conversation.archivedAt);
+  if (conversation.archivedAt) return false;
   if (filter === "unread") return conversation.unreadCount > 0;
   if (filter === "buying" || filter === "selling") return conversation.role === filter;
   return true;
@@ -96,6 +101,11 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [offerError, setOfferError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ConversationFilter>("all");
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [isBulkPending, setIsBulkPending] = useState(false);
+  const [pendingDeleteScope, setPendingDeleteScope] = useState<"selection" | "everything" | null>(null);
+  const [bulkError, setBulkError] = useState<string | null>(null);
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -104,6 +114,9 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
   const visibleConversations = useMemo(() => conversations.filter((conversation) => matchesFilter(conversation, filter)), [conversations, filter]);
   const totalUnreadCount = useMemo(() => conversations.reduce((total, conversation) => total + conversation.unreadCount, 0), [conversations]);
+  const visibleIds = useMemo(() => visibleConversations.map((conversation) => conversation.id), [visibleConversations]);
+  const selectedVisibleIds = useMemo(() => visibleIds.filter((id) => selectedIds.includes(id)), [visibleIds, selectedIds]);
+  const isViewingArchive = filter === "archived";
 
   useEffect(() => {
     setConversations(initialConversations);
@@ -324,6 +337,69 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     await fetch("/api/market/messages/read-all", { method: "PATCH" }).catch(() => undefined);
     setIsMarkingAllRead(false);
   };
+  const exitSelection = () => {
+    setIsSelecting(false);
+    setSelectedIds([]);
+    setPendingDeleteScope(null);
+  };
+  const toggleSelection = (conversationId: string) => {
+    setSelectedIds((current) => current.includes(conversationId) ? current.filter((id) => id !== conversationId) : [...current, conversationId]);
+    setPendingDeleteScope(null);
+  };
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((current) => selectedVisibleIds.length === visibleIds.length ? current.filter((id) => !visibleIds.includes(id)) : [...new Set([...current, ...visibleIds])]);
+    setPendingDeleteScope(null);
+  };
+
+  const runBulkAction = async (
+    endpoint: "archive" | "delete",
+    body: Record<string, unknown>,
+    apply: (conversationIds: string[]) => void,
+    failureMessage: string,
+  ) => {
+    if (isBulkPending) return;
+    setIsBulkPending(true);
+    setBulkError(null);
+    try {
+      const response = await fetch(`/api/market/messages/${endpoint}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const result = await readApiResponse(response, marketConversationBulkResponseSchema);
+      if (!result.data) {
+        setBulkError(result.error?.message ?? failureMessage);
+        return;
+      }
+      apply(result.data.conversationIds);
+      exitSelection();
+      // The thread pane is showing a conversation that may no longer be in view.
+      if (selectedConversationId && result.data.conversationIds.includes(selectedConversationId)) router.push("/market/dashboard/messages");
+      else router.refresh();
+    } catch {
+      setBulkError(failureMessage);
+    } finally {
+      setIsBulkPending(false);
+    }
+  };
+
+  const archiveConversations = (conversationIds: string[], archived: boolean) => void runBulkAction(
+    "archive",
+    { conversationIds, archived },
+    (applied) => {
+      const archivedAt = archived ? new Date().toISOString() : null;
+      const target = new Set(applied);
+      setConversations((current) => current.map((conversation) => target.has(conversation.id) ? { ...conversation, archivedAt } : conversation));
+    },
+    archived ? "Unable to archive these conversations." : "Unable to restore these conversations.",
+  );
+
+  const deleteConversations = (body: Record<string, unknown>) => void runBulkAction(
+    "delete",
+    body,
+    (applied) => {
+      const target = new Set(applied);
+      setConversations((current) => current.filter((conversation) => !target.has(conversation.id)));
+    },
+    "Unable to delete these conversations.",
+  );
+
   const prepareOffer = () => {
     setDraft((current) => current.trim() ? current : "Hi, I'd like to make an offer for this item.");
     requestAnimationFrame(() => composerRef.current?.focus());
@@ -378,16 +454,73 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       <section className="messages-list-panel" aria-label="Conversations">
         <header className="messages-list-header">
           <div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div></div>
-          <button className="messages-read-all" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
+          <button className="bulk-action-button is-compact" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
             <i className="fa-regular fa-envelope-open" aria-hidden="true" />
             {t("markAllRead")}
           </button>
         </header>
         <div className="messages-filter-row" role="tablist" aria-label="Filter conversations">
-          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => setFilter(option)}>{t(option)}</button>)}
+          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => { setFilter(option); setPendingDeleteScope(null); }}>{t(option)}</button>)}
         </div>
+
+        {isSelecting ? (
+          <div className="messages-selection-bar" role="group" aria-label="Bulk conversation actions">
+            <button className="messages-selection-toggle" type="button" onClick={toggleSelectAllVisible} disabled={!visibleIds.length}>
+              <i className={`fa-regular ${selectedVisibleIds.length && selectedVisibleIds.length === visibleIds.length ? "fa-square-check" : "fa-square"}`} aria-hidden="true" />
+              {selectedVisibleIds.length ? `${selectedVisibleIds.length} ${t("selected")}` : t("selectAll")}
+            </button>
+            <button className="bulk-action-button is-compact" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => archiveConversations(selectedVisibleIds, !isViewingArchive)}>
+              <i className={`fa-solid ${isViewingArchive ? "fa-inbox" : "fa-box-archive"}`} aria-hidden="true" />
+              {isViewingArchive ? t("restore") : t("archive")}
+            </button>
+            {pendingDeleteScope === "selection" ? (
+              <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ conversationIds: selectedVisibleIds })}>
+                <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+                {t("deleteConfirm")}
+              </button>
+            ) : (
+              <button className="bulk-action-button is-compact is-danger" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => setPendingDeleteScope("selection")}>
+                <i className="fa-regular fa-trash-can" aria-hidden="true" />
+                {t("delete")}
+              </button>
+            )}
+            <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={exitSelection}>
+              <i className="fa-solid fa-xmark" aria-hidden="true" />
+              {t("cancel")}
+            </button>
+          </div>
+        ) : null}
+
+        {!isSelecting && visibleConversations.length ? (
+          <div className="messages-selection-bar">
+            <button className="messages-selection-toggle" type="button" onClick={() => setIsSelecting(true)}>
+              <i className="fa-regular fa-square-check" aria-hidden="true" />
+              {t("select")}
+            </button>
+            {pendingDeleteScope === "everything" ? (
+              <>
+                <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ scope: isViewingArchive ? "archived" : "inbox" })}>
+                  <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+                  {`${t("deleteConfirm")} (${visibleConversations.length})`}
+                </button>
+                <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope(null)}>
+                  <i className="fa-solid fa-xmark" aria-hidden="true" />
+                  {t("cancel")}
+                </button>
+              </>
+            ) : (
+              <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope("everything")}>
+                <i className="fa-regular fa-trash-can" aria-hidden="true" />
+                {isViewingArchive ? t("deleteArchived") : t("deleteAll")}
+              </button>
+            )}
+          </div>
+        ) : null}
+
+        {bulkError ? <p className="messages-bulk-error" role="alert">{bulkError}</p> : null}
         <div className="messages-conversation-list">
-          {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId ? "is-active" : ""}`} type="button" key={conversation.id} onClick={() => openConversation(conversation.id)}>
+          {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId && !isSelecting ? "is-active" : ""} ${isSelecting ? "is-selectable" : ""} ${selectedIds.includes(conversation.id) ? "is-selected" : ""}`} type="button" key={conversation.id} aria-pressed={isSelecting ? selectedIds.includes(conversation.id) : undefined} onClick={() => isSelecting ? toggleSelection(conversation.id) : openConversation(conversation.id)}>
+            {isSelecting ? <span className="messages-conversation-check" aria-hidden="true"><i className={`fa-regular ${selectedIds.includes(conversation.id) ? "fa-square-check" : "fa-square"}`} /></span> : null}
             {conversation.listing.imageUrl
               ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
               : <span className="messages-listing-thumbnail"><i className="fa-regular fa-image" aria-hidden="true" /></span>}
@@ -400,7 +533,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               </span>
             </span>
           </button>) : conversations.length
-            ? <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : "Switch to All to see your other conversations."}</span></div>
+            ? <div className="messages-empty-list"><i className={`fa-regular ${filter === "archived" ? "fa-box-archive" : "fa-comment-dots"}`} aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations."}</span></div>
             : <div className="messages-empty-list"><i className="fa-regular fa-comment-dots" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
         </div>
       </section>

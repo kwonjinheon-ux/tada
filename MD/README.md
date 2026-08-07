@@ -5,7 +5,7 @@ This folder is the maintained source of truth for product, design, architecture,
 ## Reading order
 
 1. [Architecture](./architecture/overview.md)
-2. [Design system](./design/foundations.md)
+2. [Design system](./design/foundations.md), then [Messaging and list surfaces](./design/messaging-and-list-surfaces.md)
 3. [Marketplace domain](./product/marketplace.md)
 4. [Marketplace implementation guide](./product/marketplace-implementation-guide.md)
 5. [Security and Supabase RLS](./security/supabase-rls.md)

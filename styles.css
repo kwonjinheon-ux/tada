@@ -5511,7 +5511,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
   }
 
-  body.has-open-mobile-drawer .mobile-bottom-dock {
+  body.has-open-mobile-drawer .mobile-bottom-dock,
+  /* The photo viewer is a full-screen surface, so the dock must not float over it. */
+  body:has(.listing-gallery-lightbox) .mobile-bottom-dock {
     opacity: 0;
     pointer-events: none;
   }
@@ -5522,12 +5524,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock {
     --mobile-dock-horizontal-inset: clamp(16px, 8vw, 38px);
-    --mobile-dock-bottom-offset: 12px;
+    /* Sit as low as the device allows: on a notched phone the home-indicator
+       inset is the whole offset, and on a flat-bottomed one a small pad stands
+       in for it. Chrome's collapsing bottom toolbar is handled separately by
+       --mobile-viewport-bottom-inset, which reaches 0 once the toolbar hides,
+       so scrolling up drops the dock all the way to the bottom edge. */
+    --mobile-dock-bottom-offset: max(6px, env(safe-area-inset-bottom));
     --mobile-dock-height: 64px;
     --mobile-dock-control-size: 52px;
     position: fixed !important;
     right: var(--mobile-dock-horizontal-inset);
-    bottom: calc(var(--mobile-dock-bottom-offset) + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+    bottom: calc(var(--mobile-dock-bottom-offset) + var(--mobile-viewport-bottom-inset, 0px));
     left: var(--mobile-dock-horizontal-inset);
     z-index: 1000;
     width: auto;
@@ -6663,13 +6670,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .wishlist-page .wishlist-content {
   background: transparent;
 }
-.dashboard-sidebar { min-height: calc(100vh - 70px); display: flex; flex-direction: column; gap: 24px; padding: 24px 14px 18px; border-right: 1px solid var(--blue-soft-150); background: var(--neutral-50); }
-.dashboard-nav { display: grid; gap: 7px; }
-.dashboard-nav a { min-height: var(--control-h-xl); display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 12px; padding: 0 14px; border-radius: var(--radius-md); color: var(--blue-soft-750); font-size: var(--text-md); font-weight: var(--weight-bold); text-decoration: none; }
-.dashboard-nav a:hover, .dashboard-nav a.is-active { background: var(--green-soft-50); color: var(--green-700); }
-.dashboard-nav a.is-active { box-shadow: inset -3px 0 var(--green-450); }
+/* The rail itself is defined once, in the dashboard layout reference below. */
 .dashboard-nav b { min-width: 24px; padding: 2px 6px; border-radius: var(--radius-pill); background: var(--red-850); color: var(--neutral-50); font-size: var(--text-2xs); text-align: center; }
-.dashboard-content { width: min(100%, 1050px); padding: 28px 34px 48px; }
 .wishlist-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .wishlist-heading p { margin: 0 0 4px; color: var(--green-700); font-size: var(--text-xs); font-weight: var(--weight-extrabold); letter-spacing: .08em; text-transform: uppercase; }
 .wishlist-heading h1 { margin: 0; color: var(--blue-950); font-size: var(--text-4xl); line-height: 1.1; }
@@ -6677,21 +6679,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .wishlist-tabs { display: flex; align-items: center; gap: 3px; overflow-x: auto; padding: 4px; border-radius: var(--radius-md); background: var(--blue-soft-100); }
 .wishlist-tabs button { min-height: var(--control-h-xs); padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--blue-soft-700); font: inherit; font-size: var(--text-2xs); font-weight: var(--weight-bold); white-space: nowrap; cursor: pointer; }
 .wishlist-tabs button.is-active { background: var(--neutral-50); color: var(--green-700); box-shadow: 0 1px 3px rgba(29, 49, 75, .11); }
-.wishlist-list { display: grid; grid-auto-rows: 118px; gap: 0; background: var(--neutral-50); }
-.wishlist-item { height: 118px; min-height: 0; display: grid; grid-template-columns: 154px minmax(0, 1fr) auto; gap: 16px; overflow: hidden; padding: 0 15px 0 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; background: var(--neutral-50); box-shadow: none; }
-.wishlist-item:first-child { border-top: 1px solid var(--neutral-250); }
+/* Geometry comes from .listing-row; only wishlist's own states remain here. */
+.wishlist-list { display: grid; gap: 0; background: var(--neutral-50); border-top: 1px solid var(--neutral-250); }
 .wishlist-item.is-sold { background: var(--neutral-200); filter: grayscale(.65); }
-.wishlist-item-image { position: relative; min-height: 118px; overflow: hidden; background: var(--neutral-200); }
-.wishlist-item-image img { width: 100%; height: 100%; object-fit: cover; }
 .wishlist-status { position: absolute; top: 9px; left: 9px; padding: 4px 8px; border-radius: var(--radius-pill); background: var(--green-450); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
 .wishlist-status.is-price-drop { background: var(--amber-450); color: var(--amber-900); }
 .wishlist-status.is-sold { background: var(--neutral-250); color: var(--blue-soft-700); }
-.wishlist-item-main { display: flex; min-width: 0; flex-direction: column; justify-content: center; padding: 13px 0; }
-.wishlist-item-main > p { margin: 0 0 5px; color: var(--green-700); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); letter-spacing: .045em; text-transform: uppercase; }
-.wishlist-item-main > p span { color: var(--blue-soft-550); }
-.wishlist-item-main h2 { margin: 0; overflow: hidden; color: var(--blue-850); font-size: var(--text-lg); line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-.wishlist-item-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
-.wishlist-item-actions a, .wishlist-item-actions button { min-height: var(--control-h-xs); display: inline-flex; align-items: center; justify-content: center; padding: 0 13px; border: 0; border-radius: var(--radius-xs); background: var(--green-450); color: var(--green-975); font: inherit; font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-decoration: none; cursor: pointer; }
+.wishlist-item-actions a, .wishlist-item-actions button { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 11px; border: 0; border-radius: var(--radius-xs); background: var(--green-450); color: var(--green-975); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }
 .wishlist-item-actions button:disabled { cursor: default; opacity: .75; }
 .wishlist-item-actions .wishlist-secondary-action { border: 1px solid var(--green-550); background: var(--neutral-50); color: var(--green-700); }
 .wishlist-item-actions .wishlist-remove-action { border: 1px solid var(--rose-soft-300); background: var(--neutral-50); color: var(--rose-800); }
@@ -6720,9 +6714,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     color: var(--rose-850);
   }
 }
-.wishlist-item-side { display: flex; flex: 0 0 86px; flex-direction: column; align-items: end; justify-content: space-between; padding: 15px 0; }
-.wishlist-item-side strong { color: var(--blue-850); font-size: var(--text-lg); white-space: nowrap; }
-.wishlist-item-side del { margin-top: -10px; color: var(--rose-650); font-size: var(--text-2xs); }
 .wishlist-heart { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--rose-750); font-size: var(--text-lg); cursor: pointer; }
 .wishlist-item.is-sold .wishlist-heart { color: var(--blue-soft-850); }
 .wishlist-discovery { display: flex; align-items: center; flex-direction: column; margin-top: 24px; padding: 24px; border: 1px dashed var(--green-soft-350); border-radius: var(--radius-md); background: var(--neutral-150); text-align: center; }
@@ -6775,12 +6766,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .dashboard-listing-actions button.icon-only { width: 34px; padding: 0; }
 
 @media (max-width: 900px) {
-  .dashboard-page { grid-template-columns: 1fr; }
-  .dashboard-sidebar { min-height: 0; padding: 12px; border-right: 0; border-bottom: 1px solid var(--blue-soft-150); }
-  .dashboard-nav { display: flex; overflow-x: auto; padding-bottom: 2px; }
-  .dashboard-nav a { min-width: max-content; grid-template-columns: 18px auto auto; }
-  .dashboard-nav a.is-active { box-shadow: inset 0 -3px var(--green-450); }
-  .dashboard-content { width: 100%; padding: 24px 18px 42px; }
   .listing-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -6797,10 +6782,16 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .dashboard-listing-actions button.icon-only { flex: 0 0 34px; }
 }
 
-/* Dashboard layout reference: shared rail and content gutters for dashboard pages. */
+/* Dashboard layout reference: shared rail and content gutters for dashboard pages.
+   This is the only place the rail is described. A page that needs a different
+   shell overrides these variables — never the rail's own declarations — so every
+   dashboard screen keeps an identical sidebar and only its menu values differ. */
 .dashboard-layout {
   --dashboard-sidebar-width-tablet: 220px;
   --dashboard-sidebar-width-desktop: 272px;
+  --dashboard-rail-top: 70px;
+  --dashboard-rail-height: calc(100dvh - 70px);
+  --dashboard-rail-min-height: calc(100vh - 70px);
 }
 
 .marketplace-page.dashboard-page.dashboard-layout {
@@ -6814,12 +6805,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .dashboard-layout > .market-filter-panel.dashboard-sidebar {
-  height: calc(100dvh - 70px);
-  min-height: calc(100vh - 70px);
+  height: var(--dashboard-rail-height);
+  min-height: var(--dashboard-rail-min-height);
   max-height: none;
   display: flex;
+  flex-direction: column;
   position: sticky;
-  top: 70px;
+  top: var(--dashboard-rail-top);
   align-self: start;
   gap: 16px;
   padding: 24px 18px 42px;
@@ -6850,6 +6842,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-size: var(--text-base);
   font-weight: var(--weight-regular);
   line-height: 1.2;
+  text-decoration: none;
   box-shadow: none;
 }
 
@@ -6952,18 +6945,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .wishlist-tabs { width: 100%; max-width: 100%; }
-  .wishlist-list { grid-auto-rows: auto; }
-  .wishlist-item { height: auto; position: relative; grid-template-columns: 110px minmax(0, 1fr); gap: 0; min-height: 132px; padding: 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; }
-  .wishlist-item-image { grid-row: 1 / span 2; min-height: 132px; }
   .wishlist-status { top: 7px; left: 7px; padding: 3px 6px; font-size: var(--text-2xs); }
-  .wishlist-item-main { grid-column: 2; grid-row: 1 / span 2; justify-content: flex-start; padding: 29px 12px 8px; }
-  .wishlist-item-main > p { margin-bottom: 4px; font-size: var(--text-2xs); }
-  .wishlist-item-main h2 { display: -webkit-box; padding-right: 2px; font-size: var(--text-md); line-height: 1.22; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-  .wishlist-item-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 5px; margin-top: auto; padding-top: 5px; }
+  .wishlist-item-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 5px; }
   .wishlist-item-actions a, .wishlist-item-actions button { min-width: 0; min-height: var(--control-h-xs); padding: 0 4px; font-size: var(--text-2xs); white-space: nowrap; }
-  .wishlist-item-side { position: absolute; top: 0; right: 0; z-index: 1; display: flex; width: auto; height: auto; align-items: end; justify-content: flex-start; padding: 10px 12px 0 0; pointer-events: none; }
-  .wishlist-item-side strong { padding-right: 0; color: var(--blue-850); font-size: var(--text-base); }
-  .wishlist-item-side del { margin-top: 2px; font-size: var(--text-2xs); }
   .wishlist-discovery { margin-top: 18px; padding: 21px 16px; }
   .wishlist-discovery > div:last-child { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
   .wishlist-discovery a, .wishlist-discovery button { min-width: 0; padding: 0 8px; font-size: var(--text-2xs); }
@@ -6996,7 +6980,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   line-height: 1.15;
 }
 
-.notifications-heading button {
+/* Shared header bulk action (mark all read, delete all). Icon plus label, sized
+   for a full-width heading; `is-compact` fits the narrow messages rail. */
+.bulk-action-button {
   min-height: var(--control-h-lg);
   display: inline-flex;
   align-items: center;
@@ -7011,18 +6997,38 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font: inherit;
   font-size: var(--text-base);
   font-weight: var(--weight-bold);
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.notifications-heading button:hover:not(:disabled) {
+.bulk-action-button:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary-dark);
   background: var(--neutral-150);
 }
 
-.notifications-heading button:disabled {
+.bulk-action-button:disabled {
   opacity: .45;
   cursor: default;
+}
+
+.bulk-action-button.is-danger {
+  border-color: var(--red-350);
+  color: var(--red-900);
+}
+
+.bulk-action-button.is-danger:hover:not(:disabled) {
+  border-color: var(--red-850);
+  background: var(--neutral-150);
+  color: var(--red-850);
+}
+
+.bulk-action-button.is-compact {
+  min-height: var(--control-h-sm);
+  gap: 6px;
+  margin-top: 4px;
+  padding: 0 11px;
+  font-size: var(--text-xs);
 }
 
 .notifications-heading-actions {
@@ -7030,17 +7036,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-}
-
-.notifications-heading button.is-danger {
-  border-color: var(--red-350);
-  color: var(--red-900);
-}
-
-.notifications-heading button.is-danger:hover:not(:disabled) {
-  border-color: var(--red-850);
-  background: var(--neutral-150);
-  color: var(--red-850);
 }
 
 .notifications-filter-row {
@@ -7247,7 +7242,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: var(--text-3xl);
   }
 
-  .notifications-heading button {
+  .notifications-heading .bulk-action-button {
     width: 42px;
     height: 42px;
     min-height: var(--control-h-lg);
@@ -7257,7 +7252,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: 0;
   }
 
-  .notifications-heading button i {
+  .notifications-heading .bulk-action-button i {
     display: block;
     line-height: 1;
     font-size: var(--text-md);
@@ -7487,13 +7482,21 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 /* Marketplace messages: a compact conversation rail paired with a focused thread. */
 body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); transform: translateY(var(--messages-viewport-offset-top, 0px)); }
-.messages-dashboard-page > .market-filter-panel.dashboard-sidebar { height: 100%; min-height: 0; top: 0; }
+/* The messages shell is a fixed-height surface, so the rail tracks it rather than
+   the page scroll. Only the reference variables change; the rail itself does not. */
+.marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { --dashboard-rail-top: 0px; --dashboard-rail-height: 100%; --dashboard-rail-min-height: 0; }
 .messages-page { min-width: 0; height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); overflow: hidden; background: var(--neutral-50); color: var(--blue-900); }
 .messages-list-panel { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--neutral-250); background: var(--neutral-50); }
 .messages-list-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 25px 22px 14px; }
-.messages-read-all { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 0 auto; margin-top: 4px; padding: 0 11px; border: 1px solid var(--green-soft-350); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--blue-600); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-bold); white-space: nowrap; cursor: pointer; }
-.messages-read-all:hover:not(:disabled) { border-color: var(--primary); background: var(--neutral-150); color: var(--primary-dark); }
-.messages-read-all:disabled { opacity: .45; cursor: default; }
+/* Bulk row for selection and destructive actions, between the filters and the list. */
+.messages-selection-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 15px; border-bottom: 1px solid var(--neutral-250); background: var(--neutral-100); }
+.messages-selection-toggle { min-height: var(--control-h-sm); display: inline-flex; align-items: center; gap: 7px; flex: 1 1 auto; padding: 0 4px; border: 0; background: transparent; color: var(--blue-750); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-extrabold); cursor: pointer; }
+.messages-selection-toggle:disabled { opacity: .45; cursor: default; }
+.messages-selection-toggle i { color: var(--green-650); font-size: var(--text-md); }
+.messages-bulk-error { margin: 0; padding: 9px 15px; border-bottom: 1px solid var(--neutral-250); background: var(--neutral-100); color: var(--red-900); font-size: var(--text-xs); }
+.messages-conversation-check { display: grid; place-items: center; color: var(--green-650); font-size: var(--text-lg); }
+.messages-conversation.is-selectable { grid-template-columns: 22px 52px minmax(0, 1fr); }
+.messages-conversation.is-selected { background: var(--green-soft-50); }
 .messages-list-header p { margin: 0 0 4px; color: var(--green-650); font-size: var(--text-xs); font-weight: var(--weight-extrabold); letter-spacing: .08em; text-transform: uppercase; }
 .messages-list-header h1 { margin: 0; font-size: var(--text-3xl); line-height: 1.15; }
 .messages-list-title { display: flex; align-items: center; gap: 7px; }.messages-list-title > span { min-width: 20px; height: 20px; display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--red-850); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); }.messages-list-title > span:empty { display: none; }
@@ -7609,6 +7612,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .messages-list-header h1 { font-size: var(--text-2xl); }
   .messages-filter-row { padding: 0 14px 11px; }
   .messages-conversation { grid-template-columns: 56px minmax(0, 1fr); gap: 11px; padding: 12px 16px; }
+  .messages-conversation.is-selectable { grid-template-columns: 22px 56px minmax(0, 1fr); gap: 10px; }
+  .messages-selection-bar { padding: 9px 14px; }
   .messages-listing-thumbnail { width: 56px; height: 56px; }
   .messages-conversation-copy strong { font-size: var(--text-md); }
   .messages-conversation-copy em { font-size: var(--text-xs); }
@@ -7618,9 +7623,12 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   /* An open thread is pinned to the visual viewport rather than the document, so the header (back link,
      listing, counterpart) and the composer stay put no matter how the mobile browser pans the page.
      visualViewport height already excludes the on-screen keyboard, so the composer lands right above it.
-     A transformed ancestor would become the containing block for a fixed child, so that transform goes first. */
+     A transformed ancestor would become the containing block for a fixed child, so that transform goes first.
+     Do NOT add visualViewport.offsetTop to `top` here: iOS Safari 13+ and Android Chrome already anchor
+     fixed elements to the visual viewport once the keyboard pans the page, so adding it again leaves a
+     blank strip above the header exactly as tall as the pan. */
   .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page:has(.messages-page.has-selected-conversation) { transform: none; }
-  .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: var(--messages-thread-top-inset); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* With the keyboard up the thread takes the whole visual viewport — the site header is offscreen anyway. */
   .messages-keyboard-open .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: 0px; }
   .messages-thread-header { position: relative; z-index: 1; flex: 0 0 auto; min-height: 76px; gap: 9px; padding: 8px 12px; }
@@ -7816,13 +7824,35 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .manage-listings-heading span { display: block; margin-top: 5px; color: var(--blue-soft-650); font-size: var(--text-md); }
 .manage-listings-heading > a, .manage-listings-empty > a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--control-h-lg); padding: 0 15px; border-radius: var(--radius-sm); background: var(--green-700); color: var(--neutral-50); font-size: var(--text-md); font-weight: var(--weight-semibold); text-decoration: none; }
 .manage-listings-grid { border-top: 1px solid var(--neutral-250); }
-.manage-listings-grid article { min-height: 142px; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--neutral-250); }
-.manage-listings-grid img { width: 116px; height: 108px; object-fit: cover; border-radius: var(--radius-xs); background: var(--neutral-200); }
-.manage-listings-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.manage-listings-title h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
-.manage-listings-title span { flex: 0 0 auto; padding: 3px 7px; border-radius: var(--radius-pill); background: var(--green-soft-50); color: var(--green-900); font-size: var(--text-2xs); font-weight: var(--weight-semibold); text-transform: capitalize; }
-.manage-listings-title span.is-pending { background: var(--amber-soft-50); color: var(--amber-750); }.manage-listings-title span.is-sold { background: var(--neutral-200); color: var(--blue-soft-700); }.manage-listings-title span.is-archived { background: var(--neutral-200); color: var(--blue-soft-650); }
-.manage-listings-grid strong, .manage-listings-grid small { display: block; }.manage-listings-grid strong { margin-top: 12px; color: var(--green-700); font-size: var(--text-lg); }.manage-listings-grid small { margin-top: 6px; color: var(--blue-soft-600); font-size: var(--text-sm); }
+
+/* Shared listing row. Wishlist and Manage Listings present the same object, so
+   the image, title, status and price sit in exactly the same place on both.
+   Only the trailing action column differs — that is where each screen's own
+   controls go, and nothing else about the row may diverge. */
+.listing-row { min-height: 142px; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; background: var(--neutral-50); box-shadow: none; }
+.listing-row-media { position: relative; width: 116px; height: 108px; overflow: hidden; border-radius: var(--radius-xs); background: var(--neutral-200); }
+.listing-row-media img { width: 100%; height: 100%; object-fit: cover; }
+.listing-row-body { min-width: 0; }
+.listing-row-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.listing-row-title h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.listing-row-title span { flex: 0 0 auto; padding: 3px 7px; border-radius: var(--radius-pill); background: var(--green-soft-50); color: var(--green-900); font-size: var(--text-2xs); font-weight: var(--weight-semibold); text-transform: capitalize; }
+.listing-row-title span.is-pending { background: var(--amber-soft-50); color: var(--amber-750); }
+.listing-row-title span.is-sold { background: var(--neutral-200); color: var(--blue-soft-700); }
+.listing-row-title span.is-archived { background: var(--neutral-200); color: var(--blue-soft-650); }
+.listing-row-price { display: block; margin-top: 12px; color: var(--green-700); font-size: var(--text-lg); font-weight: var(--weight-extrabold); }
+.listing-row-meta { display: block; margin-top: 6px; color: var(--blue-soft-600); font-size: var(--text-sm); }
+.listing-row-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+
+/* Mobile: the actions drop under the copy rather than competing for width. */
+@media (max-width: 767.98px) {
+  .listing-row { min-height: 126px; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 14px 0; }
+  .listing-row-media { width: 88px; height: 88px; }
+  .listing-row-title { align-items: flex-start; flex-wrap: wrap; gap: 5px 7px; }
+  .listing-row-title h2 { font-size: var(--text-md); white-space: normal; }
+  .listing-row-price { margin-top: 8px; font-size: var(--text-md); }
+  .listing-row-meta { margin-top: 4px; font-size: var(--text-xs); }
+  .listing-row-actions { grid-column: 2; justify-content: flex-start; margin-top: -4px; }
+}
 .manage-listing-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }.manage-listing-actions a, .manage-listing-actions button { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 11px; border: 1px solid var(--green-700); border-radius: var(--radius-xs); background: var(--neutral-50); color: var(--green-700); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }.manage-listing-actions button { border-color: var(--red-600); color: var(--red-900); }.manage-listing-actions .manage-listing-relist { border-color: var(--green-700); background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions a:first-child { background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions button:disabled { border-color: var(--neutral-250); background: var(--neutral-150); color: var(--blue-soft-550); cursor: default; }.manage-listing-actions a:only-child { background: var(--neutral-50); color: var(--green-700); }.manage-listing-actions .manage-listing-action-error { flex-basis: 100%; margin: 0; color: var(--red-900); font-size: var(--text-sm); }
 .manage-listings-empty { display: grid; justify-items: center; padding: 64px 24px; border: 1px dashed var(--blue-soft-250); border-radius: var(--radius-md); text-align: center; }.manage-listings-empty > i { color: var(--green-700); font-size: var(--text-4xl); }.manage-listings-empty h2 { margin: 16px 0 5px; color: var(--blue-900); font-size: var(--text-xl); font-weight: var(--weight-medium); }.manage-listings-empty p { margin: 0 0 18px; color: var(--blue-soft-650); font-size: var(--text-md); }
 .seller-dashboard-insights { margin-bottom: 28px; }
@@ -7872,7 +7902,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (max-width: 767.98px) {
   .seller-dashboard-content { padding: 18px 16px 36px; }
-  .manage-listings-content { padding: 20px 16px 36px; }.manage-listings-heading { align-items: flex-start; margin-bottom: 18px; }.manage-listings-heading h1 { font-size: var(--text-2xl); }.manage-listings-heading > a { min-height: var(--control-h-md); padding: 0 10px; font-size: var(--text-sm); }.manage-listings-grid article { min-height: 126px; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 14px 0; }.manage-listings-grid img { width: 88px; height: 88px; }.manage-listings-title { align-items: flex-start; flex-wrap: wrap; gap: 5px 7px; }.manage-listings-title h2 { font-size: var(--text-md); }.manage-listings-grid strong { margin-top: 8px; font-size: var(--text-md); }.manage-listings-grid small { margin-top: 4px; font-size: var(--text-xs); }.manage-listing-actions { grid-column: 2; justify-content: flex-start; margin-top: -4px; }.manage-listing-actions a, .manage-listing-actions button { min-height: var(--control-h-xs); padding: 0 8px; font-size: var(--text-xs); }
+  .manage-listings-content { padding: 20px 16px 36px; }.manage-listings-heading { align-items: flex-start; margin-bottom: 18px; }.manage-listings-heading h1 { font-size: var(--text-2xl); }.manage-listings-heading > a { min-height: var(--control-h-md); padding: 0 10px; font-size: var(--text-sm); }.manage-listing-actions a, .manage-listing-actions button { min-height: var(--control-h-xs); padding: 0 8px; font-size: var(--text-xs); }
   .seller-dashboard-top, .seller-dashboard-columns { grid-template-columns: 1fr; gap: 22px; }
   .seller-summary-card { grid-template-columns: 152px minmax(0, 1fr); min-height: 172px; padding: 16px; }
   .seller-summary-avatar { width: 152px; height: 152px; font-size: 38px; }.seller-summary-avatar span { width: 22px; height: 22px; }

@@ -39,7 +39,15 @@ export default async function ManageListingsPage() {
       <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /></p><h1><TranslatedText translationKey="manageListings" /></h1><span>{listings.length} <TranslatedText translationKey="totalListings" /></span></div><Link href="/market/create"><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
       {listings.length ? <div className="manage-listings-grid">{listings.map((listing) => {
         const imageUrl = signedPhotos.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
-        return <article key={listing.id}><img src={imageUrl} alt="" /><div className="manage-listings-details"><div className="manage-listings-title"><h2>{listing.title}</h2><span className={`is-${listing.status}`}>{statusLabel(listing.status)}</span></div><strong>{formatMarketPrice(listing.price_cents)}</strong><small>Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small></div><ManageListingActions id={listing.id} title={listing.title} status={listing.status} /></article>;
+        return <article className="listing-row" key={listing.id}>
+          <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
+          <div className="listing-row-body">
+            <div className="listing-row-title"><h2>{listing.title}</h2><span className={`is-${listing.status}`}>{statusLabel(listing.status)}</span></div>
+            <strong className="listing-row-price">{formatMarketPrice(listing.price_cents)}</strong>
+            <small className="listing-row-meta">Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small>
+          </div>
+          <ManageListingActions id={listing.id} title={listing.title} status={listing.status} />
+        </article>;
       })}</div> : <div className="manage-listings-empty"><i className="fa-regular fa-rectangle-list" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
     </section>
   </main>;
