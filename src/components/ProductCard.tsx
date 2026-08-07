@@ -128,7 +128,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       <div className="product-body">
         <div className="product-title-row">
           <h2>{listing.title}</h2>
-          {listing.commentCount !== undefined ? <span className={`product-comment-count is-${commentCountTier(listing.commentCount)}`} aria-label={`${listing.commentCount} comments`}>{listing.commentCount}</span> : null}
+          {listing.commentCount ? <span className={`product-comment-count is-${commentCountTier(listing.commentCount)}`} aria-label={`${listing.commentCount} comments`}>{listing.commentCount}</span> : null}
         </div>
         <div className="price-row">
           <strong>{listing.price}</strong>
