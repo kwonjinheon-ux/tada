@@ -152,14 +152,17 @@ export async function generateMetadata({ params }: { params: Promise<{ listingId
   };
 }
 
-async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>): Promise<Listing[]> {
+async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>, viewerId?: string): Promise<Listing[]> {
   if (!listing.subcategorySlug) return [];
-  const { data } = await supabase
+  let query = supabase
     .from("market_listings")
     .select("id,title,price_cents,region_city,region_suburb,status")
     .eq("subcategory_slug", listing.subcategorySlug)
     .eq("status", "published")
-    .neq("id", listing.id)
+    .neq("id", listing.id);
+  // A viewer browsing this category should not see their own listings suggested back to them.
+  if (viewerId) query = query.neq("owner_id", viewerId);
+  const { data } = await query
     .order("created_at", { ascending: false })
     .limit(8);
   const rows = (data ?? []) as RelatedListingRow[];
@@ -202,7 +205,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   ]);
   if (!listing) notFound();
   const user = userResult.data.user;
-  const relatedListings = await getRelatedListings(listing, supabase);
+  const relatedListings = await getRelatedListings(listing, supabase, user?.id);
   const { data: savedListing } = user
     ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
     : { data: null };
