@@ -117,7 +117,11 @@ a {
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  /* The header owns a stacking context, so its navigation and profile popovers can
+     never escape this value however high their own z-index is. It therefore has to
+     outrank page-level fixed surfaces — the messages thread panel sits at 30 — while
+     staying under the filter backdrop (40) and the drawers (121+). */
+  z-index: 35;
   border-bottom: 1px solid rgba(187, 202, 191, 0.72);
   background: var(--neutral-50);
 }
@@ -7630,8 +7634,11 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
      keyboard is up, this puts the panel exactly over the visible strip. */
   .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page:has(.messages-page.has-selected-conversation) { transform: none; }
   .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  /* With the keyboard up the thread takes the whole visual viewport — the site header is offscreen anyway. */
-  .messages-keyboard-open .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: 0px; }
+  /* With the keyboard up the thread takes the whole visual viewport. Browsers that shrink the
+     visual viewport without panning (Android Chrome) leave the sticky header sitting at layout
+     top, so the panel has to outrank it here — and only here, or the header's popovers would be
+     buried again the rest of the time. */
+  .messages-keyboard-open .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: 0px; z-index: 36; }
   .messages-thread-header { position: relative; z-index: 1; flex: 0 0 auto; min-height: 76px; gap: 9px; padding: 8px 12px; }
   .messages-mobile-back { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-800); text-decoration: none; }
   .messages-listing-context { min-width: 0; max-width: none; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; padding: 3px; border: 0; background: transparent; }
