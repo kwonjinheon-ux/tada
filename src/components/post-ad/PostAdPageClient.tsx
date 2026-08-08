@@ -8,6 +8,9 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
+import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
+import type { MainLocation } from "@/data/nzLocations";
+import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 
 type SelectOption = {
@@ -47,6 +50,11 @@ export type EditableListingInitialValues = {
   itemCondition: "brand_new" | "like_new" | "excellent" | "good" | "fair";
   region: string;
   area: string;
+  locality?: string | null;
+  rawSuburb?: string | null;
+  locationRegion?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   meetingPlace: string;
   photos: EditableListingPhoto[];
 };
@@ -74,19 +82,6 @@ const conditions: SelectOption[] = [
   { label: "Excellent", value: "excellent" },
   { label: "Good", value: "good" },
   { label: "Fair", value: "fair" },
-];
-
-const regions: SelectOption[] = [
-  { label: "Auckland", value: "Auckland" },
-  { label: "Wellington", value: "Wellington" },
-  { label: "Canterbury", value: "Canterbury" },
-];
-
-const areas: SelectOption[] = [
-  { label: "CBD", value: "CBD" },
-  { label: "North Shore", value: "North Shore" },
-  { label: "Mount Eden", value: "Mount Eden" },
-  { label: "Newmarket", value: "Newmarket" },
 ];
 
 const meetingPlaces: SelectOption[] = [
@@ -271,10 +266,16 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const [subCategory, setSubCategory] = useState(initialListing?.subCategory ?? "");
   const [tradeMethod, setTradeMethod] = useState<string>(initialListing?.tradeMethod ?? "pickup_delivery");
   const [itemCondition, setItemCondition] = useState<string>(initialListing?.itemCondition ?? "brand_new");
-  const [region, setRegion] = useState(initialListing?.region ?? "");
-  const [area, setArea] = useState(initialListing?.area ?? "");
-  const [defaultRegion, setDefaultRegion] = useState("");
-  const [defaultArea, setDefaultArea] = useState("");
+  const [location, setLocation] = useState(() => ({
+    mainLocation: (findMainLocation(initialListing?.region) ?? "") as MainLocation | "",
+    subLocation: initialListing?.area ?? "",
+    locality: initialListing?.locality ?? null,
+    rawSuburb: initialListing?.rawSuburb ?? null,
+    region: initialListing?.locationRegion ?? null,
+    latitude: initialListing?.latitude ?? null,
+    longitude: initialListing?.longitude ?? null,
+  }));
+  const [defaultLocation, setDefaultLocation] = useState(() => ({ mainLocation: "" as MainLocation | "", subLocation: "", locality: null, rawSuburb: null, region: null, latitude: null, longitude: null }));
   const [meetingPlace, setMeetingPlace] = useState(initialListing?.meetingPlace ?? "");
   const [photos, setPhotos] = useState<PhotoPreview[]>(() => initialListing?.photos.map((photo) => ({ id: photo.id, url: photo.url, name: photo.name, isExisting: true })) ?? []);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(() => initialListing?.photos.find((photo) => photo.isPrimary)?.id ?? initialListing?.photos[0]?.id ?? null);
@@ -295,8 +296,6 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
   const subCategoryOptions = mainCategory
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
-  const regionOptions = region && !regions.some((option) => option.value === region) ? [...regions, { label: region, value: region }] : regions;
-  const areaOptions = area && !areas.some((option) => option.value === area) ? [...areas, { label: area, value: area }] : areas;
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
 
   useEffect(() => {
@@ -372,15 +371,11 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       const profileRegion = typeof data?.region_city === "string" ? data.region_city.trim() : "";
       const profileArea = typeof data?.region_suburb === "string" ? data.region_suburb.trim() : "";
 
-      if (profileRegion) {
-        setDefaultRegion(profileRegion);
-        setRegion((current) => current || profileRegion);
-      }
-
-      if (profileArea) {
-        setDefaultArea(profileArea);
-        setArea((current) => current || profileArea);
-      }
+      const mainLocation = findMainLocation(profileRegion);
+      if (!mainLocation) return;
+      const profileLocation = { mainLocation, subLocation: findSubLocation(mainLocation, profileArea) ?? "", locality: null, rawSuburb: null, region: null, latitude: null, longitude: null };
+      setDefaultLocation(profileLocation);
+      setLocation((current) => current.mainLocation ? current : profileLocation);
     };
 
     void loadProfileLocation();
@@ -735,8 +730,15 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
           tradeMethod,
           categorySlug: mainCategory || null,
           subcategorySlug: subCategory || null,
-          regionCity: region || null,
-          regionSuburb: area || null,
+          regionCity: location.mainLocation || null,
+          regionSuburb: location.subLocation || null,
+          mainLocation: location.mainLocation || null,
+          subLocation: location.subLocation || null,
+          locality: location.locality,
+          rawSuburb: location.rawSuburb,
+          region: location.region,
+          latitude: location.latitude,
+          longitude: location.longitude,
           meetingPlace: meetingPlace || null,
         }),
       });
@@ -785,8 +787,15 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       trade_method: tradeMethod,
       item_condition: itemCondition,
       price_cents: priceCents,
-      region_city: region || null,
-      region_suburb: area || null,
+      region_city: location.mainLocation || null,
+      region_suburb: location.subLocation || null,
+      main_location: location.mainLocation || null,
+      sub_location: location.subLocation || null,
+      locality: location.locality,
+      raw_suburb: location.rawSuburb,
+      region: location.region,
+      latitude: location.latitude,
+      longitude: location.longitude,
       meeting_place: meetingPlace || null,
     }).select("id").single();
 
@@ -824,8 +833,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setSubCategory("");
     setTradeMethod("pickup_delivery");
     setItemCondition("brand_new");
-    setRegion(defaultRegion);
-    setArea(defaultArea);
+    setLocation(defaultLocation);
     setMeetingPlace("");
     setDescription("");
     setSmartphoneSpecs(emptySmartphoneSpecs);
@@ -1004,7 +1012,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                 description={description}
                 price={price}
                 condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
-                location={[region, area].filter(Boolean).join(", ")}
+                location={[location.mainLocation, location.subLocation].filter(Boolean).join(", ")}
                 language={locale}
                 additionalDetails={[
                   { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
@@ -1023,8 +1031,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
             </div>
 
             <div className="post-form-grid post-location-grid">
-              <CustomSelect id="listing-region" name="region_city" label="Region" icon="fa-location-dot" placeholder="Select region" options={regionOptions} value={region} onChange={setRegion} />
-              <CustomSelect id="listing-area" name="region_suburb" label="Area" icon="fa-map-pin" placeholder="Select area" options={areaOptions} value={area} onChange={setArea} />
+              <ListingLocationSelector value={location} onChange={setLocation} />
               <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <CustomSelect id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>

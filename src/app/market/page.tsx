@@ -17,6 +17,8 @@ export default async function MarketRoute({ searchParams }: { searchParams: Prom
     subcategory: typeof rawParams.subcategory === "string" ? rawParams.subcategory : undefined,
     maxPrice: typeof rawParams.maxPrice === "string" ? rawParams.maxPrice : undefined,
     condition: typeof rawParams.condition === "string" ? rawParams.condition : undefined,
+    mainLocation: typeof rawParams.mainLocation === "string" ? rawParams.mainLocation : undefined,
+    subLocation: typeof rawParams.subLocation === "string" ? rawParams.subLocation : undefined,
     sort: typeof rawParams.sort === "string" ? rawParams.sort : undefined,
   });
   const supabase = await createServerSupabaseClient();

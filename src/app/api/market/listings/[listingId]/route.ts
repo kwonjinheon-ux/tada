@@ -75,6 +75,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   const subcategorySlug = typeof payload?.subcategorySlug === "string" ? payload.subcategorySlug.trim() || null : null;
   const regionCity = typeof payload?.regionCity === "string" ? payload.regionCity.trim() || null : null;
   const regionSuburb = typeof payload?.regionSuburb === "string" ? payload.regionSuburb.trim() || null : null;
+  const mainLocation = typeof payload?.mainLocation === "string" ? payload.mainLocation.trim() || null : regionCity;
+  const subLocation = typeof payload?.subLocation === "string" ? payload.subLocation.trim() || null : regionSuburb;
+  const locality = typeof payload?.locality === "string" ? payload.locality.trim() || null : null;
+  const rawSuburb = typeof payload?.rawSuburb === "string" ? payload.rawSuburb.trim() || null : null;
+  const region = typeof payload?.region === "string" ? payload.region.trim() || null : null;
+  const latitude = typeof payload?.latitude === "number" && Number.isFinite(payload.latitude) ? payload.latitude : null;
+  const longitude = typeof payload?.longitude === "number" && Number.isFinite(payload.longitude) ? payload.longitude : null;
   const meetingPlace = typeof payload?.meetingPlace === "string" ? payload.meetingPlace.trim() || null : null;
   const validConditions = new Set(["brand_new", "like_new", "excellent", "good", "fair"]);
   const validTradeMethods = new Set(["pickup_delivery", "pickup", "delivery"]);
@@ -82,6 +89,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   if (description.length < 20 || description.length > 5000) return NextResponse.json({ error: "Description must be between 20 and 5,000 characters." }, { status: 400 });
   if (!Number.isInteger(priceCents) || priceCents < 0 || priceCents > 100_000_000) return NextResponse.json({ error: "Enter a valid price." }, { status: 400 });
   if (!validConditions.has(String(itemCondition)) || !validTradeMethods.has(String(tradeMethod))) return NextResponse.json({ error: "Choose valid listing details." }, { status: 400 });
+  if ([mainLocation, subLocation, locality, rawSuburb, region].some((value) => value !== null && value.length > 120)) return NextResponse.json({ error: "Location details must be 120 characters or fewer." }, { status: 400 });
+  if ((latitude !== null && (latitude < -90 || latitude > 90)) || (longitude !== null && (longitude < -180 || longitude > 180))) return NextResponse.json({ error: "Enter valid location coordinates." }, { status: 400 });
 
   const { listingId } = await params;
   const { data: currentListing } = await supabase
@@ -105,6 +114,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
       subcategory_slug: subcategorySlug,
       region_city: regionCity,
       region_suburb: regionSuburb,
+      main_location: mainLocation,
+      sub_location: subLocation,
+      locality,
+      raw_suburb: rawSuburb,
+      region,
+      latitude,
+      longitude,
       meeting_place: meetingPlace,
     })
     .eq("id", listingId)

@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
+import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -52,6 +53,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [maxPrice, setMaxPrice] = useState(appliedMaxPrice);
   const [condition, setCondition] = useState(appliedCondition);
+  const [mainLocation, setMainLocation] = useState<MainLocation | "">((searchParams.get("mainLocation") as MainLocation | null) ?? "");
+  const [subLocation, setSubLocation] = useState(searchParams.get("subLocation") ?? "");
   const [applyingChip, setApplyingChip] = useState<string | null>(null);
   const [listings, setListings] = useState(postedListings);
   const [savedIds, setSavedIds] = useState(savedListingIds);
@@ -242,6 +245,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     params.delete("cursor");
     if (maxPrice >= priceFilterMaximum) params.delete("maxPrice"); else params.set("maxPrice", String(maxPrice));
     if (condition === "all") params.delete("condition"); else params.set("condition", condition);
+    if (mainLocation) params.set("mainLocation", mainLocation); else params.delete("mainLocation");
+    if (subLocation) params.set("subLocation", subLocation); else params.delete("subLocation");
     router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
   };
@@ -263,11 +268,9 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
         <section className="filter-block location-block">
-          <button className="location-select" type="button">
-            <i className="fa-solid fa-location-dot" aria-hidden="true" />
-            <span>Auckland, NZ</span>
-            <i className="fa-solid fa-chevron-down" aria-hidden="true" />
-          </button>
+          <h2>Location</h2>
+          <label className="market-location-field"><span>Main Location</span><select value={mainLocation} onChange={(event) => { setMainLocation(event.target.value as MainLocation | ""); setSubLocation(""); }}><option value="">All New Zealand</option>{NZ_MAIN_LOCATIONS.map((location) => <option key={location} value={location}>{location}</option>)}</select></label>
+          <label className="market-location-field"><span>Sub Location</span><select value={subLocation} disabled={!mainLocation} onChange={(event) => setSubLocation(event.target.value)}><option value="">Any sub location</option>{mainLocation ? getSubLocations(mainLocation).map((location) => <option key={location} value={location}>{location}</option>) : null}</select></label>
         </section>
 
         <section className="filter-block category-filter">

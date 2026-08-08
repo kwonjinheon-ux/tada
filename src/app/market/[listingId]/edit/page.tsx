@@ -13,7 +13,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ li
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/market/${listingId}/edit`)}`);
   const { data: listing } = await supabase
     .from("market_listings")
-    .select("id,title,description,price_cents,category_slug,subcategory_slug,item_condition,trade_method,region_city,region_suburb,meeting_place,status")
+    .select("id,title,description,price_cents,category_slug,subcategory_slug,item_condition,trade_method,region_city,region_suburb,main_location,sub_location,locality,raw_suburb,region,latitude,longitude,meeting_place,status")
     .eq("id", listingId)
     .eq("owner_id", user.id)
     .maybeSingle();
@@ -46,8 +46,13 @@ export default async function EditListingPage({ params }: { params: Promise<{ li
     subCategory: listing.subcategory_slug ?? "",
     itemCondition: listing.item_condition,
     tradeMethod: listing.trade_method,
-    region: listing.region_city ?? "",
-    area: listing.region_suburb ?? "",
+    region: listing.main_location ?? listing.region_city ?? "",
+    area: listing.sub_location ?? listing.region_suburb ?? "",
+    locality: listing.locality,
+    rawSuburb: listing.raw_suburb,
+    locationRegion: listing.region,
+    latitude: listing.latitude ? Number(listing.latitude) : null,
+    longitude: listing.longitude ? Number(listing.longitude) : null,
     meetingPlace: listing.meeting_place ?? "",
     photos,
   }} />;
