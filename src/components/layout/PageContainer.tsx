@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type PageContainerProps = {
   children: ReactNode;
-  size?: "default" | "narrow" | "wide" | "full";
+  size?: "default" | "narrow" | "wide" | "home" | "full";
   disablePadding?: boolean;
   className?: string;
 };
@@ -11,6 +11,7 @@ const sizeClass = {
   default: "page-container-default",
   narrow: "page-container-narrow",
   wide: "page-container-wide",
+  home: "page-container-home",
   full: "page-container-full",
 } as const;
 

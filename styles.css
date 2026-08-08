@@ -72,6 +72,16 @@ a {
   --page-container-max-width: var(--page-wide-max-width);
 }
 
+.page-container-home {
+  --page-container-max-width: var(--page-max-width);
+}
+
+@media (min-width: 1280px) {
+  .page-container-home {
+    --page-container-max-width: min(var(--page-wide-max-width), calc(90vw + (var(--page-padding-inline) * 2)));
+  }
+}
+
 .page-container-full {
   --page-container-max-width: none;
 }
@@ -8124,6 +8134,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   min-height: var(--control-h-lg);
   margin-top: 0;
   padding-inline: var(--space-5);
+  border-radius: var(--radius-pill);
 }
 
 .home-popular-searches {
@@ -8318,8 +8329,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 .home-nearby-card {
-  width: min(74vw, 260px);
-  min-width: min(74vw, 260px);
+  width: min(68vw, calc(var(--control-h-2xl) * 5));
+  min-width: min(68vw, calc(var(--control-h-2xl) * 5));
   overflow: hidden;
   text-decoration: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
@@ -8332,7 +8343,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 .home-nearby-art {
-  min-height: calc(var(--control-h-2xl) * 3);
+  min-height: calc((var(--control-h-2xl) * 2) + var(--space-8));
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -8536,6 +8547,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .home-benefit { display: grid; gap: var(--space-2); }
   .home-nearby-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding: 0; }
   .home-nearby-card { width: auto; min-width: 0; }
+  .home-nearby-art { min-height: calc(var(--control-h-2xl) * 3); }
   .home-nearby-card:nth-child(4) { display: none; }
   .home-sponsor { min-height: calc(var(--control-h-2xl) * 5); padding: var(--space-6); }
   .home-sponsor-visual { right: var(--space-4); width: calc(var(--control-h-2xl) * 7); height: calc(var(--control-h-2xl) * 4); }

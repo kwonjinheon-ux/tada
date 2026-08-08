@@ -42,6 +42,7 @@ const journeys: Journey[] = [
     href: "/jobs",
     art: "jobs",
     image: "/images/home/journey-jobs.png",
+    comingSoon: true,
   },
   {
     title: "Services",
@@ -138,7 +139,7 @@ function NearbyCollectionCard({ collection }: { collection: NearbyCollection }) 
   );
 }
 
-export function HomePageClient() {
+export function HomePageClient({ locationLabel = null }: { locationLabel?: string | null }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -151,7 +152,7 @@ export function HomePageClient() {
   return (
     <>
       <main className="market-home">
-        <PageContainer className="home-page-content">
+        <PageContainer size="home" className="home-page-content">
           <section className="home-hero" aria-labelledby="home-hero-title">
             <div className="home-hero-copy">
               <h1 id="home-hero-title">Everything you need,<br />one <span>Tada</span> away.</h1>
@@ -193,7 +194,7 @@ export function HomePageClient() {
           <section className="home-nearby-section" aria-labelledby="nearby-title">
             <div className="home-section-heading">
               <div>
-                <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> Around Auckland</p>
+                {locationLabel ? <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {locationLabel}</p> : null}
                 <h2 id="nearby-title">Explore near you</h2>
               </div>
               <Link href="/market">View all <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
