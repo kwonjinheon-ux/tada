@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Footer } from "@/components/Footer";
@@ -12,8 +13,8 @@ type Journey = {
   description: string;
   detail: string;
   href?: string;
-  icon: string;
   art: string;
+  image: string;
   comingSoon?: boolean;
 };
 
@@ -31,23 +32,23 @@ const journeys: Journey[] = [
     description: "Buy & sell near you",
     detail: "Find a local good deal",
     href: "/market",
-    icon: "fa-store",
     art: "market",
+    image: "/images/home/journey-market.png",
   },
   {
     title: "Jobs",
     description: "Find your next opportunity",
     detail: "Work that fits your life",
     href: "/jobs",
-    icon: "fa-briefcase",
     art: "jobs",
+    image: "/images/home/journey-jobs.png",
   },
   {
     title: "Services",
     description: "Book trusted local help",
     detail: "Launching soon",
-    icon: "fa-screwdriver-wrench",
     art: "services",
+    image: "/images/home/journey-services.png",
     comingSoon: true,
   },
 ];
@@ -100,7 +101,7 @@ const reasons = [
 function JourneyCard({ journey }: { journey: Journey }) {
   const content = <>
     <div className={`home-journey-art home-journey-art--${journey.art}`} aria-hidden="true">
-      <i className={`fa-solid ${journey.icon}`} />
+      <Image src={journey.image} alt="" fill sizes="(min-width: 1280px) 14vw, (min-width: 768px) 27vw, 45vw" />
     </div>
     <div className="home-journey-copy">
       <div className="home-journey-title-row">
@@ -153,7 +154,6 @@ export function HomePageClient() {
         <PageContainer className="home-page-content">
           <section className="home-hero" aria-labelledby="home-hero-title">
             <div className="home-hero-copy">
-              <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> Auckland, NZ</p>
               <h1 id="home-hero-title">Everything you need,<br />one <span>Tada</span> away.</h1>
               <p className="home-hero-intro">Buy, sell, find work and discover useful local services in one easy place.</p>
 
