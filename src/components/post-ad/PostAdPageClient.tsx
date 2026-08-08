@@ -754,16 +754,19 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   return (
     <main className="post-ad-page">
+      <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="fa-solid fa-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
       <div className="post-ad-layout">
         <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full post-title-field">
+              <div className="post-section-heading"><span>1</span><h2>Basics</h2></div>
               <label htmlFor="post-title">Listing Title</label>
               <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
               <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
             </div>
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
+              <div className="post-section-heading"><span>3</span><h2>Pricing &amp; category</h2></div>
               <SelectMenu id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
               <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
               <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
@@ -783,7 +786,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               }}
             >
               <div className="field-label-row">
-                <legend>Photos</legend>
+                <legend><span className="post-section-heading"><span>2</span><span>Photos</span></span></legend>
                 <span>Up to 10 photos</span>
               </div>
               <input
@@ -834,6 +837,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-field post-field-full post-description-field">
+              <div className="post-section-heading"><span>5</span><h2>Description</h2></div>
               <label htmlFor="post-description">Description</label>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
@@ -910,6 +914,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-ai-field">
+              <div className="post-section-heading"><span>6</span><h2>AI help &amp; actions</h2></div>
               <AiListingGenerator
                 title={title}
                 description={description}
@@ -934,6 +939,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-form-grid post-location-grid">
+              <div className="post-section-heading"><span>4</span><h2>Location &amp; trade</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
@@ -964,11 +970,20 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
           </form>
         </section>
 
-        <section className="post-ad-tips" aria-label="Posting tips">
+        <aside className="post-ad-sidebar" aria-label="Listing preview and posting tips">
+          <section className="post-ad-preview" aria-live="polite">
+            <h2>Preview</h2>
+            <div className="post-ad-preview-art">{photos[0] ? <img src={photos[0].url} alt="" /> : <><i className="fa-regular fa-image" aria-hidden="true" /><i className="fa-solid fa-bag-shopping" aria-hidden="true" /></>}</div>
+            <strong>{title || "Your listing preview will appear here"}</strong>
+            <p>{title ? `${price ? `$${price}` : "Add a price"} · ${[location.mainLocation, location.subLocation].filter(Boolean).join(", ") || "Choose a location"}` : "Add details and photos to see how your listing will look to buyers."}</p>
+          </section>
+          <section className="post-ad-tips" aria-label="Posting tips">
+            <h2>Tips for a great listing</h2>
           <article><i className="fa-regular fa-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
           <article><i className="fa-regular fa-circle-check" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
           <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
-        </section>
+          </section>
+        </aside>
       </div>
     </main>
   );
