@@ -380,6 +380,7 @@ export function Navbar() {
   };
 
   const isMarket = pathname.startsWith("/market");
+  const isBargain = pathname.startsWith("/bargain");
   const isJobs = pathname.startsWith("/jobs");
   const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
@@ -546,9 +547,9 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             <span>{t("market")}</span>
           </Link>
-          <Link className={isJobs ? "is-active" : ""} href="/jobs">
-            <i className="fa-solid fa-briefcase" aria-hidden="true" />
-            <span>{t("jobs")}</span>
+          <Link className={isBargain ? "is-active" : ""} href="/bargain">
+            <i className="fa-solid fa-tags" aria-hidden="true" />
+            <span>Bargain</span>
           </Link>
         </nav>
 
@@ -582,9 +583,9 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             {t("market")}
           </Link>
-          <Link className={isJobs ? "is-active" : ""} href="/jobs" onClick={() => setIsOpen(false)}>
-            <i className="fa-solid fa-briefcase" aria-hidden="true" />
-            {t("jobs")}
+          <Link className={isBargain ? "is-active" : ""} href="/bargain" onClick={() => setIsOpen(false)}>
+            <i className="fa-solid fa-tags" aria-hidden="true" />
+            Bargain
           </Link>
         </nav>
 
