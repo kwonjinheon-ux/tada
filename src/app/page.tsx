@@ -1,5 +1,6 @@
 import { HomePageClient } from "@/components/HomePageClient";
 import { getServerUser } from "@/lib/auth-server";
+import { getHomeListingRails } from "@/lib/market/home-listings";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,13 @@ export default async function HomePage() {
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .map((value) => value.trim())
     .join(", ");
+  const homeListings = supabase
+    ? await getHomeListingRails(supabase, {
+      city: profile?.region_city,
+      suburb: profile?.region_suburb,
+      userId: user?.id,
+    })
+    : { nearbyListings: [], justListedListings: [], savedListingIds: [] };
 
-  return <HomePageClient locationLabel={locationLabel || null} />;
+  return <HomePageClient locationLabel={locationLabel || null} {...homeListings} />;
 }

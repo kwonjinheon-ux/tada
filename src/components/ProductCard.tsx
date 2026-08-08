@@ -21,9 +21,10 @@ type ProductCardProps = {
   listing: Listing;
   priority?: boolean;
   initialIsSaved?: boolean;
+  imageSizes?: string;
 };
 
-function ProductCardComponent({ listing, priority = false, initialIsSaved = false }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw" }: ProductCardProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
@@ -111,7 +112,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
             fill
             priority={priority}
             quality={70}
-            sizes="(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw"
+            sizes={imageSizes}
             onError={() => setImageFailed(true)}
           />
         )}

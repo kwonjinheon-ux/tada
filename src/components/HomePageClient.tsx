@@ -5,8 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/Button";
+import type { Listing } from "@/data/listings";
 
 type Journey = {
   title: string;
@@ -16,14 +18,6 @@ type Journey = {
   art: string;
   image: string;
   comingSoon?: boolean;
-};
-
-type NearbyCollection = {
-  title: string;
-  subtitle: string;
-  href: string;
-  icon: string;
-  art: string;
 };
 
 const journeys: Journey[] = [
@@ -61,37 +55,6 @@ const benefits = [
   { icon: "fa-bolt", title: "Quick & easy", description: "One place for local life" },
 ];
 
-const nearbyCollections: NearbyCollection[] = [
-  {
-    title: "Furniture & home",
-    subtitle: "Refresh your space",
-    href: "/market?category=furniture-home-decor",
-    icon: "fa-couch",
-    art: "sofa",
-  },
-  {
-    title: "Phones & tech",
-    subtitle: "Find your next device",
-    href: "/market?category=mobile-phones-tablets",
-    icon: "fa-mobile-screen-button",
-    art: "phone",
-  },
-  {
-    title: "Sports & leisure",
-    subtitle: "Get outside today",
-    href: "/market?category=sports-leisure",
-    icon: "fa-person-biking",
-    art: "bike",
-  },
-  {
-    title: "Work from home",
-    subtitle: "Make room to focus",
-    href: "/market?category=furniture-home-decor&subcategory=desks-office-furniture",
-    icon: "fa-chair",
-    art: "desk",
-  },
-];
-
 const reasons = [
   { icon: "fa-wand-magic-sparkles", title: "Modern & simple", description: "A calm, clear way to find what you need." },
   { icon: "fa-people-group", title: "Built for locals", description: "Buy, work and connect in your community." },
@@ -124,22 +87,59 @@ function JourneyCard({ journey }: { journey: Journey }) {
   return <article className="home-journey-card home-journey-card--coming-soon ui-card" aria-label={`${journey.title}: coming soon`}>{content}</article>;
 }
 
-function NearbyCollectionCard({ collection }: { collection: NearbyCollection }) {
+type HomeListingRailProps = {
+  id: string;
+  title: string;
+  titleIcon: string;
+  eyebrow?: string | null;
+  listings: Listing[];
+  savedListingIds: string[];
+};
+
+function HomeListingRail({ id, title, titleIcon, eyebrow, listings, savedListingIds }: HomeListingRailProps) {
+  if (!listings.length) return null;
+
   return (
-    <Link className="home-nearby-card ui-card" href={collection.href}>
-      <div className={`home-nearby-art home-nearby-art--${collection.art}`} aria-hidden="true">
-        <i className={`fa-solid ${collection.icon}`} />
+    <section className="home-listing-rail" aria-labelledby={id}>
+      <div className="home-listing-heading">
+        <div>
+          {eyebrow ? <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {eyebrow}</p> : null}
+          <div className="home-listing-title">
+            <i className={`fa-solid ${titleIcon}`} aria-hidden="true" />
+            <h2 id={id}>{title}</h2>
+          </div>
+        </div>
+        <Link href="/market">See all <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
       </div>
-      <div className="home-nearby-copy">
-        <span>{collection.subtitle}</span>
-        <h3>{collection.title}</h3>
-        <span className="home-nearby-action">Explore <i className="fa-solid fa-arrow-right" aria-hidden="true" /></span>
+
+      <div className="home-listing-grid">
+        {listings.map((listing, index) => (
+          <ProductCard
+            imageSizes="(max-width: 767px) 240px, (min-width: 1280px) 320px, 33vw"
+            initialIsSaved={savedListingIds.includes(listing.id)}
+            key={listing.id}
+            listing={listing}
+            priority={index < 2}
+          />
+        ))}
       </div>
-    </Link>
+    </section>
   );
 }
 
-export function HomePageClient({ locationLabel = null }: { locationLabel?: string | null }) {
+type HomePageClientProps = {
+  locationLabel?: string | null;
+  nearbyListings?: Listing[];
+  justListedListings?: Listing[];
+  savedListingIds?: string[];
+};
+
+export function HomePageClient({
+  locationLabel = null,
+  nearbyListings = [],
+  justListedListings = [],
+  savedListingIds = [],
+}: HomePageClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -191,18 +191,22 @@ export function HomePageClient({ locationLabel = null }: { locationLabel?: strin
             ))}
           </section>
 
-          <section className="home-nearby-section" aria-labelledby="nearby-title">
-            <div className="home-section-heading">
-              <div>
-                {locationLabel ? <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {locationLabel}</p> : null}
-                <h2 id="nearby-title">Explore near you</h2>
-              </div>
-              <Link href="/market">View all <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
-            </div>
-
-            <div className="home-nearby-grid">
-              {nearbyCollections.map((collection) => <NearbyCollectionCard collection={collection} key={collection.title} />)}
-            </div>
+          <section className="home-listing-rails" aria-label="Marketplace discoveries">
+            <HomeListingRail
+              eyebrow={locationLabel}
+              id="nearby-title"
+              listings={nearbyListings}
+              savedListingIds={savedListingIds}
+              title="Near you"
+              titleIcon="fa-location-dot"
+            />
+            <HomeListingRail
+              id="just-listed-title"
+              listings={justListedListings}
+              savedListingIds={savedListingIds}
+              title="Just listed"
+              titleIcon="fa-clock"
+            />
           </section>
 
           <section className="home-sponsor ui-card" aria-labelledby="home-sponsor-title">
