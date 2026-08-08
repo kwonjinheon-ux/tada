@@ -1,6 +1,6 @@
 import { bargainFeedQuerySchema } from "@/contracts/api";
 import { BargainPageClient } from "@/components/bargain/BargainPageClient";
-import { getMarketFeed } from "@/lib/market/feed";
+import { getBargainFeed } from "@/lib/bargain/feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Bargain | Tada" };
@@ -19,7 +19,6 @@ export default async function BargainPage({ searchParams }: { searchParams: Prom
   });
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <BargainPageClient />;
-  const { data: { user } } = await supabase.auth.getUser();
-  const feed = await getMarketFeed(supabase, query, user?.id);
-  return <BargainPageClient postedListings={feed.listings} savedListingIds={feed.savedListingIds} />;
+  const feed = await getBargainFeed(supabase, query);
+  return <BargainPageClient postedListings={feed.listings} />;
 }

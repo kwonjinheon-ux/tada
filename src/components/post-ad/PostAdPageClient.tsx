@@ -151,9 +151,14 @@ function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
 }
 
 
-export function PostAdPageClient({ initialListing }: { initialListing?: EditableListingInitialValues }) {
+export function PostAdPageClient({ initialListing, listingSpace = "market" }: { initialListing?: EditableListingInitialValues; listingSpace?: "market" | "bargain" }) {
   const router = useRouter();
   const { locale } = useLanguage();
+  const isBargainListing = listingSpace === "bargain";
+  const listingTable = isBargainListing ? "bargain_listings" : "market_listings";
+  const photoTable = isBargainListing ? "bargain_listing_photos" : "market_listing_photos";
+  const imageBucket = isBargainListing ? "bargain-listing-images" : "market-listing-images";
+  const listingHomePath = isBargainListing ? "/bargain" : "/market";
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PhotoPreview[]>([]);
@@ -237,7 +242,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       const draftPaths = photosRef.current.flatMap((photo) => photo.draftPath ? [photo.draftPath] : []);
       if (draftPaths.length) {
         const supabase = createBrowserSupabaseClient();
-        void supabase?.storage.from("market-listing-images").remove(draftPaths);
+        void supabase?.storage.from(imageBucket).remove(draftPaths);
       }
     };
     window.addEventListener("pagehide", cleanupDraftPhotos);
@@ -248,7 +253,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
         if (photo.file) URL.revokeObjectURL(photo.url);
       });
     };
-  }, []);
+  }, [imageBucket]);
 
   useEffect(() => {
     const loadProfileLocation = async () => {
@@ -326,14 +331,14 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     const results = await Promise.all(nextPhotos.map(async (photo) => {
       const extension = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
       const draftPath = `${user.id}/drafts/${photo.id}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("market-listing-images").upload(draftPath, photo.file, {
+      const { error: uploadError } = await supabase.storage.from(imageBucket).upload(draftPath, photo.file, {
         cacheControl: "3600",
         contentType: photo.file.type,
         upsert: false,
       });
       if (uploadError) return uploadError.message;
       if (!photosRef.current.some((currentPhoto) => currentPhoto.id === photo.id)) {
-        await supabase.storage.from("market-listing-images").remove([draftPath]);
+        await supabase.storage.from(imageBucket).remove([draftPath]);
         return null;
       }
       setPhotos((current) => current.map((currentPhoto) => currentPhoto.id === photo.id ? { ...currentPhoto, draftPath } : currentPhoto));
@@ -404,7 +409,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     }
     if (removedPhoto?.draftPath) {
       const supabase = createBrowserSupabaseClient();
-      void supabase?.storage.from("market-listing-images").remove([removedPhoto.draftPath]);
+      void supabase?.storage.from(imageBucket).remove([removedPhoto.draftPath]);
     }
 
     if (removedPhoto?.isExisting) {
@@ -478,7 +483,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
         id: photo.id,
         listing_id: listingId,
         owner_id: userId,
-        storage_bucket: "market-listing-images",
+        storage_bucket: imageBucket,
         storage_path: path,
         original_name: photo.file.name,
         mime_type: photo.file.type,
@@ -491,8 +496,8 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     const uploadResults = await Promise.all(
       uploadablePhotos.map(async (photo, index) => {
         const { error: uploadError } = photo.draftPath
-          ? await supabase.storage.from("market-listing-images").move(photo.draftPath, rows[index].storage_path)
-          : await supabase.storage.from("market-listing-images").upload(rows[index].storage_path, photo.file, {
+          ? await supabase.storage.from(imageBucket).move(photo.draftPath, rows[index].storage_path)
+          : await supabase.storage.from(imageBucket).upload(rows[index].storage_path, photo.file, {
             cacheControl: "3600",
             contentType: photo.file.type,
             upsert: false,
@@ -510,7 +515,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       return uploadError;
     }
 
-    const { error: photoInsertError } = await supabase.from("market_listing_photos").insert(rows);
+    const { error: photoInsertError } = await supabase.from(photoTable).insert(rows);
     return photoInsertError?.message ?? null;
   };
 
@@ -675,7 +680,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
       return;
     }
 
-    const { data: createdListing, error: insertError } = await supabase.from("market_listings").insert({
+    const { data: createdListing, error: insertError } = await supabase.from(listingTable).insert({
       owner_id: user.id,
       status: "published",
       title,
@@ -719,7 +724,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
         setNotice("Posted successfully. Photos could not be attached yet.");
         setSubmitProgress(100);
         setIsSubmitting(false);
-        router.push("/market");
+        router.push(listingHomePath);
         return;
       }
     }
@@ -742,7 +747,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
     setPhotos([]);
     setPrimaryPhotoId(null);
     setIsSubmitting(false);
-    router.push("/market");
+    router.push(listingHomePath);
   };
 
   const submitButtonProgress = isSubmitting ? Math.max(6, submitProgress) : 0;

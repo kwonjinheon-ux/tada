@@ -365,6 +365,10 @@ export function Navbar() {
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = searchQuery.trim();
+    if (pathname.startsWith("/bargain")) {
+      router.push(`/bargain${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+      return;
+    }
     if (pathname !== "/market") {
       router.push(`/market${query ? `?q=${encodeURIComponent(query)}` : ""}`);
       return;
@@ -382,7 +386,8 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isBargain = pathname.startsWith("/bargain");
   const isJobs = pathname.startsWith("/jobs");
-  const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/bargain/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const createPath = isBargain ? "/bargain/create" : "/market/create";
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
@@ -465,7 +470,7 @@ export function Navbar() {
   const standardDockItems: MobileDockItem[] = [
     { id: "home", label: t("home"), icon: "home", href: "/market", active: isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
-    { id: "create", label: t("create"), icon: "create", href: "/market/create", active: isPostAd, variant: "create" },
+    { id: "create", label: t("create"), icon: "create", href: createPath, active: isPostAd, variant: "create" },
     { id: "categories", label: "Browse categories", icon: "categories", onClick: openMobileCategories },
     { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
@@ -486,7 +491,7 @@ export function Navbar() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsLanguageMenuOpen(false);
-    if (pathname !== "/market") {
+    if (pathname !== "/market" && pathname !== "/bargain") {
       router.push("/market?filters=open");
       return;
     }
@@ -554,7 +559,7 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link className="nav-post" href="/market/create" aria-current={isPostAd ? "page" : undefined}>
+          <Link className="nav-post" href={createPath} aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
             <span>{t("create")}</span>
           </Link>

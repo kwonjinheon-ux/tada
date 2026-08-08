@@ -22,9 +22,11 @@ type ProductCardProps = {
   priority?: boolean;
   initialIsSaved?: boolean;
   imageSizes?: string;
+  listingHref?: string;
+  persistSave?: boolean;
 };
 
-function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw" }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true }: ProductCardProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
@@ -55,6 +57,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     if (popTimer.current) window.clearTimeout(popTimer.current);
     popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    if (!persistSave) return;
     try {
       const response = await fetch("/api/market/wishlist", {
         method: nextSaved ? "POST" : "DELETE",
@@ -72,7 +75,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     }
   };
 
-  const detailPath = `/market/${listing.id}`;
+  const detailPath = listingHref ?? `/market/${listing.id}`;
   const prefetchListing = () => {
     if (hasPrefetchedDetail.current) return;
     hasPrefetchedDetail.current = true;
