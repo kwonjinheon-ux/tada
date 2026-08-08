@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type LocationSelection, type MainLocation } from "@/data/nzLocations";
+import { SelectMenu } from "@/components/ui/SelectMenu";
 
 type DraftLocation = { mainLocation: MainLocation | ""; subLocation: string; locality: string | null; rawSuburb: string | null; region: string | null; latitude: number | null; longitude: number | null };
 
@@ -35,8 +36,8 @@ export function ListingLocationSelector({ value, onChange }: { value: DraftLocat
     {detectedLabel ? <p className="listing-location-detected"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {detectedLabel}</p> : null}
     {gpsState === "error" ? <p className="listing-location-error" role="alert">We couldn’t set your location. Select it manually below.</p> : null}
     <div className="post-form-grid listing-location-fields">
-      <label className="post-field" htmlFor="listing-main-location"><span>Main Location</span><div className="post-select-wrap"><select id="listing-main-location" name="main_location" value={value.mainLocation} onChange={(event) => selectMainLocation(event.target.value as MainLocation | "")}><option value="">Select main location</option>{NZ_MAIN_LOCATIONS.map((location) => <option key={location} value={location}>{location}</option>)}</select></div></label>
-      <label className="post-field" htmlFor="listing-sub-location"><span>Sub Location</span><div className="post-select-wrap"><select id="listing-sub-location" name="sub_location" value={value.subLocation} disabled={!value.mainLocation} onChange={(event) => selectSubLocation(event.target.value)}><option value="">Select sub location</option>{visibleSubLocations.map((location) => <option key={location} value={location}>{location}</option>)}</select></div></label>
+      <SelectMenu id="listing-main-location" name="main_location" label="Main Location" placeholder="Select main location" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={value.mainLocation} onChange={(nextLocation) => selectMainLocation(nextLocation as MainLocation | "")} />
+      <SelectMenu id="listing-sub-location" name="sub_location" label="Sub Location" placeholder="Select sub location" options={visibleSubLocations.map((location) => ({ label: location, value: location }))} value={value.subLocation} disabled={!value.mainLocation} onChange={selectSubLocation} />
     </div>
   </fieldset>;
 }

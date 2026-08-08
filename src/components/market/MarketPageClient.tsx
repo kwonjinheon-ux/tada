@@ -6,6 +6,7 @@ import { marketFeedResponseSchema } from "@/contracts/api";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
+import { SelectMenu } from "@/components/ui/SelectMenu";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
@@ -83,6 +84,11 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     setMaxPrice(appliedMaxPrice);
     setCondition(appliedCondition);
   }, [appliedCondition, appliedMaxPrice]);
+
+  useEffect(() => {
+    setMainLocation((searchParams.get("mainLocation") as MainLocation | null) ?? "");
+    setSubLocation(searchParams.get("subLocation") ?? "");
+  }, [searchParams]);
 
   useEffect(() => {
     setListings(postedListings);
@@ -250,6 +256,15 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
   };
+  const applyLocationFilter = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+    setMainLocation(nextMainLocation);
+    setSubLocation(nextSubLocation);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("cursor");
+    if (nextMainLocation) params.set("mainLocation", nextMainLocation); else params.delete("mainLocation");
+    if (nextSubLocation) params.set("subLocation", nextSubLocation); else params.delete("subLocation");
+    router.push(`/market${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+  };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
       <button
@@ -269,8 +284,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
         </button>
         <section className="filter-block location-block">
           <h2>Location</h2>
-          <label className="market-location-field"><span>Main Location</span><select value={mainLocation} onChange={(event) => { setMainLocation(event.target.value as MainLocation | ""); setSubLocation(""); }}><option value="">All New Zealand</option>{NZ_MAIN_LOCATIONS.map((location) => <option key={location} value={location}>{location}</option>)}</select></label>
-          <label className="market-location-field"><span>Sub Location</span><select value={subLocation} disabled={!mainLocation} onChange={(event) => setSubLocation(event.target.value)}><option value="">Any sub location</option>{mainLocation ? getSubLocations(mainLocation).map((location) => <option key={location} value={location}>{location}</option>) : null}</select></label>
+          <SelectMenu id="market-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => applyLocationFilter(nextLocation as MainLocation | "")} className="market-location-select" />
+          <SelectMenu id="market-sub-location" name="subLocation" label="Sub Location" icon="fa-map-pin" placeholder="Any sub location" options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []} value={subLocation} disabled={!mainLocation} onChange={(nextSubLocation) => applyLocationFilter(mainLocation, nextSubLocation)} className="market-location-select" />
         </section>
 
         <section className="filter-block category-filter">

@@ -1277,23 +1277,13 @@ a {
   color: var(--primary-dark);
 }
 
-.market-location-field {
-  display: grid;
-  gap: 6px;
-  color: var(--blue-soft-850);
-  font-size: var(--text-sm);
-}
-
-.market-location-field select {
-  min-height: var(--control-h-lg);
-  width: 100%;
-  border: 1px solid var(--neutral-250);
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-3);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-}
+.market-location-select { gap: 6px; }
+.market-location-select > label { color: var(--blue-soft-850); font-size: var(--text-sm); }
+.market-location-select .post-select-trigger { min-height: var(--control-h-lg); border-color: var(--neutral-250); background: var(--surface); font-size: var(--text-base); }
+.market-location-select .post-select-trigger::after { right: 18px; }
+.market-location-select .post-select-wrap.is-enhanced.has-leading-icon .post-select-trigger { padding-left: 38px; }
+.market-location-select .post-select-wrap.is-enhanced.has-leading-icon > i { left: 14px; }
+.market-location-select .post-select-menu { z-index: 45; }
 
 .listing-location-selector {
   display: grid;
@@ -4035,6 +4025,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   transform: translateY(-32%) rotate(225deg);
 }
 
+.post-select-trigger:disabled { cursor: not-allowed; opacity: .55; }
+
 .post-select-menu {
   position: absolute;
   z-index: 12;
@@ -5517,7 +5509,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .market-filter-panel.is-open .dashboard-link,
-  .market-filter-panel.is-open .location-block,
   .market-filter-panel.is-open .price-filter,
   .market-filter-panel.is-open .condition-filter,
   .market-filter-panel.is-open .apply-filter-button {

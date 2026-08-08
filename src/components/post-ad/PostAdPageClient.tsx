@@ -11,12 +11,10 @@ import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
 import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
 import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
+import { SelectMenu, type SelectMenuOption } from "@/components/ui/SelectMenu";
 import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 
-type SelectOption = {
-  label: string;
-  value: string;
-};
+type SelectOption = SelectMenuOption;
 
 type ImportedCategoryKeyword = {
   keyword: string;
@@ -152,106 +150,6 @@ function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
   return `${description}${description ? "<br />" : ""}${specsHtml}`;
 }
 
-function CustomSelect({
-  id,
-  name,
-  label,
-  icon,
-  placeholder,
-  options,
-  value,
-  onChange,
-}: {
-  id: string;
-  name: string;
-  label: string;
-  icon: string;
-  placeholder: string;
-  options: SelectOption[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const selected = options.find((option) => option.value === value);
-
-  useEffect(() => {
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("click", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("click", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
-
-  return (
-    <div className="post-field">
-      <label htmlFor={id}>{label}</label>
-      <div ref={wrapperRef} className={`post-select-wrap has-leading-icon is-enhanced ${isOpen ? "is-open" : ""}`}>
-        <i className={`fa-solid ${icon}`} aria-hidden="true" />
-        <select id={id} name={name} value={value} onChange={(event) => onChange(event.target.value)}>
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button
-          className="post-select-trigger"
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          aria-controls={`${id}-menu`}
-          onClick={() => setIsOpen((current) => !current)}
-        >
-          <span>{selected?.label ?? placeholder}</span>
-        </button>
-        <div className="post-select-menu" id={`${id}-menu`} role="listbox">
-          <button
-            className="post-select-option"
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => {
-              onChange("");
-              setIsOpen(false);
-            }}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className="post-select-option"
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={value === option.value}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function PostAdPageClient({ initialListing }: { initialListing?: EditableListingInitialValues }) {
   const router = useRouter();
@@ -861,9 +759,9 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
             </div>
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
-              <CustomSelect id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
-              <CustomSelect id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
-              <CustomSelect id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
+              <SelectMenu id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
+              <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
+              <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>
 
             <fieldset
@@ -1000,7 +898,7 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
                       <label htmlFor="smartphone-colour">Colour</label>
                       <input id="smartphone-colour" type="text" value={smartphoneSpecs.colour} onChange={(event) => updateSmartphoneSpec("colour", event.target.value)} placeholder="e.g. Natural Titanium" />
                     </div>
-                    <CustomSelect id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="fa-mobile-screen" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
+              <SelectMenu id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="fa-mobile-screen" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
                   </div>
                 </section>
               )}
@@ -1032,8 +930,8 @@ export function PostAdPageClient({ initialListing }: { initialListing?: Editable
 
             <div className="post-form-grid post-location-grid">
               <ListingLocationSelector value={location} onChange={setLocation} />
-              <CustomSelect id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
-              <CustomSelect id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
+              <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
+              <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>
 
             {(notice || error) && (
