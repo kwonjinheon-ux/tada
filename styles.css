@@ -1285,6 +1285,23 @@ a {
 .market-location-select .post-select-wrap.is-enhanced.has-leading-icon > i { left: 14px; }
 .market-location-select .post-select-menu { z-index: 45; }
 
+.bargain-results { gap: var(--space-5); }
+.bargain-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-4); align-items: center; overflow: hidden; padding: var(--space-5); border: 1px solid var(--green-200); border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--green-soft-50), var(--neutral-50)); }
+.bargain-hero p { margin: 0 0 var(--space-1); color: var(--green-650); font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: .09em; }
+.bargain-hero h1 { margin: 0; color: var(--blue-950); font-size: var(--text-4xl); line-height: 1; }
+.bargain-hero > div > span { display: block; margin-top: var(--space-2); color: var(--blue-soft-650); font-size: var(--text-md); }
+.bargain-hero ul { display: grid; gap: var(--space-2); margin: var(--space-4) 0 0; padding: 0; list-style: none; }
+.bargain-hero li { display: grid; grid-template-columns: 18px auto; column-gap: var(--space-2); align-items: center; color: var(--blue-850); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.bargain-hero li i { color: var(--green-600); }.bargain-hero li small { grid-column: 2; color: var(--blue-soft-600); font-size: var(--text-xs); font-weight: var(--weight-regular); }
+.bargain-hero-art { width: 108px; height: 108px; display: grid; place-items: center; position: relative; border-radius: var(--radius-circle); background: var(--green-500); color: var(--neutral-50); box-shadow: var(--shadow-primary); }
+.bargain-hero-art i:first-child { font-size: var(--text-5xl); }.bargain-hero-art i:not(:first-child) { position: absolute; display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-circle); background: var(--neutral-50); color: var(--green-600); box-shadow: var(--shadow-sm); font-size: var(--text-md); }.bargain-hero-art i:nth-child(2) { right: -4px; bottom: 7px; }.bargain-hero-art i:nth-child(3) { top: -4px; left: 2px; }
+.bargain-quick-deals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.bargain-quick-deals button { min-width: 0; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: var(--space-2); align-items: center; padding: var(--space-3); border: 1px solid var(--neutral-250); border-radius: var(--radius-md); background: var(--surface); color: var(--blue-850); font: inherit; text-align: left; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease; }.bargain-quick-deals button:hover, .bargain-quick-deals button.is-selected { border-color: var(--green-300); background: var(--green-soft-50); box-shadow: var(--shadow-xs); transform: translateY(-1px); }.bargain-quick-deals i { width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radius-sm); background: var(--green-soft-100); color: var(--green-650); }.bargain-quick-deals span { min-width: 0; display: grid; gap: 2px; }.bargain-quick-deals strong { font-size: var(--text-sm); }.bargain-quick-deals small { overflow: hidden; color: var(--blue-soft-600); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }
+.bargain-toolbar { grid-template-columns: auto minmax(0, 1fr) auto; }.bargain-toolbar p { margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); }
+
+@media (min-width: 768px) { .bargain-quick-deals { grid-template-columns: repeat(5, minmax(0, 1fr)); }.bargain-hero { padding: var(--space-6); }.bargain-hero-art { width: 132px; height: 132px; } }
+@media (max-width: 479.98px) { .bargain-hero { padding: var(--space-4); }.bargain-hero h1 { font-size: var(--text-3xl); }.bargain-hero-art { width: 82px; height: 82px; }.bargain-hero-art i:first-child { font-size: var(--text-3xl); }.bargain-hero-art i:not(:first-child) { width: 27px; height: 27px; font-size: var(--text-sm); }.bargain-quick-deals { grid-template-columns: 1fr; }.bargain-toolbar { grid-template-columns: auto minmax(0, 1fr); }.bargain-toolbar .sort-control { grid-column: 1 / -1; } }
+
 .listing-location-selector {
   display: grid;
   gap: var(--space-3);

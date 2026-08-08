@@ -96,6 +96,9 @@ export const marketFeedQuerySchema = z.object({
   cursor: z.string().min(1).max(500).optional(),
 });
 
+export const bargainTypeSchema = z.enum(["all", "2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale", "newly-listed", "nearby-deals"]);
+export const bargainFeedQuerySchema = marketFeedQuerySchema.pick({ q: true, sort: true, mainLocation: true, subLocation: true }).extend({ bargain: bargainTypeSchema.default("all") });
+
 export const marketFeedListingSchema = z.object({
   id: uuidSchema,
   title: z.string(),
