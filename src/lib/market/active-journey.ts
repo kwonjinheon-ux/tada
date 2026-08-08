@@ -15,10 +15,10 @@ const MAX_SELLING = 6;
 /**
  * A "journey" is a trade in flight, on either side. Buying reuses the offer's own
  * status as the stepper stage (pending -> "offer", accepted -> "accepted", which
- * the stepper already renders with "meet" as the highlighted next step — there is
- * no separate "meeting scheduled" state in the schema, so no meeting time is shown
- * here; adding one is a real feature, not something to invent as a side effect of
- * wiring this up). Selling groups a seller's still-open (pending) offers by
+ * the stepper renders with "Complete" highlighted as the next step). There is no
+ * "meeting scheduled" state in the schema, so no meeting time is shown here;
+ * adding one is a real feature, not something to invent as a side effect of
+ * wiring this up. Selling groups a seller's still-open (pending) offers by
  * listing, since several buyers can be bidding on the same item at once.
  */
 export async function getActiveJourneys(supabase: SupabaseClient, userId: string): Promise<ActiveJourneyItem[]> {
