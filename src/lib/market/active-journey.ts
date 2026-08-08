@@ -14,12 +14,14 @@ const MAX_SELLING = 6;
 
 /**
  * A "journey" is a trade in flight, on either side. Buying reuses the offer's own
- * status as the stepper stage (pending -> "offer", accepted -> "accepted", which
- * the stepper renders with "Complete" highlighted as the next step). There is no
- * "meeting scheduled" state in the schema, so no meeting time is shown here;
- * adding one is a real feature, not something to invent as a side effect of
- * wiring this up. Selling groups a seller's still-open (pending) offers by
- * listing, since several buyers can be bidding on the same item at once.
+ * status as the stepper stage: db status "pending" maps to stepper stage "pending"
+ * (the "offer" checkpoint before it is shown done too, since the offer obviously
+ * went out), db status "accepted" maps to "accepted" — either way the stepper
+ * highlights the next stage as current. There is no "meeting scheduled" state in
+ * the schema, so no meeting time is shown here; adding one is a real feature, not
+ * something to invent as a side effect of wiring this up. Selling groups a
+ * seller's still-open (pending) offers by listing, since several buyers can be
+ * bidding on the same item at once.
  */
 export async function getActiveJourneys(supabase: SupabaseClient, userId: string): Promise<ActiveJourneyItem[]> {
   const [{ data: buyingRows }, { data: sellingRows }] = await Promise.all([
@@ -77,7 +79,7 @@ export async function getActiveJourneys(supabase: SupabaseClient, userId: string
       role: "buying",
       title: listings.get(offer.listing_id)?.title ?? "Marketplace listing",
       imageUrl: imageFor(offer.listing_id),
-      stage: offer.status === "accepted" ? "accepted" : "offer",
+      stage: offer.status === "accepted" ? "accepted" : "pending",
       statusLabel: offer.status === "accepted" ? "Offer accepted" : "Offer sent",
       meetingLabel: null,
       conversationHref: `/market/dashboard/messages?conversation=${offer.conversation_id}`,

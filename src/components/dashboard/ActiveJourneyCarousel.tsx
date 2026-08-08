@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { TranslatedText, useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 
-const JOURNEY_STAGES = ["offer", "accepted", "complete"] as const;
+const JOURNEY_STAGES = ["offer", "pending", "accepted", "complete"] as const;
 type JourneyStage = (typeof JOURNEY_STAGES)[number];
 
 type BuyingJourney = {
@@ -30,8 +30,9 @@ type SellingJourney = {
 
 export type ActiveJourneyItem = BuyingJourney | SellingJourney;
 
-const stageLabelKey: Record<JourneyStage, "journeyOffer" | "journeyAccepted" | "journeyComplete"> = {
+const stageLabelKey: Record<JourneyStage, "journeyOffer" | "journeyPending" | "journeyAccepted" | "journeyComplete"> = {
   offer: "journeyOffer",
+  pending: "journeyPending",
   accepted: "journeyAccepted",
   complete: "journeyComplete",
 };
