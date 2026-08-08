@@ -123,7 +123,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: location.mainLocation || null, region_suburb: location.subLocation || null, main_location: location.mainLocation || null, sub_location: location.subLocation || null, locality: location.locality, raw_suburb: location.rawSuburb, region: location.region, latitude: location.latitude, longitude: location.longitude, preferred_locale: locale });
+    const profileValues = { id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: location.mainLocation || null, region_suburb: location.subLocation || null, latitude: location.latitude, longitude: location.longitude, preferred_locale: locale };
+    const { error: categorizedLocationError } = await supabase.from("profiles").upsert({ ...profileValues, main_location: location.mainLocation || null, sub_location: location.subLocation || null, locality: location.locality, raw_suburb: location.rawSuburb, region: location.region });
+    const profileError = categorizedLocationError && ["42703", "PGRST204"].includes(categorizedLocationError.code)
+      ? (await supabase.from("profiles").upsert(profileValues)).error
+      : categorizedLocationError;
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
     const authUpdate = nextEmail === savedSettings.email
       ? { data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } }

@@ -47,7 +47,23 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     const operator = ascending ? "gt" : "lt";
     request = request.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`);
   }
-  const { data } = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(PAGE_SIZE + 1);
+  const primaryResult = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(PAGE_SIZE + 1);
+  let data = primaryResult.data as Row[] | null;
+  // Deployments can temporarily run newer application code before the additive
+  // location migration. Fall back to the legacy columns instead of presenting an
+  // empty marketplace while the migration is applied.
+  if (primaryResult.error && ["42703", "PGRST204"].includes(primaryResult.error.code)) {
+    let legacyRequest = supabase.from("market_listings").select("id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+    if (category) legacyRequest = legacyRequest.eq("category_slug", category);
+    if (subcategory) legacyRequest = legacyRequest.eq("subcategory_slug", subcategory);
+    if (query.maxPrice) legacyRequest = legacyRequest.lte("price_cents", query.maxPrice * 100);
+    if (query.condition) legacyRequest = legacyRequest.eq("item_condition", query.condition);
+    if (query.mainLocation) legacyRequest = legacyRequest.eq("region_city", query.mainLocation);
+    if (query.subLocation) legacyRequest = legacyRequest.eq("region_suburb", query.subLocation);
+    if (search) legacyRequest = legacyRequest.or(`title.ilike.%${search}%,region_city.ilike.%${search}%,region_suburb.ilike.%${search}%`);
+    if (cursor) { const operator = ascending ? "gt" : "lt"; legacyRequest = legacyRequest.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`); }
+    data = (await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(PAGE_SIZE + 1)).data as Row[] | null;
+  }
   const rows = ((data ?? []) as Row[]);
   const page = rows.slice(0, PAGE_SIZE);
   const ids = page.map((row) => row.id);
