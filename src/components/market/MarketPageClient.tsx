@@ -178,30 +178,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   }, [applyingChip]);
 
   useEffect(() => {
-    if (!isLoadingMore || window.innerWidth >= 768) return;
-
-    let touchStartY = 0;
-    const blockDownwardScroll = (event: TouchEvent | WheelEvent) => {
-      const deltaY = event instanceof WheelEvent
-        ? event.deltaY
-        : touchStartY - (event.touches[0]?.clientY ?? touchStartY);
-      if (deltaY > 0) event.preventDefault();
-    };
-    const rememberTouchStart = (event: TouchEvent) => {
-      touchStartY = event.touches[0]?.clientY ?? 0;
-    };
-
-    window.addEventListener("touchstart", rememberTouchStart, { passive: true });
-    window.addEventListener("touchmove", blockDownwardScroll, { passive: false });
-    window.addEventListener("wheel", blockDownwardScroll, { passive: false });
-    return () => {
-      window.removeEventListener("touchstart", rememberTouchStart);
-      window.removeEventListener("touchmove", blockDownwardScroll);
-      window.removeEventListener("wheel", blockDownwardScroll);
-    };
-  }, [isLoadingMore]);
-
-  useEffect(() => {
     const sentinel = loadMoreRef.current;
     if (!sentinel || !nextPageCursor || isLoadingMore) return;
 
@@ -226,7 +202,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
             });
         }
       },
-      { rootMargin: "300px 0px" },
+      // Fire well before the sentinel is actually on screen — about a viewport and a
+      // half of scroll lead-time — so the next page is already in by the time the
+      // user reaches the bottom. No spinner, no message: it should just never run out.
+      { rootMargin: "1200px 0px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
@@ -375,12 +354,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
           ])}
           {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
-        {isLoadingMore ? (
-          <div className="market-load-overlay" role="status" aria-live="polite">
-            <span className="market-list-load-spinner" aria-hidden="true" />
-            <span>{t("loadingMoreListings")}</span>
-          </div>
-        ) : null}
 
       </section>
     </main>
