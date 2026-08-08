@@ -11,7 +11,7 @@ export default async function ProfileSettingsPage() {
   if (!user) redirect("/login");
   const supabase = await createServerSupabaseClient();
   const { data: profile } = supabase
-    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
+    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, main_location, sub_location, locality, raw_suburb, region, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
     : { data: null };
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
 
@@ -30,6 +30,11 @@ export default async function ProfileSettingsPage() {
             location_mode: profile?.location_mode === "current" ? "current" : "manual",
             region_city: profile?.region_city ?? null,
             region_suburb: profile?.region_suburb ?? null,
+            main_location: profile?.main_location ?? null,
+            sub_location: profile?.sub_location ?? null,
+            locality: profile?.locality ?? null,
+            raw_suburb: profile?.raw_suburb ?? null,
+            region: profile?.region ?? null,
             latitude: profile?.latitude ? Number(profile.latitude) : null,
             longitude: profile?.longitude ? Number(profile.longitude) : null,
             preferred_locale: ["en", "ko", "zh", "ja", "es", "hi", "ar"].includes(profile?.preferred_locale ?? "") ? profile?.preferred_locale as "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar" : "en",

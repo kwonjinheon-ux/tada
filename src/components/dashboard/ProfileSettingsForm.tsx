@@ -6,10 +6,11 @@ import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploade
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { descriptionTextScale, MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizeControls } from "@/components/ui/TextSizeSection";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
+import { findMainLocation } from "@/lib/market/nz-location";
+import type { MainLocation } from "@/data/nzLocations";
 
-type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
-type LocationCoordinates = { latitude: number; longitude: number; accuracy: number };
-type LocationRequestState = { status: "idle" } | { status: "loading" } | { status: "success"; coordinates: LocationCoordinates } | { status: "error"; message: string };
+type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
 type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
 const PROFILE_PREFERENCES_KEY = "tada-profile-preferences";
 const defaultStaticSwitches: StaticSwitches = { allowChat: true, showPhoneNumber: false, emailNotifications: true, chatMessages: true, priceUpdates: false, smsAlerts: true, reviews: true };
@@ -20,9 +21,6 @@ const readStaticSwitches = (): StaticSwitches => {
     return stored && typeof stored === "object" ? { ...defaultStaticSwitches, ...stored } : defaultStaticSwitches;
   } catch { return defaultStaticSwitches; }
 };
-const NZ_CITIES = [
-  ["Whangarei", -35.725, 174.323, ["Avenues", "Kamo", "Onerahi", "Tikipunga"]], ["Auckland", -36.849, 174.763, ["CBD", "Albany", "Manukau", "New Lynn", "Takapuna"]], ["Hamilton", -37.787, 175.279, ["Flagstaff", "Hillcrest", "Rototuna", "Chartwell", "Frankton"]], ["Tauranga", -37.687, 176.165, ["Mount Maunganui", "Papamoa", "Bethlehem", "Otumoetai"]], ["Rotorua", -38.137, 176.252, ["Ngongotaha", "Kawaha Point", "Lynmore", "Pukehangi"]], ["Napier", -39.492, 176.912, ["Ahuriri", "Taradale", "Marewa", "Westshore"]], ["Palmerston North", -40.356, 175.609, ["Hokowhitu", "Kelvin Grove", "Roslyn", "Terrace End"]], ["Wellington", -41.286, 174.776, ["Te Aro", "Karori", "Kilbirnie", "Newtown", "Johnsonville"]], ["Nelson", -41.271, 173.283, ["Stoke", "Tahunanui", "The Wood", "Atawhai"]], ["Christchurch", -43.532, 172.637, ["Riccarton", "Halswell", "Papanui", "Sumner", "Ilam"]], ["Dunedin", -45.878, 170.503, ["North East Valley", "Mornington", "St Clair", "Mosgiel"]], ["Invercargill", -46.413, 168.353, ["Waikiwi", "Gladstone", "Kingswell", "Appleby"]],
-] as const;
 
 export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
@@ -44,11 +42,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [phone, setPhone] = useState(initialProfile.phone ?? "");
   const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
-  const [city, setCity] = useState(() => NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "");
-  const [suburb, setSuburb] = useState(initialProfile.region_suburb ?? "");
-  const [coordinates, setCoordinates] = useState({ latitude: initialProfile.latitude, longitude: initialProfile.longitude });
+  const [location, setLocation] = useState(() => ({ mainLocation: (findMainLocation(initialProfile.main_location ?? initialProfile.region_city) ?? "") as MainLocation | "", subLocation: initialProfile.sub_location ?? initialProfile.region_suburb ?? "", locality: initialProfile.locality, rawSuburb: initialProfile.raw_suburb, region: initialProfile.region, latitude: initialProfile.latitude, longitude: initialProfile.longitude }));
   const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialDescriptionTextSizeStep);
-  const [currentLocation, setCurrentLocation] = useState<LocationRequestState>({ status: "idle" });
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [phoneOtp, setPhoneOtp] = useState("");
@@ -57,11 +52,9 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
-  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, city: NZ_CITIES.some(([name]) => name === initialProfile.region_city) ? initialProfile.region_city ?? "" : "", suburb: initialProfile.region_suburb ?? "", coordinates: { latitude: initialProfile.latitude, longitude: initialProfile.longitude }, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep, staticSwitches: readStaticSwitches() }));
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep, staticSwitches: readStaticSwitches() }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
-  const selectedCity = NZ_CITIES.find(([name]) => name === city);
-  const availableSuburbs = selectedCity?.[3] ?? [];
-  const locationLabel = [suburb, city].filter(Boolean).join(", ");
+  const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
   const staticSwitch = (key: keyof typeof staticSwitches) => <label className="profile-static-switch"><input type="checkbox" checked={staticSwitches[key]} onChange={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))} /><span aria-hidden="true" /></label>;
 
   const updateLocale = async (nextLocale: SupportedLocale) => {
@@ -120,22 +113,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     return digits ? (digits.startsWith("64") ? `+${digits}` : `+64${digits.replace(/^0/, "")}`) : "";
   };
 
-  const getGeolocationErrorMessage = (code: number) => {
-    if (code === 1) return "Location permission was denied. Please allow it in your browser settings and try again.";
-    if (code === 2) return "Your current location is unavailable. Check GPS or your network connection.";
-    if (code === 3) return "Finding your location took too long. Please try again.";
-    return "We could not determine your current location.";
-  };
-
-  const useCurrentLocation = () => {
-    if (typeof navigator === "undefined" || !("geolocation" in navigator)) { setCurrentLocation({ status: "error", message: "This browser does not support location services." }); return; }
-    setCurrentLocation({ status: "loading" });
-    navigator.geolocation.getCurrentPosition(({ coords }) => {
-      const nearest = NZ_CITIES.reduce((closest, candidate) => ((candidate[1] - coords.latitude) ** 2 + (candidate[2] - coords.longitude) ** 2) < ((closest[1] - coords.latitude) ** 2 + (closest[2] - coords.longitude) ** 2) ? candidate : closest);
-      setLocationMode("current"); setCity(nearest[0]); setSuburb(nearest[3][0]); setCoordinates({ latitude: coords.latitude, longitude: coords.longitude }); setCurrentLocation({ status: "success", coordinates: { latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy } });
-    }, (error) => setCurrentLocation({ status: "error", message: getGeolocationErrorMessage(error.code) }), { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
-  };
-
   const saveAllSettings = async () => {
     const nickname = nicknameDraft.trim();
     const nextEmail = emailDraft.trim();
@@ -146,7 +123,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsSavingAll(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setStatus("Please sign in again."); setIsSavingAll(false); return; }
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: city || null, region_suburb: suburb || null, latitude: coordinates.latitude, longitude: coordinates.longitude, preferred_locale: locale });
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname, phone: phone.trim() || null, location_mode: locationMode, region_city: location.mainLocation || null, region_suburb: location.subLocation || null, main_location: location.mainLocation || null, sub_location: location.subLocation || null, locality: location.locality, raw_suburb: location.rawSuburb, region: location.region, latitude: location.latitude, longitude: location.longitude, preferred_locale: locale });
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
     const authUpdate = nextEmail === savedSettings.email
       ? { data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } }
@@ -155,7 +132,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
     window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
     setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
-    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, city, suburb, coordinates, locale, descriptionTextSizeStep, staticSwitches });
+    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, location, locale, descriptionTextSizeStep, staticSwitches });
     setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
     setIsSavingAll(false);
     router.refresh();
@@ -163,8 +140,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
 
   const discardSettings = () => {
     setDisplayName(savedSettings.displayName); setNicknameDraft(savedSettings.displayName); setEmailDraft(savedSettings.email); setPhone(savedSettings.phone);
-    setLocationMode(savedSettings.locationMode); setCity(savedSettings.city); setSuburb(savedSettings.suburb); setCoordinates(savedSettings.coordinates); setLocale(savedSettings.locale); setDescriptionTextSizeStep(savedSettings.descriptionTextSizeStep); setStaticSwitches(savedSettings.staticSwitches);
-    setCurrentLocation({ status: "idle" }); setIsEditingNickname(false); setStatus("Changes discarded.");
+    setLocationMode(savedSettings.locationMode); setLocation(savedSettings.location); setLocale(savedSettings.locale); setDescriptionTextSizeStep(savedSettings.descriptionTextSizeStep); setStaticSwitches(savedSettings.staticSwitches);
+    setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
   const sendPhoneCode = async () => {
@@ -234,11 +211,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     <section className={`profile-panel profile-location-privacy-panel ${isLocationOpen ? "is-open" : ""}`}>
       <button className="profile-section-toggle" type="button" aria-expanded={isLocationOpen} onClick={() => setIsLocationOpen((value) => !value)}><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {t("locationPrivacy")}</span><i className={`fa-solid fa-chevron-${isLocationOpen ? "up" : "down"}`} aria-hidden="true" /></button>
       {isLocationOpen ? <>
-      <div className="profile-location-access"><div><strong>{t("locationAccess")}</strong><span>{locationMode === "current" ? t("usingCurrentLocation") : t("setManually")}</span></div><button type="button" aria-label={t("useCurrentLocation")} disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-sliders" aria-hidden="true" /></button></div>
-      <div className="profile-location-actions"><button className={locationMode === "current" ? "is-active" : ""} type="button" disabled={currentLocation.status === "loading"} onClick={useCurrentLocation}><i className="fa-solid fa-location-crosshairs" aria-hidden="true" /> {currentLocation.status === "loading" ? t("saving") : t("useCurrentLocation")}</button><button className={locationMode === "manual" ? "is-active" : ""} type="button" onClick={() => { setLocationMode("manual"); setCurrentLocation({ status: "idle" }); }}><i className="fa-regular fa-pen-to-square" aria-hidden="true" /> {t("enterManually")}</button></div>
-      {currentLocation.status === "error" ? <p className="profile-location-feedback is-error" role="alert">{currentLocation.message}</p> : null}
-      {currentLocation.status === "success" ? <p className="profile-location-feedback">Current location found within {Math.round(currentLocation.coordinates.accuracy)}m accuracy.</p> : null}
-      <div className="profile-region-fields"><label className="profile-field"><span>{t("city")}</span><select value={city} onChange={(event) => { const nextCity = event.target.value; const next = NZ_CITIES.find(([name]) => name === nextCity); setLocationMode("manual"); setCity(nextCity); setSuburb(next?.[3][0] ?? ""); }}><option value="">{t("selectCity")}</option>{NZ_CITIES.map(([name]) => <option key={name}>{name}</option>)}</select></label><label className="profile-field"><span>{t("suburbArea")}</span><select disabled={!selectedCity} value={availableSuburbs.includes(suburb as never) ? suburb : ""} onChange={(event) => { setLocationMode("manual"); setSuburb(event.target.value); }}><option value="">{t("selectSuburb")}</option>{availableSuburbs.map((name) => <option key={name}>{name}</option>)}</select></label></div>
+      <div className="profile-location-access"><div><strong>{t("locationAccess")}</strong><span>{locationMode === "current" ? t("usingCurrentLocation") : t("setManually")}</span></div></div>
+      <ListingLocationSelector value={location} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} />
       <div className="profile-location-privacy-note"><i className="fa-solid fa-circle-info" aria-hidden="true" /><p>{t("locationPrivacyNote")}</p></div>
       </> : null}
     </section>
