@@ -118,6 +118,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const selectedConversationIdRef = useRef(selectedConversationId);
   const refreshFrameRef = useRef<number | null>(null);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
+  const hasSelectedConversation = Boolean(selectedConversation);
   const visibleConversations = useMemo(() => conversations.filter((conversation) => matchesFilter(conversation, filter)), [conversations, filter]);
   const totalUnreadCount = useMemo(() => conversations.reduce((total, conversation) => total + conversation.unreadCount, 0), [conversations]);
   const visibleIds = useMemo(() => visibleConversations.map((conversation) => conversation.id), [visibleConversations]);
@@ -158,20 +159,27 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   }, []);
 
   useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("messages-thread-active", hasSelectedConversation);
+    return () => root.classList.remove("messages-thread-active");
+  }, [hasSelectedConversation]);
+
+  useEffect(() => {
+    const root = document.documentElement;
     let wasKeyboardOpen = false;
+    // Some mobile browsers shrink both innerHeight and visualViewport.height when
+    // the keyboard opens. Keep the last keyboard-free height so that case is
+    // still measured rather than relying on focus state.
+    let keyboardFreeViewportHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0);
     const updateMobileViewport = () => {
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
-      document.documentElement.style.setProperty("--messages-viewport-height", `${viewportHeight}px`);
-      document.documentElement.style.setProperty("--messages-viewport-offset-top", `${viewportOffsetTop}px`);
-      // window.innerHeight stays at the layout viewport height while the keyboard shrinks the visual one,
-      // so the leftover is the keyboard inset. The thread claims the full visual viewport while it is up.
-      // Do NOT subtract offsetTop here: iOS Safari pans the layout viewport by roughly the keyboard
-      // height when the composer takes focus, so subtracting it cancels the very thing being measured
-      // and the inset never crosses the threshold.
-      const keyboardInset = Math.max(0, window.innerHeight - viewportHeight);
+      const keyboardInset = Math.max(0, window.innerHeight - viewportHeight, keyboardFreeViewportHeight - viewportHeight);
       const isKeyboardOpen = keyboardInset > 120;
-      document.documentElement.classList.toggle("messages-keyboard-open", isKeyboardOpen);
+      if (!isKeyboardOpen) keyboardFreeViewportHeight = Math.max(window.innerHeight, viewportHeight);
+      root.style.setProperty("--messages-viewport-height", `${viewportHeight}px`);
+      root.style.setProperty("--messages-viewport-offset-top", `${viewportOffsetTop}px`);
+      root.classList.toggle("messages-keyboard-open", isKeyboardOpen);
       if (isKeyboardOpen !== wasKeyboardOpen) {
         wasKeyboardOpen = isKeyboardOpen;
         const threadBody = threadBodyRef.current;
@@ -180,7 +188,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     };
     const updateHeaderHeight = () => {
       const siteHeader = document.querySelector<HTMLElement>(".site-header");
-      document.documentElement.style.setProperty("--messages-site-header-height", `${siteHeader?.getBoundingClientRect().height ?? 0}px`);
+      root.style.setProperty("--messages-site-header-height", `${siteHeader?.getBoundingClientRect().height ?? 0}px`);
     };
     updateMobileViewport();
     updateHeaderHeight();
@@ -197,10 +205,10 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       window.visualViewport?.removeEventListener("scroll", updateMobileViewport);
       if (!window.visualViewport) window.removeEventListener("resize", updateMobileViewport);
       headerObserver?.disconnect();
-      document.documentElement.classList.remove("messages-keyboard-open");
-      document.documentElement.style.removeProperty("--messages-viewport-height");
-      document.documentElement.style.removeProperty("--messages-viewport-offset-top");
-      document.documentElement.style.removeProperty("--messages-site-header-height");
+      root.classList.remove("messages-keyboard-open");
+      root.style.removeProperty("--messages-viewport-height");
+      root.style.removeProperty("--messages-viewport-offset-top");
+      root.style.removeProperty("--messages-site-header-height");
     };
   }, []);
 

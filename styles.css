@@ -7633,6 +7633,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
      viewport, which does not shrink for the keyboard, so without it the panel spans the whole screen and
      its composer ends up behind the keyboard. Paired with `--messages-thread-top-inset: 0` while the
      keyboard is up, this puts the panel exactly over the visible strip. */
+  /* Do not rely solely on :has() here. A transformed ancestor turns the fixed
+     thread into a document-relative element, which double-applies the iOS
+     visual viewport offset while the keyboard is opening. */
+  .messages-thread-active .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page,
   .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page:has(.messages-page.has-selected-conversation) { transform: none; }
   .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* With the keyboard up the thread takes the whole visual viewport. Browsers that shrink the
