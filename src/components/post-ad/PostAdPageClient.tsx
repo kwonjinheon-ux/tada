@@ -766,7 +766,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
-              <div className="post-section-heading"><span>3</span><h2>Pricing &amp; category</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>Pricing &amp; category</h2></div>
               <SelectMenu id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
               <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
               <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
@@ -823,7 +823,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               </div>
               <p className="post-upload-hint">
                 <strong>Click to upload or drag and drop multiple photos at once</strong>
-                <span>PNG, JPG or WebP (max. 5MB per image)</span>
               </p>
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
             </fieldset>
@@ -837,7 +836,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-field post-field-full post-description-field">
-              <div className="post-section-heading"><span>5</span><h2>Description</h2></div>
+              <div className="post-section-heading"><span>6</span><h2>Description</h2></div>
               <label htmlFor="post-description">Description</label>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
@@ -914,7 +913,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-ai-field">
-              <div className="post-section-heading"><span>6</span><h2>AI help &amp; actions</h2></div>
+              <div className="post-section-heading"><span>3</span><h2>AI help &amp; actions</h2></div>
               <AiListingGenerator
                 title={title}
                 description={description}
@@ -939,7 +938,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>4</span><h2>Location &amp; trade</h2></div>
+              <div className="post-section-heading"><span>5</span><h2>Location &amp; trade</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
