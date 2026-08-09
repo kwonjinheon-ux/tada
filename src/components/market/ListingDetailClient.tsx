@@ -9,6 +9,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
+import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
 import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
@@ -207,20 +208,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
   const shareListing = async () => {
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(window.location.href);
-      } else {
-        const copyTarget = document.createElement("textarea");
-        copyTarget.value = window.location.href;
-        copyTarget.setAttribute("readonly", "");
-        copyTarget.style.position = "fixed";
-        copyTarget.style.opacity = "0";
-        document.body.append(copyTarget);
-        copyTarget.select();
-        const copied = document.execCommand("copy");
-        copyTarget.remove();
-        if (!copied) throw new Error("Copy command was unavailable");
-      }
+      await copyCurrentPageLink();
       window.dispatchEvent(new Event("listing-share-copied"));
     } catch {
       setMessageError("Unable to copy this listing link. Please try again.");

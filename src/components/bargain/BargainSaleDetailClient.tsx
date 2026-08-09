@@ -7,6 +7,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/Button";
 import { BargainSaleItemGallery } from "@/components/bargain/BargainSaleItemGallery";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
 
 export type BargainSaleDetail = {
   id: string;
@@ -28,6 +29,7 @@ export type BargainSaleDetail = {
     priceCents: number;
     image: { src: string; alt: string };
     status: "available" | "pending" | "sold";
+    pendingReservationIds: string[];
   }>;
 };
 
@@ -37,12 +39,9 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [reservedItemIds, setReservedItemIds] = useState<string[]>([]);
   const [reservingItemId, setReservingItemId] = useState<string | null>(null);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [itemDraft, setItemDraft] = useState({ title: "", description: "", priceCents: 0 });
-  const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [shareStatus, setShareStatus] = useState("");
+  const [isShareCopied, setIsShareCopied] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const categories = useMemo(() => {
     const itemCategories = items
@@ -60,12 +59,11 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   const mapEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapLocation)}&z=15&output=embed`;
   const typeLabel = sale.type === "moving-sale" ? "Moving sale" : "Garage sale";
   const shareSale = async () => {
-    const shareData = { title: sale.title, text: sale.description, url: window.location.href };
     try {
-      if (navigator.share) await navigator.share(shareData);
-      else { await navigator.clipboard.writeText(window.location.href); setShareStatus("Link copied"); }
-    } catch { return; }
-    window.setTimeout(() => setShareStatus(""), 2_000);
+      await copyCurrentPageLink();
+      setIsShareCopied(true);
+      window.setTimeout(() => setIsShareCopied(false), 2_000);
+    } catch { setActionError("Unable to copy this listing link. Please try again."); }
   };
   const showActionNotice = (message: string) => {
     setActionError(null);
@@ -85,31 +83,6 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Unable to send your offer right now.");
     } finally { setReservingItemId(null); }
-  };
-  const startEditingItem = (item: BargainSaleDetail["items"][number]) => {
-    setActionError(null);
-    setEditingItemId(item.id);
-    setItemDraft({ title: item.title, description: item.description, priceCents: item.priceCents });
-  };
-  const saveItem = async (itemId: string) => {
-    const title = itemDraft.title.trim();
-    const description = itemDraft.description.trim();
-    if (!title || !description || !Number.isInteger(itemDraft.priceCents) || itemDraft.priceCents < 0) {
-      setActionError("Enter an item title, description, and valid price.");
-      return;
-    }
-    setActionError(null);
-    setSavingItemId(itemId);
-    try {
-      const response = await fetch(`/api/bargain/items/${itemId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingId: sale.id, title, description, priceCents: itemDraft.priceCents }) });
-      const payload = await response.json().catch(() => null) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error ?? "Unable to save this item right now.");
-      setItems((current) => current.map((item) => item.id === itemId ? { ...item, title, description, priceCents: itemDraft.priceCents } : item));
-      setEditingItemId(null);
-      showActionNotice("Item updated.");
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to save this item right now.");
-    } finally { setSavingItemId(null); }
   };
 
   return <main className="bargain-sale-detail-page">
@@ -131,11 +104,11 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
         </div>
         <div className="bargain-sale-summary-cards">
           <section className="bargain-sale-event-card"><h2><i className="fa-regular fa-calendar-days" aria-hidden="true" /> Event logistics</h2><dl>
-            {sale.dateLabel ? <div><dt><i className="fa-regular fa-calendar" aria-hidden="true" /> Date</dt><dd>{sale.dateLabel}</dd></div> : null}
-            {sale.timeLabel ? <div><dt><i className="fa-regular fa-clock" aria-hidden="true" /> Time</dt><dd>{sale.timeLabel}</dd></div> : null}
-            <div><dt><i className="fa-solid fa-location-dot" aria-hidden="true" /> Location</dt><dd>{sale.address ?? sale.location}</dd></div>
+            {sale.dateLabel ? <div><dt><i className="fa-regular fa-calendar" aria-hidden="true" /><span className="sr-only">Date</span></dt><dd>{sale.dateLabel}</dd></div> : null}
+            {sale.timeLabel ? <div><dt><i className="fa-regular fa-clock" aria-hidden="true" /><span className="sr-only">Time</span></dt><dd>{sale.timeLabel}</dd></div> : null}
+            <div><dt><i className="fa-solid fa-location-dot" aria-hidden="true" /><span className="sr-only">Location</span></dt><dd>{sale.address ?? sale.location}</dd></div>
           </dl><a className="bargain-sale-directions" href={directionsHref} target="_blank" rel="noreferrer">Get directions <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></a></section>
-          <section className="bargain-sale-host-card"><h2><i className="fa-solid fa-user" aria-hidden="true" /> Seller info</h2><div className="bargain-sale-host-profile"><span className="bargain-sale-host-avatar">{sale.seller.avatarUrl ? <Image src={sale.seller.avatarUrl} alt="" fill unoptimized sizes="56px" /> : <span aria-hidden="true">{sale.seller.name.slice(0, 1).toUpperCase()}</span>}</span><div><strong>{sale.seller.name}</strong><span>Local Tada seller</span></div></div><div className="bargain-sale-host-actions"><Button variant="secondary" size="sm" block><i className="fa-regular fa-message" aria-hidden="true" /> Message</Button><Button variant="secondary" size="sm" block onClick={() => void shareSale()}><i className="fa-solid fa-share-nodes" aria-hidden="true" /> Share</Button></div>{shareStatus ? <span className="bargain-sale-share-status" role="status">{shareStatus}</span> : null}</section>
+          <section className="bargain-sale-host-card"><h2><i className="fa-solid fa-user" aria-hidden="true" /> Seller info</h2><div className="bargain-sale-host-profile"><span className="bargain-sale-host-avatar">{sale.seller.avatarUrl ? <Image src={sale.seller.avatarUrl} alt="" fill unoptimized sizes="56px" /> : <span aria-hidden="true">{sale.seller.name.slice(0, 1).toUpperCase()}</span>}</span><div><strong>{sale.seller.name}</strong><span>Local Tada seller</span></div></div><div className="bargain-sale-host-actions"><Button variant="secondary" size="sm" block><i className="fa-regular fa-message" aria-hidden="true" /> Message</Button><Button variant="secondary" size="sm" block onClick={() => void shareSale()}><i className={isShareCopied ? "fa-solid fa-check" : "fa-solid fa-share-nodes"} aria-hidden="true" /> {isShareCopied ? "Copied" : "Share"}</Button></div></section>
         </div>
       </section>
 
@@ -149,7 +122,7 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
         {actionError ? <p className="bargain-sale-action-error" role="alert">{actionError}</p> : null}
         {visibleItems.length ? <div className="bargain-sale-detail-items">{visibleItems.map((item, index) => <article className={`bargain-sale-detail-item ${item.status === "sold" ? "is-sold" : ""}`} key={item.id}>
           <button className="bargain-sale-detail-item-image" type="button" onClick={() => setGalleryIndex(items.findIndex((saleItem) => saleItem.id === item.id))} aria-label={`View ${item.title} photo gallery`}><Image src={item.image.src} alt={item.image.alt} fill unoptimized sizes="(max-width: 767px) 100vw, 280px" />{item.status === "sold" ? <span>Sold</span> : <b>Available</b>}</button>
-          <div className="bargain-sale-detail-item-copy">{editingItemId === item.id ? <div className="bargain-sale-item-editor"><label>Item title<input className="ui-input" value={itemDraft.title} onChange={(event) => setItemDraft((current) => ({ ...current, title: event.target.value }))} /></label><label>Price (NZD)<input className="ui-input" type="number" min="0" step="0.01" value={(itemDraft.priceCents / 100).toFixed(2)} onChange={(event) => setItemDraft((current) => ({ ...current, priceCents: Math.round(Number(event.target.value || 0) * 100) }))} /></label><label>Description<textarea className="ui-input" value={itemDraft.description} onChange={(event) => setItemDraft((current) => ({ ...current, description: event.target.value }))} /></label><div><Button size="sm" onClick={() => void saveItem(item.id)} disabled={savingItemId === item.id}>{savingItemId === item.id ? "Saving…" : "Save item"}</Button><Button variant="secondary" size="sm" onClick={() => setEditingItemId(null)}>Cancel</Button></div></div> : <><div><h3>{index + 1}. {item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions">{sale.viewerIsOwner ? <Button size="sm" block disabled={item.status === "sold"} onClick={() => startEditingItem(item)}>Edit item</Button> : <Button size="sm" block disabled={item.status === "sold" || reservingItemId === item.id || reservedItemIds.includes(item.id)} onClick={() => void reserveItem(item.id)}>{reservedItemIds.includes(item.id) ? "Offer sent" : reservingItemId === item.id ? "Sending…" : "Reserve item"}</Button>}</div></>}</div>
+          <div className="bargain-sale-detail-item-copy"><div><h3>{index + 1}. {item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions">{sale.viewerIsOwner ? <Link className="ui-button ui-button--primary primary-button ui-button--sm ui-button--block" href={`/bargain/${sale.id}/items/${item.id}/edit`}>{item.pendingReservationIds.length ? `Review offer (${item.pendingReservationIds.length})` : "Edit item"}</Link> : <Button size="sm" block disabled={item.status === "sold" || reservingItemId === item.id || reservedItemIds.includes(item.id)} onClick={() => void reserveItem(item.id)}>{reservedItemIds.includes(item.id) ? "Offer sent" : reservingItemId === item.id ? "Sending…" : "Reserve item"}</Button>}</div></div>
         </article>)}</div> : <div className="bargain-sale-detail-empty" role="status"><i className="fa-solid fa-box-open" aria-hidden="true" /><strong>No items in this category</strong><span>Choose another category to see the sale inventory.</span></div>}
       </section>
 

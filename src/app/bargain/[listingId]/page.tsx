@@ -10,7 +10,8 @@ type BargainRow = {
   region_city: string | null; region_suburb: string | null; event_start_date: string | null; event_end_date: string | null; event_start_time: string | null; event_end_time: string | null; event_address: string | null;
 };
 type PhotoRow = { id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
-type ItemRow = { id: string; photo_id: string; title: string; category_slug: string | null; price_cents: number; description: string; display_order: number };
+type ItemRow = { id: string; photo_id: string; title: string; category_slug: string | null; price_cents: number; description: string; display_order: number; status: "available" | "sold" };
+type ReservationRow = { id: string; item_id: string; status: "pending" };
 type SellerRow = { id: string; display_name: string; avatar_path: string | null };
 
 function locationLabel(row: BargainRow) {
@@ -34,13 +35,18 @@ export default async function BargainSaleDetailPage({ params }: { params: Promis
   const { data } = await supabase.from("bargain_listings").select("id,owner_id,title,description,bargain_type,main_location,sub_location,region_city,region_suburb,event_start_date,event_end_date,event_start_time,event_end_time,event_address").eq("id", listingId).in("bargain_type", ["moving-sale", "garage-sale"]).maybeSingle();
   if (!data) notFound();
   const sale = data as BargainRow;
-  const [{ data: photoData }, { data: itemData }, { data: sellerData }, { data: profileData }, { data: { user } }] = await Promise.all([
+  const { data: { user } } = await supabase.auth.getUser();
+  const [{ data: photoData }, { data: itemData }, { data: sellerData }, { data: profileData }] = await Promise.all([
     supabase.from("bargain_listing_photos").select("id,storage_path,original_name,is_primary,display_order").eq("listing_id", sale.id).order("display_order"),
-    supabase.from("bargain_listing_items").select("id,photo_id,title,category_slug,price_cents,description,display_order").eq("listing_id", sale.id).order("display_order"),
+    supabase.from("bargain_listing_items").select("id,photo_id,title,category_slug,price_cents,description,display_order,status").eq("listing_id", sale.id).order("display_order"),
     sale.owner_id ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
     sale.owner_id ? supabase.from("profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
-    supabase.auth.getUser(),
   ]);
+  const { data: reservationData } = user?.id === sale.owner_id
+    ? await supabase.from("bargain_item_reservations").select("id,item_id,status").eq("listing_id", sale.id).eq("status", "pending")
+    : { data: [] };
+  const pendingReservationIdsByItem = new Map<string, string[]>();
+  for (const reservation of (reservationData ?? []) as ReservationRow[]) pendingReservationIdsByItem.set(reservation.item_id, [...(pendingReservationIdsByItem.get(reservation.item_id) ?? []), reservation.id]);
   const photos = (photoData ?? []) as PhotoRow[];
   const signedImages = await getSignedStorageImages("bargain-listing-images", photos.flatMap((photo) => photo.storage_path ? [photo.storage_path] : []), "gallery");
   const photoById = new Map(photos.map((photo) => [photo.id, photo]));
@@ -52,7 +58,7 @@ export default async function BargainSaleDetailPage({ params }: { params: Promis
     id: sale.id, title: sale.title, description: sale.description, type: sale.bargain_type, location: locationLabel(sale), address: sale.event_address, dateLabel: formatDateRange(sale.event_start_date, sale.event_end_date), timeLabel: formatTimeRange(sale.event_start_time, sale.event_end_time),
     coverImage: { src: cover?.storage_path ? signedImages.get(cover.storage_path) ?? fallbackImage : fallbackImage, alt: cover?.original_name ?? sale.title },
     seller: { name: seller?.display_name ?? "Tada seller", avatarUrl: sellerAvatarUrl }, viewerIsOwner: user?.id === sale.owner_id,
-    items: ((itemData ?? []) as ItemRow[]).flatMap((item) => { const photo = photoById.get(item.photo_id); if (!photo?.storage_path) return []; return [{ id: item.id, title: item.title, description: item.description, category: item.category_slug, priceCents: item.price_cents, image: { src: signedImages.get(photo.storage_path) ?? fallbackImage, alt: photo.original_name ?? item.title }, status: "available" as const }]; }),
+    items: ((itemData ?? []) as ItemRow[]).flatMap((item) => { const photo = photoById.get(item.photo_id); if (!photo?.storage_path) return []; return [{ id: item.id, title: item.title, description: item.description, category: item.category_slug, priceCents: item.price_cents, image: { src: signedImages.get(photo.storage_path) ?? fallbackImage, alt: photo.original_name ?? item.title }, status: item.status, pendingReservationIds: pendingReservationIdsByItem.get(item.id) ?? [] }]; }),
   };
   return <BargainSaleDetailClient sale={detail} />;
 }
