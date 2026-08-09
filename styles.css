@@ -5082,9 +5082,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 @media (min-width: 1024px) { .bargain-sale-detail-page { padding-top: var(--space-8); } .bargain-sale-detail-hero, .bargain-sale-detail-hero-content { min-height: 390px; } .bargain-sale-detail-hero h1 { font-size: var(--text-5xl); } .bargain-sale-detail-items { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* Event-sale detail: compact overview cards followed by a dense inventory grid. */
-.bargain-sale-detail-page { padding-top: var(--space-4); }
-.bargain-sale-detail-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
-.bargain-sale-detail-layout > .listing-detail-back-row { grid-column: 1 / -1; margin-bottom: 0; }
+.bargain-sale-detail-page { margin: 0; padding: 14px 0 72px; }
+.bargain-sale-detail-page > .page-container > .listing-detail-back-row { margin-bottom: 18px; }
+.bargain-sale-detail-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); padding-top: 0; }
 .bargain-sale-detail-overview { display: grid; gap: var(--space-3); }
 .bargain-sale-detail-hero { min-height: 300px; border-radius: var(--radius-md); }
 .bargain-sale-detail-hero-content { display: grid; align-content: end; min-height: 300px; padding: var(--space-4); }
@@ -5156,7 +5156,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-sale-about-card li { display: flex; gap: var(--space-2); }
 .bargain-sale-about-card li i { width: 15px; color: var(--color-primary); }
 @media (min-width: 640px) { .bargain-sale-summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bargain-sale-detail-inventory > header { grid-template-columns: minmax(0, 1fr) 200px; } }
-@media (min-width: 1024px) { .bargain-sale-detail-layout { grid-template-columns: minmax(0, 1fr) 290px; gap: var(--space-4); } .bargain-sale-detail-overview { grid-column: 1; grid-row: 2; min-width: 0; } .bargain-sale-detail-hero, .bargain-sale-detail-hero-content { min-height: 290px; } .bargain-sale-detail-hero h1 { font-size: var(--text-4xl); } .bargain-sale-detail-items { grid-template-columns: repeat(4, minmax(0, 1fr)); } .bargain-sale-detail-sidebar { grid-column: 2; grid-row: 2; } .bargain-sale-detail-inventory { grid-column: 1 / -1; grid-row: 3; } }
+@media (min-width: 1024px) { .bargain-sale-detail-layout { grid-template-columns: minmax(0, 1fr) 290px; gap: var(--space-4); } .bargain-sale-detail-overview { min-width: 0; } .bargain-sale-detail-hero, .bargain-sale-detail-hero-content { min-height: 290px; } .bargain-sale-detail-hero h1 { font-size: var(--text-4xl); } .bargain-sale-detail-items { grid-template-columns: repeat(4, minmax(0, 1fr)); } .bargain-sale-detail-sidebar { grid-column: 2; grid-row: 1; } .bargain-sale-detail-inventory { grid-column: 1 / -1; } }
 @media (max-width: 767.98px) { .bargain-sale-detail-item-copy h3 { font-size: var(--text-md); } .bargain-sale-detail-item-copy strong { font-size: var(--text-xl); } .bargain-sale-item-gallery { padding: var(--space-2); } .bargain-sale-item-gallery-panel { max-height: calc(100dvh - var(--space-4)); } .bargain-sale-item-gallery-stage { min-height: 48dvh; } .bargain-sale-item-gallery-copy h2 { font-size: var(--text-lg); } .bargain-sale-item-gallery-copy strong { font-size: var(--text-xl); } .bargain-sale-item-gallery-arrow { width: var(--control-h-lg); height: var(--control-h-xl); } .bargain-sale-item-gallery-arrow.is-previous { left: var(--space-2); } .bargain-sale-item-gallery-arrow.is-next { right: var(--space-2); } .bargain-sale-item-gallery .dialog-overlay-dismiss-hint { display: none; } }
 
 @media (min-width: 768px) {

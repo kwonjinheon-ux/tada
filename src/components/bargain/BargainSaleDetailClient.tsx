@@ -62,11 +62,12 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   const toggleReservation = (itemId: string) => setReservedItemIds((ids) => ids.includes(itemId) ? ids.filter((id) => id !== itemId) : [...ids, itemId]);
 
   return <main className="bargain-sale-detail-page">
-    <PageContainer className="bargain-sale-detail-layout">
+    <PageContainer>
       <div className="listing-detail-back-row" aria-label="Bargain navigation">
         <Link className="listing-detail-back" href="/bargain"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
         <nav className="listing-detail-category-path" aria-label="Bargain category"><Link href="/bargain">Bargain</Link><span aria-hidden="true">/</span><Link href={`/bargain?bargain=${sale.type}`}>{typeLabel}</Link></nav>
       </div>
+      <div className="bargain-sale-detail-layout">
       <section className="bargain-sale-detail-overview">
         <div className="bargain-sale-detail-hero">
           <Image src={sale.coverImage.src} alt={sale.coverImage.alt} fill priority unoptimized sizes="(max-width: 1200px) 100vw, 780px" />
@@ -104,6 +105,7 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
         <section id="event-location" className="bargain-sale-about-card"><h2>About this sale</h2><p>{sale.description}</p><ul><li><i className="fa-solid fa-money-bill-wave" aria-hidden="true" /> Cash and card payments welcome</li><li><i className="fa-solid fa-bag-shopping" aria-hidden="true" /> Bring your own bags for larger finds</li></ul></section>
       </aside>
       {galleryIndex !== null ? <BargainSaleItemGallery activeIndex={galleryIndex} items={sale.items} onClose={() => setGalleryIndex(null)} onSelect={setGalleryIndex} /> : null}
+      </div>
     </PageContainer>
   </main>;
 }
