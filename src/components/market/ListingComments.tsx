@@ -40,7 +40,8 @@ function CommentAvatar({ comment }: { comment: ListingComment }) {
   return comment.authorAvatarUrl ? <img className="listing-comment-avatar" src={comment.authorAvatarUrl} alt="" /> : <span className="listing-comment-avatar">{initials(comment.authorName)}</span>;
 }
 
-export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: string; textSizeStep?: number }) {
+export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: "market" | "bargain" }) {
+  const apiBase = `/api/${space}`;
   const [comments, setComments] = useState<ListingComment[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
 
   const loadComments = useCallback(async () => {
     try {
-      const response = await fetch(`/api/market/listings/${listingId}/comments`, { cache: "no-store" });
+      const response = await fetch(`${apiBase}/listings/${listingId}/comments`, { cache: "no-store" });
       const payload = await response.json().catch(() => null) as CommentsResponse | null;
       if (!response.ok || !payload) throw new Error(payload?.error || "Unable to load comments right now.");
       setComments(payload.comments);
@@ -66,7 +67,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
     } finally {
       setIsLoading(false);
     }
-  }, [listingId]);
+  }, [apiBase, listingId]);
 
   useEffect(() => { void loadComments(); }, [loadComments]);
 
@@ -121,7 +122,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
     setIsSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`/api/market/listings/${listingId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) });
+      const response = await fetch(`${apiBase}/listings/${listingId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (response.status === 401) throw new Error("Please log in to post a comment.");
       if (!response.ok) throw new Error(payload?.error || "Unable to post your comment right now.");
@@ -149,7 +150,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
     setBusyCommentId(comment.id);
     try {
       const targetValue = comment.myVote === value ? 0 : value;
-      const response = await fetch(`/api/market/comments/${comment.id}/vote`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: targetValue }) });
+      const response = await fetch(`${apiBase}/comments/${comment.id}/vote`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: targetValue }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to record your vote.");
       await loadComments();
@@ -165,7 +166,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
     if (!body || busyCommentId) return;
     setBusyCommentId(comment.id);
     try {
-      const response = await fetch(`/api/market/comments/${comment.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
+      const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to update this comment.");
       setEditingId(null);
@@ -181,7 +182,7 @@ export function ListingComments({ listingId, textSizeStep = 0 }: { listingId: st
     if (!window.confirm("Delete this comment? Replies will remain visible.")) return;
     setBusyCommentId(comment.id);
     try {
-      const response = await fetch(`/api/market/comments/${comment.id}`, { method: "DELETE" });
+      const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "DELETE" });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to delete this comment.");
       await loadComments();

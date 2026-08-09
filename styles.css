@@ -3079,8 +3079,8 @@ body.listing-gallery-open { overflow: hidden; }
   min-height: var(--control-h-xl);
   border-radius: var(--radius-sm);
   font: inherit;
-  font-size: var(--text-base);
-  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
 .listing-detail-message {
@@ -3120,7 +3120,7 @@ body.listing-gallery-open { overflow: hidden; }
   margin: 0;
   color: var(--blue-850);
   font-size: var(--text-base);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-regular);
   text-align: right;
 }
 
