@@ -3939,6 +3939,55 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .post-title-field .post-field-hint { text-align: center; }
 .post-photo-ai-help { display: grid; gap: var(--space-2); }
+.bargain-type-select { margin-top: var(--space-2); }
+
+.bargain-sale-items,
+.bargain-sale-items-empty {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-4);
+  border: 1px solid var(--neutral-250);
+  border-radius: var(--radius-sm);
+  background: var(--neutral-50);
+}
+
+.bargain-sale-items-empty {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.bargain-sale-items-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.bargain-sale-items-heading strong { color: var(--blue-soft-850); }
+.bargain-sale-items-heading p { margin: 3px 0 0; color: var(--muted); font-size: var(--text-sm); }
+.bargain-sale-items-heading > span { color: var(--blue-soft-650); font-size: var(--text-sm); white-space: nowrap; }
+
+.bargain-sale-items-grid { display: grid; gap: var(--space-3); }
+
+.bargain-sale-item {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--neutral-250);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.bargain-sale-item > img { width: 104px; height: 104px; border-radius: var(--radius-sm); object-fit: cover; }
+.bargain-sale-item-fields { display: grid; gap: var(--space-2); min-width: 0; }
+.bargain-sale-item-fields > strong { color: var(--blue-soft-850); font-size: var(--text-sm); }
+.bargain-sale-item-fields label { display: grid; gap: 5px; color: var(--blue-soft-850); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.bargain-sale-item-fields .post-price-input { min-height: var(--control-h-md); }
+.bargain-sale-item-fields .post-price-input input { min-height: var(--control-h-md); font-size: var(--text-base); }
+.bargain-sale-item-fields textarea { width: 100%; min-height: 70px; resize: vertical; padding: 9px 11px; border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--ink); font: inherit; font-size: var(--text-sm); outline: none; }
+.bargain-sale-item-fields textarea:focus { border-color: rgba(0, 122, 84, 0.58); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
 .post-create-status { order: 8; }
 .post-submit-row { order: 9; }
 
@@ -4885,6 +4934,31 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-ad-preview > .product-card { width: 100%; min-height: 0; overflow: hidden; border-radius: var(--radius-md); text-align: left; }.post-ad-preview > .product-card .product-media { aspect-ratio: 4 / 3; }.post-ad-preview > .product-card .product-body { padding: var(--space-3); }.post-ad-preview > .product-card .product-body h2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: var(--text-base); }.post-ad-preview > .product-card .product-body p { margin: var(--space-1) 0 0; font-size: var(--text-sm); }
 
 .post-ai-description { margin: var(--space-2) 0 0; color: var(--blue-soft-600); font-size: var(--text-sm); text-align: center; }
+
+/* Bargain sale registration keeps the existing composer controls, while using
+   the reference's event-and-inventory hierarchy for Moving and Garage Sales. */
+.post-ad-intro { width: min(100%, 1120px); margin-right: auto; margin-left: auto; }
+.is-event-sale .post-ad-intro { max-width: 1120px; }
+.is-event-sale .post-ad-intro p { max-width: 680px; }
+.is-event-sale .bargain-sale-items { padding: var(--space-4); background: var(--neutral-100); }
+.is-event-sale .bargain-sale-items-heading { align-items: center; }
+.is-event-sale .bargain-sale-items-heading strong { font-size: var(--text-md); }
+.is-event-sale .bargain-sale-item { overflow: hidden; background: var(--surface); }
+.is-event-sale .bargain-sale-item-fields { padding: var(--space-1) 0 0; }
+
+@media (min-width: 768px) {
+  .is-event-sale .bargain-sale-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .is-event-sale .bargain-sale-item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .is-event-sale .bargain-sale-item > img { width: 100%; height: 190px; border-radius: 0; }
+  .is-event-sale .bargain-sale-item-fields { padding: var(--space-4); }
+  .is-event-sale .bargain-sale-item-fields label { gap: var(--space-1); }
+}
+
+@media (max-width: 479.98px) {
+  .bargain-sale-items-heading { align-items: flex-start; flex-direction: column; }
+  .bargain-sale-item { grid-template-columns: 76px minmax(0, 1fr); padding: var(--space-2); }
+  .bargain-sale-item > img { width: 76px; height: 76px; }
+}
 
 @media (min-width: 768px) {
   .post-ad-page { padding-top: var(--space-6); background: linear-gradient(135deg, var(--neutral-100), var(--neutral-50)); }

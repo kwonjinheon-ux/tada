@@ -8,7 +8,7 @@ import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 type BargainQuery = z.infer<typeof bargainFeedQuerySchema>;
-type BargainRow = { id: string; title: string; price_cents: number; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; status: "published" | "pending" | "sold"; created_at: string };
+type BargainRow = { id: string; title: string; price_cents: number; bargain_type: string; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; status: "published" | "pending" | "sold"; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 
 function formatLocation(mainLocation: string | null, subLocation: string | null, regionCity: string | null, regionSuburb: string | null) {
@@ -19,12 +19,13 @@ export async function getBargainFeed(supabase: SupabaseClient, rawQuery: Bargain
   const query = bargainFeedQuerySchema.parse(rawQuery);
   let request = supabase
     .from("bargain_listings")
-    .select("id,title,price_cents,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,status,created_at")
+    .select("id,title,price_cents,bargain_type,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,status,created_at")
     .in("status", ["published", "pending", "sold"]);
 
   if (query.mainLocation) request = request.eq("main_location", query.mainLocation);
   if (query.subLocation) request = request.eq("sub_location", query.subLocation);
   if (query.q) request = request.ilike("title", `%${query.q.replace(/[,%()]/g, " ").trim()}%`);
+  if (["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"].includes(query.bargain)) request = request.eq("bargain_type", query.bargain);
   request = request.order(query.sort === "priceAsc" || query.sort === "priceDesc" ? "price_cents" : "created_at", { ascending: query.sort === "priceAsc" }).order("id", { ascending: true });
 
   const { data } = await request.limit(60);
@@ -54,6 +55,7 @@ export async function getBargainFeed(supabase: SupabaseClient, rawQuery: Bargain
         imageAlt: photo?.original_name ?? row.title,
         categorySlug: row.category_slug,
         subcategorySlug: row.subcategory_slug,
+        bargainType: row.bargain_type,
         badge: row.status === "published" ? "Newly Listed" : undefined,
         status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
       } satisfies Listing;

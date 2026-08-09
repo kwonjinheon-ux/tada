@@ -20,17 +20,9 @@ const bargainCategories = [
 ] as const;
 type BargainType = (typeof bargainCategories)[number]["value"];
 
-function listingPrice(listing: Listing) { return Number(listing.price.replace(/[^0-9.]/g, "")); }
 function matchesBargainType(listing: Listing, bargain: BargainType) {
-  const title = listing.title.toLocaleLowerCase();
-  const isMovingOrGarageSale = /moving|relocat|clearance|garage|yard sale/.test(title);
-  const isBargain = listingPrice(listing) <= 10 || isMovingOrGarageSale;
-  if (bargain === "2-dollar-deals") return listingPrice(listing) <= 2;
-  if (bargain === "5-dollar-deals") return listingPrice(listing) <= 5;
-  if (bargain === "10-dollar-deals") return listingPrice(listing) <= 10;
-  if (bargain === "moving-sale") return /moving|relocat|clearance/.test(title);
-  if (bargain === "garage-sale") return /garage|yard sale/.test(title);
-  return isBargain;
+  if (["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"].includes(bargain)) return listing.bargainType === bargain;
+  return true;
 }
 
 export function BargainPageClient({ postedListings = [], savedListingIds = [] }: { postedListings?: Listing[]; savedListingIds?: string[] }) {

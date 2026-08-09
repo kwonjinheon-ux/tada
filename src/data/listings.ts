@@ -9,6 +9,7 @@ export type Listing = {
   imageAlt: string;
   categorySlug?: string | null;
   subcategorySlug?: string | null;
+  bargainType?: string | null;
   badge?: "Promotion" | "Newly Listed";
   status: ListingStatus;
   // commentCount?: number; // parked for reuse on a different category later

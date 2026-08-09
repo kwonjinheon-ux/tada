@@ -15,6 +15,8 @@ import { SelectMenu, type SelectMenuOption } from "@/components/ui/SelectMenu";
 import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
+import { BargainSaleItemsEditor, type BargainSaleItemDraft } from "@/components/bargain/BargainSaleItemsEditor";
+import { bargainListingTypes, getBargainTypeMaximumPrice, isMultiItemBargain, type BargainListingType } from "@/lib/bargain/listing-types";
 
 type SelectOption = SelectMenuOption;
 
@@ -23,7 +25,7 @@ type ImportedCategoryKeyword = {
   tadaCategory: string;
 };
 
-type PhotoPreview = {
+export type PhotoPreview = {
   id: string;
   url: string;
   file?: File;
@@ -166,6 +168,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const photosRef = useRef<PhotoPreview[]>([]);
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(initialListing?.title ?? "");
+  const [bargainType, setBargainType] = useState<BargainListingType>("2-dollar-deals");
+  const [bargainSaleItems, setBargainSaleItems] = useState<BargainSaleItemDraft[]>([]);
   const [price, setPrice] = useState(initialListing ? (initialListing.priceCents / 100).toFixed(initialListing.priceCents % 100 ? 2 : 0) : "");
   const [mainCategory, setMainCategory] = useState(initialListing?.mainCategory ?? "");
   const [subCategory, setSubCategory] = useState(initialListing?.subCategory ?? "");
@@ -202,6 +206,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
+  const isMultiItemSale = isBargainListing && isMultiItemBargain(bargainType);
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -232,6 +237,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
+
+  useEffect(() => {
+    if (!isMultiItemSale) {
+      setBargainSaleItems([]);
+      return;
+    }
+    setBargainSaleItems((current) => photos.map((photo) => current.find((item) => item.photoId === photo.id) ?? { photoId: photo.id, price: "", description: "" }));
+  }, [isMultiItemSale, photos]);
 
   useEffect(() => {
     if (!isHtmlMode && editorRef.current && editorRef.current.innerHTML !== description) {
@@ -288,6 +301,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   const handleTitleChange = (nextTitle: string) => {
     setTitle(nextTitle);
+
+    if (isBargainListing) return;
 
     if (!nextTitle.trim()) {
       setMainCategory(initialListing?.mainCategory ?? "");
@@ -474,7 +489,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     onProgress: (completedCount: number, totalCount: number) => void;
   }) => {
     const uploadablePhotos = photos.filter((photo): photo is PhotoPreview & { file: File } => Boolean(photo.file));
-    if (!supabase || !uploadablePhotos.length) return null;
+    if (!supabase || !uploadablePhotos.length) return { error: null, photoIds: new Map<string, string>() };
 
     let completedCount = 0;
     const rows = uploadablePhotos.map((photo, index) => {
@@ -514,11 +529,18 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
     const uploadError = uploadResults.find(Boolean);
     if (uploadError) {
-      return uploadError;
+      return { error: uploadError, photoIds: new Map<string, string>() };
     }
 
-    const { error: photoInsertError } = await supabase.from(photoTable).insert(rows);
-    return photoInsertError?.message ?? null;
+    const { data: insertedPhotos, error: photoInsertError } = await supabase.from(photoTable).insert(rows).select("id,storage_path");
+    if (photoInsertError) return { error: photoInsertError.message, photoIds: new Map<string, string>() };
+
+    const photoIds = new Map<string, string>();
+    rows.forEach((row) => {
+      const insertedPhoto = (insertedPhotos ?? []).find((photo) => photo.storage_path === row.storage_path) as { id: string } | undefined;
+      if (insertedPhoto) photoIds.set(row.id, insertedPhoto.id);
+    });
+    return { error: null, photoIds };
   };
 
   const syncEditedPhotos = async ({
@@ -530,14 +552,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   }) => {
     if (removedPhotoIds.length) {
       const { data: removedPhotos, error: removedPhotosError } = await supabase
-        .from("market_listing_photos")
+        .from(photoTable)
         .select("id,storage_path")
         .eq("listing_id", listingId)
         .in("id", removedPhotoIds);
       if (removedPhotosError) return removedPhotosError.message;
 
       const { error: removeRowsError } = await supabase
-        .from("market_listing_photos")
+        .from(photoTable)
         .delete()
         .eq("listing_id", listingId)
         .in("id", removedPhotoIds);
@@ -545,20 +567,20 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
       const paths = (removedPhotos ?? []).map((photo) => photo.storage_path).filter(Boolean);
       if (paths.length) {
-        const { error: removeFilesError } = await supabase.storage.from("market-listing-images").remove(paths);
+        const { error: removeFilesError } = await supabase.storage.from(imageBucket).remove(paths);
         if (removeFilesError) return removeFilesError.message;
       }
     }
 
     const { error: clearPrimaryError } = await supabase
-      .from("market_listing_photos")
+      .from(photoTable)
       .update({ is_primary: false })
       .eq("listing_id", listingId);
     if (clearPrimaryError) return clearPrimaryError.message;
 
     if (primaryPhotoId) {
       const { error: setPrimaryError } = await supabase
-        .from("market_listing_photos")
+        .from(photoTable)
         .update({ is_primary: true })
         .eq("listing_id", listingId)
         .eq("id", primaryPhotoId);
@@ -566,7 +588,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     }
 
     const orderErrors = await Promise.all(photos.map((photo, index) => supabase
-      .from("market_listing_photos")
+      .from(photoTable)
       .update({ display_order: index })
       .eq("listing_id", listingId)
       .eq("id", photo.id)
@@ -612,7 +634,39 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     const body = isUneditedAiDraft ? appendUnconfirmedDetails(withSpecs, aiDraftState.points) : withSpecs;
     const price = String(form.get("price") ?? "").trim();
     const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
-    const priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
+    let priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
+
+    const saleItems = isMultiItemSale
+      ? photos.map((photo, index) => {
+        const item = bargainSaleItems.find((candidate) => candidate.photoId === photo.id);
+        const itemPrice = Number(item?.price.replace(/[^0-9.]/g, "") ?? "");
+        return { photoId: photo.id, priceCents: Number.isFinite(itemPrice) && itemPrice > 0 ? Math.round(itemPrice * 100) : 0, description: item?.description.trim() ?? "", displayOrder: index };
+      })
+      : [];
+
+    if (isMultiItemSale) {
+      if (!saleItems.length) {
+        setError("Add at least one photo for a Moving Sale or Garage Sale.");
+        setSubmitProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+      if (saleItems.some((item) => !item.priceCents || !item.description.length)) {
+        setError("Add a price and description for every sale item photo.");
+        setSubmitProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+      priceCents = Math.min(...saleItems.map((item) => item.priceCents));
+    }
+
+    const maximumPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
+    if (maximumPriceCents !== null && priceCents > maximumPriceCents) {
+      setError(`${bargainListingTypes.find((option) => option.value === bargainType)?.label ?? "This deal"} must be priced at $${(maximumPriceCents / 100).toFixed(0)} or less.`);
+      setSubmitProgress(0);
+      setIsSubmitting(false);
+      return;
+    }
 
     const plainDescription = body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     if (plainDescription.length < 20 || body.length > 5000) {
@@ -655,14 +709,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         return;
       }
 
-      const photoError = await uploadPhotos({
+      const photoUpload = await uploadPhotos({
         listingId: initialListing.id,
         supabase,
         userId: user.id,
         onProgress: (completedCount, totalCount) => setSubmitProgress(36 + Math.round((completedCount / totalCount) * 48)),
       });
-      if (photoError) {
-        setError(`Listing updated, but photos could not be saved: ${photoError}`);
+      if (photoUpload.error) {
+        setError(`Listing updated, but photos could not be saved: ${photoUpload.error}`);
         setSubmitProgress(0);
         setIsSubmitting(false);
         return;
@@ -702,6 +756,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       latitude: location.latitude,
       longitude: location.longitude,
       meeting_place: meetingPlace || null,
+      ...(isBargainListing ? { bargain_type: bargainType } : {}),
     };
     let createResult = await supabase.from(listingTable).insert(listingPayload).select("id").single();
     // The location fields were introduced additively. Older deployed databases
@@ -723,7 +778,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     setSubmitProgress(44);
 
     if (createdListing?.id) {
-      const photoError = await uploadPhotos({
+      const photoUpload = await uploadPhotos({
         listingId: createdListing.id,
         supabase,
         userId: user.id,
@@ -732,12 +787,32 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         },
       });
       setSubmitProgress(94);
-      if (photoError) {
+      if (photoUpload.error) {
         setNotice("Posted successfully. Photos could not be attached yet.");
         setSubmitProgress(100);
         setIsSubmitting(false);
         router.push(listingHomePath);
         return;
+      }
+
+      if (isMultiItemSale) {
+        const itemRows = saleItems.flatMap((item) => {
+          const photoId = photoUpload.photoIds.get(item.photoId);
+          return photoId ? [{ listing_id: createdListing.id, photo_id: photoId, owner_id: user.id, price_cents: item.priceCents, description: item.description, display_order: item.displayOrder }] : [];
+        });
+        if (itemRows.length !== saleItems.length) {
+          setError("Your listing was posted, but individual sale item photos could not be linked. Please try again.");
+          setSubmitProgress(0);
+          setIsSubmitting(false);
+          return;
+        }
+        const { error: itemInsertError } = await supabase.from("bargain_listing_items").insert(itemRows);
+        if (itemInsertError) {
+          setError(`Your listing was posted, but individual item details could not be saved: ${itemInsertError.message}`);
+          setSubmitProgress(0);
+          setIsSubmitting(false);
+          return;
+        }
       }
     }
 
@@ -754,6 +829,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     setSmartphoneSpecs(emptySmartphoneSpecs);
     setTitle("");
     setPrice("");
+    setBargainType("2-dollar-deals");
+    setBargainSaleItems([]);
     setIsHtmlMode(false);
     photos.forEach((photo) => URL.revokeObjectURL(photo.url));
     setPhotos([]);
@@ -774,21 +851,45 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     status: "available",
   };
 
+  const changeBargainType = (value: string) => {
+    const nextType = value as BargainListingType;
+    setBargainType(nextType);
+    const maximumPriceCents = getBargainTypeMaximumPrice(nextType);
+    if (maximumPriceCents !== null) setPrice((maximumPriceCents / 100).toFixed(0));
+  };
+
+  const updateBargainSaleItem = (photoId: string, field: "price" | "description", value: string) => {
+    setBargainSaleItems((current) => current.map((item) => item.photoId === photoId ? { ...item, [field]: value } : item));
+  };
+
+  const createHeading = isMultiItemSale
+    ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
+    : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
+  const createDescription = isMultiItemSale
+    ? "Add a cover photo, then price and describe every item for local bargain hunters."
+    : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
+
   return (
-    <main className="post-ad-page">
+    <main className={`post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
       <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="fa-solid fa-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
+      <header className="post-ad-intro">
+        <h1>{createHeading}</h1>
+        <p>{createDescription}</p>
+      </header>
       <div className="post-ad-layout">
         <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full post-title-field">
-              <div className="post-section-heading"><span>1</span><h2>Basics</h2></div>
+              <div className="post-section-heading"><span>1</span><h2>{isMultiItemSale ? "Sale details" : "Basics"}</h2></div>
               <label htmlFor="post-title">Listing Title</label>
               <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder="e.g. iPhone 15 Pro Max - 256GB Titanium" onChange={(event) => handleTitleChange(event.target.value)} required />
-              <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>
+              {isBargainListing ? (
+                <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" />
+              ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>}
             </div>
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
-              <div className="post-section-heading"><span>3</span><h2>Pricing &amp; category</h2></div>
+              <div className="post-section-heading"><span>3</span><h2>{isMultiItemSale ? "Sale settings" : "Pricing & category"}</h2></div>
               <div className="post-field post-price-field">
                 <label htmlFor="listing-price">Price (NZD)</label>
                 <div className="post-price-input">
@@ -815,7 +916,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               }}
             >
               <div className="field-label-row">
-                <legend><span className="post-section-heading"><span>2</span><span>Photos &amp; AI help</span></span></legend>
+                <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? "Cover photo & inventory" : "Photos & AI help"}</span></span></legend>
                 <span>Up to 10 photos</span>
               </div>
               <input
@@ -854,6 +955,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <strong>Click to upload or drag and drop multiple photos at once</strong>
               </p>
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
+              {isMultiItemSale ? <BargainSaleItemsEditor photos={photos} items={bargainSaleItems} onChange={updateBargainSaleItem} /> : null}
               <section className="post-photo-ai-help" aria-label="AI help">
                 <AiListingGenerator
                   title={title}
@@ -881,7 +983,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </fieldset>
 
             <div className="post-field post-field-full post-description-field">
-              <div className="post-section-heading"><span>5</span><h2>Description</h2></div>
+              <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
                   <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="fa-solid fa-rotate-left" aria-hidden="true" /></button>
@@ -957,7 +1059,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>4</span><h2>Location &amp; trade</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? "Event location & trade" : "Location & trade"}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
@@ -982,7 +1084,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 role={isSubmitting ? "progressbar" : undefined}
                 style={{ "--post-submit-progress": `${submitButtonProgress}%` } as CSSProperties}
               >
-                <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : "Post Now"}</span>
+                <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}</span>
               </button>
             </div>
           </form>
