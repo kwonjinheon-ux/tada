@@ -5135,22 +5135,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-sale-map-card > i { position: relative; z-index: 1; display: grid; width: var(--control-h-xl); height: var(--control-h-xl); place-items: center; border-radius: var(--radius-circle); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-lg); box-shadow: var(--shadow-sm); }
 .bargain-sale-map-card > span:last-child { position: absolute; bottom: var(--space-3); z-index: 1; font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .bargain-sale-map-grid { position: absolute; inset: 0; opacity: .72; background: linear-gradient(28deg, transparent 48%, var(--color-line) 49%, var(--color-line) 51%, transparent 52%), linear-gradient(112deg, transparent 48%, var(--color-line) 49%, var(--color-line) 51%, transparent 52%), linear-gradient(0deg, transparent 47%, var(--color-line-soft) 48%, var(--color-line-soft) 52%, transparent 53%); background-size: 94px 94px, 120px 120px, 100% 44px; }
-.bargain-sale-item-gallery { z-index: 200; display: grid; place-items: center; padding: var(--space-4); background: rgba(5, 14, 27, .92); }
-.bargain-sale-item-gallery-panel { position: relative; display: grid; width: min(100%, 920px); max-height: calc(100dvh - var(--space-8)); overflow: auto; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
-.bargain-sale-item-gallery-stage { position: relative; min-height: min(62dvh, 620px); background: var(--color-surface-soft); }
-.bargain-sale-item-gallery-stage img { object-fit: contain; }
-.bargain-sale-item-gallery-copy { display: grid; gap: var(--space-2); padding: var(--space-4); }
-.bargain-sale-item-gallery-copy > div { display: flex; align-items: start; justify-content: space-between; gap: var(--space-3); }
-.bargain-sale-item-gallery-copy h2 { margin: 0; color: var(--color-ink); font-size: var(--text-xl); font-weight: var(--weight-medium); }
-.bargain-sale-item-gallery-copy strong { color: var(--color-primary-dark); font-size: var(--text-2xl); font-weight: var(--weight-medium); white-space: nowrap; }
-.bargain-sale-item-gallery-copy p { margin: 0; color: var(--color-ink-soft); font-size: var(--text-md); line-height: 1.5; white-space: pre-wrap; }
-.bargain-sale-item-gallery-close, .bargain-sale-item-gallery-arrow { position: fixed; z-index: 2; display: grid; place-items: center; border: 0; color: var(--color-on-primary); cursor: pointer; }
-.bargain-sale-item-gallery-close { top: var(--space-4); right: var(--space-4); width: var(--control-h-lg); height: var(--control-h-lg); border-radius: var(--radius-circle); background: rgba(7, 22, 41, .72); font-size: var(--text-xl); }
-.bargain-sale-item-gallery-arrow { top: 50%; width: var(--control-h-xl); height: var(--control-h-2xl); border-radius: var(--radius-md); background: rgba(7, 22, 41, .62); font-size: var(--text-xl); transform: translateY(-50%); }
-.bargain-sale-item-gallery-arrow.is-previous { left: var(--space-4); }
-.bargain-sale-item-gallery-arrow.is-next { right: var(--space-4); }
-.bargain-sale-item-gallery-count { position: fixed; right: 50%; bottom: var(--space-4); z-index: 2; min-width: 62px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill); background: rgba(7, 22, 41, .72); color: var(--color-on-primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: center; transform: translateX(50%); }
-.bargain-sale-item-gallery .dialog-overlay-dismiss-hint { bottom: 64px; }
+/* Bargain images deliberately reuse the Market full-screen lightbox surface. */
+.bargain-sale-item-gallery { --popup-backdrop-blur: 18px; }
 .bargain-sale-about-card p { margin: var(--space-3) 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.5; }
 .bargain-sale-about-card ul { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; color: var(--color-ink-soft); font-size: var(--text-sm); }
 .bargain-sale-about-card li { display: flex; gap: var(--space-2); }
@@ -5180,7 +5166,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-item-edit-actions, .bargain-item-offers > div, .bargain-item-offers > div > span { display: flex; align-items: center; gap: var(--space-2); }
 .bargain-item-offers > div { justify-content: space-between; padding-top: var(--space-3); border-top: 1px solid var(--color-line-soft); }
 .bargain-item-offers p { margin: calc(var(--space-2) * -1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
-@media (max-width: 767.98px) { .bargain-sale-detail-item-copy h3 { font-size: var(--text-md); } .bargain-sale-detail-item-copy strong { font-size: var(--text-xl); } .bargain-sale-item-gallery { padding: var(--space-2); } .bargain-sale-item-gallery-panel { max-height: calc(100dvh - var(--space-4)); } .bargain-sale-item-gallery-stage { min-height: 48dvh; } .bargain-sale-item-gallery-copy h2 { font-size: var(--text-lg); } .bargain-sale-item-gallery-copy strong { font-size: var(--text-xl); } .bargain-sale-item-gallery-arrow { width: var(--control-h-lg); height: var(--control-h-xl); } .bargain-sale-item-gallery-arrow.is-previous { left: var(--space-2); } .bargain-sale-item-gallery-arrow.is-next { right: var(--space-2); } .bargain-sale-item-gallery .dialog-overlay-dismiss-hint { display: none; } }
+@media (max-width: 767.98px) { .bargain-sale-detail-item-copy h3 { font-size: var(--text-md); } .bargain-sale-detail-item-copy strong { font-size: var(--text-xl); } }
 
 @media (min-width: 768px) {
   .is-event-sale .bargain-sale-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
