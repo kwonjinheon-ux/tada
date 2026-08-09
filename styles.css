@@ -4951,7 +4951,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .is-event-sale .post-ad-intro { max-width: 1120px; }
 .is-event-sale .post-ad-intro p { max-width: 680px; }
 .is-event-sale .post-ad-sidebar { display: none; }
-.is-event-sale .post-ad-layout { width: min(100%, var(--page-max-width)); display: block; }
+.is-event-sale .post-ad-layout { width: min(100%, 1120px); display: block; }
 .is-event-sale .post-ad-card { width: 100%; }
 .is-event-sale .post-ad-form { gap: var(--space-4); }
 .is-event-sale .post-title-field,

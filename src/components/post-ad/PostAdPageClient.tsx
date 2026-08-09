@@ -168,6 +168,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const listingHomePath = isBargainListing ? "/bargain" : "/market";
   const formRef = useRef<HTMLFormElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoPickerIntentRef = useRef<"listing" | "cover" | "inventory">("listing");
   const photosRef = useRef<PhotoPreview[]>([]);
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(initialListing?.title ?? "");
@@ -215,6 +216,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
   const isMultiItemSale = isBargainListing && isMultiItemBargain(bargainType);
+  const fixedBargainPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
   const maxPhotosForCurrentListing = isMultiItemSale ? maxEventInventoryPhotoCount + 1 : maxPhotoCount;
   const eventInventoryPhotos = isMultiItemSale ? photos.slice(1) : [];
 
@@ -381,7 +383,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     setNotice("Photos are ready and will be attached instantly when you post.");
   };
 
-  const addPhotos = async (fileList: FileList | File[]) => {
+  const addPhotos = async (fileList: FileList | File[], intent: "listing" | "cover" | "inventory" = "listing") => {
     const incomingFiles = Array.from(fileList);
     const validFiles = incomingFiles.filter(isAcceptedMarketListingImage);
 
@@ -402,7 +404,24 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     }
 
     const currentPhotos = photosRef.current;
-    const availableSlots = maxPhotosForCurrentListing - currentPhotos.length;
+    const isCoverUpload = isMultiItemSale && intent === "cover";
+    const isInventoryUpload = isMultiItemSale && intent === "inventory";
+
+    if (isCoverUpload && currentPhotos[0]) {
+      setNotice("Your cover photo is already set. Remove it to choose another one.");
+      return;
+    }
+
+    if (isInventoryUpload && !currentPhotos[0]) {
+      setError("Add a cover photo before adding inventory items.");
+      return;
+    }
+
+    const availableSlots = isCoverUpload
+      ? 1
+      : isInventoryUpload
+        ? Math.max(0, maxEventInventoryPhotoCount - Math.max(0, currentPhotos.length - 1))
+        : maxPhotosForCurrentListing - currentPhotos.length;
     const addedPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
       id: crypto.randomUUID(),
       file,
@@ -423,7 +442,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     if (addedPhotos.length) void uploadDraftPhotos(addedPhotos);
   };
 
-  const openPhotoPicker = () => {
+  const openPhotoPicker = (intent: "listing" | "cover" | "inventory" = "listing") => {
+    photoPickerIntentRef.current = intent;
     photoInputRef.current?.click();
   };
 
@@ -644,7 +664,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     const body = isUneditedAiDraft ? appendUnconfirmedDetails(withSpecs, aiDraftState.points) : withSpecs;
     const price = String(form.get("price") ?? "").trim();
     const parsedPrice = Number(price.replace(/[^0-9.]/g, ""));
-    let priceCents = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0;
+    let priceCents = fixedBargainPriceCents ?? (Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice * 100) : 0);
 
     const saleItems = isMultiItemSale
       ? eventInventoryPhotos.map((photo, index) => {
@@ -682,9 +702,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       priceCents = Math.min(...saleItems.map((item) => item.priceCents));
     }
 
-    const maximumPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
-    if (maximumPriceCents !== null && priceCents > maximumPriceCents) {
-      setError(`${bargainListingTypes.find((option) => option.value === bargainType)?.label ?? "This deal"} must be priced at $${(maximumPriceCents / 100).toFixed(0)} or less.`);
+    if (fixedBargainPriceCents !== null && priceCents !== fixedBargainPriceCents) {
+      setError(`${bargainListingTypes.find((option) => option.value === bargainType)?.label ?? "This deal"} has a fixed price of $${(fixedBargainPriceCents / 100).toFixed(0)}.`);
       setSubmitProgress(0);
       setIsSubmitting(false);
       return;
@@ -943,8 +962,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <label htmlFor="listing-price">Price (NZD)</label>
                 <div className="post-price-input">
                   <span>$</span>
-                  <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
+                  <input id="listing-price" name="price" type="text" inputMode="decimal" value={fixedBargainPriceCents === null ? price : (fixedBargainPriceCents / 100).toFixed(0)} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" readOnly={fixedBargainPriceCents !== null} aria-describedby={fixedBargainPriceCents !== null ? "bargain-fixed-price-hint" : undefined} />
                 </div>
+                {fixedBargainPriceCents !== null ? <p className="post-field-hint" id="bargain-fixed-price-hint">This deal type has a fixed ${fixedBargainPriceCents / 100} price.</p> : null}
               </div>
               <SelectMenu id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
               <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
@@ -961,7 +981,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               onDrop={(event) => {
                 event.preventDefault();
                 setIsDraggingPhotos(false);
-                void addPhotos(event.dataTransfer.files);
+                void addPhotos(event.dataTransfer.files, isMultiItemSale ? "cover" : "listing");
               }}
             >
               <div className="field-label-row">
@@ -976,7 +996,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 multiple
                 onChange={(event) => {
                   if (event.target.files) {
-                    void addPhotos(event.target.files);
+                    void addPhotos(event.target.files, photoPickerIntentRef.current);
                     event.target.value = "";
                   }
                 }}
@@ -994,8 +1014,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                       </button>
                     </div>
                   ))}
-                  {Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
-                  <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
+                  {Array.from({ length: isMultiItemSale ? (photos.length === 0 ? 1 : 0) : Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
+                  <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={() => openPhotoPicker(isMultiItemSale ? "cover" : "listing")}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
                     <span>Add</span>
                   </button>
@@ -1033,7 +1053,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               </section>}
             </fieldset>
 
-            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={openPhotoPicker} onRemoveItem={removeBargainSaleItem} /> : null}
+            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} /> : null}
 
             {!isMultiItemSale && <div className="post-field post-field-full post-description-field">
               <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
