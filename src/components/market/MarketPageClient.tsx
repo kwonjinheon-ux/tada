@@ -284,7 +284,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
         </button>
         <section className="filter-block location-block market-filter-location-section">
           <h2>Location</h2>
-          <SelectMenu id="market-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => applyLocationFilter(nextLocation as MainLocation | "")} className="market-location-select" />
+          <SelectMenu id="market-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => applyLocationFilter(nextLocation as MainLocation | "")} className="market-location-select" hideLabel />
           <SelectMenu id="market-sub-location" name="subLocation" label="Sub Location" icon="fa-map-pin" placeholder="Any sub location" options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []} value={subLocation} disabled={!mainLocation} onChange={(nextSubLocation) => applyLocationFilter(mainLocation, nextSubLocation)} className="market-location-select" hideLabel />
         </section>
 

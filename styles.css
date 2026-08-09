@@ -1428,7 +1428,7 @@ a {
   background: var(--primary-dark);
   color: var(--neutral-50);
   font-size: var(--text-base);
-  font-weight: var(--weight-extrabold);
+  font-weight: var(--weight-regular);
 }
 
 .market-results {
@@ -1815,6 +1815,12 @@ a {
 
   .product-grid:not(.is-list-view) .product-card:hover .save-button,
   .product-grid:not(.is-list-view) .product-card:focus-within .save-button {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+
+  .product-grid:not(.is-list-view) .product-card .save-button.is-saved {
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
