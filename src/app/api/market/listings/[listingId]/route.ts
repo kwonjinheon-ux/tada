@@ -66,6 +66,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   if (!user) return NextResponse.json({ error: "Please log in to edit a listing." }, { status: 401 });
 
   const payload = await request.json().catch(() => null) as Record<string, unknown> | null;
+  const { listingId } = await params;
+  if (payload?.action === "mark_sold") {
+    const { data: soldListing, error } = await supabase
+      .from("market_listings")
+      .update({ status: "sold", sold_at: new Date().toISOString() })
+      .eq("id", listingId)
+      .eq("owner_id", user.id)
+      .neq("status", "sold")
+      .select("id")
+      .maybeSingle();
+    if (error || !soldListing) return NextResponse.json({ error: "Unable to mark this listing as sold right now." }, { status: 403 });
+    return NextResponse.json({ listingId: soldListing.id, status: "sold" });
+  }
   const title = typeof payload?.title === "string" ? payload.title.trim() : "";
   const description = typeof payload?.description === "string" ? payload.description.trim() : "";
   const priceCents = typeof payload?.priceCents === "number" ? payload.priceCents : NaN;
@@ -92,7 +105,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   if ([mainLocation, subLocation, locality, rawSuburb, region].some((value) => value !== null && value.length > 120)) return NextResponse.json({ error: "Location details must be 120 characters or fewer." }, { status: 400 });
   if ((latitude !== null && (latitude < -90 || latitude > 90)) || (longitude !== null && (longitude < -180 || longitude > 180))) return NextResponse.json({ error: "Enter valid location coordinates." }, { status: 400 });
 
-  const { listingId } = await params;
   const { data: currentListing } = await supabase
     .from("market_listings")
     .select("id,status")

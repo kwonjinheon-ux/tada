@@ -60,6 +60,8 @@ export type EditableListingInitialValues = {
   longitude?: number | null;
   meetingPlace: string;
   photos: EditableListingPhoto[];
+  /** Bargain edits retain their original deal type and database domain. */
+  bargainType?: BargainListingType;
 };
 
 type SmartphoneSpecs = {
@@ -171,7 +173,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const photosRef = useRef<PhotoPreview[]>([]);
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(initialListing?.title ?? "");
-  const [bargainType, setBargainType] = useState<BargainListingType>(() => isBargainListing ? "garage-sale" : "2-dollar-deals");
+  const [bargainType, setBargainType] = useState<BargainListingType>(() => initialListing?.bargainType ?? (isBargainListing ? "garage-sale" : "2-dollar-deals"));
   const [bargainSaleItems, setBargainSaleItems] = useState<BargainSaleItemDraft[]>([]);
   const [eventStartDate, setEventStartDate] = useState("");
   const [eventEndDate, setEventEndDate] = useState("");
@@ -718,7 +720,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     setSubmitProgress(28);
 
     if (initialListing) {
-      const response = await fetch(`/api/market/listings/${initialListing.id}`, {
+      const response = await fetch(`${isBargainListing ? "/api/bargain/listings" : "/api/market/listings"}/${initialListing.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -771,7 +773,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       }
 
       setSubmitProgress(100);
-      router.push(`/market/${initialListing.id}`);
+      router.push(`${listingHomePath}/${initialListing.id}`);
       router.refresh();
       return;
     }
@@ -951,7 +953,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
                 <input type="hidden" name="body" value={description} />
               </> : (isBargainListing ? (
-                <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" />
+                <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
               ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
             </div>
 
