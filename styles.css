@@ -1295,6 +1295,12 @@ a {
 .market-location-select .post-select-wrap.is-enhanced.has-leading-icon .post-select-trigger { padding-left: 38px; }
 .market-location-select .post-select-wrap.is-enhanced.has-leading-icon > i { left: 14px; }
 .market-location-select .post-select-menu { z-index: 45; }
+.market-filter-location-section .market-location-select > label,
+.market-filter-location-section .market-location-select .post-select-trigger {
+  color: var(--teal-soft-900);
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+}
 
 .bargain-results { gap: var(--space-4); }
 .bargain-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32%; min-height: 198px; overflow: hidden; padding: var(--space-6) var(--space-7); border: 1px solid var(--green-200); border-radius: var(--radius-lg); background: linear-gradient(115deg, var(--green-soft-50), var(--neutral-50) 68%, var(--green-soft-100)); }
@@ -1798,6 +1804,21 @@ a {
   font-size: calc(var(--save-button-size, 36px) * 0.45);
   box-shadow: var(--shadow-xs);
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .product-grid:not(.is-list-view) .product-card .save-button {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(.82);
+  }
+
+  .product-grid:not(.is-list-view) .product-card:hover .save-button,
+  .product-grid:not(.is-list-view) .product-card:focus-within .save-button {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
 }
 
 .save-heart-particles,

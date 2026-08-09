@@ -680,7 +680,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       return;
     }
 
-    const { data: createdListing, error: insertError } = await supabase.from(listingTable).insert({
+    const listingPayload = {
       owner_id: user.id,
       status: "published",
       title,
@@ -700,7 +700,17 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       latitude: location.latitude,
       longitude: location.longitude,
       meeting_place: meetingPlace || null,
-    }).select("id").single();
+    };
+    let createResult = await supabase.from(listingTable).insert(listingPayload).select("id").single();
+    // The location fields were introduced additively. Older deployed databases
+    // can still accept a listing through the original region columns while the
+    // migration is waiting to be applied or PostgREST refreshes its cache.
+    if (!isBargainListing && createResult.error && ["42703", "PGRST204"].includes(createResult.error.code)) {
+      const { main_location, sub_location, locality, raw_suburb, region, latitude, longitude, ...legacyListingPayload } = listingPayload;
+      void main_location; void sub_location; void locality; void raw_suburb; void region; void latitude; void longitude;
+      createResult = await supabase.from("market_listings").insert(legacyListingPayload).select("id").single();
+    }
+    const { data: createdListing, error: insertError } = createResult;
 
     if (insertError) {
       setError(insertError.message);
