@@ -17,6 +17,7 @@ import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { BargainSaleItemsEditor, type BargainSaleItemDraft } from "@/components/bargain/BargainSaleItemsEditor";
 import { BargainSaleTrustSignals } from "@/components/bargain/BargainSaleTrustSignals";
+import { BargainSaleCoverPreview } from "@/components/bargain/BargainSaleCoverPreview";
 import { bargainListingTypes, getBargainTypeMaximumPrice, isMultiItemBargain, type BargainListingType } from "@/lib/bargain/listing-types";
 
 type SelectOption = SelectMenuOption;
@@ -980,8 +981,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   }
                 }}
               />
-              <div className="post-photo-grid">
-                {(isMultiItemSale ? photos.slice(0, 1) : photos).map((photo, index) => (
+              <div className={isMultiItemSale ? "event-cover-photo-layout" : undefined}>
+                <div className="post-photo-grid">
+                  {(isMultiItemSale ? photos.slice(0, 1) : photos).map((photo, index) => (
                     <div className="post-photo-card" key={photo.id}>
                       <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
                         <img src={photo.url} alt={photo.name ?? photo.file?.name ?? "Listing photo"} />
@@ -992,12 +994,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                       </button>
                     </div>
                   ))}
-                {Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
+                  {Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
                   <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={openPhotoPicker}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
                     <span>Add</span>
                   </button>
-                ))}
+                  ))}
+                </div>
+                {isMultiItemSale ? <BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} /> : null}
               </div>
               <p className="post-upload-hint">
                 <strong>{isMultiItemSale ? "Upload a clear cover photo for your sale" : "Click to upload or drag and drop multiple photos at once"}</strong>
