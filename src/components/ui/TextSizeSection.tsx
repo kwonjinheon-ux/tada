@@ -5,6 +5,7 @@ import { type CSSProperties, type ReactNode } from "react";
 type TextSizeSectionProps = {
   title: string;
   children: ReactNode;
+  headerAction?: ReactNode;
   className?: string;
   sizeStep?: number;
 };
@@ -35,13 +36,14 @@ export function TextSizeControls({ value, onChange, label }: TextSizeControlsPro
   );
 }
 
-export function TextSizeSection({ title, children, className, sizeStep = 0 }: TextSizeSectionProps) {
+export function TextSizeSection({ title, children, headerAction, className, sizeStep = 0 }: TextSizeSectionProps) {
   const textScale = descriptionTextScale(sizeStep);
 
   return (
     <section className={["text-size-section", className].filter(Boolean).join(" ")} style={{ "--text-scale": textScale } as CSSProperties}>
       <div className="text-size-section-header">
         <h2>{title}</h2>
+        {headerAction}
       </div>
       <div className="text-size-section-content">{children}</div>
     </section>

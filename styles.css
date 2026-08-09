@@ -3229,6 +3229,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   gap: 12px;
 }
 
+.listing-description-translation { display: grid; justify-items: end; gap: 6px; }
+.listing-description-translate-button { min-height: var(--control-h-sm); padding: 0 10px; font-size: var(--text-sm); font-weight: var(--weight-regular); }
+.listing-description-translate-button i { margin-right: 6px; }
+.listing-description-translate-error { max-width: 230px; margin: 0; color: var(--red-900); font-size: var(--text-xs); line-height: 1.35; text-align: right; }
+
 .listing-detail-description h2 {
   margin: 0;
   color: var(--blue-950);
@@ -5319,6 +5324,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-description h2 {
     font-size: var(--text-xl);
   }
+
+  .listing-description-translate-button { padding: 0 8px; }
 
   .site-header {
     border-bottom: 0;

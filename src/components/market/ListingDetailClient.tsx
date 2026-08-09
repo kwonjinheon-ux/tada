@@ -7,6 +7,7 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
+import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
@@ -90,6 +91,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
   const [isUnconfirmedOpen, setIsUnconfirmedOpen] = useState(false);
+  const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
   const image = listing.images[activeImage] ?? listing.images[0];
   const ratingLabel = listing.seller.ratingCount
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
@@ -428,9 +430,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
 
-          <div className="listing-detail-actions">
-            {isBargainListing ? <button type="button" className="listing-detail-offer" onClick={() => void shareListing()}><i className="fa-solid fa-share-nodes" aria-hidden="true" /> Share listing</button> : isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon"><i className="fa-solid fa-tag" aria-hidden="true" /> Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <><button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button><button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
-          </div>
+          {!isBargainListing ? <div className="listing-detail-actions">
+            {isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon"><i className="fa-solid fa-tag" aria-hidden="true" /> Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <><button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button><button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
+          </div> : null}
           {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
 
           <dl className="listing-detail-facts">
@@ -467,8 +469,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <div className="listing-detail-mobile-location-row"><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="fa-regular fa-eye" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
-      <TextSizeSection className="listing-detail-description" title="Description" sizeStep={descriptionTextSizeStep}>
-        {prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
+      <TextSizeSection
+        className="listing-detail-description"
+        title="Description"
+        sizeStep={descriptionTextSizeStep}
+        headerAction={<ListingDescriptionTranslation description={listing.description} onChange={setTranslatedDescription} />}
+      >
+        {translatedDescription
+          ? descriptionParagraphs(translatedDescription).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
+          : prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
         {unconfirmed.length ? (
           <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label="Details the seller has not confirmed">
             <button type="button" className="listing-unconfirmed-toggle" aria-expanded={isUnconfirmedOpen} onClick={() => setIsUnconfirmedOpen((current) => !current)}>
