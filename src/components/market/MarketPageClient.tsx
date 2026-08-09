@@ -266,7 +266,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     router.push(`/market${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
   };
   return (
-    <main className="marketplace-page market-page market-page-with-bottom-dock">
+    <main className="marketplace-page market-page-with-bottom-dock">
       <button
         className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`}
         type="button"
