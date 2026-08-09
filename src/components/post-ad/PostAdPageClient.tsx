@@ -788,7 +788,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             </div>
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
-              <div className="post-section-heading"><span>4</span><h2>Pricing &amp; category</h2></div>
+              <div className="post-section-heading"><span>3</span><h2>Pricing &amp; category</h2></div>
               <div className="post-field post-price-field">
                 <label htmlFor="listing-price">Price (NZD)</label>
                 <div className="post-price-input">
@@ -815,7 +815,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               }}
             >
               <div className="field-label-row">
-                <legend><span className="post-section-heading"><span>2</span><span>Photos</span></span></legend>
+                <legend><span className="post-section-heading"><span>2</span><span>Photos &amp; AI help</span></span></legend>
                 <span>Up to 10 photos</span>
               </div>
               <input
@@ -854,10 +854,34 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <strong>Click to upload or drag and drop multiple photos at once</strong>
               </p>
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
+              <section className="post-photo-ai-help" aria-label="AI help">
+                <AiListingGenerator
+                  title={title}
+                  description={description}
+                  price={price}
+                  condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
+                  location={[location.mainLocation, location.subLocation].filter(Boolean).join(", ")}
+                  language={locale}
+                  additionalDetails={[
+                    { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
+                    { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
+                    ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
+                  ].filter(({ value }) => value.length > 0)}
+                  imagePaths={photos
+                    .filter((photo) => Boolean(photo.draftPath))
+                    .sort((left, right) => Number(right.id === primaryPhotoId) - Number(left.id === primaryPhotoId))
+                    .slice(0, 3)
+                    .flatMap((photo) => photo.draftPath ? [photo.draftPath] : [])}
+                  isImagesProcessing={isProcessingPhotos}
+                  onUseDraft={useAiDraft}
+                  onUseTitle={handleTitleChange}
+                />
+                <p className="post-ai-description">{locale === "ko" ? "사진을 기반으로 제목과 내용을 ChatGPT가 작성합니다." : "ChatGPT will create a title and description from your photos."}</p>
+              </section>
             </fieldset>
 
             <div className="post-field post-field-full post-description-field">
-              <div className="post-section-heading"><span>6</span><h2>Description</h2></div>
+              <div className="post-section-heading"><span>5</span><h2>Description</h2></div>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
                   <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="fa-solid fa-rotate-left" aria-hidden="true" /></button>
@@ -932,34 +956,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               )}
             </div>
 
-            <div className="post-ai-field">
-              <div className="post-section-heading"><span>3</span><h2>AI help &amp; actions</h2></div>
-              <AiListingGenerator
-                title={title}
-                description={description}
-                price={price}
-                condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
-                location={[location.mainLocation, location.subLocation].filter(Boolean).join(", ")}
-                language={locale}
-                additionalDetails={[
-                  { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
-                  { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
-                  ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
-                ].filter(({ value }) => value.length > 0)}
-                imagePaths={photos
-                  .filter((photo) => Boolean(photo.draftPath))
-                  .sort((left, right) => Number(right.id === primaryPhotoId) - Number(left.id === primaryPhotoId))
-                  .slice(0, 3)
-                  .flatMap((photo) => photo.draftPath ? [photo.draftPath] : [])}
-                isImagesProcessing={isProcessingPhotos}
-                onUseDraft={useAiDraft}
-                onUseTitle={handleTitleChange}
-              />
-              <p className="post-ai-description">사진을 기반으로 제목과 내용을 ChatGPT가 작성합니다.</p>
-            </div>
-
             <div className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>5</span><h2>Location &amp; trade</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>Location &amp; trade</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
