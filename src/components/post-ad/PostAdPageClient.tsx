@@ -990,9 +990,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
         <aside className="post-ad-sidebar" aria-label="Listing preview and posting tips">
           <section className="post-ad-preview" aria-live="polite">
-            <div className="post-ad-listing-preview">
-              <ProductCard listing={previewListing} imageSizes="240px" persistSave={false} isPreview />
-            </div>
+            <ProductCard listing={previewListing} imageSizes="240px" persistSave={false} isPreview />
           </section>
           <section className="post-ad-tips" aria-label="Posting tips">
             <h2>Tips for a great listing</h2>
