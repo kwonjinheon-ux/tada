@@ -1954,6 +1954,19 @@ a {
   background: var(--primary);
 }
 
+.product-badge.sale-type-badge {
+  top: 10px;
+  bottom: auto;
+}
+
+.product-badge.garage-sale {
+  background: var(--violet-700);
+}
+
+.product-badge.moving-sale {
+  background: var(--blue-450);
+}
+
 .product-badge-mobile-label {
   display: none;
 }
@@ -1976,6 +1989,16 @@ a {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.price-row .product-event-date {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-primary-dark);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.25;
 }
 
 .listing-status {
@@ -2008,7 +2031,7 @@ a {
 }
 
 .product-card.is-sold .product-media img {
-  filter: grayscale(1) contrast(.86) brightness(.64);
+  filter: grayscale(1) contrast(.86) brightness(.84);
 }
 
 .product-card:not(.is-sold) .product-media img {
@@ -2017,17 +2040,26 @@ a {
 
 .product-sold-out {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
   z-index: 2;
-  display: grid;
-  place-items: center;
-  background: rgba(13, 20, 31, .24);
-  color: var(--neutral-50);
-  font-size: clamp(12px, 1.9vw, 21px);
+  display: inline-flex;
+  min-height: var(--control-h-lg);
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  border: 3px solid var(--color-on-primary);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-ink) 15%, transparent);
+  color: var(--color-on-primary);
+  font-size: var(--text-lg);
   font-weight: var(--weight-extrabold);
-  letter-spacing: .02em;
-  text-shadow: 0 4px 16px rgba(0, 0, 0, .55);
+  letter-spacing: .04em;
+  line-height: 1;
+  text-shadow: var(--shadow-xs);
   text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-11deg);
+  white-space: nowrap;
 }
 
 .product-body h2 {
@@ -3893,6 +3925,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   margin: 0 auto;
 }
 
+.product-grid.is-list-view .product-badge.sale-type-badge {
+  top: 6px;
+  bottom: auto;
+}
+
 .post-ad-create-bar { width: min(100%, 1120px); margin: 0 auto var(--space-4); }.post-ad-create-bar a { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--blue-850); font-size: var(--text-md); font-weight: var(--weight-semibold); text-decoration: none; }.post-ad-create-bar a:hover { color: var(--green-700); }
 
 .post-ad-intro {
@@ -4975,7 +5012,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .event-schedule-grid input:focus,
 .event-address-input:focus-within,
 .event-description-input:focus { border-color: var(--color-primary); box-shadow: var(--ring-focus); outline: 0; }
-.is-event-sale .post-photo-field { padding: var(--space-4); }
+.is-event-sale .post-photo-field { align-content: start; padding: var(--space-4); }
 .is-event-sale .post-photo-grid { grid-template-columns: 1fr; }
 .is-event-sale .post-photo-slot,
 .is-event-sale .post-photo-upload { min-height: 290px; }
@@ -5160,13 +5197,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .bargain-sale-cover-preview { display: block; min-width: 0; }
   .bargain-sale-cover-preview-frame { position: relative; min-height: 260px; overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface-soft); }
   .bargain-sale-cover-preview-frame > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .bargain-sale-cover-preview-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--color-primary); font-size: var(--text-3xl); }
+  .bargain-sale-cover-preview-placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: var(--color-primary); font-size: var(--text-3xl); }
   .bargain-sale-cover-preview-shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, color-mix(in srgb, var(--color-ink) 82%, transparent)); }
   .bargain-sale-cover-preview-copy { position: absolute; right: var(--space-3); bottom: var(--space-3); left: var(--space-3); display: grid; gap: var(--space-1); color: var(--color-on-primary); }
   .bargain-sale-cover-preview-copy > span { width: fit-content; padding: 2px var(--space-1); border-radius: var(--radius-xs); background: var(--color-primary); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; }
   .bargain-sale-cover-preview-copy strong { font-size: var(--text-md); line-height: 1.2; }
   .bargain-sale-cover-preview-copy small { overflow: hidden; font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }
-  .is-event-sale .event-cover-add-button { min-height: var(--control-h-lg); grid-column: auto; border-style: dashed; }
+  .is-event-sale .event-cover-add-button { min-height: var(--control-h-2xl); grid-column: auto; border-style: dashed; }
   .is-event-sale .event-cover-add-button i { font-size: var(--text-base); }
   .is-event-sale .event-cover-add-button span { font-size: var(--text-sm); font-weight: var(--weight-regular); }
   .is-event-sale .post-submit-button { min-width: 266px; }

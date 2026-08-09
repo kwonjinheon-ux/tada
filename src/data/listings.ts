@@ -10,6 +10,7 @@ export type Listing = {
   categorySlug?: string | null;
   subcategorySlug?: string | null;
   bargainType?: string | null;
+  eventDateRange?: string | null;
   badge?: "Promotion" | "Newly Listed";
   status: ListingStatus;
   // commentCount?: number; // parked for reuse on a different category later

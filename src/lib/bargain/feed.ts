@@ -6,9 +6,10 @@ import { bargainFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { formatBargainEventDateRange } from "@/lib/bargain/format-event-date";
 
 type BargainQuery = z.infer<typeof bargainFeedQuerySchema>;
-type BargainRow = { id: string; title: string; price_cents: number; bargain_type: string; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; status: "published" | "pending" | "sold"; created_at: string };
+type BargainRow = { id: string; title: string; price_cents: number; bargain_type: string; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; event_start_date: string | null; event_end_date: string | null; status: "published" | "pending" | "sold"; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 
 function formatLocation(mainLocation: string | null, subLocation: string | null, regionCity: string | null, regionSuburb: string | null) {
@@ -19,7 +20,7 @@ export async function getBargainFeed(supabase: SupabaseClient, rawQuery: Bargain
   const query = bargainFeedQuerySchema.parse(rawQuery);
   let request = supabase
     .from("bargain_listings")
-    .select("id,title,price_cents,bargain_type,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,status,created_at")
+    .select("id,title,price_cents,bargain_type,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,event_start_date,event_end_date,status,created_at")
     .in("status", ["published", "pending", "sold"]);
 
   if (query.mainLocation) request = request.eq("main_location", query.mainLocation);
@@ -56,6 +57,7 @@ export async function getBargainFeed(supabase: SupabaseClient, rawQuery: Bargain
         categorySlug: row.category_slug,
         subcategorySlug: row.subcategory_slug,
         bargainType: row.bargain_type,
+        eventDateRange: row.bargain_type === "moving-sale" || row.bargain_type === "garage-sale" ? formatBargainEventDateRange(row.event_start_date, row.event_end_date) : null,
         badge: row.status === "published" ? "Newly Listed" : undefined,
         status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
       } satisfies Listing;

@@ -39,6 +39,11 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status === "sold" ? t("soldOut") : listing.status === "pending" ? t("pending") : t("available");
+  const saleBadge = listing.bargainType === "garage-sale"
+    ? { label: "Garage Sale", className: "garage-sale" }
+    : listing.bargainType === "moving-sale"
+      ? { label: "Moving Sale", className: "moving-sale" }
+      : null;
 
   useEffect(() => () => {
     if (burstTimer.current) window.clearTimeout(burstTimer.current);
@@ -125,7 +130,11 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
             onError={() => setImageFailed(true)}
           />
         )}
-        {listing.badge ? (
+        {saleBadge ? (
+          <span className={`product-badge sale-type-badge ${saleBadge.className}`}>
+            <span className="product-badge-label">{saleBadge.label}</span>
+          </span>
+        ) : listing.badge ? (
           <span
             className={`product-badge ${listing.badge === "Promotion" ? "promo" : "new"}`}
             aria-label={listing.badge === "Promotion" ? t("promotion") : t("newlyListed")}
@@ -145,7 +154,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         */}
         <h2>{listing.title}</h2>
         <div className="price-row">
-          <strong>{listing.price}</strong>
+          {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="fa-regular fa-calendar" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>
         </div>
         <p>
