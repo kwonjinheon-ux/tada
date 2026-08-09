@@ -13,6 +13,8 @@ import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { SelectMenu, type SelectMenuOption } from "@/components/ui/SelectMenu";
 import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
+import { ProductCard } from "@/components/ProductCard";
+import type { Listing } from "@/data/listings";
 
 type SelectOption = SelectMenuOption;
 
@@ -761,6 +763,16 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   };
 
   const submitButtonProgress = isSubmitting ? Math.max(6, submitProgress) : 0;
+  const previewPhoto = photos.find((photo) => photo.id === primaryPhotoId) ?? photos[0];
+  const previewListing: Listing = {
+    id: "listing-preview",
+    title: title.trim() || "Your listing title",
+    price: price.trim() ? `$${price.trim()}` : "$0",
+    location: [location.subLocation, location.mainLocation].filter(Boolean).join(", ") || "Choose a location",
+    image: previewPhoto?.url ?? "/images/logo.png",
+    imageAlt: title.trim() || "Listing preview",
+    status: "available",
+  };
 
   return (
     <main className="post-ad-page">
@@ -777,6 +789,13 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
             <div className="post-form-grid post-form-grid-three post-category-fields">
               <div className="post-section-heading"><span>4</span><h2>Pricing &amp; category</h2></div>
+              <div className="post-field post-price-field">
+                <label htmlFor="listing-price">Price (NZD)</label>
+                <div className="post-price-input">
+                  <span>$</span>
+                  <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
+                </div>
+              </div>
               <SelectMenu id="main-category" name="main_category" label="Main Category" icon="fa-layer-group" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
               <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="fa-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
               <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
@@ -837,17 +856,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
             </fieldset>
 
-            <div className="post-field post-field-full post-price-field">
-              <label htmlFor="listing-price">Price (NZD)</label>
-              <div className="post-price-input">
-                <span>$</span>
-                <input id="listing-price" name="price" type="text" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" />
-              </div>
-            </div>
-
             <div className="post-field post-field-full post-description-field">
               <div className="post-section-heading"><span>6</span><h2>Description</h2></div>
-              <label htmlFor="post-description">Description</label>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
                   <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="fa-solid fa-rotate-left" aria-hidden="true" /></button>
@@ -945,6 +955,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 onUseDraft={useAiDraft}
                 onUseTitle={handleTitleChange}
               />
+              <p className="post-ai-description">사진을 기반으로 제목과 내용을 ChatGPT가 작성합니다.</p>
             </div>
 
             <div className="post-form-grid post-location-grid">
@@ -982,9 +993,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         <aside className="post-ad-sidebar" aria-label="Listing preview and posting tips">
           <section className="post-ad-preview" aria-live="polite">
             <h2>Preview</h2>
-            <div className="post-ad-preview-art">{photos[0] ? <img src={photos[0].url} alt="" /> : <><i className="fa-regular fa-image" aria-hidden="true" /><i className="fa-solid fa-bag-shopping" aria-hidden="true" /></>}</div>
-            <strong>{title || "Your listing preview will appear here"}</strong>
-            <p>{title ? `${price ? `$${price}` : "Add a price"} · ${[location.mainLocation, location.subLocation].filter(Boolean).join(", ") || "Choose a location"}` : "Add details and photos to see how your listing will look to buyers."}</p>
+            <div className="post-ad-listing-preview">
+              <ProductCard listing={previewListing} imageSizes="240px" persistSave={false} isPreview />
+            </div>
           </section>
           <section className="post-ad-tips" aria-label="Posting tips">
             <h2>Tips for a great listing</h2>

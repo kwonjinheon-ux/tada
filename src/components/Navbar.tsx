@@ -11,6 +11,8 @@ import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
 import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { marketSearchTermsResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
 declare global {
@@ -38,6 +40,8 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
+  const [isSearchSuggestionsOpen, setIsSearchSuggestionsOpen] = useState(false);
   const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
   const [dockHeartParticles, setDockHeartParticles] = useState<HeartParticle[]>([]);
   const [isDockHeartPopping, setIsDockHeartPopping] = useState(false);
@@ -362,9 +366,16 @@ export function Navbar() {
     return null;
   }
 
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = searchQuery.trim();
+  const recordSearch = (query: string) => {
+    if (query.length < 2) return;
+    void fetch("/api/market/searches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ term: query }),
+    });
+  };
+
+  const runSearch = (query: string) => {
     if (pathname.startsWith("/bargain")) {
       router.push(`/bargain${query ? `?q=${encodeURIComponent(query)}` : ""}`);
       return;
@@ -373,7 +384,32 @@ export function Navbar() {
       router.push(`/market${query ? `?q=${encodeURIComponent(query)}` : ""}`);
       return;
     }
-    window.dispatchEvent(new CustomEvent("market-search-query-change", { detail: searchQuery }));
+    window.dispatchEvent(new CustomEvent("market-search-query-change", { detail: query }));
+  };
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    recordSearch(query);
+    setIsSearchSuggestionsOpen(false);
+    runSearch(query);
+  };
+
+  const loadTrendingSearches = async () => {
+    try {
+      const response = await fetch("/api/market/searches", { cache: "no-store" });
+      const result = await readApiResponse(response, marketSearchTermsResponseSchema);
+      if (!result.error) setTrendingSearches(result.data.terms);
+    } catch {
+      setTrendingSearches([]);
+    }
+  };
+
+  const chooseTrendingSearch = (term: string) => {
+    setSearchQuery(term);
+    recordSearch(term);
+    setIsSearchSuggestionsOpen(false);
+    runSearch(term);
   };
 
   const updateSearchQuery = (value: string) => {
@@ -518,7 +554,15 @@ export function Navbar() {
             <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
             <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} type="search" placeholder={t("search")} />
+          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} onFocus={() => { setIsSearchSuggestionsOpen(true); if (!trendingSearches.length) void loadTrendingSearches(); }} onBlur={() => window.setTimeout(() => setIsSearchSuggestionsOpen(false), 120)} type="search" role="combobox" placeholder={t("search")} aria-autocomplete="list" aria-expanded={isSearchSuggestionsOpen && trendingSearches.length > 0} aria-controls="trending-searches" />
+          {isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
+            <div className="nav-search-suggestions" id="trending-searches" role="listbox" aria-label="Popular searches">
+              <span>Popular searches</span>
+              {trendingSearches.map((term) => (
+                <button key={term} type="button" role="option" aria-selected={false} onMouseDown={(event) => event.preventDefault()} onClick={() => chooseTrendingSearch(term)}>{term}</button>
+              ))}
+            </div>
+          ) : null}
         </form>
 
         <button

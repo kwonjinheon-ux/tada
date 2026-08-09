@@ -24,9 +24,10 @@ type ProductCardProps = {
   imageSizes?: string;
   listingHref?: string;
   persistSave?: boolean;
+  isPreview?: boolean;
 };
 
-function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true, isPreview = false }: ProductCardProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
@@ -77,11 +78,13 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
 
   const detailPath = listingHref ?? `/market/${listing.id}`;
   const prefetchListing = () => {
+    if (isPreview) return;
     if (hasPrefetchedDetail.current) return;
     hasPrefetchedDetail.current = true;
     router.prefetch(detailPath);
   };
   const openListing = () => {
+    if (isPreview) return;
     prefetchListing();
     router.push(detailPath);
   };
@@ -89,14 +92,15 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   return (
     <article
       className={`product-card product-card-link ${listing.status === "sold" ? "is-sold" : ""}`}
-      role="link"
-      tabIndex={0}
-      aria-label={`${t("viewListing")}: ${listing.title}`}
-      onClick={openListing}
-      onPointerEnter={prefetchListing}
-      onTouchStart={prefetchListing}
-      onFocus={prefetchListing}
+      role={isPreview ? undefined : "link"}
+      tabIndex={isPreview ? undefined : 0}
+      aria-label={isPreview ? undefined : `${t("viewListing")}: ${listing.title}`}
+      onClick={isPreview ? undefined : openListing}
+      onPointerEnter={isPreview ? undefined : prefetchListing}
+      onTouchStart={isPreview ? undefined : prefetchListing}
+      onFocus={isPreview ? undefined : prefetchListing}
       onKeyDown={(event) => {
+        if (isPreview) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           openListing();
@@ -116,6 +120,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
             priority={priority}
             quality={70}
             sizes={imageSizes}
+            unoptimized={isPreview}
             onError={() => setImageFailed(true)}
           />
         )}
@@ -147,7 +152,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
           {listing.location}
         </p>
       </div>
-      <button
+      {!isPreview ? <button
         className={`save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
         aria-label={`${t("saveListing")}: ${listing.title}`}
@@ -165,7 +170,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       >
         <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
         <SaveHeartBurst particles={heartParticles} />
-      </button>
+      </button> : null}
     </article>
   );
 }
