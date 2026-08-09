@@ -16,7 +16,6 @@ import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { BargainSaleItemsEditor, type BargainSaleItemDraft } from "@/components/bargain/BargainSaleItemsEditor";
-import { BargainSaleTrustSignals } from "@/components/bargain/BargainSaleTrustSignals";
 import { BargainSaleCoverPreview } from "@/components/bargain/BargainSaleCoverPreview";
 import { bargainListingTypes, getBargainTypeMaximumPrice, isMultiItemBargain, type BargainListingType } from "@/lib/bargain/listing-types";
 
@@ -1001,8 +1000,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   }
                 }}
               />
-              <div className={isMultiItemSale ? "event-cover-photo-layout" : undefined}>
-                <div className="post-photo-grid">
+              <div className={isMultiItemSale ? `event-cover-photo-layout ${photos.length ? "has-cover-photo" : "is-awaiting-cover"}` : undefined}>
+                {(!isMultiItemSale || photos.length > 0) ? <div className="post-photo-grid">
                   {(isMultiItemSale ? photos.slice(0, 1) : photos).map((photo, index) => (
                     <div className="post-photo-card" key={photo.id}>
                       <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
@@ -1014,14 +1013,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                       </button>
                     </div>
                   ))}
-                  {Array.from({ length: isMultiItemSale ? (photos.length === 0 ? 1 : 0) : Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
+                  {!isMultiItemSale && Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
                   <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={() => openPhotoPicker(isMultiItemSale ? "cover" : "listing")}>
                     <i className="fa-solid fa-camera" aria-hidden="true" />
                     <span>Add</span>
                   </button>
                   ))}
-                </div>
-                {isMultiItemSale ? <BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} /> : null}
+                </div> : null}
+                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="fa-solid fa-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
                 <strong>{isMultiItemSale ? "Upload a clear cover photo for your sale" : "Click to upload or drag and drop multiple photos at once"}</strong>
@@ -1160,7 +1159,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}</span>
               </button>
             </div>
-            {isMultiItemSale ? <BargainSaleTrustSignals /> : null}
           </form>
         </section>
 
