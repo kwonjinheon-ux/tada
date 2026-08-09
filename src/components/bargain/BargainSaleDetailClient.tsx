@@ -63,12 +63,15 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
 
   return <main className="bargain-sale-detail-page">
     <PageContainer className="bargain-sale-detail-layout">
+      <div className="listing-detail-back-row" aria-label="Bargain navigation">
+        <Link className="listing-detail-back" href="/bargain"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
+        <nav className="listing-detail-category-path" aria-label="Bargain category"><Link href="/bargain">Bargain</Link><span aria-hidden="true">/</span><Link href={`/bargain?bargain=${sale.type}`}>{typeLabel}</Link></nav>
+      </div>
       <section className="bargain-sale-detail-overview">
         <div className="bargain-sale-detail-hero">
           <Image src={sale.coverImage.src} alt={sale.coverImage.alt} fill priority unoptimized sizes="(max-width: 1200px) 100vw, 780px" />
           <div className="bargain-sale-detail-hero-shade" />
           <div className="bargain-sale-detail-hero-content">
-            <Link className="bargain-sale-detail-back" href="/bargain"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to Bargain</Link>
             <span className="bargain-sale-detail-type">{typeLabel}</span>
             <h1>{sale.title}</h1>
             <p>{sale.description}</p>
