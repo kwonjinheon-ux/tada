@@ -34,11 +34,12 @@ export default async function BargainSaleDetailPage({ params }: { params: Promis
   const { data } = await supabase.from("bargain_listings").select("id,owner_id,title,description,bargain_type,main_location,sub_location,region_city,region_suburb,event_start_date,event_end_date,event_start_time,event_end_time,event_address").eq("id", listingId).in("bargain_type", ["moving-sale", "garage-sale"]).maybeSingle();
   if (!data) notFound();
   const sale = data as BargainRow;
-  const [{ data: photoData }, { data: itemData }, { data: sellerData }, { data: profileData }] = await Promise.all([
+  const [{ data: photoData }, { data: itemData }, { data: sellerData }, { data: profileData }, { data: { user } }] = await Promise.all([
     supabase.from("bargain_listing_photos").select("id,storage_path,original_name,is_primary,display_order").eq("listing_id", sale.id).order("display_order"),
     supabase.from("bargain_listing_items").select("id,photo_id,title,category_slug,price_cents,description,display_order").eq("listing_id", sale.id).order("display_order"),
     sale.owner_id ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
     sale.owner_id ? supabase.from("profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.auth.getUser(),
   ]);
   const photos = (photoData ?? []) as PhotoRow[];
   const signedImages = await getSignedStorageImages("bargain-listing-images", photos.flatMap((photo) => photo.storage_path ? [photo.storage_path] : []), "gallery");
@@ -50,7 +51,7 @@ export default async function BargainSaleDetailPage({ params }: { params: Promis
   const detail: BargainSaleDetail = {
     id: sale.id, title: sale.title, description: sale.description, type: sale.bargain_type, location: locationLabel(sale), address: sale.event_address, dateLabel: formatDateRange(sale.event_start_date, sale.event_end_date), timeLabel: formatTimeRange(sale.event_start_time, sale.event_end_time),
     coverImage: { src: cover?.storage_path ? signedImages.get(cover.storage_path) ?? fallbackImage : fallbackImage, alt: cover?.original_name ?? sale.title },
-    seller: { name: seller?.display_name ?? "Tada seller", avatarUrl: sellerAvatarUrl },
+    seller: { name: seller?.display_name ?? "Tada seller", avatarUrl: sellerAvatarUrl }, viewerIsOwner: user?.id === sale.owner_id,
     items: ((itemData ?? []) as ItemRow[]).flatMap((item) => { const photo = photoById.get(item.photo_id); if (!photo?.storage_path) return []; return [{ id: item.id, title: item.title, description: item.description, category: item.category_slug, priceCents: item.price_cents, image: { src: signedImages.get(photo.storage_path) ?? fallbackImage, alt: photo.original_name ?? item.title }, status: "available" as const }]; }),
   };
   return <BargainSaleDetailClient sale={detail} />;
