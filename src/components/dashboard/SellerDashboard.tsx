@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ActiveJourneyCarousel } from "@/components/dashboard/ActiveJourneyCarousel";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TranslatedText } from "@/components/LanguageProvider";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getActiveJourneys } from "@/lib/market/active-journey";
 import { getServerUser } from "@/lib/auth-server";
@@ -39,7 +40,6 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
     : { data: null };
   const isJobsDashboard = context === "jobs";
   const displayName = profile?.display_name || (typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : user.email?.split("@")[0]) || "Tada member";
-  const initial = displayName.trim().charAt(0).toUpperCase() || "T";
   const avatarPath = profile?.avatar_path || (typeof user.user_metadata?.avatar_path === "string" ? user.user_metadata.avatar_path : null);
   const { data: signedAvatar } = supabase && avatarPath ? await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : { data: null };
   const locationLabel = [profile?.region_suburb, profile?.region_city].filter(Boolean).join(", ");
@@ -91,7 +91,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
       <div className="dashboard-content seller-dashboard-content">
         <section className="seller-dashboard-top">
           <article className="seller-summary-card">
-            <div className="seller-summary-avatar">{signedAvatar?.signedUrl ? <img src={signedAvatar.signedUrl} alt="Your profile" /> : initial}<span><i className="fa-solid fa-check" /></span></div>
+            <div className="seller-summary-avatar"><Avatar src={signedAvatar?.signedUrl} name={displayName} alt="Your profile" /><span className="seller-summary-badge"><i className="fa-solid fa-check" /></span></div>
             <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
             <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-gear" /></Link>
           </article>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Avatar } from "@/components/ui/Avatar";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
 
@@ -46,7 +47,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
     <main className="listing-detail-page seller-public-profile">
       <Link className="listing-detail-back" href="/market"><i className="fa-solid fa-arrow-left" aria-hidden="true" />Back to listings</Link>
       <section className="seller-public-profile-card" aria-labelledby="seller-profile-name">
-        {signedAvatar ? <img src={signedAvatar} alt={`${displayName} profile`} /> : <span>{displayName.charAt(0).toUpperCase()}</span>}
+        <Avatar src={signedAvatar} name={displayName} alt={`${displayName} profile`} />
         <div>
           <p>Seller profile</p>
           <h1 id="seller-profile-name">{displayName}</h1>

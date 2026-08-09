@@ -7,9 +7,9 @@ import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
 import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
+import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
-import { getAvatarFallback } from "@/lib/avatar-fallback";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
@@ -427,7 +427,6 @@ export function Navbar() {
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
-  const avatarFallback = getAvatarFallback(displayName);
   const isSignedIn = Boolean(userEmail);
   const languageButtonLabel = locale === "en" ? "EN" : locale === "ko" ? "한글" : null;
   const notificationBadge = unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount);
@@ -580,7 +579,7 @@ export function Navbar() {
 
         {isAuthReady && (
           <button className={`mobile-profile-link ${!isSignedIn ? "is-guest" : ""} ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close account menu" : isSignedIn ? "Open my dashboard menu" : "Open account menu"} aria-expanded={isDashboardMenuOpen} aria-controls={isSignedIn ? "mobile-dashboard-menu" : "mobile-account-menu"} title={userEmail ?? "Account"} onClick={handleMobileProfileClick}>
-            {isSignedIn ? (avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>) : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
+            {isSignedIn ? <Avatar src={avatarUrl} name={displayName} alt="Profile" className="nav-avatar-initial" colored /> : <i className="fa-regular fa-circle-user" aria-hidden="true" />}
           </button>
         )}
         <Link className={`mobile-notifications nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
@@ -616,7 +615,7 @@ export function Navbar() {
           </button>
           {isAuthReady && userEmail ? (
             <button className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => setIsDesktopDashboardOpen(true)}>
-              {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <span className="nav-avatar-initial" style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
+              <Avatar src={avatarUrl} name={displayName} alt="Profile" className="nav-avatar-initial" colored />
             </button>
           ) : isAuthReady ? (
             <>
@@ -642,7 +641,7 @@ export function Navbar() {
           isDashboardMenuOpen ? <DialogOverlay className="mobile-profile-popover-dialog" onClose={() => setIsDashboardMenuOpen(false)}>
             <nav className="mobile-profile-popover profile-popup-surface" id="mobile-dashboard-menu" aria-label="Dashboard menu">
               <div className="mobile-profile-popover-header">
-                <div className="mobile-profile-popover-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}</div>
+                <div className="mobile-profile-popover-avatar" aria-hidden="true"><Avatar src={avatarUrl} name={displayName} colored /></div>
                 <div><span>{displayName ?? userEmail}</span><small>{userEmail}</small></div>
               </div>
               <DashboardMenuItems
@@ -697,7 +696,7 @@ export function Navbar() {
           <nav className="mobile-profile-popover desktop-profile-popover profile-popup-surface" id="desktop-dashboard-menu" aria-label="Dashboard menu">
             <div className="mobile-profile-popover-header">
               <div className="mobile-profile-popover-avatar" aria-hidden="true">
-                {avatarUrl ? <img src={avatarUrl} alt="" /> : <span style={{ backgroundColor: avatarFallback.color }}>{avatarFallback.initial}</span>}
+                <Avatar src={avatarUrl} name={displayName} colored />
               </div>
               <div>
                 <span>{displayName ?? userEmail}</span>

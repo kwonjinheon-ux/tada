@@ -6,8 +6,6 @@ import { marketFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
-// Comment-count badge — parked for reuse on a different category later.
-// import { getCommentCounts } from "@/lib/market/comment-counts";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;

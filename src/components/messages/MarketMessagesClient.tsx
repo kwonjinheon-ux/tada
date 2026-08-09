@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationBulkResponseSchema, marketMessageResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -83,10 +84,6 @@ function formatMessageTime(value: string) {
 
 function formatOfferAmount(amountCents: number) {
   return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2 }).format(amountCents / 100);
-}
-
-function Avatar({ name, src, className }: { name: string; src: string | null; className: string }) {
-  return src ? <img className={className} src={src} alt="" /> : <span className={className}>{name.charAt(0).toUpperCase()}</span>;
 }
 
 export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId, initialMessages, initialOffers, currentUserId }: Props) {

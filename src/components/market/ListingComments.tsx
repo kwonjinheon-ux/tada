@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
 
 type ListingComment = {
@@ -30,14 +31,6 @@ function relativeTime(value: string) {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return days < 7 ? `${days}d ago` : new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short" }).format(new Date(value));
-}
-
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "T";
-}
-
-function CommentAvatar({ comment }: { comment: ListingComment }) {
-  return comment.authorAvatarUrl ? <img className="listing-comment-avatar" src={comment.authorAvatarUrl} alt="" /> : <span className="listing-comment-avatar">{initials(comment.authorName)}</span>;
 }
 
 export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: "market" | "bargain" }) {
@@ -201,7 +194,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     const isReplying = replyTo?.id === comment.id;
 
     return <article className={`listing-comment depth-${comment.depth}`} key={comment.id}>
-      <CommentAvatar comment={comment} />
+      <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
       <div className="listing-comment-content">
         <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">Edited</span> : null}</div>
         {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label="Edit comment" /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>Save</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>Cancel</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? "This comment was deleted." : comment.body}</p>}

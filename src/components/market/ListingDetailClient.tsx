@@ -9,6 +9,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
+import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
 import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
@@ -468,7 +469,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
           <section className="listing-detail-seller-card">
             <div className="listing-detail-seller">
-              <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span>
+              <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-seller-avatar" /></span>
               <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
               {!isBargainListing && listing.seller.id ? <Link className="listing-detail-seller-profile-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View seller profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}
             </div>
@@ -518,7 +519,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />
       {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
       </section> : null}
 
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />

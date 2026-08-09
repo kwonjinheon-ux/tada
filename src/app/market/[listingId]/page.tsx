@@ -7,8 +7,6 @@ import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
-// Comment-count badge — parked for reuse on a different category later.
-// import { getCommentCounts } from "@/lib/market/comment-counts";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

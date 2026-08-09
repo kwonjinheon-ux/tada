@@ -59,14 +59,3 @@ export async function signInWithGoogle() {
 
   return { error: error?.message ?? null };
 }
-
-export async function signOut() {
-  const supabase = createBrowserSupabaseClient();
-
-  if (!supabase) {
-    return { error: "Supabase environment variables are not configured." };
-  }
-
-  const { error } = await supabase.auth.signOut();
-  return { error: error?.message ?? null };
-}
