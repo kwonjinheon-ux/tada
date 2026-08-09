@@ -6221,8 +6221,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   padding: 24px 18px 42px;
   scrollbar-gutter: stable;
   scrollbar-color: transparent transparent;
-  scrollbar-width: thin;
+   scrollbar-width: thin;
 }
+
+  .market-page > .market-filter-panel {
+    padding-top: 0;
+  }
 
 .ad-slot { position: relative; margin: 18px 0; overflow: hidden; border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--neutral-150); }
 .ad-slot > span { position: absolute; z-index: 1; top: 7px; left: 8px; padding: 3px 6px; border-radius: var(--radius-pill); background: rgba(255,255,255,.88); color: var(--blue-soft-650); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); letter-spacing: .04em; text-transform: uppercase; }
