@@ -25,9 +25,10 @@ type ProductCardProps = {
   listingHref?: string;
   persistSave?: boolean;
   isPreview?: boolean;
+  className?: string;
 };
 
-function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true, isPreview = false }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true, isPreview = false, className = "" }: ProductCardProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
@@ -91,7 +92,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
 
   return (
     <article
-      className={`product-card product-card-link ${listing.status === "sold" ? "is-sold" : ""}`}
+      className={`product-card product-card-link ${listing.status === "sold" ? "is-sold" : ""} ${className}`}
       role={isPreview ? undefined : "link"}
       tabIndex={isPreview ? undefined : 0}
       aria-label={isPreview ? undefined : `${t("viewListing")}: ${listing.title}`}

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+
 export type BargainSalePhoto = {
   id: string;
   url: string;
@@ -8,29 +10,37 @@ export type BargainSalePhoto = {
 
 export type BargainSaleItemDraft = {
   photoId: string;
+  title: string;
+  category: string;
   price: string;
   description: string;
 };
 
-export function BargainSaleItemsEditor({ photos, items, onChange }: {
+const itemCategories = ["Furniture", "Clothing", "Kitchen", "Toys", "Media", "Collectibles", "Electronics", "Other"];
+
+export function BargainSaleItemsEditor({ photos, items, onChange, onAddItem, onRemoveItem }: {
   photos: BargainSalePhoto[];
   items: BargainSaleItemDraft[];
-  onChange: (photoId: string, field: "price" | "description", value: string) => void;
+  onChange: (photoId: string, field: "title" | "category" | "price" | "description", value: string) => void;
+  onAddItem: () => void;
+  onRemoveItem: (photoId: string) => void;
 }) {
-  if (!photos.length) return <p className="bargain-sale-items-empty">Add photos to enter a price and description for every sale item.</p>;
+  if (!photos.length) return <section className="bargain-sale-items bargain-sale-items-empty" aria-label="Itemized inventory"><div><strong>Itemized inventory</strong><p>Add photos to create individual listing slots.</p></div><Button className="bargain-sale-add-item" variant="secondary" size="sm" onClick={onAddItem}><i className="fa-solid fa-plus" aria-hidden="true" /> Add your first item</Button></section>;
 
   return <section className="bargain-sale-items" aria-label="Individual sale item details">
     <div className="bargain-sale-items-heading">
-      <div><strong>Individual item details</strong><p>Set a price and short description for each photo.</p></div>
+      <div><strong>Itemized inventory</strong><p>Upload photos to create listing slots, then add details for every item.</p></div>
+      <Button className="bargain-sale-add-item" variant="secondary" size="sm" onClick={onAddItem}><i className="fa-solid fa-plus" aria-hidden="true" /> Add another item</Button>
       <span>{photos.length} of 10 items</span>
     </div>
     <div className="bargain-sale-items-grid">
       {photos.map((photo, index) => {
-        const item = items.find((candidate) => candidate.photoId === photo.id) ?? { photoId: photo.id, price: "", description: "" };
+        const item = items.find((candidate) => candidate.photoId === photo.id) ?? { photoId: photo.id, title: "", category: "", price: "", description: "" };
         return <article className="bargain-sale-item" key={photo.id}>
           <img src={photo.url} alt={photo.name ?? `Sale item ${index + 1}`} />
           <div className="bargain-sale-item-fields">
-            <strong>Item {index + 1}</strong>
+            <div className="bargain-sale-item-topline"><strong>Item {index + 1}</strong><button type="button" onClick={() => onRemoveItem(photo.id)} aria-label={`Remove item ${index + 1}`}><i className="fa-solid fa-trash-can" aria-hidden="true" /> Remove</button></div>
+            <div className="bargain-sale-item-meta"><label>Item title<input type="text" value={item.title} onChange={(event) => onChange(photo.id, "title", event.target.value)} placeholder="e.g. Oak dining table" required /></label><label>Category<select value={item.category} onChange={(event) => onChange(photo.id, "category", event.target.value)} required><option value="">Select category</option>{itemCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label></div>
             <label>Price (NZD)<div className="post-price-input"><span>$</span><input type="text" inputMode="decimal" value={item.price} onChange={(event) => onChange(photo.id, "price", event.target.value)} placeholder="0.00" required /></div></label>
             <label>Description<textarea value={item.description} onChange={(event) => onChange(photo.id, "description", event.target.value)} placeholder="Describe this item" maxLength={1_000} required /></label>
           </div>
