@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/Button";
+import { BargainSaleItemGallery } from "@/components/bargain/BargainSaleItemGallery";
 import { formatMarketPrice } from "@/lib/market/format-price";
 
 export type BargainSaleDetail = {
@@ -17,6 +18,7 @@ export type BargainSaleDetail = {
   dateLabel: string | null;
   timeLabel: string | null;
   coverImage: { src: string; alt: string };
+  seller: { name: string; avatarUrl: string | null };
   items: Array<{
     id: string;
     title: string;
@@ -28,15 +30,12 @@ export type BargainSaleDetail = {
   }>;
 };
 
-function statusLabel(status: BargainSaleDetail["items"][number]["status"]) {
-  return status === "sold" ? "Sold" : status === "pending" ? "Reserved" : "Available";
-}
-
 export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   const [activeCategory, setActiveCategory] = useState("All items");
   const [searchQuery, setSearchQuery] = useState("");
   const [reservedItemIds, setReservedItemIds] = useState<string[]>([]);
   const [shareStatus, setShareStatus] = useState("");
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const categories = useMemo(() => {
     const itemCategories = sale.items
       .map((item) => item.category)
@@ -48,7 +47,9 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
     const searchMatches = [item.title, item.description, item.category].filter(Boolean).join(" ").toLowerCase().includes(searchQuery.trim().toLowerCase());
     return categoryMatches && searchMatches;
   });
-  const directionsHref = sale.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sale.address)}` : null;
+  const mapLocation = sale.address ?? sale.location;
+  const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapLocation)}&travelmode=driving`;
+  const mapEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapLocation)}&z=15&output=embed`;
   const typeLabel = sale.type === "moving-sale" ? "Moving sale" : "Garage sale";
   const shareSale = async () => {
     const shareData = { title: sale.title, text: sale.description, url: window.location.href };
@@ -78,8 +79,8 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
             {sale.dateLabel ? <div><dt><i className="fa-regular fa-calendar" aria-hidden="true" /> Date</dt><dd>{sale.dateLabel}</dd></div> : null}
             {sale.timeLabel ? <div><dt><i className="fa-regular fa-clock" aria-hidden="true" /> Time</dt><dd>{sale.timeLabel}</dd></div> : null}
             <div><dt><i className="fa-solid fa-location-dot" aria-hidden="true" /> Location</dt><dd>{sale.address ?? sale.location}</dd></div>
-          </dl>{directionsHref ? <a className="bargain-sale-directions" href={directionsHref} target="_blank" rel="noreferrer">Get directions <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></a> : null}</section>
-          <section className="bargain-sale-host-card"><h2><i className="fa-solid fa-user" aria-hidden="true" /> Seller info</h2><div className="bargain-sale-host-profile"><span className="bargain-sale-host-avatar"><i className="fa-solid fa-house" aria-hidden="true" /></span><div><strong>Local Tada seller</strong><span><i className="fa-solid fa-star" aria-hidden="true" /> Community sale host</span></div></div><div className="bargain-sale-host-actions"><Button variant="secondary" size="sm" block><i className="fa-regular fa-message" aria-hidden="true" /> Message</Button><Button variant="secondary" size="sm" block onClick={() => void shareSale()}><i className="fa-solid fa-share-nodes" aria-hidden="true" /> Share</Button></div>{shareStatus ? <span className="bargain-sale-share-status" role="status">{shareStatus}</span> : null}</section>
+          </dl><a className="bargain-sale-directions" href={directionsHref} target="_blank" rel="noreferrer">Get directions <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></a></section>
+          <section className="bargain-sale-host-card"><h2><i className="fa-solid fa-user" aria-hidden="true" /> Seller info</h2><div className="bargain-sale-host-profile"><span className="bargain-sale-host-avatar">{sale.seller.avatarUrl ? <Image src={sale.seller.avatarUrl} alt="" fill unoptimized sizes="56px" /> : <span aria-hidden="true">{sale.seller.name.slice(0, 1).toUpperCase()}</span>}</span><div><strong>{sale.seller.name}</strong><span>Local Tada seller</span></div></div><div className="bargain-sale-host-actions"><Button variant="secondary" size="sm" block><i className="fa-regular fa-message" aria-hidden="true" /> Message</Button><Button variant="secondary" size="sm" block onClick={() => void shareSale()}><i className="fa-solid fa-share-nodes" aria-hidden="true" /> Share</Button></div>{shareStatus ? <span className="bargain-sale-share-status" role="status">{shareStatus}</span> : null}</section>
         </div>
       </section>
 
@@ -90,15 +91,16 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
         </header>
         <div className="bargain-sale-category-tabs" aria-label="Filter sale items">{categories.map((category) => <button key={category} type="button" className={activeCategory === category ? "is-selected" : ""} onClick={() => setActiveCategory(category)}>{category}</button>)}</div>
         {visibleItems.length ? <div className="bargain-sale-detail-items">{visibleItems.map((item) => <article className={`bargain-sale-detail-item ${item.status === "sold" ? "is-sold" : ""}`} key={item.id}>
-          <div className="bargain-sale-detail-item-image"><Image src={item.image.src} alt={item.image.alt} fill unoptimized sizes="(max-width: 767px) 100vw, 280px" />{item.status === "sold" ? <span>Sold</span> : <b>Available</b>}</div>
-          <div className="bargain-sale-detail-item-copy"><div><h3>{item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions"><Button size="sm" block disabled={item.status === "sold"} onClick={() => toggleReservation(item.id)}>{reservedItemIds.includes(item.id) ? "Reserved" : "Reserve item"}</Button><span className={`listing-status status-${item.status}`}>{statusLabel(item.status)}</span></div></div>
+          <button className="bargain-sale-detail-item-image" type="button" onClick={() => setGalleryIndex(sale.items.findIndex((saleItem) => saleItem.id === item.id))} aria-label={`View ${item.title} photo gallery`}><Image src={item.image.src} alt={item.image.alt} fill unoptimized sizes="(max-width: 767px) 100vw, 280px" />{item.status === "sold" ? <span>Sold</span> : <b>Available</b>}</button>
+          <div className="bargain-sale-detail-item-copy"><div><h3>{item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions"><Button size="sm" block disabled={item.status === "sold"} onClick={() => toggleReservation(item.id)}>{reservedItemIds.includes(item.id) ? "Reserved" : "Reserve item"}</Button></div></div>
         </article>)}</div> : <div className="bargain-sale-detail-empty" role="status"><i className="fa-solid fa-box-open" aria-hidden="true" /><strong>No items in this category</strong><span>Choose another category to see the sale inventory.</span></div>}
       </section>
 
       <aside className="bargain-sale-detail-sidebar">
-        <a className="bargain-sale-map-card" href={directionsHref ?? "#event-location"} target={directionsHref ? "_blank" : undefined} rel={directionsHref ? "noreferrer" : undefined}><span className="bargain-sale-map-grid" aria-hidden="true" /><i className="fa-solid fa-location-dot" aria-hidden="true" /><span>Open event location</span></a>
+        <a className="bargain-sale-map-card" href={directionsHref} target="_blank" rel="noreferrer" aria-label={`Get directions to ${mapLocation}`}><iframe className="bargain-sale-map-embed" src={mapEmbedSrc} title={`Map of ${mapLocation}`} loading="lazy" tabIndex={-1} aria-hidden="true" /><i className="fa-solid fa-location-dot" aria-hidden="true" /><span>Open in Google Maps</span></a>
         <section id="event-location" className="bargain-sale-about-card"><h2>About this sale</h2><p>{sale.description}</p><ul><li><i className="fa-solid fa-money-bill-wave" aria-hidden="true" /> Cash and card payments welcome</li><li><i className="fa-solid fa-bag-shopping" aria-hidden="true" /> Bring your own bags for larger finds</li></ul></section>
       </aside>
+      {galleryIndex !== null ? <BargainSaleItemGallery activeIndex={galleryIndex} items={sale.items} onClose={() => setGalleryIndex(null)} onSelect={setGalleryIndex} /> : null}
     </PageContainer>
   </main>;
 }
