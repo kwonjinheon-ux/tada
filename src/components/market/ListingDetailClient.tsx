@@ -53,8 +53,19 @@ function descriptionParagraphs(description: string) {
   return plainText.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
 }
 
-export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0 }: { listing: ListingDetail; initialIsSaved?: boolean; isOwner?: boolean; descriptionTextSizeStep?: number }) {
+type ListingDetailClientProps = {
+  listing: ListingDetail;
+  initialIsSaved?: boolean;
+  isOwner?: boolean;
+  descriptionTextSizeStep?: number;
+  /** Reuse the Market detail surface for Bargain listings without crossing data domains. */
+  space?: "market" | "bargain";
+};
+
+export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
+  const isBargainListing = space === "bargain";
+  const listingHomePath = isBargainListing ? "/bargain" : "/market";
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -115,8 +126,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   }, []);
 
   useEffect(() => {
-    router.prefetch("/market/dashboard/messages");
-  }, [router]);
+    if (!isBargainListing) router.prefetch("/market/dashboard/messages");
+  }, [isBargainListing, router]);
 
   useEffect(() => {
     const sellerId = listing.seller.id;
@@ -135,13 +146,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   }, [listing.seller.id]);
 
   useEffect(() => {
+    if (isBargainListing) return;
     void fetch(`/api/market/listings/${listing.id}/view`, { method: "POST", cache: "no-store" })
       .then((response) => response.ok ? response.json() as Promise<{ viewCount?: number }> : null)
       .then((payload) => { if (typeof payload?.viewCount === "number") setViewCount(payload.viewCount); })
       .catch(() => undefined);
-  }, [listing.id]);
+  }, [isBargainListing, listing.id]);
 
   useEffect(() => {
+    if (isBargainListing) return;
     if (isOwner) return;
     let isCurrent = true;
     void fetch(`/api/market/wishlist?listingId=${encodeURIComponent(listing.id)}`)
@@ -149,7 +162,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       .then((result) => { if (isCurrent && result.data) setIsSaved(result.data.saved); })
       .catch(() => undefined);
     return () => { isCurrent = false; };
-  }, [isOwner, listing.id]);
+  }, [isBargainListing, isOwner, listing.id]);
 
   const showImage = (index: number) => {
     const nextImage = (index + listing.images.length) % listing.images.length;
@@ -182,6 +195,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     if (!clickedOriginalPhoto) setIsGalleryOpen(false);
   };
   const saveListing = async () => {
+    if (isBargainListing) return;
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
     setIsPopping(false);
@@ -310,7 +324,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     }
   };
 
-  const prepareMessaging = () => router.prefetch("/market/dashboard/messages");
+  const prepareMessaging = () => {
+    if (!isBargainListing) router.prefetch("/market/dashboard/messages");
+  };
   const editListing = () => router.push(`/market/${listing.id}/edit`);
   const deleteListing = async () => {
     if (isDeleting) return;
@@ -341,6 +357,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   listingDockActionsRef.current = { openOfferDialog, openConversation, shareListing, saveListing, editListing };
 
   useEffect(() => {
+    if (isBargainListing) return;
     window.__tadaListingDockConfig = { isOwner, isSaved };
     window.dispatchEvent(new Event("listing-mobile-dock-config"));
     const handleDockAction = (event: Event) => {
@@ -360,12 +377,12 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       window.dispatchEvent(new Event("listing-mobile-dock-config"));
       window.removeEventListener("listing-mobile-dock-action", handleDockAction);
     };
-  }, [isOwner, isSaved]);
+  }, [isBargainListing, isOwner, isSaved]);
 
   return (
     <main className={`listing-detail-page ${listing.status === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
-        <Link className="listing-detail-back" href="/market"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
+        <Link className="listing-detail-back" href={listingHomePath}><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
         {listing.category ? <nav className="listing-detail-category-path" aria-label="Listing category"><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><span aria-hidden="true">/</span><Link href={listing.category.subcategory.href}>{listing.category.subcategory.label}</Link></> : null}</nav> : null}
       </div>
 
@@ -406,13 +423,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               <div className="listing-detail-status-row"><span className={`listing-status status-${listing.status}`}>{statusLabel[listing.status]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>}
+            {!isBargainListing && (isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button>)}
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
 
           <div className="listing-detail-actions">
-            {isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon"><i className="fa-solid fa-tag" aria-hidden="true" /> Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <><button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button><button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
+            {isBargainListing ? <button type="button" className="listing-detail-offer" onClick={() => void shareListing()}><i className="fa-solid fa-share-nodes" aria-hidden="true" /> Share listing</button> : isOwner ? <><button type="button" className="listing-detail-message" disabled title="Mark as sold is coming soon"><i className="fa-solid fa-tag" aria-hidden="true" /> Mark as sold</button><button type="button" className="listing-detail-offer" onClick={editListing}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <><button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button><button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
           </div>
           {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
 
@@ -426,9 +443,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
             <div className="listing-detail-seller">
               <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span>
               <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
-              {listing.seller.id ? <Link className="listing-detail-seller-profile-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View seller profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}
+              {!isBargainListing && listing.seller.id ? <Link className="listing-detail-seller-profile-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View seller profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}
             </div>
-            {!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
+            {!isBargainListing && !isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
           </section>
         </aside>
       </div>
@@ -466,16 +483,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         ) : null}
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />
-      <section className="listing-detail-mobile-seller listing-detail-mobile-only">
+      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
         <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}>{listing.seller.avatarUrl ? <img className="listing-detail-mobile-seller-avatar" src={listing.seller.avatarUrl} alt="" /> : <span className="listing-detail-mobile-seller-avatar">{listing.seller.name.charAt(0).toUpperCase()}</span>}</span><div><strong>{listing.seller.name}</strong><span><i className="fa-regular fa-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="fa-regular fa-user" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
-      </section>
+      </section> : null}
 
-      <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} />
-      <AdSlot placement="product_detail_bottom" />
+      {!isBargainListing ? <><ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} /><AdSlot placement="product_detail_bottom" /></> : null}
 
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
-      {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></DialogOverlay> : null}
-      {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="fa-solid fa-trash-can" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="fa-solid fa-trash-can" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></DialogOverlay> : null}
+      {!isBargainListing && isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></DialogOverlay> : null}
+      {!isBargainListing && isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="fa-solid fa-trash-can" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="fa-solid fa-trash-can" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></DialogOverlay> : null}
     </main>
   );
 }
