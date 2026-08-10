@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -177,6 +177,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photoPickerIntentRef = useRef<"listing" | "cover" | "inventory">("listing");
   const photosRef = useRef<PhotoPreview[]>([]);
+  const generatedItemPhotoSignatureRef = useRef("");
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(initialListing?.title ?? "");
   const [bargainType, setBargainType] = useState<BargainListingType>(() => initialListing?.bargainType ?? (isBargainListing ? "garage-sale" : "2-dollar-deals"));
@@ -227,8 +228,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
   const isMultiItemSale = isBargainListing && isMultiItemBargain(bargainType);
   const fixedBargainPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
-  const maxPhotosForCurrentListing = isMultiItemSale ? maxEventInventoryPhotoCount + 1 : maxPhotoCount;
-  const eventInventoryPhotos = isMultiItemSale ? photos.slice(1) : [];
+  // The cover is also a sale item, so every uploaded image receives GPT details.
+  const maxPhotosForCurrentListing = isMultiItemSale ? maxEventInventoryPhotoCount : maxPhotoCount;
+  const eventInventoryPhotos = useMemo(() => isMultiItemSale ? photos : [], [isMultiItemSale, photos]);
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -386,21 +388,25 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         contentType: photo.file.type,
         upsert: false,
       });
-      if (uploadError) return uploadError.message;
+      if (uploadError) return { photoId: photo.id, error: uploadError.message };
       if (!photosRef.current.some((currentPhoto) => currentPhoto.id === photo.id)) {
         await supabase.storage.from(imageBucket).remove([draftPath]);
-        return null;
+        return { photoId: photo.id, error: null };
       }
-      setPhotos((current) => current.map((currentPhoto) => currentPhoto.id === photo.id ? { ...currentPhoto, draftPath } : currentPhoto));
-      return null;
+      return { photoId: photo.id, draftPath, error: null };
     }));
     setIsProcessingPhotos(false);
-    const uploadError = results.find(Boolean);
+    const uploadError = results.map((result) => result.error).find(Boolean);
     if (uploadError) {
       setError(`Some photos could not be prepared: ${uploadError}`);
       setNotice(null);
       return;
     }
+    const draftPathsByPhotoId = new Map(results.flatMap((result) => result.draftPath ? [[result.photoId, result.draftPath] as const] : []));
+    setPhotos((current) => current.map((photo) => {
+      const draftPath = draftPathsByPhotoId.get(photo.id);
+      return draftPath ? { ...photo, draftPath } : photo;
+    }));
     setNotice("Photos are ready and will be attached instantly when you post.");
   };
 
@@ -438,10 +444,12 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       return;
     }
 
+    // In a sale, a multi-file first upload has a predictable split: the first
+    // image is the cover and every remaining image becomes an item for GPT.
     const availableSlots = isCoverUpload
-      ? 1
+      ? maxPhotosForCurrentListing - currentPhotos.length
       : isInventoryUpload
-        ? Math.max(0, maxEventInventoryPhotoCount - Math.max(0, currentPhotos.length - 1))
+        ? Math.max(0, maxPhotosForCurrentListing - currentPhotos.length)
         : maxPhotosForCurrentListing - currentPhotos.length;
     const addedPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
       id: crypto.randomUUID(),
@@ -458,7 +466,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     }
 
     if (normalizedFiles.length > availableSlots) {
-      setError(isMultiItemSale ? "You can add one cover photo and up to 10 inventory item photos." : "You can add up to 10 photos.");
+      setError(isMultiItemSale ? "You can add up to 10 photos. The first photo is also used as the cover." : "You can add up to 10 photos.");
     }
     if (addedPhotos.length) void uploadDraftPhotos(addedPhotos);
   };
@@ -932,13 +940,13 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     if (maximumPriceCents !== null) setPrice((maximumPriceCents / 100).toFixed(0));
   };
 
-  const updateBargainSaleItem = (photoId: string, field: "title" | "category" | "price" | "description", value: string) => {
+  const updateBargainSaleItem = useCallback((photoId: string, field: "title" | "category" | "price" | "description", value: string) => {
     setBargainSaleItems((current) => current.map((item) => item.photoId === photoId ? { ...item, [field]: value } : item));
-  };
+  }, []);
 
   const removeBargainSaleItem = (photoId: string) => removePhoto(photoId);
 
-  const generateItemDescriptions = async () => {
+  const generateItemDescriptions = useCallback(async () => {
     if (!eventInventoryPhotos.length) {
       setItemDescriptionError("Add at least one item photo first.");
       return;
@@ -986,7 +994,15 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
       window.clearTimeout(timeout);
       setIsGeneratingItemDescriptions(false);
     }
-  };
+  }, [bargainSaleItems, eventInventoryPhotos, locale, updateBargainSaleItem]);
+
+  useEffect(() => {
+    if (!isMultiItemSale || !eventInventoryPhotos.length || isGeneratingItemDescriptions || eventInventoryPhotos.some((photo) => !photo.draftPath)) return;
+    const signature = eventInventoryPhotos.map((photo) => photo.draftPath).join("|");
+    if (signature === generatedItemPhotoSignatureRef.current) return;
+    generatedItemPhotoSignatureRef.current = signature;
+    void generateItemDescriptions();
+  }, [eventInventoryPhotos, generateItemDescriptions, isGeneratingItemDescriptions, isMultiItemSale]);
 
   const createHeading = isMultiItemSale
     ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
@@ -1052,12 +1068,12 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               onDrop={(event) => {
                 event.preventDefault();
                 setIsDraggingPhotos(false);
-                void addPhotos(event.dataTransfer.files, isMultiItemSale ? "cover" : "listing");
+                void addPhotos(event.dataTransfer.files, isMultiItemSale ? (photosRef.current[0] ? "inventory" : "cover") : "listing");
               }}
             >
               <div className="field-label-row">
-                <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? "Cover photo" : "Photos & AI help"}</span></span></legend>
-                <span>{isMultiItemSale ? "One cover photo" : "Up to 10 photos"}</span>
+                <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? "Photos & GPT details" : "Photos & AI help"}</span></span></legend>
+                <span>Up to 10 photos</span>
               </div>
               <input
                 ref={photoInputRef}
@@ -1095,7 +1111,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="fa-solid fa-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
-                <strong>{isMultiItemSale ? "Upload a clear cover photo for your sale" : "Click to upload or drag and drop multiple photos at once"}</strong>
+                <strong>{isMultiItemSale ? "Upload all item photos at once. The first is the cover; GPT fills the rest automatically." : "Click to upload or drag and drop multiple photos at once"}</strong>
               </p>
               {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="fa-solid fa-rectangle-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
