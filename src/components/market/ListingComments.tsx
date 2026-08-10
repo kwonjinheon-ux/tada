@@ -1,8 +1,58 @@
 "use client";
 
-import { type CSSProperties, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
+
+// Draws the reply-thread connector as smooth SVG curves from the parent
+// comment's avatar centre to each reply's avatar centre, measured from the
+// live DOM so it stays correct regardless of how tall each comment's text
+// happens to render (unlike a fixed-offset CSS approximation).
+function CommentThreadConnector({ signature }: { signature: string }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [paths, setPaths] = useState<string[]>([]);
+
+  useLayoutEffect(() => {
+    const svg = svgRef.current;
+    const container = svg?.parentElement;
+    if (!svg || !container) return;
+
+    const measure = () => {
+      const containerRect = container.getBoundingClientRect();
+      const parentAvatar = container.closest(".listing-comment")?.querySelector<HTMLElement>(":scope > .listing-comment-avatar");
+      const childAvatars = container.querySelectorAll<HTMLElement>(":scope > .listing-comment > .listing-comment-avatar");
+      if (!parentAvatar || !childAvatars.length) {
+        setPaths([]);
+        return;
+      }
+
+      const parentRect = parentAvatar.getBoundingClientRect();
+      const originX = parentRect.left + parentRect.width / 2 - containerRect.left;
+      const originY = parentRect.top + parentRect.height / 2 - containerRect.top;
+
+      setPaths(Array.from(childAvatars).map((avatar) => {
+        const rect = avatar.getBoundingClientRect();
+        const x = rect.left + rect.width / 2 - containerRect.left;
+        const y = rect.top + rect.height / 2 - containerRect.top;
+        const bendY = originY + (y - originY) * 0.55;
+        return `M ${originX} ${originY} C ${originX} ${bendY} ${x} ${bendY} ${x} ${y}`;
+      }));
+    };
+
+    measure();
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(container);
+    window.addEventListener("resize", measure);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [signature]);
+
+  return <svg ref={svgRef} className="listing-comment-connector" aria-hidden="true" focusable="false">
+    {paths.map((d, index) => <path key={index} d={d} />)}
+  </svg>;
+}
 
 type ListingComment = {
   id: string;
@@ -200,7 +250,10 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
         {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label="Edit comment" /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>Save</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>Cancel</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? "This comment was deleted." : comment.body}</p>}
         {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={comment.myVote === 1 ? "is-selected" : ""} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label="Upvote comment"><i className="fa-solid fa-arrow-up" aria-hidden="true" /> <span>{comment.score}</span></button><button type="button" className={comment.myVote === -1 ? "is-selected is-downvote" : ""} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label="Downvote comment"><i className="fa-solid fa-arrow-down" aria-hidden="true" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); }}>Reply</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>Edit</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>Delete</button></> : null}</div> : null}
         {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => setReplyDraft(event.target.value)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>Cancel</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? "Posting..." : "Reply"}</button></div></form> : null}
-        {children.length ? <div className="listing-comment-children">{children.map(renderComment)}</div> : null}
+        {children.length ? <div className="listing-comment-children">
+          <CommentThreadConnector signature={children.map((child) => child.id).join(",")} />
+          {children.map(renderComment)}
+        </div> : null}
       </div>
     </article>;
   };
