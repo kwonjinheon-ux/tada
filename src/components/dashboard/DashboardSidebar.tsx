@@ -11,6 +11,7 @@ const items = [
   ["fa-heart", "Wishlist", "wishlist", "/wishlist"],
   ["fa-key", "Keywords", "keywords", "/keywords"],
   ["fa-rectangle-list", "Manage Listings", "manageListings", "/listings"],
+  ["fa-calendar-check", "Reservations", null, "/reservations"],
   ["fa-map", "Nearby Map", "nearbyMap", "/map"],
 ] as const;
 
@@ -33,9 +34,9 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
   return (
     <aside className="market-filter-panel dashboard-sidebar" aria-label={`${context} dashboard navigation`}>
       <nav className="dashboard-nav">
-        {items.filter(([, label]) => context === "market" || label !== "Notifications").map(([icon, label, translationKey, suffix]) => (
+        {items.filter(([, label]) => context === "market" || (label !== "Notifications" && label !== "Reservations")).map(([icon, label, translationKey, suffix]) => (
           <Link className={active === label ? "is-active" : ""} href={context === "market" && label === "Wishlist" ? "/market/wishlist" : `${base}${suffix}`} key={label}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span><TranslatedText translationKey={translationKey} /></span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
+            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{translationKey ? <TranslatedText translationKey={translationKey} /> : label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
           </Link>
         ))}
         {isAdmin ? <Link className={active === "Admin Centre" ? "is-active" : ""} href="/admin/listings"><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin Centre</span></Link> : null}

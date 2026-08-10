@@ -9,6 +9,7 @@ const dashboardMenuItems = [
   ["fa-heart", "wishlist", "/wishlist"],
   ["fa-key", "keywords", "/keywords"],
   ["fa-rectangle-list", "manageListings", "/listings"],
+  ["fa-calendar-check", "reservations", "/reservations"],
 ] as const;
 
 type DashboardMenuItemsProps = {
@@ -48,7 +49,7 @@ export function DashboardMenuItems({
 
   return (
     <>
-      {dashboardMenuItems.map(([icon, translationKey, suffix]) => {
+      {dashboardMenuItems.filter(([, translationKey]) => !isJobs || translationKey !== "reservations").map(([icon, translationKey, suffix]) => {
         const href = getHref(translationKey, suffix);
         const unreadCount = translationKey === "messages" ? unreadMessageCount : translationKey === "notifications" ? unreadNotificationCount : 0;
 
@@ -60,7 +61,7 @@ export function DashboardMenuItems({
             onClick={onNavigate}
           >
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
-            <span className={labelClassName}>{t(translationKey)}</span>
+            <span className={labelClassName}>{translationKey === "reservations" ? "Reservations" : t(translationKey)}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
             ) : !isMobile ? (

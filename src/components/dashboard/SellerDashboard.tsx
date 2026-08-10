@@ -59,6 +59,14 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
     ])
     : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { data: [] }, { data: [] }, { data: [] }];
   const activeListings = (listingRowsResult.data ?? []) as DashboardListing[];
+  const [bargainListingCount, bargainWishlistCount, bargainSellingReservationsCount, bargainBuyingReservationsCount] = supabase
+    ? await Promise.all([
+      supabase.from("bargain_listings").select("id", { count: "exact", head: true }).eq("owner_id", user.id).in("status", ["published", "pending"]),
+      supabase.from("bargain_wishlist").select("listing_id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).in("status", ["pending", "accepted"]),
+      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["pending", "accepted"]),
+    ])
+    : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }];
   const { data: photoRows } = supabase && activeListings.length
     ? await supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", activeListings.map((listing) => listing.id)).order("display_order", { ascending: true })
     : { data: [] };
@@ -68,14 +76,14 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const metricRow = ((metricsResult.data ?? []) as DashboardMetrics[])[0];
   const totalViews = Number(metricRow?.total_views ?? activeListings.reduce((total, listing) => total + Number(listing.view_count ?? 0), 0));
   const totalSaves = Number(metricRow?.total_saves ?? 0);
-  const totalSales = Number(metricRow?.total_sales ?? completedSalesCount.count ?? 0);
+  const totalSales = Number(metricRow?.total_sales ?? completedSalesCount.count ?? 0) + (bargainSellingReservationsCount.count ?? 0);
   const insights = [["totalViews", formatCount(totalViews), "fa-solid fa-chart-line", "is-green"], ["totalSaves", formatCount(totalSaves), "fa-solid fa-heart", "is-amber"], ["sales", formatCount(totalSales), "fa-solid fa-bag-shopping", "is-blue"]] as const;
   const activity = (activityRowsResult.data ?? []) as ActivityRow[];
-  const activeListingCount = listingCount.count ?? 0;
-  const savedWishlistCount = wishlistCount.count ?? 0;
+  const activeListingCount = (listingCount.count ?? 0) + (bargainListingCount.count ?? 0);
+  const savedWishlistCount = (wishlistCount.count ?? 0) + (bargainWishlistCount.count ?? 0);
   const savedKeywordCount = keywordCount.count ?? 0;
   const unreadMessages = unreadMessageCount.count ?? 0;
-  const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0));
+  const trustPower = Math.min(100, (completedSalesCount.count ?? 0) + (completedPurchasesCount.count ?? 0) + (bargainSellingReservationsCount.count ?? 0) + (bargainBuyingReservationsCount.count ?? 0));
   const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
   const activeJourneyItems = supabase ? await getActiveJourneys(supabase, user.id) : [];
   const quickStats = [
@@ -83,6 +91,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
     ["fa-solid fa-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],
     ["fa-solid fa-list", "keywords", savedKeywordCount, "tracked", "/market/dashboard/keywords"],
     ["fa-regular fa-message", "messages", unreadMessages, "new", "/market/dashboard/messages"],
+    ["fa-solid fa-calendar-check", "reservations", (bargainSellingReservationsCount.count ?? 0) + (bargainBuyingReservationsCount.count ?? 0), "active", "/market/dashboard/reservations"],
   ] as const;
 
   return (
@@ -101,7 +110,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
         <ActiveJourneyCarousel items={activeJourneyItems} />
 
         <section className="seller-quick-stats" aria-label="Account overview">
-          {quickStats.map(([icon, label, value, unit, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong><TranslatedText translationKey={label} /></strong><span>{value} <TranslatedText translationKey={unit} /></span></div></Link>)}
+          {quickStats.map(([icon, label, value, unit, href], index) => <Link href={href} key={label} className={index === 3 && unreadMessages ? "has-alert" : ""}><i className={icon} /><div><strong>{label === "reservations" ? "Reservations" : <TranslatedText translationKey={label} />}</strong><span>{value} <TranslatedText translationKey={unit} /></span></div></Link>)}
         </section>
 
         <section className="seller-dashboard-insights">
