@@ -61,7 +61,6 @@ export function ListingDescriptionTranslation({ description, onChange }: Listing
 
   return <div className="listing-description-translation">
     <Button variant="secondary" size="sm" className="listing-description-translate-button" disabled={isLoading} onClick={() => void handleTranslate()}>
-      <i className={`fa-solid ${isLoading ? "fa-spinner fa-spin" : "fa-language"}`} aria-hidden="true" />
       {isLoading ? "Translating..." : isShowingTranslation ? "Show original" : "Translate"}
     </Button>
     {error ? <p className="listing-description-translate-error" role="alert">{error}</p> : null}
