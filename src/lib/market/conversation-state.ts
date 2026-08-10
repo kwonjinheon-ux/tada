@@ -51,9 +51,18 @@ export async function writeConversationStates(
     user_id: userId,
     ...patch,
   }));
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("market_conversation_states")
-    .upsert(rows, { onConflict: "conversation_id,user_id" })
-    .select("conversation_id");
-  return { error, conversationIds: (data ?? []).map((row) => row.conversation_id as string) };
+    .upsert(rows, { onConflict: "conversation_id,user_id" });
+  if (error) return { error, conversationIds: [] as string[] };
+
+  // PostgREST may use a minimal representation for an upsert even when the
+  // mutation succeeds. Verify with the user's readable state rows instead of
+  // mistaking that empty representation for a failed archive or delete.
+  const { data: savedRows, error: verificationError } = await supabase
+    .from("market_conversation_states")
+    .select("conversation_id")
+    .eq("user_id", userId)
+    .in("conversation_id", conversationIds);
+  return { error: verificationError, conversationIds: (savedRows ?? []).map((row) => row.conversation_id as string) };
 }
