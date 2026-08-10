@@ -5084,7 +5084,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .is-event-sale .post-photo-upload { border-style: dashed; }
 .is-event-sale .post-photo-upload i { font-size: var(--text-4xl); }
 .is-event-sale .post-photo-upload span { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
-.event-cover-photo-layout { display: grid; gap: var(--space-3); }
+.event-cover-photo-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
 .bargain-sale-cover-preview { display: none; }
 .is-event-sale .bargain-sale-items { margin: 0; order: 3; }
 .bargain-sale-trust-signals { display: grid; gap: var(--space-3); order: 10; padding-top: var(--space-5); border-top: 1px solid var(--color-line-soft); }
@@ -6790,7 +6790,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-saved-heading h2 small { color: var(--blue-soft-600); font-size: var(--text-md); font-weight: var(--weight-semibold); }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
 .keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: var(--control-h-md); padding: 0 8px 0 12px; border: 1px solid color-mix(in srgb, currentColor 72%, transparent); border-radius: var(--radius-pill); font-size: var(--text-base); }
-.keyword-chip > span { font-weight: var(--weight-extrabold); }
+.keyword-chip > span { font-weight: var(--weight-regular); }
 .keyword-chip small { padding-left: 8px; border-left: 1px solid color-mix(in srgb, currentColor 56%, transparent); font-size: var(--text-2xs); font-weight: var(--weight-regular); line-height: 1.2; opacity: .86; }
 .keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: inherit; cursor: pointer; }
 .keyword-chip button:hover { background: rgba(255,255,255,.62); }
@@ -7266,6 +7266,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 /* Geometry comes from .listing-row; only wishlist's own states remain here. */
 .wishlist-list { display: grid; gap: 0; background: var(--neutral-50); border-top: 1px solid var(--neutral-250); }
 .wishlist-item.is-sold { background: var(--neutral-200); filter: grayscale(.65); }
+.wishlist-item .listing-row-title h2 { overflow: visible; text-overflow: clip; white-space: normal; }
 .wishlist-status { position: absolute; top: 9px; left: 9px; padding: 4px 8px; border-radius: var(--radius-pill); background: var(--green-450); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
 .wishlist-status.is-price-drop { background: var(--amber-450); color: var(--amber-900); }
 .wishlist-status.is-sold { background: var(--neutral-250); color: var(--blue-soft-700); }
@@ -8075,7 +8076,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .messages-list-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 25px 22px 14px; }
 /* Bulk row for selection and destructive actions, between the filters and the list. */
 .messages-selection-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 15px; border-bottom: 1px solid var(--neutral-250); background: var(--neutral-100); }
-.messages-selection-toggle { min-height: var(--control-h-sm); display: inline-flex; align-items: center; gap: 7px; flex: 1 1 auto; padding: 0 4px; border: 0; background: transparent; color: var(--blue-750); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-extrabold); cursor: pointer; }
+.messages-selection-toggle { min-height: var(--control-h-sm); display: inline-flex; align-items: center; gap: 7px; flex: 1 1 auto; padding: 0 4px; border: 0; background: transparent; color: var(--blue-750); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-regular); cursor: pointer; }
 .messages-selection-toggle:disabled { opacity: .45; cursor: default; }
 .messages-selection-toggle i { color: var(--green-650); font-size: var(--text-md); }
 .messages-bulk-error { margin: 0; padding: 9px 15px; border-bottom: 1px solid var(--neutral-250); background: var(--neutral-100); color: var(--red-900); font-size: var(--text-xs); }
@@ -8087,7 +8088,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .messages-list-title { display: flex; align-items: center; gap: 7px; }.messages-list-title > span { min-width: 20px; height: 20px; display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--red-850); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); }.messages-list-title > span:empty { display: none; }
 .messages-filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 0 18px 15px; border-bottom: 1px solid var(--neutral-250); scrollbar-width: none; }
 .messages-filter-row::-webkit-scrollbar { display: none; }
-.messages-filter-row button { min-height: var(--control-h-xs); flex: 0 0 auto; padding: 0 10px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--blue-soft-650); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-extrabold); cursor: pointer; }
+.messages-filter-row button { min-height: var(--control-h-xs); flex: 0 0 auto; padding: 0 10px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--blue-soft-650); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-regular); cursor: pointer; }
+.messages-selection-bar .bulk-action-button { font-weight: var(--weight-regular); }
 .messages-filter-row button.is-active { background: var(--green-soft-50); color: var(--green-750); }
 .messages-conversation-list { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .messages-conversation { width: 100%; display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 11px; padding: 12px 15px; border: 0; border-bottom: 1px solid var(--neutral-200); background: var(--neutral-50); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: background .18s ease; }
@@ -8501,6 +8503,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-row-body { min-width: 0; }
 .listing-row-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .listing-row-title h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.manage-listings-grid .listing-row-title h2 { overflow: visible; text-overflow: clip; white-space: normal; }
 .listing-row-title span { flex: 0 0 auto; padding: 3px 7px; border-radius: var(--radius-pill); background: var(--green-soft-50); color: var(--green-900); font-size: var(--text-2xs); font-weight: var(--weight-semibold); text-transform: capitalize; }
 .listing-row-title span.is-pending { background: var(--amber-soft-50); color: var(--amber-750); }
 .listing-row-title span.is-sold { background: var(--neutral-200); color: var(--blue-soft-700); }

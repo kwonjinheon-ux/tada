@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 export type WishlistItem = {
   id: string;
+  space: "market" | "bargain";
   title: string;
   price: string;
   category: string;
@@ -17,16 +18,10 @@ export type WishlistItem = {
 };
 
 type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[] };
-type Filter = "All items" | "Goods" | "Cars" | "Real estate" | "Articles";
-
-const filters: Filter[] = ["All items", "Goods", "Cars", "Real estate", "Articles"];
+type Filter = "All items" | "Market" | "Bargain";
 
 function matchesFilter(item: WishlistItem, filter: Filter) {
-  if (filter === "All items") return true;
-  if (filter === "Cars") return item.categorySlug === "vehicles";
-  if (filter === "Real estate") return item.categorySlug === "real-estate";
-  if (filter === "Articles") return item.categorySlug === "books-movies-music";
-  return item.categorySlug !== "vehicles" && item.categorySlug !== "real-estate" && item.categorySlug !== "books-movies-music";
+  return filter === "All items" || item.space === filter.toLowerCase();
 }
 
 export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientProps) {
@@ -35,23 +30,31 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
+  const filters = useMemo<Filter[]>(() => ["All items", ...(items.some((item) => item.space === "market") ? ["Market" as const] : []), ...(items.some((item) => item.space === "bargain") ? ["Bargain" as const] : [])], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
-  const updateSavedListing = async (listingId: string, saved: boolean) => {
-    if (updatingIds.has(listingId)) return false;
-    setUpdatingIds((current) => new Set(current).add(listingId));
+  useEffect(() => {
+    if (!filters.includes(filter)) setFilter("All items");
+  }, [filter, filters]);
+
+  const itemKey = (item: WishlistItem) => `${item.space}:${item.id}`;
+
+  const updateSavedListing = async (item: WishlistItem, saved: boolean) => {
+    const key = itemKey(item);
+    if (updatingIds.has(key)) return false;
+    setUpdatingIds((current) => new Set(current).add(key));
     try {
-      const response = await fetch("/api/market/wishlist", {
+      const response = await fetch(`/api/${item.space}/wishlist`, {
         method: saved ? "POST" : "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId }),
+        body: JSON.stringify({ listingId: item.id }),
       });
       const result = await readApiResponse(response, marketWishlistResponseSchema);
       return !result.error && result.data.saved === saved;
     } finally {
       setUpdatingIds((current) => {
         const next = new Set(current);
-        next.delete(listingId);
+        next.delete(key);
         return next;
       });
     }
@@ -59,7 +62,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
 
   const removeItem = async (item: WishlistItem) => {
     setItems((current) => current.filter((candidate) => candidate.id !== item.id));
-    if (!await updateSavedListing(item.id, false)) setItems((current) => [...current, item]);
+    if (!await updateSavedListing(item, false)) setItems((current) => [...current, item]);
   };
 
   const openConversation = async (listingId: string) => {
@@ -86,13 +89,13 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
     <div className="dashboard-content profile-settings-content wishlist-content">
       <header className="wishlist-heading">
         <div><span>Manage your {items.length} saved {items.length === 1 ? "item" : "items"}</span></div>
-        <div className="wishlist-tabs" aria-label="Wishlist categories">
+        <div className="wishlist-tabs" aria-label="Wishlist services">
           {filters.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} onClick={() => setFilter(option)}>{option}</button>)}
         </div>
       </header>
 
       {visibleItems.length ? <section className="wishlist-list" aria-label="Saved items">
-        {visibleItems.map((item) => <article className={`listing-row wishlist-item ${item.status === "Sold" ? "is-sold" : ""}`} key={item.id}>
+        {visibleItems.map((item) => <article className={`listing-row wishlist-item wishlist-item--${item.space} ${item.status === "Sold" ? "is-sold" : ""}`} key={itemKey(item)}>
           <div className="listing-row-media"><img src={item.imageUrl} alt="" /></div>
           <div className="listing-row-body">
             <div className="listing-row-title"><h2>{item.title}</h2><span className={`is-${item.status.toLowerCase()}`}>{item.status}</span></div>
@@ -100,13 +103,13 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
             <small className="listing-row-meta">{item.category}</small>
           </div>
           <div className="listing-row-actions wishlist-item-actions">
-            <Link href={`/market/${item.id}`}>View listing</Link>
-            <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{messagingId === item.id ? "Opening..." : "Send message"}</button>
-            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(item.id)} onClick={() => void removeItem(item)}><i className="fa-solid fa-xmark" aria-hidden="true" /> Remove</button>
+            <Link href={`/${item.space}/${item.id}`}>View listing</Link>
+            {item.space === "market" ? <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{messagingId === item.id ? "Opening..." : "Send message"}</button> : null}
+            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} onClick={() => void removeItem(item)}><i className="fa-solid fa-xmark" aria-hidden="true" /> Remove</button>
           </div>
         </article>)}
       </section> : <section className="wishlist-discovery" aria-labelledby="wishlist-discovery-title">
-        <div className="wishlist-discovery-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this category." : "Explore the marketplace and save listings you want to revisit."}</p><div><Link href="/market">Explore marketplace <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link></div>
+        <div className="wishlist-discovery-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this service." : "Explore Market or Bargain and save listings you want to revisit."}</p><div><Link href={filter === "Bargain" ? "/bargain" : "/market"}>Explore {filter === "Bargain" ? "Bargain" : "Market"} <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link></div>
       </section>}
 
       {recentlyViewed.length ? <section className="wishlist-recently-viewed" aria-labelledby="recently-viewed-title">

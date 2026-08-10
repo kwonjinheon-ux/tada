@@ -24,11 +24,12 @@ type ProductCardProps = {
   imageSizes?: string;
   listingHref?: string;
   persistSave?: boolean;
+  wishlistEndpoint?: string;
   isPreview?: boolean;
   className?: string;
 };
 
-function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true, isPreview = false, className = "" }: ProductCardProps) {
+function ProductCardComponent({ listing, priority = false, initialIsSaved = false, imageSizes = "(max-width: 767px) 160px, (min-width: 1200px) 240px, 45vw", listingHref, persistSave = true, wishlistEndpoint = "/api/market/wishlist", isPreview = false, className = "" }: ProductCardProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
@@ -66,13 +67,13 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
     if (!persistSave) return;
     try {
-      const response = await fetch("/api/market/wishlist", {
+      const response = await fetch(wishlistEndpoint, {
         method: nextSaved ? "POST" : "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId: listing.id }),
       });
       if (response.status === 401) {
-        router.push(`/login?redirectTo=${encodeURIComponent("/market")}`);
+        router.push(`/login?redirectTo=${encodeURIComponent(listingHref ?? "/market")}`);
         return;
       }
       const result = await readApiResponse(response, marketWishlistResponseSchema);
