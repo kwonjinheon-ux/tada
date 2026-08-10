@@ -3,7 +3,9 @@
 import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
@@ -74,6 +76,10 @@ type SmartphoneSpecs = {
 };
 
 const mainCategories: SelectOption[] = marketplaceCategories.map(({ label, value }) => ({ label, value }));
+
+const bargainItemDescriptionsResponseSchema = z.object({
+  items: z.array(z.object({ id: z.string(), description: z.string() })),
+});
 
 const tradeMethods: SelectOption[] = [
   { label: "Pickup & delivery", value: "pickup_delivery" },
@@ -210,6 +216,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const [submitProgress, setSubmitProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingItemDescriptions, setIsGeneratingItemDescriptions] = useState(false);
+  const [itemDescriptionProgress, setItemDescriptionProgress] = useState(0);
+  const [itemDescriptionError, setItemDescriptionError] = useState<string | null>(null);
   const [importedCategoryKeywords, setImportedCategoryKeywords] = useState<ImportedCategoryKeyword[]>([]);
   const isEditing = Boolean(initialListing);
   const subCategoryOptions = mainCategory
@@ -311,6 +320,17 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
     void loadProfileLocation();
   }, []);
+
+  useEffect(() => {
+    if (!isGeneratingItemDescriptions) {
+      setItemDescriptionProgress(0);
+      return;
+    }
+
+    setItemDescriptionProgress(10);
+    const timer = window.setInterval(() => setItemDescriptionProgress((current) => Math.min(92, current + Math.max(2, Math.ceil((92 - current) * 0.16)))), 900);
+    return () => window.clearInterval(timer);
+  }, [isGeneratingItemDescriptions]);
 
   const handleTitleChange = (nextTitle: string) => {
     setTitle(nextTitle);
@@ -918,6 +938,52 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   const removeBargainSaleItem = (photoId: string) => removePhoto(photoId);
 
+  const generateItemDescriptions = async () => {
+    if (!eventInventoryPhotos.length) {
+      setItemDescriptionError("Add at least one item photo first.");
+      return;
+    }
+    if (eventInventoryPhotos.some((photo) => !photo.draftPath)) {
+      setItemDescriptionError("Your item photos are still being prepared. Please wait a moment and try again.");
+      return;
+    }
+
+    setIsGeneratingItemDescriptions(true);
+    setItemDescriptionError(null);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 58_000);
+
+    try {
+      const response = await fetch("/api/ai/generate-bargain-item-descriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        signal: controller.signal,
+        body: JSON.stringify({
+          language: locale,
+          items: eventInventoryPhotos.map((photo) => ({
+            id: photo.id,
+            title: bargainSaleItems.find((item) => item.photoId === photo.id)?.title ?? "",
+            imagePath: photo.draftPath,
+          })),
+        }),
+      });
+      const result = await readApiResponse(response, bargainItemDescriptionsResponseSchema);
+      if (!result.data) {
+        setItemDescriptionError(result.error?.message ?? "We could not write item descriptions. Please try again.");
+        return;
+      }
+      result.data.items.forEach((item) => updateBargainSaleItem(item.id, "description", item.description));
+    } catch (generationError) {
+      setItemDescriptionError(generationError instanceof Error && generationError.name === "AbortError"
+        ? "Generation took longer than expected. Please try again."
+        : "We could not write item descriptions. Please try again.");
+    } finally {
+      window.clearTimeout(timeout);
+      setIsGeneratingItemDescriptions(false);
+    }
+  };
+
   const createHeading = isMultiItemSale
     ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
     : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
@@ -1022,7 +1088,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   </button>
                   ))}
                 </div> : null}
-                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="fa-solid fa-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
+                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="fa-solid fa-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
                 <strong>{isMultiItemSale ? "Upload a clear cover photo for your sale" : "Click to upload or drag and drop multiple photos at once"}</strong>
@@ -1056,7 +1122,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               </section>}
             </fieldset>
 
-            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} /> : null}
+            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
 
             {!isMultiItemSale && <div className="post-field post-field-full post-description-field">
               <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>

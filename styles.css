@@ -5278,6 +5278,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .bargain-sale-cover-preview-copy > span { width: fit-content; padding: 2px var(--space-1); border-radius: var(--radius-xs); background: var(--color-primary); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; }
   .bargain-sale-cover-preview-copy strong { font-size: var(--text-md); line-height: 1.2; }
   .bargain-sale-cover-preview-copy small { overflow: hidden; font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }
+  .bargain-sale-cover-preview-copy p { display: -webkit-box; margin: 2px 0 0; overflow: hidden; color: rgba(255, 255, 255, .86); font-size: var(--text-xs); line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .is-event-sale .event-cover-add-button { min-height: var(--control-h-2xl); grid-column: auto; border-style: dashed; }
   .is-event-sale .event-cover-add-button i { font-size: var(--text-base); }
   .is-event-sale .event-cover-add-button span { font-size: var(--text-sm); font-weight: var(--weight-regular); }
