@@ -13,6 +13,7 @@ import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nz
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
+import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
 const categoryIcons: Record<string, string> = {
   "mobile-phones-tablets": "fa-mobile-screen-button",
@@ -47,8 +48,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   const selectedSubcategory = searchParams.get("subcategory") ?? "all";
   const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
   const appliedCondition = conditionFilters.includes(searchParams.get("condition") as typeof conditionFilters[number]) ? searchParams.get("condition")! : "all";
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [hasManualViewChoice, setHasManualViewChoice] = useState(false);
+  const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
@@ -149,9 +149,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
 
   useEffect(() => {
     const setResponsiveView = () => {
-      if (!hasManualViewChoice) {
-        setViewMode(window.innerWidth < 1024 ? "list" : "grid");
-      }
+      setViewMode(readListingViewPreference() ?? (window.innerWidth < 1024 ? "list" : "grid"));
 
       if (window.innerWidth >= 768) {
         setIsFilterOpen(false);
@@ -161,7 +159,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     setResponsiveView();
     window.addEventListener("resize", setResponsiveView);
     return () => window.removeEventListener("resize", setResponsiveView);
-  }, [hasManualViewChoice]);
+  }, []);
 
   useEffect(() => {
     const openCategories = (event: Event) => {
@@ -223,9 +221,9 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     return () => observer.disconnect();
   }, [isLoadingMore, nextPageCursor, searchParams]);
 
-  const chooseView = (mode: "grid" | "list") => {
-    setHasManualViewChoice(true);
+  const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
+    saveListingViewPreference(mode);
   };
   const chooseCategory = (categorySlug: string) => {
     const params = new URLSearchParams(searchParams.toString());

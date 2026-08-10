@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import type { Listing } from "@/data/listings";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
+import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
 const bargainCategories = [
   { value: "all", label: "All Bargains", icon: "fa-tag" },
@@ -30,7 +31,7 @@ export function BargainPageClient({ postedListings = [], savedListingIds = [] }:
   const searchParams = useSearchParams();
   const bargain = (searchParams.get("bargain") as BargainType | null) ?? "all";
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">((searchParams.get("mainLocation") as MainLocation | null) ?? "");
   const [subLocation, setSubLocation] = useState(searchParams.get("subLocation") ?? "");
   const savedIdSet = useMemo(() => new Set(savedListingIds), [savedListingIds]);
@@ -47,7 +48,7 @@ export function BargainPageClient({ postedListings = [], savedListingIds = [] }:
     return () => { window.removeEventListener("mobile-category-menu-request", openFilters); window.removeEventListener("mobile-category-menu-close", closeFilters); };
   }, []);
   useEffect(() => {
-    const setResponsiveView = () => { setViewMode(window.innerWidth < 1024 ? "list" : "grid"); if (window.innerWidth >= 768) setIsFilterOpen(false); };
+    const setResponsiveView = () => { setViewMode(readListingViewPreference() ?? (window.innerWidth < 1024 ? "list" : "grid")); if (window.innerWidth >= 768) setIsFilterOpen(false); };
     setResponsiveView(); window.addEventListener("resize", setResponsiveView); return () => window.removeEventListener("resize", setResponsiveView);
   }, []);
 
@@ -59,6 +60,7 @@ export function BargainPageClient({ postedListings = [], savedListingIds = [] }:
   const chooseBargain = (value: BargainType) => { updateParams({ bargain: value === "all" ? null : value, sort: value === "newly-listed" ? "newest" : null }); setIsFilterOpen(false); };
   const changeMainLocation = (value: MainLocation | "") => { setMainLocation(value); setSubLocation(""); updateParams({ mainLocation: value || null, subLocation: null }); };
   const changeSubLocation = (value: string) => { setSubLocation(value); updateParams({ subLocation: value || null }); };
+  const chooseView = (mode: ListingViewMode) => { setViewMode(mode); saveListingViewPreference(mode); };
 
   return <main className="marketplace-page bargain-page market-page-with-bottom-dock">
     <button className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`} type="button" aria-label={isFilterOpen ? "Close bargain filters" : "Open bargain filters"} aria-expanded={isFilterOpen} onClick={() => setIsFilterOpen((open) => !open)}><i className="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" /><i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" /></button>
@@ -69,7 +71,7 @@ export function BargainPageClient({ postedListings = [], savedListingIds = [] }:
       <aside className="bargain-nearby-card"><i className="fa-solid fa-location-dot" aria-hidden="true" /><div><strong>Find cheap deals near you!</strong><p>Great items, tiny prices, right in your neighbourhood.</p><button type="button" onClick={() => document.querySelector<HTMLButtonElement>("#bargain-main-location + .post-select-trigger")?.click()}>Turn on location <i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></div></aside>
     </MobileDrawer>
     <section className="market-results bargain-results" aria-label="Bargain listings">
-      <div className="market-toolbar bargain-toolbar"><div className="view-toggle" aria-label="View mode"><button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label="List view" aria-pressed={viewMode === "list"} onClick={() => setViewMode("list")}><i className="fa-solid fa-list" aria-hidden="true" /></button><button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label="Grid view" aria-pressed={viewMode === "grid"} onClick={() => setViewMode("grid")}><i className="fa-solid fa-border-all" aria-hidden="true" /></button></div><label className="sort-control" aria-label="Sort bargains"><select value={searchParams.get("sort") ?? "newest"} onChange={(event) => updateParams({ sort: event.target.value === "newest" ? null : event.target.value })}><option value="newest">Newest</option><option value="priceAsc">Low to High</option><option value="priceDesc">High to Low</option></select></label><p>Showing {listings.length} bargain{listings.length === 1 ? "" : "s"}</p></div>
+      <div className="market-toolbar bargain-toolbar"><div className="view-toggle" aria-label="View mode"><button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label="List view" aria-pressed={viewMode === "list"} onClick={() => chooseView("list")}><i className="fa-solid fa-list" aria-hidden="true" /></button><button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label="Grid view" aria-pressed={viewMode === "grid"} onClick={() => chooseView("grid")}><i className="fa-solid fa-border-all" aria-hidden="true" /></button></div><label className="sort-control" aria-label="Sort bargains"><select value={searchParams.get("sort") ?? "newest"} onChange={(event) => updateParams({ sort: event.target.value === "newest" ? null : event.target.value })}><option value="newest">Newest</option><option value="priceAsc">Low to High</option><option value="priceDesc">High to Low</option></select></label><p>Showing {listings.length} bargain{listings.length === 1 ? "" : "s"}</p></div>
       {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>{listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedIdSet.has(listing.id)} listingHref={`/bargain/${listing.id}`} wishlistEndpoint="/api/bargain/wishlist" />)}</div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-tags" aria-hidden="true" /><strong>No bargains found yet</strong><span>Try another deal type or nearby location.</span></div>}
     </section>
   </main>;
