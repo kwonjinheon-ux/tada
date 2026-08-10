@@ -228,9 +228,10 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
   const isMultiItemSale = isBargainListing && isMultiItemBargain(bargainType);
   const fixedBargainPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
-  // The cover is also a sale item, so every uploaded image receives GPT details.
-  const maxPhotosForCurrentListing = isMultiItemSale ? maxEventInventoryPhotoCount : maxPhotoCount;
-  const eventInventoryPhotos = useMemo(() => isMultiItemSale ? photos : [], [isMultiItemSale, photos]);
+  // A sale cover is presentation-only. GPT generates details for each item
+  // photo added after it.
+  const maxPhotosForCurrentListing = isMultiItemSale ? maxEventInventoryPhotoCount + 1 : maxPhotoCount;
+  const eventInventoryPhotos = useMemo(() => isMultiItemSale ? photos.slice(1) : [], [isMultiItemSale, photos]);
 
   useEffect(() => {
     if (subCategory && !subCategoryOptions.some((option) => option.value === subCategory)) {
@@ -449,7 +450,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     const availableSlots = isCoverUpload
       ? maxPhotosForCurrentListing - currentPhotos.length
       : isInventoryUpload
-        ? Math.max(0, maxPhotosForCurrentListing - currentPhotos.length)
+        ? Math.max(0, maxEventInventoryPhotoCount - Math.max(0, currentPhotos.length - 1))
         : maxPhotosForCurrentListing - currentPhotos.length;
     const addedPhotos = normalizedFiles.slice(0, availableSlots).map((file) => ({
       id: crypto.randomUUID(),
@@ -466,7 +467,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     }
 
     if (normalizedFiles.length > availableSlots) {
-      setError(isMultiItemSale ? "You can add up to 10 photos. The first photo is also used as the cover." : "You can add up to 10 photos.");
+      setError(isMultiItemSale ? "You can add one cover photo and up to 10 inventory item photos." : "You can add up to 10 photos.");
     }
     if (addedPhotos.length) void uploadDraftPhotos(addedPhotos);
   };
@@ -1073,7 +1074,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             >
               <div className="field-label-row">
                 <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? "Photos & GPT details" : "Photos & AI help"}</span></span></legend>
-                <span>Up to 10 photos</span>
+                <span>{isMultiItemSale ? "One cover photo + up to 10 item photos" : "Up to 10 photos"}</span>
               </div>
               <input
                 ref={photoInputRef}
@@ -1111,7 +1112,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="fa-solid fa-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
-                <strong>{isMultiItemSale ? "Upload all item photos at once. The first is the cover; GPT fills the rest automatically." : "Click to upload or drag and drop multiple photos at once"}</strong>
+                <strong>{isMultiItemSale ? "Upload the cover first, then add item photos. GPT fills every item automatically." : "Click to upload or drag and drop multiple photos at once"}</strong>
               </p>
               {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="fa-solid fa-rectangle-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
