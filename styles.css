@@ -8269,10 +8269,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-unconfirmed-panel { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 260ms ease, opacity 200ms ease; }
 .listing-unconfirmed.is-open .listing-unconfirmed-panel { grid-template-rows: 1fr; opacity: 1; }
 .listing-unconfirmed-panel > .listing-unconfirmed-body { min-height: 0; overflow: hidden; }
-.listing-unconfirmed-body { padding: 14px 16px; }
-.listing-unconfirmed-body ul { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; }
-.listing-unconfirmed-body li { color: var(--blue-soft-700); font-size: var(--text-base); line-height: 1.5; }
-.listing-unconfirmed-body > small { display: block; margin-top: 10px; color: var(--blue-soft-550); font-size: var(--text-sm); line-height: 1.45; }
+.listing-unconfirmed-body-inner { padding: 14px 16px; }
+.listing-unconfirmed-body-inner ul { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.listing-unconfirmed-body-inner li { color: var(--blue-soft-700); font-size: var(--text-base); line-height: 1.5; }
+.listing-unconfirmed-body-inner > small { display: block; margin-top: 10px; color: var(--blue-soft-550); font-size: var(--text-sm); line-height: 1.45; }
 
 @media (prefers-reduced-motion: reduce) {
   .listing-unconfirmed-panel { transition: none; }

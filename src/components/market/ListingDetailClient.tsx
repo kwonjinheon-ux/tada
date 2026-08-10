@@ -512,8 +512,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
             </button>
             <div className="listing-unconfirmed-panel">
               <div className="listing-unconfirmed-body">
-                <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
-                <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+                <div className="listing-unconfirmed-body-inner">
+                  <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
+                  <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+                </div>
               </div>
             </div>
           </aside>
