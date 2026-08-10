@@ -1027,6 +1027,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               <p className="post-upload-hint">
                 <strong>{isMultiItemSale ? "Upload a clear cover photo for your sale" : "Click to upload or drag and drop multiple photos at once"}</strong>
               </p>
+              {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="fa-solid fa-rectangle-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
               {!isMultiItemSale && <section className="post-photo-ai-help" aria-label="AI help">
                 <AiListingGenerator
