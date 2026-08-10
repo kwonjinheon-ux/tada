@@ -6551,9 +6551,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .market-filter-panel {
     display: grid;
     position: sticky;
-    top: 70px;
+    top: var(--desktop-header-height);
     margin-top: 0;
-    max-height: calc(100vh - 70px);
+    max-height: calc(100vh - var(--desktop-header-height));
     align-self: start;
   overflow-y: auto;
   border-right: 1px solid var(--neutral-250);
@@ -6599,13 +6599,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .market-filter-panel.is-open {
     position: sticky;
-    top: 70px;
+    top: var(--desktop-header-height);
     margin-top: 0;
     right: auto;
     bottom: auto;
     left: auto;
     z-index: auto;
-    max-height: calc(100vh - 70px);
+    max-height: calc(100vh - var(--desktop-header-height));
     overflow-y: auto;
     gap: 16px;
     padding: 24px 18px 42px;
@@ -8252,8 +8252,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
   .market-filter-panel,
   .market-filter-panel.is-open {
-    top: 68px;
-    max-height: calc(100dvh - 68px);
+    top: var(--desktop-header-height);
+    max-height: calc(100dvh - var(--desktop-header-height));
     overscroll-behavior: contain;
   }
 }
