@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { marketplaceCategories } from "@/data/marketplace-categories";
 
 export const bargainItemDescriptionRequestSchema = z.object({
   language: z.enum(["en", "ko", "zh", "ja", "es", "hi", "ar"]).optional().default("en"),
@@ -17,6 +18,8 @@ export const bargainItemDescriptionRequestSchema = z.object({
 export const bargainItemDescriptionsSchema = z.object({
   items: z.array(z.object({
     id: z.string().trim().min(1).max(64),
+    title: z.string().trim().min(3).max(100),
+    categorySlug: z.string().trim().min(1).max(100),
     description: z.string().trim().min(10).max(400),
   })).min(1).max(10),
 }).strict();
@@ -42,13 +45,16 @@ const languageNames: Record<BargainItemDescriptionRequest["language"], string> =
   ar: "Modern Standard Arabic",
 };
 
+const marketplaceCategorySlugs = new Set(marketplaceCategories.map((category) => category.value));
+
 function buildPrompt(input: BargainItemDescriptionRequest) {
   return [
     "You are writing short marketplace captions for individual items in a garage or moving sale.",
-    `Write every description in ${languageNames[input.language]}.`,
-    "For each item listed below, look only at that item's own photo. Write exactly two short sentences: the first names what the item is, the second adds one useful visible detail (condition, material, size, or similar).",
+    `Write every customer-facing field (title and description) in ${languageNames[input.language]}.`,
+    "For each item listed below, look only at that item's own photo. Create a specific, searchable title and write exactly two short description sentences: the first names what the item is, the second adds one useful visible detail (condition, material, size, or similar).",
     "Use only facts clearly visible in the photo. A seller-provided title may be used as context but must not be the whole description, and never invent a brand, defect, age, or working condition that isn't visible.",
-    "Never use a generic placeholder such as 'Item for sale'. Return exactly one entry per item id, matching the ids given, in the same order.",
+    "Never use a generic placeholder such as 'Item for sale'. Select categorySlug from the allowed Tada Market main categories below; do not make up a category. Return exactly one entry per item id, matching the ids given, in the same order.",
+    `Allowed Tada Market main categories: ${marketplaceCategories.map((category) => `${category.value} (${category.label})`).join(", ")}`,
   ].join("\n");
 }
 
@@ -107,7 +113,14 @@ export async function generateBargainItemDescriptions({
   }
 
   try {
-    return bargainItemDescriptionsSchema.parse(response.output_parsed);
+    const result = bargainItemDescriptionsSchema.parse(response.output_parsed);
+    if (result.items.length !== input.items.length || new Set(result.items.map((item) => item.id)).size !== input.items.length) {
+      throw new BargainItemAiError("AI_RESPONSE_INVALID");
+    }
+    if (!result.items.every((item, index) => item.id === input.items[index]?.id && marketplaceCategorySlugs.has(item.categorySlug))) {
+      throw new BargainItemAiError("AI_RESPONSE_INVALID");
+    }
+    return result;
   } catch {
     throw new BargainItemAiError("AI_RESPONSE_INVALID");
   }

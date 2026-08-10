@@ -78,7 +78,7 @@ type SmartphoneSpecs = {
 const mainCategories: SelectOption[] = marketplaceCategories.map(({ label, value }) => ({ label, value }));
 
 const bargainItemDescriptionsResponseSchema = z.object({
-  items: z.array(z.object({ id: z.string(), description: z.string() })),
+  items: z.array(z.object({ id: z.string(), title: z.string(), categorySlug: z.string(), description: z.string() })),
 });
 
 const tradeMethods: SelectOption[] = [
@@ -973,7 +973,11 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         setItemDescriptionError(result.error?.message ?? "We could not write item descriptions. Please try again.");
         return;
       }
-      result.data.items.forEach((item) => updateBargainSaleItem(item.id, "description", item.description));
+      result.data.items.forEach((item) => {
+        updateBargainSaleItem(item.id, "title", item.title);
+        updateBargainSaleItem(item.id, "category", item.categorySlug);
+        updateBargainSaleItem(item.id, "description", item.description);
+      });
     } catch (generationError) {
       setItemDescriptionError(generationError instanceof Error && generationError.name === "AbortError"
         ? "Generation took longer than expected. Please try again."
@@ -1112,7 +1116,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   imagePaths={photos
                     .filter((photo) => Boolean(photo.draftPath))
                     .sort((left, right) => Number(right.id === primaryPhotoId) - Number(left.id === primaryPhotoId))
-                    .slice(0, 3)
                     .flatMap((photo) => photo.draftPath ? [photo.draftPath] : [])}
                   isImagesProcessing={isProcessingPhotos}
                   onUseDraft={useAiDraft}

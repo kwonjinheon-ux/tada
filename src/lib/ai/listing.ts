@@ -15,7 +15,9 @@ export const listingAiRequestSchema = z.object({
     label: z.string().trim().min(1).max(80),
     value: z.string().trim().min(1).max(240),
   }).strip()).max(12).optional().default([]),
-  imagePaths: z.array(z.string().trim().min(1).max(260)).min(1).max(3),
+  // A listing can have up to ten photos. Keep the complete set together so the
+  // model can distinguish the item from its accessories and alternate angles.
+  imagePaths: z.array(z.string().trim().min(1).max(260)).min(1).max(10),
   language: z.enum(["en", "ko", "zh", "ja", "es", "hi", "ar"]).optional().default("en"),
   listingSpace: z.enum(["market", "bargain"]).optional().default("market"),
 }).strip();

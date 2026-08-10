@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { marketplaceCategories } from "@/data/marketplace-categories";
 
 export type BargainSalePhoto = {
   id: string;
@@ -15,8 +16,6 @@ export type BargainSaleItemDraft = {
   price: string;
   description: string;
 };
-
-const itemCategories = ["Furniture", "Clothing", "Kitchen", "Toys", "Media", "Collectibles", "Electronics", "Other"];
 
 export function BargainSaleItemsEditor({ photos, items, onChange, onAddItem, onRemoveItem, onGenerateDescriptions, isGeneratingDescriptions, generationProgress, generationError }: {
   photos: BargainSalePhoto[];
@@ -33,7 +32,7 @@ export function BargainSaleItemsEditor({ photos, items, onChange, onAddItem, onR
 
   return <section className="bargain-sale-items" aria-label="Individual sale item details">
     <div className="bargain-sale-items-heading">
-      <div><strong>Itemized inventory</strong><p>Upload photos to create listing slots, then add details for every item.</p></div>
+      <div><strong>Itemized inventory</strong><p>Upload photos to create listing slots, then let GPT fill every item&apos;s title, description, and Market category.</p></div>
       <Button className="bargain-sale-add-item" variant="secondary" size="sm" onClick={onAddItem}><i className="fa-solid fa-plus" aria-hidden="true" /> Add another item</Button>
       <span>{photos.length} of 10 items</span>
     </div>
@@ -47,7 +46,7 @@ export function BargainSaleItemsEditor({ photos, items, onChange, onAddItem, onR
         ) : (
           <button className="post-ai-generate-button" type="button" onClick={onGenerateDescriptions}>
             <span className="post-ai-gpt-mark" aria-hidden="true">GPT</span>
-            <span>Generate item descriptions with ChatGPT</span>
+            <span>Generate item details with ChatGPT</span>
           </button>
         )}
       </div>
@@ -60,7 +59,7 @@ export function BargainSaleItemsEditor({ photos, items, onChange, onAddItem, onR
           <img src={photo.url} alt={photo.name ?? `Sale item ${index + 1}`} />
           <div className="bargain-sale-item-fields">
             <div className="bargain-sale-item-topline"><strong>Item {index + 1}</strong><button type="button" onClick={() => onRemoveItem(photo.id)} aria-label={`Remove item ${index + 1}`}><i className="fa-solid fa-trash-can" aria-hidden="true" /> Remove</button></div>
-            <div className="bargain-sale-item-meta"><label>Item title<input type="text" value={item.title} onChange={(event) => onChange(photo.id, "title", event.target.value)} placeholder="e.g. Oak dining table" required /></label><label>Category<select value={item.category} onChange={(event) => onChange(photo.id, "category", event.target.value)} required><option value="">Select category</option>{itemCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label></div>
+            <div className="bargain-sale-item-meta"><label>Item title<input type="text" value={item.title} onChange={(event) => onChange(photo.id, "title", event.target.value)} placeholder="e.g. Oak dining table" required /></label><label>Category<select value={item.category} onChange={(event) => onChange(photo.id, "category", event.target.value)} required><option value="">Select category</option>{marketplaceCategories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</select></label></div>
             <label>Price (NZD)<div className="post-price-input"><span>$</span><input type="text" inputMode="decimal" value={item.price} onChange={(event) => onChange(photo.id, "price", event.target.value)} placeholder="0.00" required /></div></label>
             <label>Description<textarea value={item.description} onChange={(event) => onChange(photo.id, "description", event.target.value)} placeholder="Describe this item" maxLength={1_000} required /></label>
           </div>
