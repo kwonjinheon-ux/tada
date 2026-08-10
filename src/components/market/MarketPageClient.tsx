@@ -164,7 +164,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
   }, [hasManualViewChoice]);
 
   useEffect(() => {
-    const openCategories = () => setIsFilterOpen(true);
+    const openCategories = (event: Event) => {
+      const service = (event as CustomEvent<"market" | "bargain" | undefined>).detail;
+      if (!service || service === "market") setIsFilterOpen(true);
+    };
     const closeCategories = () => setIsFilterOpen(false);
     window.addEventListener("mobile-category-menu-request", openCategories);
     window.addEventListener("mobile-category-menu-close", closeCategories);

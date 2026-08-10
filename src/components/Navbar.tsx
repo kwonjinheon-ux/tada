@@ -502,11 +502,12 @@ export function Navbar() {
     window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
   };
 
+  const dockService = isBargain ? "bargain" : "market";
   const standardDockItems: MobileDockItem[] = [
-    { id: "home", label: t("home"), icon: "home", href: "/market", active: isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
+    { id: "home", label: isBargain ? "Bargain home" : t("home"), icon: "home", href: isBargain ? "/bargain" : "/market", active: (isMarket || isBargain) && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
     { id: "create", label: t("create"), icon: "create", href: createPath, active: isPostAd, variant: "create" },
-    { id: "categories", label: "Browse categories", icon: "categories", onClick: openMobileCategories },
+    { id: "categories", label: isBargain ? "Browse bargain types" : "Browse categories", icon: "categories", onClick: openMobileCategories },
     { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
 
@@ -530,7 +531,7 @@ export function Navbar() {
       router.push("/market?filters=open");
       return;
     }
-    window.dispatchEvent(new Event("mobile-category-menu-request"));
+    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockService }));
   }
 
   function openMobileDashboard() {

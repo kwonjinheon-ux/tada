@@ -37,7 +37,10 @@ export function BargainPageClient({ postedListings = [], savedListingIds = [] }:
   const listings = useMemo(() => postedListings.filter((listing) => matchesBargainType(listing, bargain)), [bargain, postedListings]);
 
   useEffect(() => {
-    const openFilters = () => setIsFilterOpen(true);
+    const openFilters = (event: Event) => {
+      const service = (event as CustomEvent<"market" | "bargain" | undefined>).detail;
+      if (!service || service === "bargain") setIsFilterOpen(true);
+    };
     const closeFilters = () => setIsFilterOpen(false);
     window.addEventListener("mobile-category-menu-request", openFilters);
     window.addEventListener("mobile-category-menu-close", closeFilters);
