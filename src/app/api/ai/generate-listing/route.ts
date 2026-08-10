@@ -17,7 +17,7 @@ export const maxDuration = 60;
 const FEATURE = "listing_description";
 const MAX_GENERATIONS_PER_WINDOW = 3;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
-const IMAGE_BUCKET = "market-listing-images";
+const IMAGE_BUCKETS = { market: "market-listing-images", bargain: "bargain-listing-images" } as const;
 const AI_IMAGE_URL_TTL_SECONDS = 5 * 60;
 const isRateLimitEnabled = process.env.AI_LISTING_RATE_LIMIT_ENABLED !== "false";
 
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
   let imageUrls: string[] = [];
   if (input.imagePaths.length) {
     const { data: signedImages, error: signedImagesError } = await supabase.storage
-      .from(IMAGE_BUCKET)
+      .from(IMAGE_BUCKETS[input.listingSpace])
       .createSignedUrls(input.imagePaths, AI_IMAGE_URL_TTL_SECONDS);
 
     imageUrls = signedImages?.flatMap((image) => image.signedUrl ? [image.signedUrl] : []) ?? [];

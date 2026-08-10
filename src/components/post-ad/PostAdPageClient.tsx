@@ -1036,6 +1036,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                   location={[location.mainLocation, location.subLocation].filter(Boolean).join(", ")}
                   language={locale}
+                  listingSpace={listingSpace}
                   additionalDetails={[
                     { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
                     { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },

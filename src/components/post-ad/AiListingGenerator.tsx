@@ -18,6 +18,7 @@ type AiListingGeneratorProps = {
   condition: string;
   location: string;
   language: "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar";
+  listingSpace: "market" | "bargain";
   additionalDetails: AiDetail[];
   imagePaths: string[];
   isImagesProcessing: boolean;
@@ -49,6 +50,7 @@ export function AiListingGenerator({
   condition,
   location,
   language,
+  listingSpace,
   additionalDetails,
   imagePaths,
   isImagesProcessing,
@@ -103,6 +105,7 @@ export function AiListingGenerator({
           additionalDetails,
           imagePaths,
           language,
+          listingSpace,
         }),
       });
       const payload: unknown = await response.json().catch(() => null);

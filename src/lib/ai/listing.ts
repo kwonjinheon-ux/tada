@@ -17,6 +17,7 @@ export const listingAiRequestSchema = z.object({
   }).strip()).max(12).optional().default([]),
   imagePaths: z.array(z.string().trim().min(1).max(260)).min(1).max(3),
   language: z.enum(["en", "ko", "zh", "ja", "es", "hi", "ar"]).optional().default("en"),
+  listingSpace: z.enum(["market", "bargain"]).optional().default("market"),
 }).strip();
 
 export const generatedListingSchema = z.object({
