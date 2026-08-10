@@ -315,7 +315,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const handleTitleChange = (nextTitle: string) => {
     setTitle(nextTitle);
 
-    if (isBargainListing) return;
+    if (isMultiItemSale) return;
 
     if (!nextTitle.trim()) {
       setMainCategory(initialListing?.mainCategory ?? "");
