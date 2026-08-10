@@ -17,14 +17,15 @@ export async function POST(request: Request) {
 
   // Deleting is one-sided: it marks this user's copy, leaving the counterpart's
   // record of the trade intact. The row itself only goes once both have deleted.
-  const { error } = await writeConversationStates(supabase, user.id, conversationIds, {
+  const { error, conversationIds: deletedConversationIds } = await writeConversationStates(supabase, user.id, conversationIds, {
     deleted_at: new Date().toISOString(),
     archived_at: null,
   });
-  if (error) return apiFailure("INTERNAL", "Unable to delete your conversations. Please try again.", 500);
+  if (error || deletedConversationIds.length !== conversationIds.length) return apiFailure("INTERNAL", "Unable to delete your conversations. Please try again.", 500);
 
   if (conversationIds.length) {
-    await supabase.rpc("prune_orphaned_market_conversations", { target_ids: conversationIds });
+    const { error: pruneError } = await supabase.rpc("prune_orphaned_market_conversations", { target_ids: conversationIds });
+    if (pruneError) return apiFailure("INTERNAL", "Your conversations were deleted, but cleanup could not finish. Please refresh and try again.", 500);
   }
   return apiSuccess({ conversationIds });
 }

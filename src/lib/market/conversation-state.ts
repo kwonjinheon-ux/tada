@@ -45,14 +45,15 @@ export async function writeConversationStates(
   conversationIds: string[],
   patch: { archived_at?: string | null; deleted_at?: string | null },
 ) {
-  if (!conversationIds.length) return { error: null };
+  if (!conversationIds.length) return { error: null, conversationIds: [] as string[] };
   const rows = conversationIds.map((conversationId) => ({
     conversation_id: conversationId,
     user_id: userId,
     ...patch,
   }));
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("market_conversation_states")
-    .upsert(rows, { onConflict: "conversation_id,user_id" });
-  return { error };
+    .upsert(rows, { onConflict: "conversation_id,user_id" })
+    .select("conversation_id");
+  return { error, conversationIds: (data ?? []).map((row) => row.conversation_id as string) };
 }

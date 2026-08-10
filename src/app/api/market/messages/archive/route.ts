@@ -16,9 +16,9 @@ export async function POST(request: Request) {
   const conversationIds = await resolveConversationTargets(supabase, user.id, target);
   if (!conversationIds) return apiFailure("INTERNAL", "Unable to update your conversations. Please try again.", 500);
 
-  const { error } = await writeConversationStates(supabase, user.id, conversationIds, {
+  const { error, conversationIds: savedConversationIds } = await writeConversationStates(supabase, user.id, conversationIds, {
     archived_at: archived ? new Date().toISOString() : null,
   });
-  if (error) return apiFailure("INTERNAL", "Unable to update your conversations. Please try again.", 500);
+  if (error || savedConversationIds.length !== conversationIds.length) return apiFailure("INTERNAL", "Unable to update your conversations. Please try again.", 500);
   return apiSuccess({ conversationIds });
 }

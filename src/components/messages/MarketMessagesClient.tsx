@@ -345,11 +345,23 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const markAllRead = async () => {
     if (!totalUnreadCount || isMarkingAllRead) return;
     setIsMarkingAllRead(true);
+    setBulkError(null);
     const readAt = new Date().toISOString();
+    const previousConversations = conversations;
+    const previousMessages = messages;
     setConversations((current) => current.map((conversation) => conversation.unreadCount ? { ...conversation, unreadCount: 0 } : conversation));
     setMessages((current) => current.map((message) => message.recipientId === currentUserId && !message.readAt ? { ...message, readAt } : message));
-    await fetch("/api/market/messages/read-all", { method: "PATCH" }).catch(() => undefined);
-    setIsMarkingAllRead(false);
+    try {
+      const response = await fetch("/api/market/messages/read-all", { method: "PATCH" });
+      if (!response.ok) throw new Error("Unable to mark messages as read.");
+      router.refresh();
+    } catch {
+      setConversations(previousConversations);
+      setMessages(previousMessages);
+      setBulkError("Unable to mark messages as read. Please try again.");
+    } finally {
+      setIsMarkingAllRead(false);
+    }
   };
   const exitSelection = () => {
     setIsSelecting(false);
