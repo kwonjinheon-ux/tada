@@ -16,13 +16,14 @@ const bargainCategories = [
   { value: "10-dollar-deals", label: "$10 Deals", icon: "fa-ticket" },
   { value: "moving-sale", label: "Moving Sale", icon: "fa-truck-ramp-box" },
   { value: "garage-sale", label: "Garage Sale", icon: "fa-warehouse" },
+  { value: "group-buy", label: "Group buy", icon: "fa-people-group" },
   { value: "newly-listed", label: "Newly Listed", icon: "fa-bolt" },
   { value: "nearby-deals", label: "Nearby Deals", icon: "fa-location-dot" },
 ] as const;
 type BargainType = (typeof bargainCategories)[number]["value"];
 
 function matchesBargainType(listing: Listing, bargain: BargainType) {
-  if (["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"].includes(bargain)) return listing.bargainType === bargain;
+  if (["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale", "group-buy"].includes(bargain)) return listing.bargainType === bargain;
   return true;
 }
 
