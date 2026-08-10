@@ -942,7 +942,13 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   };
 
   const updateBargainSaleItem = useCallback((photoId: string, field: "title" | "category" | "price" | "description", value: string) => {
-    setBargainSaleItems((current) => current.map((item) => item.photoId === photoId ? { ...item, [field]: value } : item));
+    setBargainSaleItems((current) => current.map((item) => {
+      if (item.photoId !== photoId) return item;
+      if (field !== "title") return { ...item, [field]: value };
+
+      const suggestion = suggestCategoryFromTitle(value);
+      return { ...item, title: value, category: suggestion ? suggestion.mainCategory : item.category };
+    }));
   }, []);
 
   const removeBargainSaleItem = (photoId: string) => removePhoto(photoId);
