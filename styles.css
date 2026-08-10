@@ -8250,7 +8250,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
    the seller hasn't verified, not a warning, and must read quieter than the
    seller's own description above it. */
 .listing-unconfirmed { margin-top: 18px; border: 1px solid var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-200); overflow: hidden; }
-.listing-unconfirmed-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border: 0; background: transparent; color: var(--blue-soft-600); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); text-align: center; cursor: pointer; }
+.listing-unconfirmed-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border: 0; background: transparent; color: var(--blue-soft-600); font: inherit; font-size: var(--text-md); font-weight: var(--weight-bold); text-align: center; cursor: pointer; }
 .listing-unconfirmed-toggle i { font-size: var(--text-xs); transition: transform 160ms ease; }
 .listing-unconfirmed.is-open .listing-unconfirmed-toggle { border-bottom: 1px solid var(--neutral-250); }
 .listing-unconfirmed.is-open .listing-unconfirmed-toggle i { transform: rotate(180deg); }
