@@ -100,6 +100,18 @@ const meetingPlaces: SelectOption[] = [
   { label: "Pickup from home", value: "home" },
 ];
 
+type ShopTypeValue = "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
+
+const postShopTypeOptions: Array<{ value: ShopTypeValue; label: string; icon: string }> = [
+  { value: "secondhand", label: "Market", icon: "fa-store" },
+  { value: "garage-sale", label: "Garage Sale", icon: "fa-warehouse" },
+  { value: "moving-sale", label: "Moving Sale", icon: "fa-truck-ramp-box" },
+  { value: "2dollarshop", label: "2 Dollar Shop", icon: "fa-coins" },
+  { value: "groupbuy", label: "Group Buy", icon: "fa-people-group" },
+];
+
+const dollarShopTierValues: BargainListingType[] = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"];
+
 const maxPhotoCount = marketListingImagePolicy.maxCount;
 const maxEventInventoryPhotoCount = 10;
 const editorColors = [
@@ -168,7 +180,10 @@ function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
 export function PostAdPageClient({ initialListing, listingSpace = "market" }: { initialListing?: EditableListingInitialValues; listingSpace?: "market" | "bargain" }) {
   const router = useRouter();
   const { locale } = useLanguage();
-  const isBargainListing = listingSpace === "bargain";
+  const isEditing = Boolean(initialListing);
+  const [activeSpace, setActiveSpace] = useState<"market" | "bargain">(listingSpace);
+  const [showGroupBuyNotice, setShowGroupBuyNotice] = useState(false);
+  const isBargainListing = isEditing ? listingSpace === "bargain" : activeSpace === "bargain";
   const listingTable = isBargainListing ? "bargain_listings" : "market_listings";
   const photoTable = isBargainListing ? "bargain_listing_photos" : "market_listing_photos";
   const imageBucket = isBargainListing ? "bargain-listing-images" : "market-listing-images";
@@ -221,7 +236,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
   const [itemDescriptionProgress, setItemDescriptionProgress] = useState(0);
   const [itemDescriptionError, setItemDescriptionError] = useState<string | null>(null);
   const [importedCategoryKeywords, setImportedCategoryKeywords] = useState<ImportedCategoryKeyword[]>([]);
-  const isEditing = Boolean(initialListing);
   const subCategoryOptions = mainCategory
     ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
     : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
@@ -658,6 +672,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (showGroupBuyNotice) return;
     const formElement = event.currentTarget;
     setIsSubmitting(true);
     setSubmitProgress(6);
@@ -941,6 +956,57 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     if (maximumPriceCents !== null) setPrice((maximumPriceCents / 100).toFixed(0));
   };
 
+  const activeShopType: ShopTypeValue = showGroupBuyNotice
+    ? "groupbuy"
+    : !isBargainListing
+      ? "secondhand"
+      : bargainType === "garage-sale" || bargainType === "moving-sale"
+        ? bargainType
+        : "2dollarshop";
+
+  const changeShopType = (nextShopType: ShopTypeValue) => {
+    if (nextShopType === activeShopType) return;
+
+    photos.forEach((photo) => {
+      if (photo.file) URL.revokeObjectURL(photo.url);
+    });
+    const draftPaths = photos.flatMap((photo) => (photo.draftPath ? [photo.draftPath] : []));
+    if (draftPaths.length) {
+      const supabase = createBrowserSupabaseClient();
+      void supabase?.storage.from(imageBucket).remove(draftPaths);
+    }
+    setPhotos([]);
+    setPrimaryPhotoId(null);
+    setBargainSaleItems([]);
+    setTitle("");
+    setPrice("");
+    setMainCategory("");
+    setSubCategory("");
+    setDescription("");
+    setEventStartDate("");
+    setEventEndDate("");
+    setEventStartTime("08:00");
+    setEventEndTime("16:00");
+    setEventAddress("");
+    setError(null);
+    setNotice(null);
+
+    if (nextShopType === "groupbuy") {
+      setShowGroupBuyNotice(true);
+      return;
+    }
+    setShowGroupBuyNotice(false);
+
+    if (nextShopType === "secondhand") {
+      setActiveSpace("market");
+      return;
+    }
+    setActiveSpace("bargain");
+    if (nextShopType === "garage-sale") changeBargainType("garage-sale");
+    else if (nextShopType === "moving-sale") changeBargainType("moving-sale");
+    else if (!dollarShopTierValues.includes(bargainType)) changeBargainType("2-dollar-deals");
+  };
+
   const updateBargainSaleItem = useCallback((photoId: string, field: "title" | "category" | "price" | "description", value: string) => {
     setBargainSaleItems((current) => current.map((item) => {
       if (item.photoId !== photoId) return item;
@@ -1011,12 +1077,16 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     void generateItemDescriptions();
   }, [eventInventoryPhotos, generateItemDescriptions, isGeneratingItemDescriptions, isMultiItemSale]);
 
-  const createHeading = isMultiItemSale
-    ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
-    : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
-  const createDescription = isMultiItemSale
-    ? "Add a cover photo, then price and describe every item for local bargain hunters."
-    : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
+  const createHeading = showGroupBuyNotice
+    ? "Group Buy"
+    : isMultiItemSale
+      ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
+      : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
+  const createDescription = showGroupBuyNotice
+    ? "This feature isn't available yet."
+    : isMultiItemSale
+      ? "Add a cover photo, then price and describe every item for local bargain hunters."
+      : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
 
   return (
     <main className={`post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
@@ -1029,28 +1099,43 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full post-title-field">
-              <div className="post-section-heading"><span>1</span><h2>{isMultiItemSale ? "Event details" : "Basics"}</h2></div>
-              <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
-              <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
-              {isMultiItemSale ? <>
-                <SelectMenu id="bargain-type" name="bargain_type" label="Sale type" icon="fa-tag" placeholder="Select sale type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" />
-                <div className="event-schedule-grid">
-                  <label>Start date<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>
-                  <label>End date<input type="date" min={eventStartDate || undefined} value={eventEndDate} onChange={(event) => setEventEndDate(event.target.value)} required /></label>
-                  <label>Start time<input type="time" value={eventStartTime} onChange={(event) => setEventStartTime(event.target.value)} required /></label>
-                  <label>End time<input type="time" value={eventEndTime} onChange={(event) => setEventEndTime(event.target.value)} required /></label>
+              <div className="post-section-heading"><span>1</span><h2>{showGroupBuyNotice ? "Basics" : isMultiItemSale ? "Event details" : "Basics"}</h2></div>
+              {!isEditing && <div className="post-shop-type-field">
+                <span className="post-shop-type-label">Shop Type</span>
+                <div className="post-shop-type-options">
+                  {postShopTypeOptions.map(({ value, label, icon }) => (
+                    <button key={value} type="button" className={`post-shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`} onClick={() => changeShopType(value)}>
+                      <i className={`fa-solid ${icon}`} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
-                <label htmlFor="event-address">Event location (full address)</label>
-                <div className="event-address-input"><i className="fa-solid fa-location-dot" aria-hidden="true" /><input id="event-address" type="text" value={eventAddress} onChange={(event) => setEventAddress(event.target.value)} placeholder="123 Sunny Lane, Ponsonby, Auckland" required /></div>
-                <label htmlFor="event-description">Sale description</label>
-                <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
-                <input type="hidden" name="body" value={description} />
-              </> : (isBargainListing ? (
-                <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
-              ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
+              </div>}
+              {showGroupBuyNotice ? (
+                <p className="post-field-hint post-coming-soon-hint">Group Buy isn&apos;t available yet — check back soon!</p>
+              ) : <>
+                <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
+                <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
+                {isMultiItemSale ? <>
+                  <SelectMenu id="bargain-type" name="bargain_type" label="Sale type" icon="fa-tag" placeholder="Select sale type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" />
+                  <div className="event-schedule-grid">
+                    <label>Start date<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>
+                    <label>End date<input type="date" min={eventStartDate || undefined} value={eventEndDate} onChange={(event) => setEventEndDate(event.target.value)} required /></label>
+                    <label>Start time<input type="time" value={eventStartTime} onChange={(event) => setEventStartTime(event.target.value)} required /></label>
+                    <label>End time<input type="time" value={eventEndTime} onChange={(event) => setEventEndTime(event.target.value)} required /></label>
+                  </div>
+                  <label htmlFor="event-address">Event location (full address)</label>
+                  <div className="event-address-input"><i className="fa-solid fa-location-dot" aria-hidden="true" /><input id="event-address" type="text" value={eventAddress} onChange={(event) => setEventAddress(event.target.value)} placeholder="123 Sunny Lane, Ponsonby, Auckland" required /></div>
+                  <label htmlFor="event-description">Sale description</label>
+                  <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
+                  <input type="hidden" name="body" value={description} />
+                </> : (isBargainListing ? (
+                  <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
+                ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
+              </>}
             </div>
 
-            {!isMultiItemSale && <div className="post-form-grid post-form-grid-three post-category-fields">
+            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-form-grid post-form-grid-three post-category-fields">
               <div className="post-section-heading"><span>3</span><h2>{isMultiItemSale ? "Sale settings" : "Pricing & category"}</h2></div>
               <div className="post-field post-price-field">
                 <label htmlFor="listing-price">Price (NZD)</label>
@@ -1065,7 +1150,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="fa-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>}
 
-            <fieldset
+            {!showGroupBuyNotice && <fieldset
               className={`photo-fieldset post-photo-field ${isDraggingPhotos ? "is-dragging" : ""}`}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -1146,11 +1231,11 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 />
                 <p className="post-ai-description">{locale === "ko" ? "사진을 기반으로 제목과 내용을 ChatGPT가 작성합니다." : "ChatGPT will create a title and description from your photos."}</p>
               </section>}
-            </fieldset>
+            </fieldset>}
 
-            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
+            {!showGroupBuyNotice && isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
 
-            {!isMultiItemSale && <div className="post-field post-field-full post-description-field">
+            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-field post-field-full post-description-field">
               <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
@@ -1226,20 +1311,20 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               )}
             </div>}
 
-            {!isMultiItemSale && <div className="post-form-grid post-location-grid">
+            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-form-grid post-location-grid">
               <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? "Event location & trade" : "Location & trade"}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="fa-truck-fast" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="fa-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>}
 
-            {(notice || error) && (
+            {!showGroupBuyNotice && (notice || error) && (
               <p className={`post-create-status ${error ? "is-error" : "is-success"}`} role="status">
                 {error ?? notice}
               </p>
             )}
 
-            <div className="post-submit-row">
+            {!showGroupBuyNotice && <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
               <button
                 className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`}
@@ -1254,7 +1339,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               >
                 <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}</span>
               </button>
-            </div>
+            </div>}
           </form>
         </section>
 

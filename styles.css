@@ -4062,6 +4062,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-photo-ai-help { display: grid; gap: var(--space-2); }
 .bargain-type-select { margin-top: var(--space-2); }
 
+.post-shop-type-field { display: grid; gap: 8px; margin-bottom: var(--space-4); }
+.post-shop-type-label { color: var(--blue-soft-650); font-size: var(--text-xs); font-weight: var(--weight-regular); letter-spacing: .04em; text-transform: uppercase; }
+.post-shop-type-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.post-shop-type-options button { display: inline-flex; align-items: center; gap: 8px; min-height: var(--control-h-md); padding: 0 14px; border: 1px solid var(--neutral-250); border-radius: var(--radius-pill); background: var(--surface); color: var(--blue-850); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-regular); cursor: pointer; transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease; }
+.post-shop-type-options button:hover:not(.is-selected) { border-color: var(--neutral-300); background: var(--neutral-150); }
+.post-shop-type-options button.is-selected { border-color: var(--primary); background: var(--primary); color: var(--neutral-50); }
+.post-shop-type-options button.is-selected > i { color: currentColor; }
+.post-shop-type-secondhand > i { color: var(--green-600); }
+.post-shop-type-garage-sale > i { color: var(--blue-700); }
+.post-shop-type-moving-sale > i { color: var(--blue-450); }
+.post-shop-type-2dollarshop > i { color: var(--rose-500); }
+.post-shop-type-groupbuy > i { color: var(--amber-450); }
+.post-coming-soon-hint { padding: var(--space-4); border: 1px dashed var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-150); color: var(--blue-soft-650); text-align: center; }
+
 .bargain-sale-items,
 .bargain-sale-items-empty {
   margin: var(--space-3) 0 0;
