@@ -32,10 +32,16 @@ function CommentThreadConnector({ signature }: { signature: string }) {
 
       setPaths(Array.from(childAvatars).map((avatar) => {
         const rect = avatar.getBoundingClientRect();
-        const x = rect.left + rect.width / 2 - containerRect.left;
+        // Enters the reply avatar at its left-centre, not its middle — the
+        // line should touch the edge of the circle, not cut through it.
+        const x = rect.left - containerRect.left;
         const y = rect.top + rect.height / 2 - containerRect.top;
-        const bendY = originY + (y - originY) * 0.55;
-        return `M ${originX} ${originY} C ${originX} ${bendY} ${x} ${bendY} ${x} ${y}`;
+        const radius = Math.max(0, Math.min(14, Math.abs(y - originY), Math.abs(x - originX)));
+        const cornerY = y - radius;
+        const cornerX = originX + radius;
+        // Straight down, a single rounded corner, then straight across — not a
+        // full curve along the whole run.
+        return `M ${originX} ${originY} L ${originX} ${cornerY} Q ${originX} ${y} ${cornerX} ${y} L ${x} ${y}`;
       }));
     };
 
