@@ -136,7 +136,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   }, [comments]);
 
   const rootComments = commentsByParent.get(null) ?? [];
-  const activeRootCount = rootComments.filter((comment) => !comment.deletedAt).length;
+  const activeCommentCount = comments.filter((comment) => !comment.deletedAt).length;
 
   const submitComment = async (event: FormEvent<HTMLFormElement>, parentId: string | null = null) => {
     event.preventDefault();
@@ -265,7 +265,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   };
 
   return <section className="listing-comments" aria-labelledby="listing-comments-title" style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
-    <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeRootCount} {activeRootCount === 1 ? "comment" : "comments"}</span></div>
+    <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div>
     <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
     {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
