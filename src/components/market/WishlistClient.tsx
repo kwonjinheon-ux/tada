@@ -18,23 +18,24 @@ export type WishlistItem = {
 };
 
 type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[] };
-type Filter = "All items" | "Market" | "Bargain";
+type Filter = "all" | "market" | "bargain";
+const filterLabels: Record<Filter, string> = { all: "All items", market: "Second Hands", bargain: "Bargain" };
 
 function matchesFilter(item: WishlistItem, filter: Filter) {
-  return filter === "All items" || item.space === filter.toLowerCase();
+  return filter === "all" || item.space === filter;
 }
 
 export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientProps) {
   const [items, setItems] = useState(initialItems);
-  const [filter, setFilter] = useState<Filter>("All items");
+  const [filter, setFilter] = useState<Filter>("all");
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
-  const filters = useMemo<Filter[]>(() => ["All items", ...(items.some((item) => item.space === "market") ? ["Market" as const] : []), ...(items.some((item) => item.space === "bargain") ? ["Bargain" as const] : [])], [items]);
+  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market") ? ["market" as const] : []), ...(items.some((item) => item.space === "bargain") ? ["bargain" as const] : [])], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
   useEffect(() => {
-    if (!filters.includes(filter)) setFilter("All items");
+    if (!filters.includes(filter)) setFilter("all");
   }, [filter, filters]);
 
   const itemKey = (item: WishlistItem) => `${item.space}:${item.id}`;
@@ -90,7 +91,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
       <header className="wishlist-heading">
         <div><span>Manage your {items.length} saved {items.length === 1 ? "item" : "items"}</span></div>
         <div className="wishlist-tabs" aria-label="Wishlist services">
-          {filters.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} onClick={() => setFilter(option)}>{option}</button>)}
+          {filters.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} onClick={() => setFilter(option)}>{filterLabels[option]}</button>)}
         </div>
       </header>
 

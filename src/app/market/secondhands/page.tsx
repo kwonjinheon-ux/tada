@@ -3,7 +3,7 @@ import { MarketPageClient } from "@/components/market/MarketPageClient";
 import { getMarketFeed } from "@/lib/market/feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Market" };
+export const metadata = { title: "Second Hands" };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
