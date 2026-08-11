@@ -29,6 +29,22 @@ export function CommunityCreateClient() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    if (!categorySlug) {
+      setError(t("communityCreateCategoryRequired"));
+      return;
+    }
+    if (title.trim().length < 4) {
+      setError(t("communityCreateTitleRequired"));
+      return;
+    }
+    if (body.trim().length < 20) {
+      setError(t("communityCreateBodyRequired"));
+      return;
+    }
+    if (!location.mainLocation) {
+      setError(t("communityCreateLocationRequired"));
+      return;
+    }
     setIsSubmitting(true);
     const response = await fetch("/api/community/posts", {
       method: "POST",
@@ -72,8 +88,8 @@ export function CommunityCreateClient() {
 
             <section className="post-description-field">
               <div className="post-section-heading"><span>2</span><h2>Write your post</h2></div>
-              <div className="post-field"><label htmlFor="community-title">Title</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder="What would you like to share?" required /></div>
-              <div className="post-field"><label htmlFor="community-body">Details</label><textarea id="community-body" className="post-editor-source" value={body} onChange={(event) => setBody(event.target.value)} maxLength={5_000} placeholder="Include the important details for your neighbours." required /></div>
+              <div className="post-field"><label htmlFor="community-title">Title</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder="What would you like to share?" required /></div>
+              <div className="post-field"><label htmlFor="community-body">Details</label><textarea id="community-body" className="post-editor-source" value={body} onChange={(event) => setBody(event.target.value)} minLength={20} maxLength={5_000} placeholder="Include the important details for your neighbours." required /></div>
             </section>
 
             <section className="post-form-grid post-location-grid">

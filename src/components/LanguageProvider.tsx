@@ -33,6 +33,7 @@ const copy = {
     communityTypeEvent: "Event", communityTypeQuestion: "Question", communityTypeRecommendation: "Recommendation", communityTypeNotice: "Notice", communityTypeHousing: "Housing",
     communityRecentPostsHeading: "Recent Posts", communityNewPost: "New", communityNoResponsesYet: "No responses yet", communityResponses: "responses", communityPostsCount: "posts",
     communityCreateTitle: "Create a community post", communityCreateDescription: "Choose a category, add the details, and share your post with the local community.",
+    communityCreateCategoryRequired: "Choose a category before publishing.", communityCreateTitleRequired: "Add a title with at least 4 characters.", communityCreateBodyRequired: "Add at least 20 characters of detail to your post.", communityCreateLocationRequired: "Choose a main location before publishing.",
   },
   ko: {
     search: "물품 검색...", market: "마켓", jobs: "일자리", community: "커뮤니티", create: "등록", home: "홈", messages: "메시지", categories: "카테고리", more: "더보기",
@@ -50,6 +51,7 @@ const copy = {
     communityTypeEvent: "이벤트", communityTypeQuestion: "질문", communityTypeRecommendation: "추천", communityTypeNotice: "공지", communityTypeHousing: "주거",
     communityRecentPostsHeading: "최근 게시물", communityNewPost: "새 글", communityNoResponsesYet: "아직 응답 없음", communityResponses: "개 응답", communityPostsCount: "개 게시물",
     communityCreateTitle: "커뮤니티 글쓰기", communityCreateDescription: "카테고리와 내용을 입력해 우리 동네 커뮤니티에 글을 공유해 보세요.",
+    communityCreateCategoryRequired: "게시하기 전에 카테고리를 선택해 주세요.", communityCreateTitleRequired: "제목을 4자 이상 입력해 주세요.", communityCreateBodyRequired: "글 내용을 20자 이상 입력해 주세요.", communityCreateLocationRequired: "게시하기 전에 주요 지역을 선택해 주세요.",
   },
 } as const;
 
