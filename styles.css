@@ -1173,7 +1173,8 @@ a {
   gap: 5px;
 }
 
-.market-filter-panel.is-open .filter-list button {
+.market-filter-panel.is-open .filter-list button,
+.market-filter-panel.is-open .filter-list a {
   min-height: var(--control-h-sm);
   padding: 0 9px;
   font-size: var(--text-sm);
@@ -1305,6 +1306,7 @@ a {
 
 .location-select,
 .filter-list button,
+.filter-list a,
 .condition-chips button,
 .apply-filter-button,
 .mobile-filter-strip button,
@@ -1408,7 +1410,8 @@ a {
   gap: 8px;
 }
 
-.filter-list button {
+.filter-list button,
+.filter-list a {
   min-width: 0;
   min-height: var(--control-h-lg);
   /* Same grid, size, and colour spec as .dashboard-sidebar .dashboard-nav a — the
@@ -1425,19 +1428,30 @@ a {
   font-weight: var(--weight-regular);
   line-height: 1.2;
   text-align: left;
+  text-decoration: none;
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-.filter-list button:hover:not(.is-selected) {
+.filter-list button:hover:not(.is-selected),
+.filter-list a:hover:not(.is-selected) {
   background: var(--neutral-200);
   color: var(--blue-850);
 }
 
 .filter-list button.is-selected,
+.filter-list a.is-selected,
 .condition-chips button.is-selected {
   background: var(--primary);
   color: var(--neutral-50);
 }
+
+.shop-type-filter .filter-list .shop-type-all > i { color: var(--teal-soft-900); }
+.shop-type-filter .filter-list .shop-type-secondhand > i { color: var(--green-600); }
+.shop-type-filter .filter-list .shop-type-garage-sale > i { color: var(--blue-700); }
+.shop-type-filter .filter-list .shop-type-moving-sale > i { color: var(--blue-450); }
+.shop-type-filter .filter-list .shop-type-2dollarshop > i { color: var(--rose-500); }
+.shop-type-filter .filter-list .shop-type-groupbuy > i { color: var(--amber-450); }
+.shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 
 .price-filter input {
   width: 100%;

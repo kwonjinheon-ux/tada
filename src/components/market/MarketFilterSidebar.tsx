@@ -70,7 +70,7 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
       <h2>Shop Type</h2>
       <div className="filter-list">
         {shopTypes.map(({ value, label, icon, href }) => (
-          <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeShopType === value ? "is-selected" : ""}`}>
+          <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
           </a>
