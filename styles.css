@@ -6617,9 +6617,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   /* One column per row here too, matching .dashboard-sidebar .dashboard-nav at the
-     same breakpoint — this is where the filter panel stops being a mobile drawer. */
+     same breakpoint — this is where the filter panel stops being a mobile drawer.
+     Tighter row gap here reads as a dense Reddit-style rail instead of a mobile list. */
   .filter-list {
     grid-template-columns: 1fr;
+    gap: 2px;
   }
 
   .market-results {
@@ -7912,6 +7914,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .dashboard-sidebar .dashboard-nav {
     grid-template-columns: 1fr;
+    gap: 2px;
   }
 
   .dashboard-page .listing-stat-grid {
