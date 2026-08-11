@@ -154,6 +154,7 @@ export const communityPostFeedItemSchema = z.object({
   excerpt: z.string(),
   location: z.string(),
   timeAgo: z.string(),
+  images: z.array(z.object({ src: z.string().url(), alt: z.string() })).optional(),
 });
 
 export const communityPostFeedResponseSchema = z.object({ posts: z.array(communityPostFeedItemSchema) });

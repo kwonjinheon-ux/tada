@@ -6,6 +6,7 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
+import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import { communityPosts } from "@/data/community-posts";
 import type { CommunityPost } from "@/data/community-posts";
@@ -105,7 +106,9 @@ export function CommunityPageClient() {
         />
 
         <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
-          {visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} onOpen={() => router.push(`/community/${post.id}`)} />)}
+          {viewMode === "grid"
+            ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={activeCategory === "all"} />)
+            : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} onOpen={() => router.push(`/community/${post.id}`)} />)}
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 import { communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 const postTypeByCategory = {
   "local-noticeboard": "notice",
@@ -42,6 +43,15 @@ export async function GET(request: Request) {
 
   const { data, error } = await query;
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
+  const postIds = (data ?? []).map((post) => post.id);
+  const { data: imageRows } = postIds.length ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : { data: [] };
+  const paths = (imageRows ?? []).map((image) => image.storage_path);
+  const signed = await getSignedStorageImages("community-post-images", paths, "gallery");
+  const imagesByPost = new Map<string, { src: string; alt: string }[]>();
+  for (const image of imageRows ?? []) {
+    const src = signed.get(image.storage_path);
+    if (src) imagesByPost.set(image.post_id, [...(imagesByPost.get(image.post_id) ?? []), { src, alt: "Community post image" }]);
+  }
   return apiSuccess({
     posts: (data ?? []).map((post) => ({
       id: post.id,
@@ -50,6 +60,7 @@ export async function GET(request: Request) {
       excerpt: post.body,
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
       timeAgo: relativeTime(post.created_at),
+      images: imagesByPost.get(post.id) ?? [],
     })),
   });
 }
