@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
@@ -12,7 +12,7 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 
 export function CommunityPageClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ListingViewMode>(() => readListingViewPreference() ?? "list");
+  const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>("all");
   const [activeChip, setActiveChip] = useState("all");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
@@ -26,6 +26,25 @@ export function CommunityPageClient() {
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
   };
+
+  useEffect(() => {
+    const stored = readListingViewPreference();
+    if (stored) setViewMode(stored);
+  }, []);
+
+  useEffect(() => {
+    const openFilters = (event: Event) => {
+      const section = (event as CustomEvent<string | undefined>).detail;
+      if (section === "community") setIsFilterOpen(true);
+    };
+    const closeFilters = () => setIsFilterOpen(false);
+    window.addEventListener("mobile-category-menu-request", openFilters);
+    window.addEventListener("mobile-category-menu-close", closeFilters);
+    return () => {
+      window.removeEventListener("mobile-category-menu-request", openFilters);
+      window.removeEventListener("mobile-category-menu-close", closeFilters);
+    };
+  }, []);
 
   return (
     <main className="marketplace-page community-page">

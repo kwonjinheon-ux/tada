@@ -418,8 +418,10 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isCommunity = pathname.startsWith("/community");
   const isJobs = pathname.startsWith("/jobs");
-  const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
-  const createPath = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop") ? "/market/create/bargain" : "/market/create";
+  const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
+  const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
+  const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const createPath = isCommunity ? "/community/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
@@ -499,10 +501,10 @@ export function Navbar() {
   };
 
   const standardDockItems: MobileDockItem[] = [
-    { id: "home", label: t("home"), icon: "home", href: "/market", active: isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
+    { id: "home", label: isCommunity ? "Community home" : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
     { id: "create", label: t("create"), icon: "create", href: createPath, active: isPostAd, variant: "create" },
-    { id: "categories", label: "Browse categories", icon: "categories", onClick: openMobileCategories },
+    { id: "categories", label: isCommunity ? "Browse community categories" : "Browse categories", icon: "categories", onClick: openMobileCategories },
     { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
 
@@ -522,11 +524,15 @@ export function Navbar() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsLanguageMenuOpen(false);
+    if (isCommunity) {
+      window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "community" }));
+      return;
+    }
     if (!pathname.startsWith("/market")) {
       router.push("/market?filters=open");
       return;
     }
-    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "market" }));
+    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockSection }));
   }
 
   function openMobileDashboard() {
