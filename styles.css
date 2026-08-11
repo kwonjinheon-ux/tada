@@ -1453,6 +1453,20 @@ a {
 .shop-type-filter .filter-list .shop-type-groupbuy > i { color: var(--amber-450); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 
+.community-category-filter .filter-list .community-category-all > i { color: var(--teal-soft-900); }
+.community-category-filter .filter-list .community-category-local-noticeboard > i { color: var(--red-550); }
+.community-category-filter .filter-list .community-category-events > i { color: var(--violet-700); }
+.community-category-filter .filter-list .community-category-qna > i { color: var(--amber-550); }
+.community-category-filter .filter-list .community-category-recommendations > i { color: var(--green-600); }
+.community-category-filter .filter-list .community-category-free-stuff > i { color: var(--green-650); }
+.community-category-filter .filter-list .community-category-lost-found > i { color: var(--red-750); }
+.community-category-filter .filter-list .community-category-parents-kids > i { color: var(--rose-700); }
+.community-category-filter .filter-list .community-category-jobs-services > i { color: var(--blue-soft-750); }
+.community-category-filter .filter-list .community-category-housing-flatmates > i { color: var(--blue-450); }
+.community-category-filter .filter-list .community-category-study-language > i { color: var(--blue-400); }
+.community-category-filter .filter-list .community-category-clubs-meetups > i { color: var(--violet-700); }
+.community-category-filter .filter-list button.is-selected > i { color: currentColor; }
+
 .price-filter input {
   width: 100%;
   accent-color: var(--primary-dark);
@@ -8584,6 +8598,44 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .listing-row-meta { margin-top: 4px; font-size: var(--text-xs); }
   .listing-row-actions { grid-column: 2; justify-content: flex-start; margin-top: -4px; }
 }
+
+/* Community post list — same row rhythm as .listing-row (thumbnail, body, trailing
+   column) but the "thumbnail" is a coloured icon tile per post type rather than a
+   photo, and the trailing column is a static chevron instead of actions. */
+.community-post-list { display: grid; }
+.community-post-card { min-height: 108px; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--neutral-250); }
+.community-post-media { display: grid; width: 64px; height: 64px; place-items: center; border-radius: var(--radius-md); background: color-mix(in srgb, currentColor 12%, transparent); font-size: var(--text-2xl); }
+.community-post-card-event .community-post-media { color: var(--violet-700); }
+.community-post-card-question .community-post-media { color: var(--amber-550); }
+.community-post-card-recommendation .community-post-media { color: var(--green-600); }
+.community-post-card-free .community-post-media { color: var(--green-650); }
+.community-post-card-notice .community-post-media { color: var(--red-750); }
+.community-post-card-housing .community-post-media { color: var(--blue-450); }
+.community-post-body { min-width: 0; display: grid; gap: 4px; }
+.community-post-badge { justify-self: start; padding: 3px 8px; border-radius: var(--radius-xs); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
+.community-post-badge-event { background: var(--violet-700); }
+.community-post-badge-question { background: var(--amber-550); }
+.community-post-badge-recommendation { background: var(--green-600); }
+.community-post-badge-free { background: var(--green-650); }
+.community-post-badge-notice { background: var(--red-750); }
+.community-post-badge-housing { background: var(--blue-450); }
+.community-post-body h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.community-post-excerpt { overflow: hidden; margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
+.community-post-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--blue-soft-600); font-size: var(--text-xs); }
+.community-post-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.community-post-chevron { color: var(--blue-soft-400); font-size: var(--text-sm); }
+
+.community-post-list.is-grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.community-post-list.is-grid-view .community-post-card { grid-template-columns: 1fr; grid-template-rows: auto auto; gap: 10px; border: 1px solid var(--neutral-250); border-radius: var(--radius-md); padding: 16px; }
+.community-post-list.is-grid-view .community-post-media { width: 48px; height: 48px; font-size: var(--text-lg); }
+.community-post-list.is-grid-view .community-post-chevron { display: none; }
+
+@media (max-width: 767.98px) {
+  .community-post-card { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; padding: 14px 0; }
+  .community-post-media { width: 48px; height: 48px; font-size: var(--text-lg); }
+  .community-post-body h2 { font-size: var(--text-md); white-space: normal; }
+}
+
 .manage-listing-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }.manage-listing-actions a, .manage-listing-actions button { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 11px; border: 1px solid var(--green-700); border-radius: var(--radius-xs); background: var(--neutral-50); color: var(--green-700); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }.manage-listing-actions button { border-color: var(--red-600); color: var(--red-900); }.manage-listing-actions .manage-listing-relist { border-color: var(--green-700); background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions a:first-child { background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions button:disabled { border-color: var(--neutral-250); background: var(--neutral-150); color: var(--blue-soft-550); cursor: default; }.manage-listing-actions a:only-child { background: var(--neutral-50); color: var(--green-700); }.manage-listing-actions .manage-listing-action-error { flex-basis: 100%; margin: 0; color: var(--red-900); font-size: var(--text-sm); }
 .manage-listings-empty { display: grid; justify-items: center; padding: 64px 24px; border: 1px dashed var(--blue-soft-250); border-radius: var(--radius-md); text-align: center; }.manage-listings-empty > i { color: var(--green-700); font-size: var(--text-4xl); }.manage-listings-empty h2 { margin: 16px 0 5px; color: var(--blue-900); font-size: var(--text-xl); font-weight: var(--weight-medium); }.manage-listings-empty p { margin: 0 0 18px; color: var(--blue-soft-650); font-size: var(--text-md); }
 .seller-dashboard-insights { margin-bottom: 28px; }
