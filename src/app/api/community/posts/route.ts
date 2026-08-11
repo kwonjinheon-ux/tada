@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const payload = communityPostCreateRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!payload.success) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
+  if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
 
   const supabase = await createServerSupabaseClient();
   if (!supabase) return apiFailure("UNAVAILABLE", "Community posting is unavailable right now.", 503);
@@ -79,5 +79,9 @@ export async function POST(request: Request) {
     .single();
 
   if (error || !data) return apiFailure("INTERNAL", "We couldn't publish your post. Please try again.", 500);
+  if (payload.data.imagePaths.length) {
+    const { error: imageError } = await supabase.from("community_post_images").insert(payload.data.imagePaths.map((storage_path, display_order) => ({ post_id: data.id, owner_id: user.id, storage_path, display_order })));
+    if (imageError) return apiFailure("INTERNAL", "Your post was published, but its images could not be attached.", 500);
+  }
   return apiSuccess({ id: data.id }, { status: 201 });
 }

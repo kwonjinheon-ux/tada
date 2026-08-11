@@ -142,6 +142,7 @@ export const communityPostCreateRequestSchema = z.object({
   body: z.string().trim().min(20).max(5_000),
   mainLocation: z.string().trim().min(2).max(80),
   subLocation: z.string().trim().max(80).optional(),
+  imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),
 });
 
 export const communityPostCreateResponseSchema = z.object({ id: uuidSchema });

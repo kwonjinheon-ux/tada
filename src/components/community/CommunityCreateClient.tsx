@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { communityPostCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
-import { SelectMenu } from "@/components/ui/SelectMenu";
+import { HtmlEditor } from "@/components/ui/HtmlEditor";
+import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
 import { Button } from "@/components/ui/Button";
 import { communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { MainLocation } from "@/data/nzLocations";
+import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; locality: string | null; rawSuburb: string | null; region: string | null; latitude: number | null; longitude: number | null };
@@ -22,9 +25,12 @@ export function CommunityCreateClient() {
   const [categorySlug, setCategorySlug] = useState<Exclude<CommunityCategory, "all"> | "">("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [location, setLocation] = useState<LocationDraft>(emptyLocation);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => { void (async () => { const supabase = createBrowserSupabaseClient(); const { data: { user } } = await supabase?.auth.getUser() ?? { data: { user: null } }; if (!supabase || !user) return; const { data } = await supabase.from("profiles").select("region_city, region_suburb").eq("id", user.id).maybeSingle(); const mainLocation = findMainLocation(data?.region_city ?? ""); if (mainLocation) setLocation((current) => current.mainLocation ? current : { ...emptyLocation, mainLocation, subLocation: findSubLocation(mainLocation, data?.region_suburb ?? "") ?? "" }); })(); }, []);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,7 +43,7 @@ export function CommunityCreateClient() {
       setError(t("communityCreateTitleRequired"));
       return;
     }
-    if (body.trim().length < 20) {
+    if (body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) {
       setError(t("communityCreateBodyRequired"));
       return;
     }
@@ -49,7 +55,7 @@ export function CommunityCreateClient() {
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorySlug, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation }),
+      body: JSON.stringify({ categorySlug, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
     setIsSubmitting(false);
@@ -73,27 +79,20 @@ export function CommunityCreateClient() {
           <form className="post-ad-form" onSubmit={submit}>
             <section className="post-title-field">
               <div className="post-section-heading"><span>1</span><h2>Choose a category</h2></div>
-              <SelectMenu
-                id="community-category"
-                name="category"
-                label="Category"
-                icon="fa-list"
-                placeholder="Select a community category"
-                options={communityPostCategories.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
-                value={categorySlug}
-                onChange={(value) => setCategorySlug(value as Exclude<CommunityCategory, "all">)}
-              />
+              <div className="post-shop-type-options" role="group" aria-label="Category">{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`fa-solid ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
               <p className="post-field-hint">This uses the same categories as the community sidebar.</p>
             </section>
 
             <section className="post-description-field">
               <div className="post-section-heading"><span>2</span><h2>Write your post</h2></div>
               <div className="post-field"><label htmlFor="community-title">Title</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder="What would you like to share?" required /></div>
-              <div className="post-field"><label htmlFor="community-body">Details</label><textarea id="community-body" className="post-editor-source" value={body} onChange={(event) => setBody(event.target.value)} minLength={20} maxLength={5_000} placeholder="Include the important details for your neighbours." required /></div>
+              <div className="post-field"><label htmlFor="community-body">Details</label><HtmlEditor id="community-body" label="Details" value={body} onChange={setBody} placeholder="Include the important details for your neighbours." /></div>
             </section>
 
+            <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>Add images</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>
+
             <section className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>3</span><h2>Location</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>Location</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
             </section>
 
