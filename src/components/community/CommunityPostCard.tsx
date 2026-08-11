@@ -1,8 +1,11 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 
-export function CommunityPostCard({ post }: { post: CommunityPost }) {
+export function CommunityPostCard({ post, showTypeBadge = true }: { post: CommunityPost; showTypeBadge?: boolean }) {
   const { t } = useLanguage();
+  const responseCount = post.responseCount ?? 0;
+  const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
+  const excerpt = post.excerpt.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
   return (
     <article className={`community-post-card community-post-card-${post.type}`}>
@@ -10,12 +13,12 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
         {post.image ? <img src={post.image} alt={post.imageAlt ?? ""} /> : <span className="community-post-placeholder">txt</span>}
       </div>
       <div className="community-post-body">
-        <span className={`community-post-badge community-post-badge-${post.type}`}>{t(communityPostTypeLabelKeys[post.type])}</span>
+        {showTypeBadge ? <span className={`community-post-badge community-post-badge-${post.type}`}>{t(communityPostTypeLabelKeys[post.type])}</span> : null}
         <div className="community-post-title-row">
           <h2>{post.title}</h2>
-          <span className="community-post-comment-count">10</span>
+          {responseCount > 0 ? <span className={`community-post-comment-count is-${countTone}`}>{responseCount}</span> : null}
         </div>
-        <p className="community-post-excerpt">{post.excerpt}</p>
+        <p className="community-post-excerpt">{excerpt}</p>
         <div className="community-post-meta">
           <span><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location}</span>
           {post.eventDate ? <span><i className="fa-regular fa-calendar" aria-hidden="true" />{post.eventDate}</span> : null}
