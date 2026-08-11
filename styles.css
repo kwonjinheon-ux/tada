@@ -8602,13 +8602,13 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 /* Community post list — same row rhythm as .listing-row (thumbnail, body, trailing
    column), and the thumbnail is sized to match .product-grid.is-list-view's photo
    exactly (96px / 132px on mobile) since both are "list view photo" in the same app.
-   Posts with no photo drop the thumbnail column entirely via .community-post-card-no-media
-   rather than leaving an empty gap. */
+   Posts with no photo keep the thumbnail slot but show a "txt" placeholder instead
+   of an image, so every row keeps the same rhythm. */
 .community-post-list { display: grid; }
 .community-post-card { min-height: 96px; display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--neutral-250); }
-.community-post-card-no-media { grid-template-columns: minmax(0, 1fr) auto; }
 .community-post-media { position: relative; width: 96px; height: 96px; overflow: hidden; border-radius: var(--radius-xs); background: var(--neutral-200); }
 .community-post-media img { width: 100%; height: 100%; object-fit: cover; }
+.community-post-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--blue-soft-500); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; }
 .community-post-body { min-width: 0; display: grid; gap: 4px; }
 .community-post-badge { justify-self: start; padding: 3px 8px; border-radius: var(--radius-xs); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
 .community-post-badge-event { background: var(--violet-700); }
@@ -8624,17 +8624,38 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-chevron { color: var(--blue-soft-400); font-size: var(--text-sm); }
 
 .community-post-list.is-grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.community-post-list.is-grid-view .community-post-card,
-.community-post-list.is-grid-view .community-post-card-no-media { grid-template-columns: 1fr; grid-template-rows: auto auto; gap: 10px; border: 1px solid var(--neutral-250); border-radius: var(--radius-md); padding: 16px; }
+.community-post-list.is-grid-view .community-post-card { grid-template-columns: 1fr; grid-template-rows: auto auto; gap: 10px; border: 1px solid var(--neutral-250); border-radius: var(--radius-md); padding: 16px; }
 .community-post-list.is-grid-view .community-post-media { width: 100%; height: 140px; }
 .community-post-list.is-grid-view .community-post-chevron { display: none; }
 
 @media (max-width: 767.98px) {
   .community-post-card { grid-template-columns: 132px minmax(0, 1fr) auto; gap: 12px; padding: 14px 0; }
-  .community-post-card-no-media { grid-template-columns: minmax(0, 1fr) auto; }
   .community-post-media { width: 132px; height: 132px; }
   .community-post-body h2 { font-size: var(--text-md); white-space: normal; }
 }
+
+/* Recent posts rail — desktop-only third column, matching a Reddit-style right
+   sidebar. Hidden below 1200px, where there isn't room for sidebar + feed + rail
+   without cramping the feed itself. */
+.community-recent-panel { display: none; }
+
+@media (min-width: 1200px) {
+  .marketplace-page.community-page { grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 24px; }
+  .community-recent-panel { display: block; position: sticky; top: var(--desktop-header-height); align-self: start; max-height: calc(100vh - var(--desktop-header-height)); margin: 24px 0; padding: 18px; border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--surface); overflow-y: auto; }
+}
+
+.community-recent-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.community-recent-panel-heading h2 { margin: 0; color: var(--blue-soft-650); font-size: var(--text-xs); font-weight: var(--weight-regular); letter-spacing: .08em; text-transform: uppercase; }
+.community-recent-panel-list { display: grid; gap: 16px; }
+.community-recent-post { display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--neutral-250); }
+.community-recent-post:last-child { padding-bottom: 0; border-bottom: 0; }
+.community-recent-post-body { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.community-recent-post-meta { color: var(--blue-soft-600); font-size: var(--text-2xs); font-weight: var(--weight-semibold); text-transform: uppercase; }
+.community-recent-post-body h3 { display: -webkit-box; overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.community-recent-post-stats { color: var(--blue-soft-550); font-size: var(--text-xs); }
+.community-recent-post-media { width: 72px; height: 72px; overflow: hidden; border-radius: var(--radius-sm); background: var(--neutral-200); }
+.community-recent-post-media img { width: 100%; height: 100%; object-fit: cover; }
+.community-recent-post-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--blue-soft-500); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; }
 
 .manage-listing-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }.manage-listing-actions a, .manage-listing-actions button { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 11px; border: 1px solid var(--green-700); border-radius: var(--radius-xs); background: var(--neutral-50); color: var(--green-700); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }.manage-listing-actions button { border-color: var(--red-600); color: var(--red-900); }.manage-listing-actions .manage-listing-relist { border-color: var(--green-700); background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions a:first-child { background: var(--green-700); color: var(--neutral-50); }.manage-listing-actions button:disabled { border-color: var(--neutral-250); background: var(--neutral-150); color: var(--blue-soft-550); cursor: default; }.manage-listing-actions a:only-child { background: var(--neutral-50); color: var(--green-700); }.manage-listing-actions .manage-listing-action-error { flex-basis: 100%; margin: 0; color: var(--red-900); font-size: var(--text-sm); }
 .manage-listings-empty { display: grid; justify-items: center; padding: 64px 24px; border: 1px dashed var(--blue-soft-250); border-radius: var(--radius-md); text-align: center; }.manage-listings-empty > i { color: var(--green-700); font-size: var(--text-4xl); }.manage-listings-empty h2 { margin: 16px 0 5px; color: var(--blue-900); font-size: var(--text-xl); font-weight: var(--weight-medium); }.manage-listings-empty p { margin: 0 0 18px; color: var(--blue-soft-650); font-size: var(--text-md); }

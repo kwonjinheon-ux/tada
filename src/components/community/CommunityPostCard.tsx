@@ -4,12 +4,10 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
   const typeInfo = communityPostTypes[post.type];
 
   return (
-    <article className={`community-post-card community-post-card-${post.type} ${post.image ? "" : "community-post-card-no-media"}`}>
-      {post.image ? (
-        <div className="community-post-media">
-          <img src={post.image} alt={post.imageAlt ?? ""} />
-        </div>
-      ) : null}
+    <article className={`community-post-card community-post-card-${post.type}`}>
+      <div className="community-post-media">
+        {post.image ? <img src={post.image} alt={post.imageAlt ?? ""} /> : <span className="community-post-placeholder">txt</span>}
+      </div>
       <div className="community-post-body">
         <span className={`community-post-badge community-post-badge-${post.type}`}>{typeInfo.label}</span>
         <h2>{post.title}</h2>

@@ -5,6 +5,7 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
+import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import { communityPosts } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
@@ -65,6 +66,8 @@ export function CommunityPageClient() {
           {communityPosts.map((post) => <CommunityPostCard key={post.id} post={post} />)}
         </div>
       </section>
+
+      <CommunityRecentPostsPanel posts={communityPosts.slice(0, 4)} />
     </main>
   );
 }
