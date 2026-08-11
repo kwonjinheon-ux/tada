@@ -32,7 +32,7 @@ const copy = {
     communityChipTrending: "Trending", communityChipRecent: "Recent", communityChipQuestions: "Questions", communityChipFree: "Free", communityChipNeighbours: "Neighbours",
     communityTypeEvent: "Event", communityTypeQuestion: "Question", communityTypeRecommendation: "Recommendation", communityTypeNotice: "Notice", communityTypeHousing: "Housing",
     communityRecentPostsHeading: "Recent Posts", communityNewPost: "New", communityNoResponsesYet: "No responses yet", communityResponses: "responses", communityPostsCount: "posts",
-    communityCreateTitle: "Create a community post", communityCreateDescription: "Posting to Community isn't open yet — we're still building it. In the meantime, browse what's there.",
+    communityCreateTitle: "Create a community post", communityCreateDescription: "Choose a category, add the details, and share your post with the local community.",
   },
   ko: {
     search: "물품 검색...", market: "마켓", jobs: "일자리", community: "커뮤니티", create: "등록", home: "홈", messages: "메시지", categories: "카테고리", more: "더보기",
@@ -49,7 +49,7 @@ const copy = {
     communityChipTrending: "인기", communityChipRecent: "최신", communityChipQuestions: "질문", communityChipFree: "무료", communityChipNeighbours: "이웃",
     communityTypeEvent: "이벤트", communityTypeQuestion: "질문", communityTypeRecommendation: "추천", communityTypeNotice: "공지", communityTypeHousing: "주거",
     communityRecentPostsHeading: "최근 게시물", communityNewPost: "새 글", communityNoResponsesYet: "아직 응답 없음", communityResponses: "개 응답", communityPostsCount: "개 게시물",
-    communityCreateTitle: "커뮤니티 글쓰기", communityCreateDescription: "커뮤니티 글쓰기 기능은 아직 준비 중이에요. 그동안 다른 게시물들을 둘러보세요.",
+    communityCreateTitle: "커뮤니티 글쓰기", communityCreateDescription: "카테고리와 내용을 입력해 우리 동네 커뮤니티에 글을 공유해 보세요.",
   },
 } as const;
 
