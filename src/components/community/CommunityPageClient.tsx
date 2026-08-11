@@ -8,9 +8,11 @@ import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import { communityPosts } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
+import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
 export function CommunityPageClient() {
+  const { t } = useLanguage();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>("all");
@@ -78,7 +80,7 @@ export function CommunityPageClient() {
           onViewModeChange={chooseView}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
-          resultsLabel={`${communityPosts.length} posts`}
+          resultsLabel={`${communityPosts.length} ${t("communityPostsCount")}`}
         />
 
         <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>

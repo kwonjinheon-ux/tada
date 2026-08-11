@@ -1,12 +1,14 @@
+import type { TranslationKey } from "@/components/LanguageProvider";
+
 export type CommunityPostType = "event" | "question" | "recommendation" | "free" | "notice" | "housing";
 
-export const communityPostTypes: Record<CommunityPostType, { label: string }> = {
-  event: { label: "Event" },
-  question: { label: "Question" },
-  recommendation: { label: "Recommendation" },
-  free: { label: "Free" },
-  notice: { label: "Notice" },
-  housing: { label: "Housing" },
+export const communityPostTypeLabelKeys: Record<CommunityPostType, TranslationKey> = {
+  event: "communityTypeEvent",
+  question: "communityTypeQuestion",
+  recommendation: "communityTypeRecommendation",
+  free: "communityChipFree",
+  notice: "communityTypeNotice",
+  housing: "communityTypeHousing",
 };
 
 export type CommunityPost = {
