@@ -103,7 +103,7 @@ const meetingPlaces: SelectOption[] = [
 type ShopTypeValue = "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
 const postShopTypeOptions: Array<{ value: ShopTypeValue; label: string; icon: string }> = [
-  { value: "secondhand", label: "Market", icon: "fa-store" },
+  { value: "secondhand", label: "Second Hands", icon: "fa-store" },
   { value: "garage-sale", label: "Garage Sale", icon: "fa-warehouse" },
   { value: "moving-sale", label: "Moving Sale", icon: "fa-truck-ramp-box" },
   { value: "2dollarshop", label: "2 Dollar Shop", icon: "fa-coins" },
@@ -1117,7 +1117,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
                 <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
                 {isMultiItemSale ? <>
-                  <SelectMenu id="bargain-type" name="bargain_type" label="Sale type" icon="fa-tag" placeholder="Select sale type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" />
                   <div className="event-schedule-grid">
                     <label>Start date<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>
                     <label>End date<input type="date" min={eventStartDate || undefined} value={eventEndDate} onChange={(event) => setEventEndDate(event.target.value)} required /></label>
@@ -1130,7 +1129,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                   <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
                   <input type="hidden" name="body" value={description} />
                 </> : (isBargainListing ? (
-                  <SelectMenu id="bargain-type" name="bargain_type" label="Bargain type" icon="fa-tag" placeholder="Select bargain type" options={bargainListingTypes.map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
+                  <SelectMenu id="bargain-type" name="bargain_type" label="Deal tier" icon="fa-tag" placeholder="Select deal tier" options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
                 ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
               </>}
             </div>

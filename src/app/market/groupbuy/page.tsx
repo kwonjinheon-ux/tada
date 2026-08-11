@@ -5,7 +5,7 @@ export const metadata = { title: "Group Buy | Tada" };
 
 const shopTypeLinks = [
   { label: "All", href: "/market" },
-  { label: "Market", href: "/market/secondhands" },
+  { label: "Second Hands", href: "/market/secondhands" },
   { label: "Garage Sale", href: "/market/garage-sales" },
   { label: "Moving Sale", href: "/market/moving-sales" },
   { label: "2 Dollar Shop", href: "/market/2dollarshop" },

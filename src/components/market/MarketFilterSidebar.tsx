@@ -10,7 +10,7 @@ export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2
 
 const shopTypes: Array<{ value: ShopType; label: string; icon: string; href: string }> = [
   { value: "all", label: "All", icon: "fa-border-all", href: "/market" },
-  { value: "secondhand", label: "Market", icon: "fa-store", href: "/market/secondhands" },
+  { value: "secondhand", label: "Second Hands", icon: "fa-store", href: "/market/secondhands" },
   { value: "garage-sale", label: "Garage Sale", icon: "fa-warehouse", href: "/market/garage-sales" },
   { value: "moving-sale", label: "Moving Sale", icon: "fa-truck-ramp-box", href: "/market/moving-sales" },
   { value: "2dollarshop", label: "2 Dollar Shop", icon: "fa-coins", href: "/market/2dollarshop" },
