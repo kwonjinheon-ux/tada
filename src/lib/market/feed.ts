@@ -7,21 +7,13 @@ import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { getBargainFeed } from "@/lib/bargain/feed";
+import { encodeCursor, decodeCursor, type Cursor } from "@/lib/pagination/cursor";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
 type Row = { id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair"; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
-type Cursor = { value: string | number; id: string };
 
-function decodeCursor(cursor: string | undefined): Cursor | null {
-  if (!cursor) return null;
-  try {
-    const value = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8")) as Cursor;
-    return typeof value.id === "string" && (typeof value.value === "string" || typeof value.value === "number") ? value : null;
-  } catch { return null; }
-}
-function encodeCursor(value: string | number, id: string) { return Buffer.from(JSON.stringify({ value, id })).toString("base64url"); }
 function formatLocation(city: string | null, suburb: string | null) { return [suburb, city].filter(Boolean).join(", ") || "New Zealand"; }
 function safeSearch(value: string) { return value.replace(/[,%()]/g, " ").trim(); }
 function exactFilterValue(value: string) { return JSON.stringify(value); }
@@ -88,15 +80,35 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
 
 const allBargainTypes = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"];
 
-// The "All" shop-type feed for /market. Combines today's secondhand listings with
-// every bargain listing type (everything except the not-yet-real "group-buy"), sorted
-// together by the same column each source already sorts by. No cursor for v1 — cross-
-// source pagination is real added complexity that nothing here needs yet; the client's
-// infinite-scroll effect already no-ops when nextCursor is null.
+type MergedCursorPayload = { market: Cursor | null; bargain: Cursor | null };
+
+function isCursorLike(value: unknown): value is Cursor | null {
+  return value === null || (typeof value === "object" && value !== null && typeof (value as Cursor).id === "string");
+}
+function encodeMergedCursor(payload: MergedCursorPayload) { return Buffer.from(JSON.stringify(payload)).toString("base64url"); }
+function decodeMergedCursor(cursor: string | undefined): MergedCursorPayload | null {
+  if (!cursor) return null;
+  try {
+    const value = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8")) as MergedCursorPayload;
+    return isCursorLike(value.market) && isCursorLike(value.bargain) ? value : null;
+  } catch { return null; }
+}
+
+// The "All" shop-type feed for /market. Combines today's secondhand listings with every
+// bargain listing type (everything except the not-yet-real "group-buy"), sorted together
+// by the same column each source already sorts by. Each page fetches up to PAGE_SIZE items
+// from BOTH sources, merge-sorts the candidates, and shows the top PAGE_SIZE — the merged
+// cursor tracks, per source, the last item actually shown (not merely fetched), so any
+// unshown "leftover" candidates from a source that lost out this round get re-fetched
+// (not skipped) the next time that source's cursor is used.
 export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
   const query = marketFeedQuerySchema.parse(rawQuery);
+  const mergedCursor = decodeMergedCursor(query.cursor);
+  const marketCursor = mergedCursor?.market ?? null;
+  const bargainCursor = mergedCursor?.bargain ?? null;
+
   const [marketResult, bargainResult] = await Promise.all([
-    getMarketFeed(supabase, { ...query, cursor: undefined }, userId),
+    getMarketFeed(supabase, { ...query, cursor: marketCursor ? encodeCursor(marketCursor.value, marketCursor.id) : undefined }, userId),
     getBargainFeed(supabase, {
       q: query.q,
       sort: query.sort,
@@ -107,8 +119,10 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
       maxPrice: query.maxPrice,
       condition: query.condition,
       bargain: "all",
-    }, userId, { bargainTypes: allBargainTypes }),
+      cursor: bargainCursor ? encodeCursor(bargainCursor.value, bargainCursor.id) : undefined,
+    }, userId, { bargainTypes: allBargainTypes, pageSize: PAGE_SIZE }),
   ]);
+
   const ascending = query.sort === "priceAsc";
   const merged = [...marketResult.listings, ...bargainResult.listings].sort((left, right) => {
     const a = left.sortValue ?? "";
@@ -116,9 +130,18 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
     if (a === b) return 0;
     return ascending ? (a < b ? -1 : 1) : (a > b ? -1 : 1);
   });
+  const page = merged.slice(0, PAGE_SIZE);
+  const marketIds = new Set(marketResult.listings.map((listing) => listing.id));
+  const bargainIds = new Set(bargainResult.listings.map((listing) => listing.id));
+  const lastShownMarket = [...page].reverse().find((listing) => marketIds.has(listing.id));
+  const lastShownBargain = [...page].reverse().find((listing) => bargainIds.has(listing.id));
+  const nextMarketCursor: Cursor | null = lastShownMarket ? { value: lastShownMarket.sortValue ?? "", id: lastShownMarket.id } : marketCursor;
+  const nextBargainCursor: Cursor | null = lastShownBargain ? { value: lastShownBargain.sortValue ?? "", id: lastShownBargain.id } : bargainCursor;
+  const hasNextPage = merged.length > PAGE_SIZE || Boolean(marketResult.nextCursor) || Boolean(bargainResult.nextCursor);
+
   return {
-    listings: merged.slice(0, PAGE_SIZE),
+    listings: page,
     savedListingIds: [...marketResult.savedListingIds, ...bargainResult.savedListingIds],
-    nextCursor: null,
+    nextCursor: hasNextPage ? encodeMergedCursor({ market: nextMarketCursor, bargain: nextBargainCursor }) : null,
   };
 }

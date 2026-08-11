@@ -178,6 +178,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           setIsLoadingMore(true);
           const params = new URLSearchParams(searchParams.toString());
           params.set("cursor", nextPageCursor);
+          if (shopType === "all") params.set("shopType", "all");
           void fetch(`/api/market/listings?${params.toString()}`)
             .then((response) => readApiResponse(response, marketFeedResponseSchema))
             .then((result) => {
@@ -199,7 +200,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [isLoadingMore, nextPageCursor, searchParams]);
+  }, [isLoadingMore, nextPageCursor, searchParams, shopType]);
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
