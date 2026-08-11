@@ -63,7 +63,7 @@ export default async function ManageListingsPage() {
         </article>;
       })}{bargainListings.map((listing) => {
         const imageUrl = bargainSignedPhotos.get(bargainPrimaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
-        const manageHref = isMultiItemBargain(listing.bargain_type) ? `/bargain/${listing.id}` : `/bargain/${listing.id}/edit`;
+        const manageHref = isMultiItemBargain(listing.bargain_type) ? `/market/${listing.id}` : `/market/${listing.id}/edit`;
         return <article className="listing-row" key={`bargain-${listing.id}`}>
           <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
           <div className="listing-row-body">
@@ -71,7 +71,7 @@ export default async function ManageListingsPage() {
             <strong className="listing-row-price">{formatMarketPrice(listing.price_cents)}</strong>
             <small className="listing-row-meta">Bargain · Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small>
           </div>
-          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="fa-solid fa-pen" /> Manage</Link><Link href={`/bargain/${listing.id}`}>View sale</Link></div>
+          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="fa-solid fa-pen" /> Manage</Link><Link href={`/market/${listing.id}`}>View sale</Link></div>
         </article>;
       })}</div> : <div className="manage-listings-empty"><i className="fa-regular fa-rectangle-list" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
     </section>

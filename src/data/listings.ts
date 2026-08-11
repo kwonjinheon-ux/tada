@@ -13,6 +13,9 @@ export type Listing = {
   eventDateRange?: string | null;
   badge?: "Promotion" | "Newly Listed";
   status: ListingStatus;
+  // Populated by feed queries only, used to interleave-sort results pulled from
+  // more than one source (see getMergedMarketFeed) — not part of the API contract.
+  sortValue?: string | number;
   // commentCount?: number; // parked for reuse on a different category later
 };
 

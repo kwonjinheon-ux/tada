@@ -1,7 +1,5 @@
-import { PostAdPageClient } from "@/components/post-ad/PostAdPageClient";
-
-export const metadata = { title: "Create bargain listing | Tada" };
+import { permanentRedirect } from "next/navigation";
 
 export default function BargainCreatePage() {
-  return <PostAdPageClient listingSpace="bargain" />;
+  permanentRedirect("/market/create/bargain");
 }

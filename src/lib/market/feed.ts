@@ -6,6 +6,7 @@ import { marketFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { getBargainFeed } from "@/lib/bargain/feed";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
@@ -79,8 +80,45 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   // const commentCounts = await getCommentCounts(supabase, ids);
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available" /* , commentCount: commentCounts.get(row.id) ?? 0 */ } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", sortValue: query.sort === "newest" ? row.created_at : row.price_cents /* , commentCount: commentCounts.get(row.id) ?? 0 */ } satisfies Listing;
   });
   const last = page.at(-1);
   return { listings, savedListingIds, nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };
+}
+
+const allBargainTypes = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"];
+
+// The "All" shop-type feed for /market. Combines today's secondhand listings with
+// every bargain listing type (everything except the not-yet-real "group-buy"), sorted
+// together by the same column each source already sorts by. No cursor for v1 — cross-
+// source pagination is real added complexity that nothing here needs yet; the client's
+// infinite-scroll effect already no-ops when nextCursor is null.
+export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+  const query = marketFeedQuerySchema.parse(rawQuery);
+  const [marketResult, bargainResult] = await Promise.all([
+    getMarketFeed(supabase, { ...query, cursor: undefined }, userId),
+    getBargainFeed(supabase, {
+      q: query.q,
+      sort: query.sort,
+      mainLocation: query.mainLocation,
+      subLocation: query.subLocation,
+      category: query.category,
+      subcategory: query.subcategory,
+      maxPrice: query.maxPrice,
+      condition: query.condition,
+      bargain: "all",
+    }, userId, { bargainTypes: allBargainTypes }),
+  ]);
+  const ascending = query.sort === "priceAsc";
+  const merged = [...marketResult.listings, ...bargainResult.listings].sort((left, right) => {
+    const a = left.sortValue ?? "";
+    const b = right.sortValue ?? "";
+    if (a === b) return 0;
+    return ascending ? (a < b ? -1 : 1) : (a > b ? -1 : 1);
+  });
+  return {
+    listings: merged.slice(0, PAGE_SIZE),
+    savedListingIds: [...marketResult.savedListingIds, ...bargainResult.savedListingIds],
+    nextCursor: null,
+  };
 }

@@ -58,6 +58,7 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapLocation)}&travelmode=driving`;
   const mapEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapLocation)}&z=15&output=embed`;
   const typeLabel = sale.type === "moving-sale" ? "Moving sale" : "Garage sale";
+  const typeHref = sale.type === "moving-sale" ? "/market/moving-sales" : "/market/garage-sales";
   const shareSale = async () => {
     try {
       await copyCurrentPageLink();
@@ -88,8 +89,8 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
   return <main className="bargain-sale-detail-page">
     <PageContainer>
       <div className="listing-detail-back-row" aria-label="Bargain navigation">
-        <Link className="listing-detail-back" href="/bargain"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
-        <nav className="listing-detail-category-path" aria-label="Bargain category"><Link href="/bargain">Bargain</Link><span aria-hidden="true">/</span><Link href={`/bargain?bargain=${sale.type}`}>{typeLabel}</Link></nav>
+        <Link className="listing-detail-back" href="/market"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
+        <nav className="listing-detail-category-path" aria-label="Shop type"><Link href="/market">Market</Link><span aria-hidden="true">/</span><Link href={typeHref}>{typeLabel}</Link></nav>
       </div>
       <div className="bargain-sale-detail-layout">
       <section className="bargain-sale-detail-overview">
@@ -122,7 +123,7 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
         {actionError ? <p className="bargain-sale-action-error" role="alert">{actionError}</p> : null}
         {visibleItems.length ? <div className="bargain-sale-detail-items">{visibleItems.map((item, index) => <article className={`bargain-sale-detail-item ${item.status === "sold" ? "is-sold" : ""}`} key={item.id}>
           <button className="bargain-sale-detail-item-image" type="button" onClick={() => setGalleryIndex(items.findIndex((saleItem) => saleItem.id === item.id))} aria-label={`View ${item.title} photo gallery`}><Image src={item.image.src} alt={item.image.alt} fill unoptimized sizes="(max-width: 767px) 100vw, 280px" />{item.status === "sold" ? <span>Sold</span> : <b>Available</b>}</button>
-          <div className="bargain-sale-detail-item-copy"><div><h3>{index + 1}. {item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions">{sale.viewerIsOwner ? <Link className="ui-button ui-button--primary primary-button ui-button--sm ui-button--block" href={`/bargain/${sale.id}/items/${item.id}/edit`}>{item.pendingReservationIds.length ? `Review offer (${item.pendingReservationIds.length})` : "Edit item"}</Link> : <Button size="sm" block disabled={item.status === "sold" || reservingItemId === item.id || reservedItemIds.includes(item.id)} onClick={() => void reserveItem(item.id)}>{reservedItemIds.includes(item.id) ? "Offer sent" : reservingItemId === item.id ? "Sending…" : "Reserve item"}</Button>}</div></div>
+          <div className="bargain-sale-detail-item-copy"><div><h3>{index + 1}. {item.title}</h3><strong>{formatMarketPrice(item.priceCents)}</strong></div><p>{item.description}</p><div className="bargain-sale-item-actions">{sale.viewerIsOwner ? <Link className="ui-button ui-button--primary primary-button ui-button--sm ui-button--block" href={`/market/${sale.id}/items/${item.id}/edit`}>{item.pendingReservationIds.length ? `Review offer (${item.pendingReservationIds.length})` : "Edit item"}</Link> : <Button size="sm" block disabled={item.status === "sold" || reservingItemId === item.id || reservedItemIds.includes(item.id)} onClick={() => void reserveItem(item.id)}>{reservedItemIds.includes(item.id) ? "Offer sent" : reservingItemId === item.id ? "Sending…" : "Reserve item"}</Button>}</div></div>
         </article>)}</div> : <div className="bargain-sale-detail-empty" role="status"><i className="fa-solid fa-box-open" aria-hidden="true" /><strong>No items in this category</strong><span>Choose another category to see the sale inventory.</span></div>}
       </section>
 

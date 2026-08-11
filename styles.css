@@ -608,6 +608,11 @@ a {
   line-height: 1.55;
 }
 
+.groupbuy-page { padding-block: 64px; }
+.groupbuy-shop-type-links { display: flex; flex-wrap: wrap; gap: 10px; max-width: 600px; margin: 28px auto 0; padding: 0 var(--page-padding-inline); }
+.groupbuy-shop-type-links a { display: inline-flex; align-items: center; min-height: var(--control-h-md); padding: 0 16px; border: 1px solid var(--neutral-250); border-radius: var(--radius-pill); background: var(--surface); color: var(--ink); font-weight: var(--weight-bold); text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease; }
+.groupbuy-shop-type-links a:hover { border-color: var(--primary); background: var(--green-soft-50); }
+
 .market-hero {
   position: relative;
   overflow: hidden;

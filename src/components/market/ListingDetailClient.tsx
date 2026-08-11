@@ -67,7 +67,7 @@ type ListingDetailClientProps = {
 export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
   const isBargainListing = space === "bargain";
-  const listingHomePath = isBargainListing ? "/bargain" : "/market";
+  const listingHomePath = "/market";
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);

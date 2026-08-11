@@ -376,10 +376,6 @@ export function Navbar() {
   };
 
   const runSearch = (query: string) => {
-    if (pathname.startsWith("/bargain")) {
-      router.push(`/bargain${query ? `?q=${encodeURIComponent(query)}` : ""}`);
-      return;
-    }
     if (pathname !== "/market") {
       router.push(`/market${query ? `?q=${encodeURIComponent(query)}` : ""}`);
       return;
@@ -420,10 +416,10 @@ export function Navbar() {
   };
 
   const isMarket = pathname.startsWith("/market");
-  const isBargain = pathname.startsWith("/bargain");
+  const isCommunity = pathname.startsWith("/community");
   const isJobs = pathname.startsWith("/jobs");
-  const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/bargain/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
-  const createPath = isBargain ? "/bargain/create" : "/market/create";
+  const isPostAd = pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const createPath = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop") ? "/market/create/bargain" : "/market/create";
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
@@ -502,12 +498,11 @@ export function Navbar() {
     window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
   };
 
-  const dockService = isBargain ? "bargain" : "market";
   const standardDockItems: MobileDockItem[] = [
-    { id: "home", label: isBargain ? "Bargain home" : t("home"), icon: "home", href: isBargain ? "/bargain" : "/market", active: (isMarket || isBargain) && !isPostAd && !pathname.startsWith("/market/dashboard") },
+    { id: "home", label: t("home"), icon: "home", href: "/market", active: isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
     { id: "create", label: t("create"), icon: "create", href: createPath, active: isPostAd, variant: "create" },
-    { id: "categories", label: isBargain ? "Browse bargain types" : "Browse categories", icon: "categories", onClick: openMobileCategories },
+    { id: "categories", label: "Browse categories", icon: "categories", onClick: openMobileCategories },
     { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
 
@@ -527,11 +522,11 @@ export function Navbar() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsLanguageMenuOpen(false);
-    if (pathname !== "/market" && pathname !== "/bargain") {
+    if (!pathname.startsWith("/market")) {
       router.push("/market?filters=open");
       return;
     }
-    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockService }));
+    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "market" }));
   }
 
   function openMobileDashboard() {
@@ -596,9 +591,9 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             <span>{t("market")}</span>
           </Link>
-          <Link className={isBargain ? "is-active" : ""} href="/bargain">
-            <i className="fa-solid fa-tags" aria-hidden="true" />
-            <span>Bargain</span>
+          <Link className={isCommunity ? "is-active" : ""} href="/community">
+            <i className="fa-solid fa-users" aria-hidden="true" />
+            <span>{t("community")}</span>
           </Link>
         </nav>
 
@@ -632,9 +627,9 @@ export function Navbar() {
             <i className="fa-solid fa-store" aria-hidden="true" />
             {t("market")}
           </Link>
-          <Link className={isBargain ? "is-active" : ""} href="/bargain" onClick={() => setIsOpen(false)}>
-            <i className="fa-solid fa-tags" aria-hidden="true" />
-            Bargain
+          <Link className={isCommunity ? "is-active" : ""} href="/community" onClick={() => setIsOpen(false)}>
+            <i className="fa-solid fa-users" aria-hidden="true" />
+            {t("community")}
           </Link>
         </nav>
 

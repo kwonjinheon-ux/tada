@@ -103,13 +103,13 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
             <small className="listing-row-meta">{item.category}</small>
           </div>
           <div className="listing-row-actions wishlist-item-actions">
-            <Link href={`/${item.space}/${item.id}`}>View listing</Link>
+            <Link href={`/market/${item.id}`}>View listing</Link>
             {item.space === "market" ? <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{messagingId === item.id ? "Opening..." : "Send message"}</button> : null}
             <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} onClick={() => void removeItem(item)}><i className="fa-solid fa-xmark" aria-hidden="true" /> Remove</button>
           </div>
         </article>)}
       </section> : <section className="wishlist-discovery" aria-labelledby="wishlist-discovery-title">
-        <div className="wishlist-discovery-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this service." : "Explore Market or Bargain and save listings you want to revisit."}</p><div><Link href={filter === "Bargain" ? "/bargain" : "/market"}>Explore {filter === "Bargain" ? "Bargain" : "Market"} <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link></div>
+        <div className="wishlist-discovery-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this service." : "Explore Market and save listings you want to revisit."}</p><div><Link href="/market">Explore Market <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link></div>
       </section>}
 
       {recentlyViewed.length ? <section className="wishlist-recently-viewed" aria-labelledby="recently-viewed-title">

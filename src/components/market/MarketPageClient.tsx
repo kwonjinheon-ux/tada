@@ -3,43 +3,24 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { marketFeedResponseSchema } from "@/contracts/api";
-import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerClasses, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
-import { SelectMenu } from "@/components/ui/SelectMenu";
+import { MarketFilterSidebar, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
-import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
+import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
-const categoryIcons: Record<string, string> = {
-  "mobile-phones-tablets": "fa-mobile-screen-button",
-  "computers-laptops": "fa-laptop",
-  "electronics-appliances": "fa-tv",
-  "furniture-home-decor": "fa-couch",
-  "home-kitchen": "fa-kitchen-set",
-  "clothing-fashion": "fa-shirt",
-  "baby-kids": "fa-baby",
-  "books-music-media": "fa-book-open",
-  "hobbies-collectables": "fa-gem",
-  "games-toys": "fa-gamepad",
-  "sports-leisure": "fa-futbol",
-  "musical-instruments": "fa-guitar",
-  "garden-tools-diy": "fa-screwdriver-wrench",
-  "pet-supplies": "fa-paw",
-  "health-beauty": "fa-heart-pulse",
-};
-
 const quickCategories = marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }));
-const priceFilterMinimum = 50;
 const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
-const conditionTranslationKeys = { all: "any", brand_new: "brandNew", like_new: "likeNew", excellent: "excellent", good: "good", fair: "fair" } as const;
 
-export function MarketPageClient({ postedListings = [], savedListingIds = [], nextCursor = null }: { postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
+export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], nextCursor = null }: { shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,7 +48,6 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     () => marketplaceCategories.find((category) => category.value === selectedCategory),
     [selectedCategory],
   );
-  const conditionLabel = (value: typeof conditionFilters[number]) => t(conditionTranslationKeys[value]);
   const toolbarCategories = useMemo(
     () => selectedCategoryDefinition
       ? [{ label: t("all"), value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
@@ -108,10 +88,10 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
       const params = new URLSearchParams(searchParams.toString());
       params.delete("cursor");
       if (searchQuery.trim()) params.set("q", searchQuery.trim()); else params.delete("q");
-      router.replace(`/market${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+      router.replace(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [router, searchParams, searchQuery, urlSearchQuery]);
+  }, [basePath, router, searchParams, searchQuery, urlSearchQuery]);
 
   useEffect(() => {
     if (searchParams.get("filters") !== "open") return;
@@ -120,8 +100,8 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.delete("filters");
     const nextQuery = nextParams.toString();
-    router.replace(nextQuery ? `/market?${nextQuery}` : "/market", { scroll: false });
-  }, [router, searchParams]);
+    router.replace(nextQuery ? `${basePath}?${nextQuery}` : basePath, { scroll: false });
+  }, [basePath, router, searchParams]);
 
   useEffect(() => {
     try {
@@ -231,7 +211,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     params.delete("subcategory");
     if (categorySlug === "all") params.delete("category");
     else params.set("category", categorySlug);
-    router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
+    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
   };
   const chooseSubcategory = (subcategorySlug: string) => {
@@ -240,7 +220,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     params.delete("cursor");
     if (subcategorySlug === "all") params.delete("subcategory");
     else params.set("subcategory", subcategorySlug);
-    router.push(`/market?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   };
   const chooseToolbarCategory = (categorySlug: string) => {
     setApplyingChip(categorySlug);
@@ -254,7 +234,7 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     if (condition === "all") params.delete("condition"); else params.set("condition", condition);
     if (mainLocation) params.set("mainLocation", mainLocation); else params.delete("mainLocation");
     if (subLocation) params.set("subLocation", subLocation); else params.delete("subLocation");
-    router.push(`/market${params.size ? `?${params.toString()}` : ""}`);
+    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
   };
   const applyLocationFilter = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
@@ -264,7 +244,13 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
     params.delete("cursor");
     if (nextMainLocation) params.set("mainLocation", nextMainLocation); else params.delete("mainLocation");
     if (nextSubLocation) params.set("subLocation", nextSubLocation); else params.delete("subLocation");
-    router.push(`/market${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+  };
+  const changeSort = (nextSort: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("cursor");
+    if (nextSort === "newest") params.delete("sort"); else params.set("sort", nextSort);
+    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
   };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
@@ -280,89 +266,32 @@ export function MarketPageClient({ postedListings = [], savedListingIds = [], ne
       </button>
 
       <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel="Close marketplace filters" className="filter-backdrop" panelClassName="market-filter-panel">
-        <button className={`filter-close-button ${mobileDrawerClasses.closeButton} ${mobileDrawerClasses.staggerItem}`} type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
+        <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-        <section className="filter-block location-block market-filter-location-section">
-          <h2>Location</h2>
-          <SelectMenu id="market-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => applyLocationFilter(nextLocation as MainLocation | "")} className="market-location-select" hideLabel />
-          <SelectMenu id="market-sub-location" name="subLocation" label="Sub Location" icon="fa-map-pin" placeholder="Any sub location" options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []} value={subLocation} disabled={!mainLocation} onChange={(nextSubLocation) => applyLocationFilter(mainLocation, nextSubLocation)} className="market-location-select" hideLabel />
-        </section>
-
-        <section className="filter-block category-filter">
-          <h2>{t("category")}</h2>
-          <div className="filter-list">
-            {[{ label: t("all"), value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
-              <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${selectedCategory === value ? "is-selected" : ""}`} type="button" onClick={() => chooseCategory(value)}>
-                <i className={`fa-solid ${icon}`} aria-hidden="true" />
-                <span className={mobileDrawerClasses.menuLabel}>{label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="filter-block price-filter">
-          <h2>{t("maxPrice")}</h2>
-          <input type="range" min={priceFilterMinimum} max={priceFilterMaximum} value={maxPrice} onChange={(event) => setMaxPrice(Number(event.target.value))} aria-valuetext={`$${maxPrice.toLocaleString()}`} />
-          <div className="price-range">
-            <span>${priceFilterMinimum}</span>
-            <span>${maxPrice.toLocaleString()}</span>
-          </div>
-        </section>
-
-        <section className="filter-block condition-filter">
-          <h2>{t("condition")}</h2>
-          <div className="condition-chips">
-            {conditionFilters.map((value) => (
-              <button key={value} className={condition === value ? "is-selected" : ""} type="button" aria-pressed={condition === value} onClick={() => setCondition(value)}>
-                {conditionLabel(value)}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <button className="apply-filter-button" type="button" onClick={applyFilters}>
-          {t("applyFilters")}
-        </button>
+        <MarketFilterSidebar
+          activeShopType={shopType}
+          activeCategory={selectedCategory}
+          onCategorySelect={chooseCategory}
+          mainLocation={mainLocation}
+          subLocation={subLocation}
+          onLocationChange={applyLocationFilter}
+          priceCondition={{ maxPrice, condition, onMaxPriceChange: setMaxPrice, onConditionChange: setCondition, onApply: applyFilters }}
+        />
       </MobileDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
       <section className="market-results" aria-label="Fresh finds" aria-busy={Boolean(applyingChip)}>
-        <div className="market-toolbar">
-          <div className="view-toggle" aria-label={t("viewMode")}>
-            <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => chooseView("list")}>
-              <i className="fa-solid fa-list" aria-hidden="true" />
-            </button>
-            <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => chooseView("grid")}>
-              <i className="fa-solid fa-border-all" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div className="market-chip-row" aria-label={t("quickCategories")}>
-            {toolbarCategories.map((category) => {
-              const isSelected = selectedCategoryDefinition ? category.value === selectedSubcategory : category.value === selectedCategory;
-              return <button
-                key={category.value}
-                className={`${isSelected ? "is-selected" : ""} ${applyingChip === category.value ? "is-applying" : ""}`}
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => chooseToolbarCategory(category.value)}
-              >
-                {category.label}
-              </button>;
-            })}
-          </div>
-
-          <div className="market-tools">
-            <label className="sort-control" aria-label={t("sortListings")}>
-              <select value={searchParams.get("sort") ?? "newest"} onChange={(event) => { const params = new URLSearchParams(searchParams.toString()); params.delete("cursor"); if (event.target.value === "newest") params.delete("sort"); else params.set("sort", event.target.value); router.push(`/market${params.size ? `?${params.toString()}` : ""}`); }}>
-                <option value="newest">{t("newest")}</option>
-                <option value="priceAsc">{t("lowToHigh")}</option>
-                <option value="priceDesc">{t("highToLow")}</option>
-              </select>
-            </label>
-          </div>
-        </div>
+        <MarketResultsToolbar
+          viewMode={viewMode}
+          onViewModeChange={chooseView}
+          chips={toolbarCategories}
+          activeChipValue={selectedCategoryDefinition ? selectedSubcategory : selectedCategory}
+          applyingChip={applyingChip}
+          onChipSelect={chooseToolbarCategory}
+          sortValue={searchParams.get("sort") ?? "newest"}
+          onSortChange={changeSort}
+        />
 
         <AdSlot placement="market_top" />
 

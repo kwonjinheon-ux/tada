@@ -22,6 +22,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    return [
+      { source: "/bargain", has: [{ type: "query", key: "bargain", value: "2-dollar-deals" }], destination: "/market/2dollarshop", permanent: true },
+      { source: "/bargain", has: [{ type: "query", key: "bargain", value: "5-dollar-deals" }], destination: "/market/2dollarshop", permanent: true },
+      { source: "/bargain", has: [{ type: "query", key: "bargain", value: "10-dollar-deals" }], destination: "/market/2dollarshop", permanent: true },
+      { source: "/bargain", has: [{ type: "query", key: "bargain", value: "moving-sale" }], destination: "/market/moving-sales", permanent: true },
+      { source: "/bargain", has: [{ type: "query", key: "bargain", value: "garage-sale" }], destination: "/market/garage-sales", permanent: true },
+      { source: "/bargain", destination: "/market", permanent: true },
+      { source: "/bargain/create", destination: "/market/create/bargain", permanent: true },
+      { source: "/bargain/:listingId/items/:itemId/edit", destination: "/market/:listingId/items/:itemId/edit", permanent: true },
+      { source: "/bargain/:listingId/edit", destination: "/market/:listingId/edit", permanent: true },
+      { source: "/bargain/:listingId", destination: "/market/:listingId", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

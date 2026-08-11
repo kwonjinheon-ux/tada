@@ -100,7 +100,7 @@ export const marketFeedQuerySchema = z.object({
 });
 
 export const bargainTypeSchema = z.enum(["all", "2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale", "newly-listed", "nearby-deals"]);
-export const bargainFeedQuerySchema = marketFeedQuerySchema.pick({ q: true, sort: true, mainLocation: true, subLocation: true }).extend({ bargain: bargainTypeSchema.default("all") });
+export const bargainFeedQuerySchema = marketFeedQuerySchema.pick({ q: true, sort: true, mainLocation: true, subLocation: true, category: true, subcategory: true, maxPrice: true, condition: true }).extend({ bargain: bargainTypeSchema.default("all") });
 
 export const marketFeedListingSchema = z.object({
   id: uuidSchema,

@@ -1,6 +1,6 @@
 import { marketFeedQuerySchema } from "@/contracts/api";
 import { MarketPageClient } from "@/components/market/MarketPageClient";
-import { getMergedMarketFeed } from "@/lib/market/feed";
+import { getMarketFeed } from "@/lib/market/feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Market" };
@@ -9,7 +9,7 @@ export const revalidate = 0;
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function MarketRoute({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function MarketSecondhandsRoute({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const rawParams = await searchParams;
   const query = marketFeedQuerySchema.parse({
     q: typeof rawParams.q === "string" ? rawParams.q : "",
@@ -22,8 +22,8 @@ export default async function MarketRoute({ searchParams }: { searchParams: Prom
     sort: typeof rawParams.sort === "string" ? rawParams.sort : undefined,
   });
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return <MarketPageClient shopType="all" basePath="/market" />;
+  if (!supabase) return <MarketPageClient shopType="secondhand" basePath="/market/secondhands" />;
   const { data: { user } } = await supabase.auth.getUser();
-  const feed = await getMergedMarketFeed(supabase, query, user?.id);
-  return <MarketPageClient shopType="all" basePath="/market" postedListings={feed.listings} savedListingIds={feed.savedListingIds} nextCursor={feed.nextCursor} />;
+  const feed = await getMarketFeed(supabase, query, user?.id);
+  return <MarketPageClient shopType="secondhand" basePath="/market/secondhands" postedListings={feed.listings} savedListingIds={feed.savedListingIds} nextCursor={feed.nextCursor} />;
 }

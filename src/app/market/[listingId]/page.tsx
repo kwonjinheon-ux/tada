@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
+import { BargainSaleDetailClient } from "@/components/bargain/BargainSaleDetailClient";
 import { RelatedListings } from "@/components/market/RelatedListings";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { getBargainListingDetail } from "@/lib/bargain/get-bargain-listing-detail";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -131,24 +133,36 @@ export async function generateMetadata({ params }: { params: Promise<{ listingId
   const supabase = await createServerSupabaseClient();
   if (!supabase) return {};
   const listing = await getListingDetail(listingId, supabase);
-  if (!listing) return {};
+  if (listing) {
+    const description = `${listing.price} · ${listing.location}`;
+    const primaryImage = listing.images[0];
+    return {
+      title: listing.title,
+      description,
+      openGraph: { title: listing.title, description, images: primaryImage ? [{ url: primaryImage.src, alt: primaryImage.alt }] : [] },
+      twitter: { card: "summary_large_image", title: listing.title, description, images: primaryImage ? [primaryImage.src] : [] },
+    };
+  }
 
-  const description = `${listing.price} · ${listing.location}`;
-  const primaryImage = listing.images[0];
+  const bargainResult = await getBargainListingDetail(listingId, supabase);
+  if (!bargainResult) return {};
+  if (bargainResult.kind === "single") {
+    const { listing: bargainListing } = bargainResult;
+    const description = `${bargainListing.price} · ${bargainListing.location}`;
+    const primaryImage = bargainListing.images[0];
+    return {
+      title: bargainListing.title,
+      description,
+      openGraph: { title: bargainListing.title, description, images: primaryImage ? [{ url: primaryImage.src, alt: primaryImage.alt }] : [] },
+      twitter: { card: "summary_large_image", title: bargainListing.title, description, images: primaryImage ? [primaryImage.src] : [] },
+    };
+  }
+  const description = [bargainResult.sale.dateLabel, bargainResult.sale.location].filter(Boolean).join(" · ");
   return {
-    title: listing.title,
+    title: bargainResult.sale.title,
     description,
-    openGraph: {
-      title: listing.title,
-      description,
-      images: primaryImage ? [{ url: primaryImage.src, alt: primaryImage.alt }] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: listing.title,
-      description,
-      images: primaryImage ? [primaryImage.src] : [],
-    },
+    openGraph: { title: bargainResult.sale.title, description, images: [{ url: bargainResult.sale.coverImage.src, alt: bargainResult.sale.coverImage.alt }] },
+    twitter: { card: "summary_large_image", title: bargainResult.sale.title, description, images: [bargainResult.sale.coverImage.src] },
   };
 }
 
@@ -205,17 +219,34 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     getListingDetail(listingId, supabase),
     supabase.auth.getUser(),
   ]);
-  if (!listing) notFound();
   const user = userResult.data.user;
-  const relatedListings = await getRelatedListings(listing, supabase, user?.id);
-  const { data: savedListing } = user
-    ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
-    : { data: null };
-  const { data: savedRelatedListings } = user && relatedListings.length
-    ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
-    : { data: [] };
   const descriptionTextSizeStep = typeof user?.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5
     ? user.user_metadata.listing_description_text_step
     : 0;
-  return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
+
+  if (listing) {
+    const relatedListings = await getRelatedListings(listing, supabase, user?.id);
+    const { data: savedListing } = user
+      ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
+      : { data: null };
+    const { data: savedRelatedListings } = user && relatedListings.length
+      ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
+      : { data: [] };
+    return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
+  }
+
+  // A garage/moving sale or a $2–$10 deal doesn't live in market_listings — fall back
+  // to bargain_listings before giving up. A garage sale doesn't need "related P2P
+  // items" suggestions, so RelatedListings is deliberately skipped on this branch.
+  const bargainResult = await getBargainListingDetail(listingId, supabase, user?.id);
+  if (!bargainResult) notFound();
+
+  if (bargainResult.kind === "multi") {
+    return <BargainSaleDetailClient sale={bargainResult.sale} />;
+  }
+
+  const { data: savedListing } = user
+    ? await supabase.from("bargain_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", bargainResult.listing.id).maybeSingle()
+    : { data: null };
+  return <ListingDetailClient listing={bargainResult.listing} initialIsSaved={Boolean(savedListing)} isOwner={bargainResult.isOwner} descriptionTextSizeStep={descriptionTextSizeStep} space="bargain" />;
 }
