@@ -1,8 +1,8 @@
 "use client";
 
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
-import { SelectMenu } from "@/components/ui/SelectMenu";
-import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
+import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
+import { type MainLocation } from "@/data/nzLocations";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 
 export type CommunityCategory =
@@ -53,11 +53,7 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
   const { t } = useLanguage();
 
   return <>
-    <section className="filter-block location-block market-filter-location-section">
-      <h2>{t("location")}</h2>
-      <SelectMenu id="community-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => onLocationChange(nextLocation as MainLocation | "")} className="market-location-select" hideLabel />
-      <SelectMenu id="community-sub-location" name="subLocation" label="Sub Location" icon="fa-map-pin" placeholder="Any sub location" options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []} value={subLocation} disabled={!mainLocation} onChange={(nextSubLocation) => onLocationChange(mainLocation, nextSubLocation)} className="market-location-select" hideLabel />
-    </section>
+    <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="community" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
 
     <section className="filter-block community-category-filter">
       <h2>{t("categories")}</h2>

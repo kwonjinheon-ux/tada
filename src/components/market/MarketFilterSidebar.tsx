@@ -1,9 +1,9 @@
 "use client";
 
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
-import { SelectMenu } from "@/components/ui/SelectMenu";
+import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { marketplaceCategories } from "@/data/marketplace-categories";
-import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
+import { type MainLocation } from "@/data/nzLocations";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
@@ -60,11 +60,7 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
   const { t } = useLanguage();
 
   return <>
-    <section className="filter-block location-block market-filter-location-section">
-      <h2>Location</h2>
-      <SelectMenu id="market-main-location" name="mainLocation" label="Main Location" icon="fa-location-dot" placeholder="All New Zealand" options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))} value={mainLocation} onChange={(nextLocation) => onLocationChange(nextLocation as MainLocation | "")} className="market-location-select" hideLabel />
-      <SelectMenu id="market-sub-location" name="subLocation" label="Sub Location" icon="fa-map-pin" placeholder="Any sub location" options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []} value={subLocation} disabled={!mainLocation} onChange={(nextSubLocation) => onLocationChange(mainLocation, nextSubLocation)} className="market-location-select" hideLabel />
-    </section>
+    <LocationFilterSection title="Location" mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="market" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
 
     <section className="filter-block shop-type-filter">
       <h2>Shop Type</h2>
