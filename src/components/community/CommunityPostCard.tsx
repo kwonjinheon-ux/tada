@@ -10,7 +10,10 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
       </div>
       <div className="community-post-body">
         <span className={`community-post-badge community-post-badge-${post.type}`}>{typeInfo.label}</span>
-        <h2>{post.title}</h2>
+        <div className="community-post-title-row">
+          <h2>{post.title}</h2>
+          <span className="community-post-comment-count">10</span>
+        </div>
         <p className="community-post-excerpt">{post.excerpt}</p>
         <div className="community-post-meta">
           <span><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location}</span>
