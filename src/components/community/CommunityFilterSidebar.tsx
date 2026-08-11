@@ -34,6 +34,13 @@ export const communityCategories: Array<{ value: CommunityCategory; labelKey: Tr
   { value: "clubs-meetups", labelKey: "communityCategoryClubsMeetups", icon: "fa-people-group" },
 ];
 
+// This is the single category catalogue used by both community browsing and
+// publishing.  The database migration seeds the same stable slugs, while the
+// labels remain localisable at the UI boundary.
+export const communityPostCategories = communityCategories.filter(
+  (category): category is (typeof communityCategories)[number] & { value: Exclude<CommunityCategory, "all"> } => category.value !== "all",
+);
+
 export type CommunityFilterSidebarProps = {
   activeCategory: CommunityCategory;
   onCategorySelect: (category: CommunityCategory) => void;

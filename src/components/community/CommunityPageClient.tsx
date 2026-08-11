@@ -7,9 +7,12 @@ import { CommunityResultsToolbar } from "@/components/community/CommunityResults
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import { communityPosts } from "@/data/community-posts";
+import type { CommunityPost } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
+import { communityPostFeedResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
 
 export function CommunityPageClient() {
   const { t } = useLanguage();
@@ -19,6 +22,7 @@ export function CommunityPageClient() {
   const [activeChip, setActiveChip] = useState("all");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
+  const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>([]);
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
@@ -33,6 +37,21 @@ export function CommunityPageClient() {
     const stored = readListingViewPreference();
     if (stored) setViewMode(stored);
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (activeCategory !== "all") params.set("category", activeCategory);
+    if (mainLocation) params.set("mainLocation", mainLocation);
+    if (subLocation) params.set("subLocation", subLocation);
+    void fetch(`/api/community/posts?${params.toString()}`, { signal: controller.signal })
+      .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
+      .then((result) => { if (result.data) setPublishedPosts(result.data.posts); })
+      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); });
+    return () => controller.abort();
+  }, [activeCategory, mainLocation, subLocation]);
+
+  const visiblePosts = [...publishedPosts, ...communityPosts];
 
   useEffect(() => {
     const openFilters = (event: Event) => {
@@ -80,15 +99,15 @@ export function CommunityPageClient() {
           onViewModeChange={chooseView}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
-          resultsLabel={`${communityPosts.length} ${t("communityPostsCount")}`}
+          resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
         />
 
         <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
-          {communityPosts.map((post) => <CommunityPostCard key={post.id} post={post} />)}
+          {visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} />)}
         </div>
       </section>
 
-      <CommunityRecentPostsPanel posts={communityPosts.slice(0, 4)} />
+      <CommunityRecentPostsPanel posts={visiblePosts.slice(0, 4)} />
     </main>
   );
 }

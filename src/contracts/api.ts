@@ -122,6 +122,41 @@ export const marketFeedResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+export const communityPostCategorySchema = z.enum([
+  "local-noticeboard",
+  "events",
+  "qna",
+  "recommendations",
+  "free-stuff",
+  "lost-found",
+  "parents-kids",
+  "jobs-services",
+  "housing-flatmates",
+  "study-language",
+  "clubs-meetups",
+]);
+
+export const communityPostCreateRequestSchema = z.object({
+  categorySlug: communityPostCategorySchema,
+  title: z.string().trim().min(4).max(120),
+  body: z.string().trim().min(20).max(5_000),
+  mainLocation: z.string().trim().min(2).max(80),
+  subLocation: z.string().trim().max(80).optional(),
+});
+
+export const communityPostCreateResponseSchema = z.object({ id: uuidSchema });
+
+export const communityPostFeedItemSchema = z.object({
+  id: uuidSchema,
+  type: z.enum(["event", "question", "recommendation", "free", "notice", "housing"]),
+  title: z.string(),
+  excerpt: z.string(),
+  location: z.string(),
+  timeAgo: z.string(),
+});
+
+export const communityPostFeedResponseSchema = z.object({ posts: z.array(communityPostFeedItemSchema) });
+
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>;
 export type ApiFailure = z.infer<typeof apiFailureSchema>;
 export type MarketMessageResponse = z.infer<typeof marketMessageResponseSchema>;
