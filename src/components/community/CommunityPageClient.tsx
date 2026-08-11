@@ -13,6 +13,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 export function CommunityPageClient() {
   const { t } = useLanguage();
@@ -23,6 +24,7 @@ export function CommunityPageClient() {
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>([]);
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
@@ -103,11 +105,12 @@ export function CommunityPageClient() {
         />
 
         <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
-          {visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} />)}
+          {visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} onOpen={() => setSelectedPost(post)} />)}
         </div>
       </section>
 
       <CommunityRecentPostsPanel posts={visiblePosts.slice(0, 4)} />
+      {selectedPost ? <DialogOverlay className="community-post-dialog" onClose={() => setSelectedPost(null)} dismissHint="Click outside to close this post"><section className="post-ad-card"><button className="filter-close-button" type="button" aria-label="Close post" onClick={() => setSelectedPost(null)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button><span className={`community-post-badge community-post-badge-${selectedPost.type}`}>{t(`communityType${selectedPost.type === "question" ? "Question" : selectedPost.type === "event" ? "Event" : selectedPost.type === "recommendation" ? "Recommendation" : selectedPost.type === "notice" ? "Notice" : selectedPost.type === "housing" ? "Housing" : "Notice"}` as never)}</span><h1>{selectedPost.title}</h1><p>{selectedPost.excerpt.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}</p></section></DialogOverlay> : null}
     </main>
   );
 }

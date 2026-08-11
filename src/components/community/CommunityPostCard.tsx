@@ -1,14 +1,14 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 
-export function CommunityPostCard({ post, showTypeBadge = true }: { post: CommunityPost; showTypeBadge?: boolean }) {
+export function CommunityPostCard({ post, showTypeBadge = true, onOpen }: { post: CommunityPost; showTypeBadge?: boolean; onOpen?: () => void }) {
   const { t } = useLanguage();
   const responseCount = post.responseCount ?? 0;
   const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
   const excerpt = post.excerpt.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
   return (
-    <article className={`community-post-card community-post-card-${post.type}`}>
+    <article className={`community-post-card community-post-card-${post.type}`} role={onOpen ? "button" : undefined} tabIndex={onOpen ? 0 : undefined} onClick={onOpen} onKeyDown={(event) => { if (onOpen && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onOpen(); } }}>
       <div className="community-post-media">
         {post.image ? <img src={post.image} alt={post.imageAlt ?? ""} /> : <span className="community-post-placeholder">txt</span>}
       </div>
