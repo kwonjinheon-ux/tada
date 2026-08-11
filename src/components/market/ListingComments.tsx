@@ -127,10 +127,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       group.push(comment);
       groups.set(comment.parentId, group);
     }
-    for (const [parentId, group] of groups) {
-      group.sort((left, right) => parentId === null
-        ? right.score - left.score || new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-        : new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
+    for (const group of groups.values()) {
+      group.sort((left, right) => right.score - left.score || new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
     }
     return groups;
   }, [comments]);
