@@ -102,6 +102,18 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   const [replyDraft, setReplyDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+
+  const expandThread = useCallback((commentId: string) => {
+    setExpandedThreads((current) => current.has(commentId) ? current : new Set(current).add(commentId));
+  }, []);
+  const toggleThread = (commentId: string) => {
+    setExpandedThreads((current) => {
+      const next = new Set(current);
+      if (next.has(commentId)) next.delete(commentId); else next.add(commentId);
+      return next;
+    });
+  };
 
   const loadComments = useCallback(async () => {
     try {
@@ -161,6 +173,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     // Render immediately; the server response is reconciled in the background.
     setComments((current) => [...current, optimisticComment]);
     if (parentId) {
+      expandThread(parentId);
       setReplyDraft("");
       setReplyTo(null);
     } else {
@@ -246,15 +259,20 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     const canReply = !comment.deletedAt && comment.depth < 2;
     const isEditing = editingId === comment.id;
     const isReplying = replyTo?.id === comment.id;
+    const isThreadOpen = expandedThreads.has(comment.id);
 
     return <article className={`listing-comment depth-${comment.depth}`} key={comment.id}>
       <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
       <div className="listing-comment-content">
         <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">Edited</span> : null}</div>
         {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label="Edit comment" /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>Save</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>Cancel</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? "This comment was deleted." : comment.body}</p>}
-        {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={comment.myVote === 1 ? "is-selected" : ""} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label="Upvote comment"><i className="fa-solid fa-arrow-up" aria-hidden="true" /> <span>{comment.score}</span></button><button type="button" className={comment.myVote === -1 ? "is-selected is-downvote" : ""} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label="Downvote comment"><i className="fa-solid fa-arrow-down" aria-hidden="true" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); }}>Reply</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>Edit</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>Delete</button></> : null}</div> : null}
+        {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={comment.myVote === 1 ? "is-selected" : ""} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label="Upvote comment"><i className="fa-solid fa-arrow-up" aria-hidden="true" /> <span>{comment.score}</span></button><button type="button" className={comment.myVote === -1 ? "is-selected is-downvote" : ""} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label="Downvote comment"><i className="fa-solid fa-arrow-down" aria-hidden="true" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); expandThread(comment.id); }}>Reply</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>Edit</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>Delete</button></> : null}</div> : null}
         {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => setReplyDraft(event.target.value)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>Cancel</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? "Posting..." : "Reply"}</button></div></form> : null}
-        {children.length ? <div className="listing-comment-children">
+        {children.length ? <button type="button" className="listing-comment-thread-toggle" aria-expanded={isThreadOpen} onClick={() => toggleThread(comment.id)}>
+          <i className={`fa-solid ${isThreadOpen ? "fa-chevron-up" : "fa-chevron-down"}`} aria-hidden="true" />
+          {isThreadOpen ? "Hide replies" : `${children.length} ${children.length === 1 ? "reply" : "replies"}`}
+        </button> : null}
+        {children.length && isThreadOpen ? <div className="listing-comment-children">
           <CommentThreadConnector signature={children.map((child) => child.id).join(",")} />
           {children.map(renderComment)}
         </div> : null}

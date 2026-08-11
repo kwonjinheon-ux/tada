@@ -8328,6 +8328,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-comment-reply-form, .listing-comment-edit { display: grid; gap: 8px; margin-top: 10px; }.listing-comment-reply-form textarea, .listing-comment-edit textarea { min-height: 62px; font-size: var(--text-base); }
 .listing-comment-reply-form > div, .listing-comment-edit > div { display: flex; justify-content: flex-end; gap: 7px; }
 .listing-comment-cancel-button { min-height: var(--control-h-sm); padding: 0 11px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--blue-soft-600); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.listing-comment-thread-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; margin-top: 10px; padding: 0 8px; border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--green-700); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-extrabold); cursor: pointer; }
+.listing-comment-thread-toggle:hover { background: var(--green-soft-50); }
+.listing-comment-thread-toggle i { font-size: 10px; }
 .listing-comments-skeleton { display: grid; gap: 14px; margin-top: 26px; }.listing-comments-skeleton span { width: 100%; height: 68px; border-radius: var(--radius-md); background: linear-gradient(100deg, var(--neutral-200) 30%, var(--neutral-150) 46%, var(--neutral-200) 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }.listing-comments-skeleton span:nth-child(2) { width: 82%; }.listing-comments-skeleton span:nth-child(3) { width: 69%; }
 
 @media (min-width: 768px) {
