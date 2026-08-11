@@ -8293,6 +8293,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-comments-heading span { color: var(--blue-soft-650); font-size: var(--text-base); }
 .listing-comments-composer { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; }
 .listing-comments-composer-avatar, .listing-comment-avatar { width: 42px; height: 42px; display: grid; flex: 0 0 auto; place-items: center; border-radius: var(--radius-circle); background: var(--blue-soft-150); color: var(--blue-600); font-size: var(--text-sm); font-weight: var(--weight-extrabold); object-fit: cover; }
+/* Grid item stacking only, but it must still outrank the connector line
+   drawn by any *sibling* comment's own .listing-comment-children below it. */
+.listing-comment-avatar { z-index: 1; }
 .listing-comments-composer > div:last-child, .listing-comment-content { min-width: 0; }
 .listing-comments-composer textarea, .listing-comment-edit textarea, .listing-comment-reply-form textarea { width: 100%; min-height: 80px; display: block; padding: 12px 13px; border: 1px solid var(--neutral-300); border-radius: var(--radius-md); outline: 0; background: var(--neutral-150); color: var(--blue-850); font: inherit; font-size: var(--text-md); line-height: 1.5; resize: vertical; }
 .listing-comments-composer textarea:focus, .listing-comment-edit textarea:focus, .listing-comment-reply-form textarea:focus { border-color: var(--green-550); box-shadow: 0 0 0 3px rgb(8 168 117 / 14%); }
