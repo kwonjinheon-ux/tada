@@ -147,6 +147,11 @@ export const communityPostCreateRequestSchema = z.object({
 
 export const communityPostCreateResponseSchema = z.object({ id: uuidSchema });
 
+export const communityPostUpdateRequestSchema = z.object({
+  title: z.string().trim().min(4).max(120),
+  body: z.string().trim().min(20).max(5_000),
+});
+
 export const communityPostFeedItemSchema = z.object({
   id: uuidSchema,
   type: z.enum(["event", "question", "recommendation", "free", "notice", "housing"]),
