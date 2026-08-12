@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
-  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
   if (category.success) query = query.eq("category_slug", category.data);
   if (mainLocation) query = query.eq("region_city", mainLocation);
   if (subLocation) query = query.eq("region_suburb", subLocation);
@@ -71,8 +71,8 @@ export async function GET(request: Request) {
       timeAgo: relativeTime(post.created_at),
       images: imagesByPost.get(post.id) ?? [],
       responseCount: commentCounts.get(post.id) ?? 0,
-      viewCount: 0,
-      authorName: authorsById.get(post.author_id)?.display_name ?? "Community member",
+      viewCount: post.view_count ?? 0,
+      authorName: authorsById.get(post.author_id)?.display_name ?? undefined,
       authorAvatarUrl: authorsById.get(post.author_id)?.avatar_path ? avatars.get(authorsById.get(post.author_id)?.avatar_path ?? "") ?? null : null,
     })),
   });

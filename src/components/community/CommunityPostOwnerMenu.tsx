@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@/components/ui/IconButton";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export function CommunityPostOwnerMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -16,7 +18,7 @@ export function CommunityPostOwnerMenu({ onEdit, onDelete }: { onEdit: () => voi
   }, []);
 
   return <div ref={menuRef} className="community-post-owner-menu">
-    <IconButton className="community-post-owner-menu-trigger" aria-label="Post options" aria-haspopup="menu" aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}><i className="fa-solid fa-ellipsis-vertical" aria-hidden="true" /></IconButton>
-    {isOpen ? <div className="community-post-owner-menu-popover" role="menu" aria-label="Post options"><button type="button" role="menuitem" onClick={() => { setIsOpen(false); onEdit(); }}><i className="fa-regular fa-pen-to-square" aria-hidden="true" />Edit post</button><button className="is-danger" type="button" role="menuitem" onClick={() => { setIsOpen(false); onDelete(); }}><i className="fa-regular fa-trash-can" aria-hidden="true" />Delete post</button></div> : null}
+    <IconButton className="community-post-owner-menu-trigger" aria-label={t("communityPostOptions")} aria-haspopup="menu" aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}><i className="fa-solid fa-ellipsis-vertical" aria-hidden="true" /></IconButton>
+    {isOpen ? <div className="community-post-owner-menu-popover" role="menu" aria-label={t("communityPostOptions")}><button type="button" role="menuitem" onClick={() => { setIsOpen(false); onEdit(); }}><i className="fa-regular fa-pen-to-square" aria-hidden="true" />{t("communityEditPostHeading")}</button><button className="is-danger" type="button" role="menuitem" onClick={() => { setIsOpen(false); onDelete(); }}><i className="fa-regular fa-trash-can" aria-hidden="true" />{t("communityDeletePostAction")}</button></div> : null}
   </div>;
 }

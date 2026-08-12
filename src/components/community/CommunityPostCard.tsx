@@ -25,7 +25,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           <span><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location}</span>
           {post.eventDate ? <span><i className="fa-regular fa-calendar" aria-hidden="true" />{post.eventDate}</span> : null}
           {post.timeAgo ? <span><i className="fa-regular fa-clock" aria-hidden="true" />{post.timeAgo}</span> : null}
-          <span className="community-post-author">{post.authorName ?? "Community member"}</span>
+          <span className="community-post-author">{post.authorName ?? t("communityMemberFallback")}</span>
         </div>
       </div>
     </Link>

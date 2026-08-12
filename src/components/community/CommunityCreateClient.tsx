@@ -69,7 +69,7 @@ export function CommunityCreateClient() {
 
   return (
     <main className="post-ad-page community-create-page">
-      <div className="post-ad-create-bar"><Link href="/community"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to community</Link></div>
+      <div className="post-ad-create-bar"><Link href="/community"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {t("communityBackToCommunity")}</Link></div>
       <div className="post-ad-layout">
         <section className="post-ad-card">
           <header className="post-ad-intro">
@@ -78,37 +78,37 @@ export function CommunityCreateClient() {
           </header>
           <form className="post-ad-form" onSubmit={submit}>
             <section className="post-title-field">
-              <div className="post-section-heading"><span>1</span><h2>Choose a category</h2></div>
-              <div className="post-shop-type-options" role="group" aria-label="Category">{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`fa-solid ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
-              <p className="post-field-hint">This uses the same categories as the community sidebar.</p>
+              <div className="post-section-heading"><span>1</span><h2>{t("communityChooseCategory")}</h2></div>
+              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`fa-solid ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
+              <p className="post-field-hint">{t("communitySameCategoriesHint")}</p>
             </section>
 
             <section className="post-description-field">
-              <div className="post-section-heading"><span>2</span><h2>Write your post</h2></div>
-              <div className="post-field"><label htmlFor="community-title">Title</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder="What would you like to share?" required /></div>
-              <div className="post-field"><label htmlFor="community-body">Details</label><HtmlEditor id="community-body" label="Details" value={body} onChange={setBody} placeholder="Include the important details for your neighbours." /></div>
+              <div className="post-section-heading"><span>2</span><h2>{t("communityWriteYourPost")}</h2></div>
+              <div className="post-field"><label htmlFor="community-title">{t("communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder={t("communityTitlePlaceholder")} required /></div>
+              <div className="post-field"><label htmlFor="community-body">{t("communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t("communityDetailsLabel")} value={body} onChange={setBody} placeholder={t("communityDetailsPlaceholder")} /></div>
             </section>
 
-            <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>Add images</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>
+            <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>{t("communityAddImages")}</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>
 
             <section className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>4</span><h2>Location</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>{t("location")}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
             </section>
 
             {error ? <p className="post-create-status is-error" role="alert">{error}</p> : null}
             <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
-              <Button className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`} type="submit" disabled={isSubmitting} aria-busy={isSubmitting}><span>{isSubmitting ? "Publishing…" : "Publish post"}</span></Button>
+              <Button className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`} type="submit" disabled={isSubmitting} aria-busy={isSubmitting}><span>{isSubmitting ? t("communityPublishing") : t("communityPublishPost")}</span></Button>
             </div>
           </form>
         </section>
         <aside className="post-ad-sidebar" aria-label="Community posting tips">
           <section className="post-ad-tips">
-            <h2>Tips for a helpful post</h2>
-            <article><i className="fa-solid fa-location-dot" aria-hidden="true" /><div><h2>Be local</h2><p>Add a location so nearby neighbours can find your post.</p></div></article>
-            <article><i className="fa-regular fa-message" aria-hidden="true" /><div><h2>Keep it clear</h2><p>A specific title and useful details make replies easier.</p></div></article>
-            <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>Stay safe</h2><p>Do not include private contact or payment information.</p></div></article>
+            <h2>{t("communityTipsHeading")}</h2>
+            <article><i className="fa-solid fa-location-dot" aria-hidden="true" /><div><h2>{t("communityTipLocalTitle")}</h2><p>{t("communityTipLocalDesc")}</p></div></article>
+            <article><i className="fa-regular fa-message" aria-hidden="true" /><div><h2>{t("communityTipClearTitle")}</h2><p>{t("communityTipClearDesc")}</p></div></article>
+            <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>{t("communityTipSafeTitle")}</h2><p>{t("communityTipSafeDesc")}</p></div></article>
           </section>
         </aside>
       </div>
