@@ -8385,7 +8385,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .site-nav { min-height: 0; padding-block: 10px; }
 
   .nav-notifications:not(.mobile-notifications) { width: 42px; height: 42px; font-size: var(--text-2xl); }
-  .nav-notifications:not(.mobile-notifications) span { top: 4px; right: 4px; min-width: 14px; height: 14px; padding: 0 2px; border-width: 1px; font-size: var(--text-sm); }
+  .nav-notifications:not(.mobile-notifications) span { top: 4px; right: 4px; min-width: 14px; height: 14px; padding: 0 2px; border-width: 1px; font-size: var(--text-sm); transform: translate(25%, -25%) scale(1.5); transform-origin: top right; }
 
   .market-filter-panel,
   .market-filter-panel.is-open {
@@ -8624,6 +8624,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-title-row h2 { flex: 0 1 auto; min-width: 0; }
 .community-post-comment-count.is-low { background: var(--color-warning); }.community-post-comment-count.is-medium { background: var(--color-primary); }.community-post-comment-count.is-high { background: var(--blue-500); }.community-post-comment-count.is-hot { background: var(--color-danger); }
 .community-post-comment-count { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--radius-circle); background: var(--amber-450); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-bold); }
+.community-post-list:not(.is-grid-view) .community-post-comment-count { transform: scale(.75); }
 .community-post-excerpt { overflow: hidden; margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.community-post-card.is-expanded .community-post-excerpt { overflow: visible; text-overflow: clip; white-space: normal; }
 .community-post-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--blue-soft-600); font-size: var(--text-xs); }
 .community-post-meta span { display: inline-flex; align-items: center; gap: 5px; }
