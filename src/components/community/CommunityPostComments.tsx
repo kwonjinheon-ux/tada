@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 
-type Comment = { id: string; authorId: string; authorName: string; body: string; createdAt: string };
+type Comment = { id: string; authorId: string; authorName: string; authorAvatarUrl?: string | null; body: string; createdAt: string };
 
 function relativeTime(value: string) {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000));
@@ -48,6 +48,6 @@ export function CommunityPostComments({ postId }: { postId: string }) {
     <div className="listing-comments-heading"><h2 id="community-comments-title">Comments</h2><span>{comments.length} {comments.length === 1 ? "comment" : "comments"}</span></div>
     <form className="listing-comments-composer" onSubmit={submit}><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
-    {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : comments.length ? <div className="listing-comments-list">{comments.map((comment) => <article className="listing-comment depth-0" key={comment.id}><Avatar name={comment.authorName} className="listing-comment-avatar" initials="double" /><div className="listing-comment-content"><div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time></div><p>{comment.body}</p></div></article>)}</div> : null}
+    {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : comments.length ? <div className="listing-comments-list">{comments.map((comment) => <article className="listing-comment depth-0" key={comment.id}><Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" /><div className="listing-comment-content"><div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time></div><p>{comment.body}</p></div></article>)}</div> : null}
   </section>;
 }

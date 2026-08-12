@@ -34,10 +34,10 @@ export async function GET(request: Request) {
   const category = communityPostCategorySchema.safeParse(url.searchParams.get("category"));
   if (url.searchParams.has("category") && !category.success) return apiFailure("BAD_REQUEST", "Invalid community category.", 400);
 
-  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(40);
-  if (category.success) query = query.eq("category_slug", category.data);
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
+  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  if (category.success) query = query.eq("category_slug", category.data);
   if (mainLocation) query = query.eq("region_city", mainLocation);
   if (subLocation) query = query.eq("region_suburb", subLocation);
 
