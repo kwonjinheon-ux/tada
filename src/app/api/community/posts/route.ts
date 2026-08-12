@@ -17,6 +17,18 @@ const postTypeByCategory = {
   "clubs-meetups": "event",
 } as const;
 
+type CommunityPostRow = {
+  id: string;
+  author_id: string;
+  post_type: string;
+  title: string;
+  body: string;
+  region_city: string | null;
+  region_suburb: string | null;
+  created_at: string;
+  view_count: number | null;
+};
+
 const relativeTime = (createdAt: string) => {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 60_000));
   if (minutes < 1) return "Just now";
@@ -37,14 +49,26 @@ export async function GET(request: Request) {
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
   const userRequest = supabase.auth.getUser();
-  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
-  if (category.success) query = query.eq("category_slug", category.data);
-  if (mainLocation) query = query.eq("region_city", mainLocation);
-  if (subLocation) query = query.eq("region_suburb", subLocation);
-
-  const [{ data, error }, { data: { user } }] = await Promise.all([query, userRequest]);
+  const rankedPostIdsRequest = supabase.rpc("get_ranked_community_post_ids", {
+    p_category_slug: category.success ? category.data ?? null : null,
+    p_region_city: mainLocation || null,
+    p_region_suburb: subLocation || null,
+    p_limit: 40,
+  });
+  const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([rankedPostIdsRequest, userRequest]);
+  if (rankedPostIdsError) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
+  const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
+  const { data: unorderedPostsData, error } = orderedPostIds.length
+    ? await supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").in("id", orderedPostIds)
+    : { data: [], error: null };
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
-  const postIds = (data ?? []).map((post) => post.id);
+  const unorderedPosts = (unorderedPostsData ?? []) as CommunityPostRow[];
+  const postsById = new Map<string, CommunityPostRow>(unorderedPosts.map((post) => [post.id, post]));
+  const data: CommunityPostRow[] = orderedPostIds.flatMap((postId: string) => {
+    const post = postsById.get(postId);
+    return post ? [post] : [];
+  });
+  const postIds = data.map((post: CommunityPostRow) => post.id);
   const [{ data: engagementRows }, { data: imageRows }, { data: commentRows }, { data: voteRows }] = await Promise.all([
     postIds.length ? supabase.from("community_posts").select("id,score,share_count").in("id", postIds) : Promise.resolve({ data: [] }),
     postIds.length ? supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : Promise.resolve({ data: [] }),
@@ -52,7 +76,7 @@ export async function GET(request: Request) {
     user && postIds.length ? supabase.from("community_post_votes").select("post_id,value").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
   ]);
   const paths = (imageRows ?? []).map((image) => image.storage_path);
-  const authorIds = [...new Set((data ?? []).map((post) => post.author_id))];
+  const authorIds = [...new Set(data.map((post: CommunityPostRow) => post.author_id))];
   const [signed, { data: authors }] = await Promise.all([
     getSignedStorageImages("community-post-images", paths, "gallery"),
     authorIds.length ? supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds) : Promise.resolve({ data: [] }),
@@ -71,7 +95,7 @@ export async function GET(request: Request) {
     if (src) imagesByPost.set(image.post_id, [...(imagesByPost.get(image.post_id) ?? []), { src, alt: "Community post image" }]);
   }
   return apiSuccess({
-    posts: (data ?? []).map((post) => ({
+    posts: data.map((post: CommunityPostRow) => ({
       id: post.id,
       type: post.post_type,
       title: post.title,

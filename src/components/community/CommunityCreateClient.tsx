@@ -7,6 +7,7 @@ import { communityPostCategories, type CommunityCategory } from "@/components/co
 import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
 import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
+import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
 import { Button } from "@/components/ui/Button";
 import { communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
@@ -68,7 +69,8 @@ export function CommunityCreateClient() {
   };
 
   return (
-    <main className="post-ad-page community-create-page">
+    <CommunityDesktopLayout>
+      <div className="post-ad-page community-create-page">
       <div className="post-ad-create-bar"><Link href="/community"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {t("communityBackToCommunity")}</Link></div>
       <div className="post-ad-layout">
         <section className="post-ad-card">
@@ -112,6 +114,7 @@ export function CommunityCreateClient() {
           </section>
         </aside>
       </div>
-    </main>
+      </div>
+    </CommunityDesktopLayout>
   );
 }

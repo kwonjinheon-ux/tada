@@ -1,10 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
+import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
+import { readApiResponse } from "@/lib/api/client";
 
-export function CommunityRecentPostsPanel({ posts }: { posts: CommunityPost[] }) {
+export function CommunityRecentPostsPanel({ posts: initialPosts }: { posts?: CommunityPost[] }) {
   const { t } = useLanguage();
+  const [fetchedPosts, setFetchedPosts] = useState<CommunityPost[]>([]);
+  const posts = initialPosts ?? fetchedPosts;
+
+  useEffect(() => {
+    if (initialPosts) return;
+    const controller = new AbortController();
+    void fetch("/api/community/posts", { signal: controller.signal })
+      .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
+      .then((result) => { if (result.data) setFetchedPosts(result.data.posts.slice(0, 4)); })
+      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setFetchedPosts([]); });
+    return () => controller.abort();
+  }, [initialPosts]);
 
   return (
     <aside className="community-recent-panel" aria-label={t("communityRecentPostsHeading")}>

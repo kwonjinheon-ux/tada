@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { communityCategories, CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
@@ -41,6 +41,13 @@ export function CommunityPageClient() {
   useEffect(() => {
     const stored = readListingViewPreference("community");
     if (stored) setViewMode(stored);
+  }, []);
+
+  useEffect(() => {
+    const category = new URLSearchParams(window.location.search).get("category");
+    if (category && communityCategories.some(({ value }) => value === category)) {
+      setActiveCategory(category as CommunityCategory);
+    }
   }, []);
 
   useEffect(() => {
