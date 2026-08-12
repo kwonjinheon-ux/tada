@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const category = communityPostCategorySchema.safeParse(url.searchParams.get("category"));
   if (url.searchParams.has("category") && !category.success) return apiFailure("BAD_REQUEST", "Invalid community category.", 400);
 
-  let query = supabase.from("community_posts").select("id, post_type, title, body, region_city, region_suburb, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(40);
   if (category.success) query = query.eq("category_slug", category.data);
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
@@ -47,6 +47,12 @@ export async function GET(request: Request) {
   const { data: imageRows } = postIds.length ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : { data: [] };
   const paths = (imageRows ?? []).map((image) => image.storage_path);
   const signed = await getSignedStorageImages("community-post-images", paths, "gallery");
+  const authorIds = [...new Set((data ?? []).map((post) => post.author_id))];
+  const { data: authors } = authorIds.length ? await supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds) : { data: [] };
+  const avatarPaths = [...new Set((authors ?? []).map((author) => author.avatar_path).filter((path): path is string => Boolean(path)))];
+  const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : { data: [] };
+  const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
+  const authorsById = new Map((authors ?? []).map((author) => [author.id, author]));
   const imagesByPost = new Map<string, { src: string; alt: string }[]>();
   for (const image of imageRows ?? []) {
     const src = signed.get(image.storage_path);
@@ -61,6 +67,8 @@ export async function GET(request: Request) {
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
       timeAgo: relativeTime(post.created_at),
       images: imagesByPost.get(post.id) ?? [],
+      authorName: authorsById.get(post.author_id)?.display_name ?? "Community member",
+      authorAvatarUrl: authorsById.get(post.author_id)?.avatar_path ? avatars.get(authorsById.get(post.author_id)?.avatar_path ?? "") ?? null : null,
     })),
   });
 }

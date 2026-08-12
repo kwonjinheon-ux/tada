@@ -23,6 +23,8 @@ export type CommunityPost = {
   image?: string;
   imageAlt?: string;
   images?: { src: string; alt: string }[];
+  authorName?: string;
+  authorAvatarUrl?: string | null;
 };
 
 const fallbackImage = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
