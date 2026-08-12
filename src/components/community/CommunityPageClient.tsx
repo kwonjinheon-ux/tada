@@ -29,7 +29,7 @@ export function CommunityPageClient() {
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
-    saveListingViewPreference(mode);
+    saveListingViewPreference(mode, "community");
   };
   const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
     setMainLocation(nextMainLocation);
@@ -37,7 +37,7 @@ export function CommunityPageClient() {
   };
 
   useEffect(() => {
-    const stored = readListingViewPreference();
+    const stored = readListingViewPreference("community");
     if (stored) setViewMode(stored);
   }, []);
 
