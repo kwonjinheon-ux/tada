@@ -148,6 +148,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
 
   const rootComments = commentsByParent.get(null) ?? [];
   const activeCommentCount = comments.filter((comment) => !comment.deletedAt).length;
+
   const submitComment = async (event: FormEvent<HTMLFormElement>, parentId: string | null = null) => {
     event.preventDefault();
     const body = parentId ? replyDraft.trim() : draft.trim();
@@ -280,11 +281,9 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     </article>;
   };
 
-  const isCommunity = space === "community";
-
-  return <section className={`listing-comments ${isCommunity ? "is-community" : ""}`} aria-label={isCommunity ? "Comments" : undefined} aria-labelledby={isCommunity ? undefined : "listing-comments-title"} style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
-    {!isCommunity ? <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div> : null}
-    <form className={`listing-comments-composer ${isCommunity ? "is-community" : ""}`} onSubmit={(event) => void submitComment(event)}>{isCommunity ? <><textarea value={draft} maxLength={2000} placeholder="Join the conversation" onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><div className="listing-comments-composer-tools" aria-hidden="true"><i className="fa-regular fa-image" /><i className="fa-regular fa-circle-play" /><span>GIF</span><span>Aa</span></div><div className="listing-comments-composer-actions"><button className="listing-comments-cancel" type="button" onClick={() => setDraft("")} disabled={!draft || isSubmitting}>Cancel</button><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Comment"}</button></div></div></> : <><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></>}</form>
+  return <section className="listing-comments" aria-labelledby="listing-comments-title" style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
+    <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div>
+    <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="fa-regular fa-user" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
     {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
   </section>;
