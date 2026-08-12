@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
@@ -14,6 +14,8 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
+const POST_FEED_CACHE_TTL_MS = 30_000;
+
 export function CommunityPageClient() {
   const { t } = useLanguage();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -23,6 +25,7 @@ export function CommunityPageClient() {
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>([]);
+  const postFeedCache = useRef(new Map<string, { posts: CommunityPost[]; cachedAt: number }>());
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
@@ -44,9 +47,22 @@ export function CommunityPageClient() {
     if (activeCategory !== "all") params.set("category", activeCategory);
     if (mainLocation) params.set("mainLocation", mainLocation);
     if (subLocation) params.set("subLocation", subLocation);
-    void fetch(`/api/community/posts?${params.toString()}`, { signal: controller.signal })
+    const cacheKey = params.toString();
+    const cachedFeed = postFeedCache.current.get(cacheKey);
+    if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
+      setPublishedPosts(cachedFeed.posts);
+      return () => controller.abort();
+    }
+    void fetch(`/api/community/posts?${cacheKey}`, { signal: controller.signal })
       .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
-      .then((result) => { if (result.data) setPublishedPosts(result.data.posts); else setPublishedPosts([]); })
+      .then((result) => {
+        if (result.data) {
+          postFeedCache.current.set(cacheKey, { posts: result.data.posts, cachedAt: Date.now() });
+          setPublishedPosts(result.data.posts);
+        } else {
+          setPublishedPosts([]);
+        }
+      })
       .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); });
     return () => controller.abort();
   }, [activeCategory, mainLocation, subLocation]);

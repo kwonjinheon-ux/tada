@@ -36,25 +36,27 @@ export async function GET(request: Request) {
 
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userRequest = supabase.auth.getUser();
   let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
   if (category.success) query = query.eq("category_slug", category.data);
   if (mainLocation) query = query.eq("region_city", mainLocation);
   if (subLocation) query = query.eq("region_suburb", subLocation);
 
-  const { data, error } = await query;
+  const [{ data, error }, { data: { user } }] = await Promise.all([query, userRequest]);
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const postIds = (data ?? []).map((post) => post.id);
-  const { data: engagementRows } = postIds.length ? await supabase.from("community_posts").select("id,score,share_count").in("id", postIds) : { data: [] };
-  const { data: imageRows } = postIds.length ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : { data: [] };
-  const [{ data: commentRows }, { data: voteRows }] = await Promise.all([
+  const [{ data: engagementRows }, { data: imageRows }, { data: commentRows }, { data: voteRows }] = await Promise.all([
+    postIds.length ? supabase.from("community_posts").select("id,score,share_count").in("id", postIds) : Promise.resolve({ data: [] }),
+    postIds.length ? supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : Promise.resolve({ data: [] }),
     postIds.length ? supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null) : Promise.resolve({ data: [] }),
     user && postIds.length ? supabase.from("community_post_votes").select("post_id,value").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
   ]);
   const paths = (imageRows ?? []).map((image) => image.storage_path);
-  const signed = await getSignedStorageImages("community-post-images", paths, "gallery");
   const authorIds = [...new Set((data ?? []).map((post) => post.author_id))];
-  const { data: authors } = authorIds.length ? await supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds) : { data: [] };
+  const [signed, { data: authors }] = await Promise.all([
+    getSignedStorageImages("community-post-images", paths, "gallery"),
+    authorIds.length ? supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds) : Promise.resolve({ data: [] }),
+  ]);
   const avatarPaths = [...new Set((authors ?? []).map((author) => author.avatar_path).filter((path): path is string => Boolean(path)))];
   const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : { data: [] };
   const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
