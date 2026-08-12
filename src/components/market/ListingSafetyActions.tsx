@@ -15,7 +15,7 @@ const reasons = [
   ["other", "Other"],
 ] as const;
 
-export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant = false, iconOnly = false }: { listingId: string; sellerId: string | null; sellerProfileVariant?: boolean; iconOnly?: boolean }) {
+export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant = false, iconOnly = false, space = "market" }: { listingId: string; sellerId: string | null; sellerProfileVariant?: boolean; iconOnly?: boolean; space?: "market" | "community" }) {
   const router = useRouter();
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reason, setReason] = useState<(typeof reasons)[number][0]>("fraud");
@@ -27,8 +27,8 @@ export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant
     setIsSubmitting(true);
     setFeedback(null);
     try {
-      const response = await fetch("/api/market/safety/reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetType: "listing", targetId: listingId, reason, details }) });
-      if (response.status === 401) { router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listingId}`)}`); return; }
+      const response = await fetch(`/api/${space}/safety/reports`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetType: "listing", targetId: listingId, reason, details }) });
+      if (response.status === 401) { router.push(`/login?redirectTo=${encodeURIComponent(`/${space}/${listingId}`)}`); return; }
       const result = await readApiResponse(response, marketReportResponseSchema);
       if (!result.data) { setFeedback(result.error?.message ?? "Unable to submit this report."); return; }
       setDetails("");

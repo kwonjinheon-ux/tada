@@ -29,8 +29,9 @@ export default async function CommunityPostPage({ params }: { params: Promise<{ 
       const { data: imageRows } = await supabase.from("community_post_images").select("storage_path").eq("post_id", post.id).order("display_order");
       const paths = (imageRows ?? []).map((image) => image.storage_path as string);
       const urls = await getSignedStorageImages("community-post-images", paths, "gallery");
-      const { data: author } = await supabase.from("community_comment_profiles").select("display_name").eq("id", post.author_id).maybeSingle();
-      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? "Community member", authorAvatarUrl: null, isOwner: user?.id === post.author_id, images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
+      const { data: author } = await supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle();
+      const { data: signedAvatar } = author?.avatar_path ? await supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600) : { data: null };
+      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? "Community member", authorAvatarUrl: signedAvatar?.signedUrl ?? null, isOwner: user?.id === post.author_id, images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       return <CommunityPostDetailClient post={detail} />;
     }
   }
