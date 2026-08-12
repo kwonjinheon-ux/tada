@@ -17,17 +17,17 @@ import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPostType } from "@/data/community-posts";
 
-export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string | null; authorAvatarUrl: string | null; viewCount: number; isOwner: boolean; images: { src: string; alt: string }[] };
+export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string | null; authorAvatarUrl: string | null; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; images: { src: string; alt: string }[] };
 
-export function CommunityPostDetailClient({ post, relatedCategory }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all"> }) {
+export function CommunityPostDetailClient({ post, relatedCategory, initialAction }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all">; initialAction?: "edit" | "delete" }) {
   const { t } = useLanguage();
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(initialAction === "delete");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(initialAction === "edit");
   const [editTitle, setEditTitle] = useState(post.title);
   const [editBody, setEditBody] = useState(post.body);
   const [isSaving, setIsSaving] = useState(false);
@@ -59,7 +59,7 @@ export function CommunityPostDetailClient({ post, relatedCategory }: { post: Com
         </header>
         {image ? <section className="listing-detail-gallery community-detail-gallery" aria-label={`${post.title} images`}><div className="listing-detail-main-image" role="button" tabIndex={0} aria-label={`Open photo ${activeImage + 1} of ${post.images.length} in gallery`} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setIsGalleryOpen(true); } }} onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => { const distance = swipeStartX.current === null ? 0 : event.clientX - swipeStartX.current; swipeStartX.current = null; if (Math.abs(distance) < 12) setIsGalleryOpen(true); else if (Math.abs(distance) >= 42 && post.images.length > 1) showImage(activeImage + (distance < 0 ? 1 : -1)); }} onPointerCancel={() => { swipeStartX.current = null; }}><Image className="listing-detail-main-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="(max-width: 767px) 100vw, 960px" /><Image key={image.src} className="listing-detail-main-photo is-entering-from-next" src={image.src} alt={image.alt} fill priority sizes="(max-width: 767px) 100vw, 960px" />{post.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous image" onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next image" onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}<span className="listing-detail-image-count"><i className="fa-regular fa-images" aria-hidden="true" /> {activeImage + 1} / {post.images.length}</span></div>{post.images.length > 1 ? <div className="listing-detail-thumbnails" aria-label="Choose photo">{post.images.map((photo, index) => <button className={index === activeImage ? "is-active" : ""} type="button" key={photo.src} onClick={() => showImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={index === activeImage}><Image src={photo.src} alt="" fill sizes="96px" /></button>)}</div> : null}</section> : null}
         <div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} />
-        <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>
+        <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} title={post.title} body={post.body} commentCount={post.responseCount} score={post.score} myVote={post.myVote} shareCount={post.shareCount} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>
       </article>
       <ListingComments listingId={post.id} space="community" />
       {relatedCategory ? <CommunityCategoryPosts category={relatedCategory} currentPostId={post.id} /> : null}

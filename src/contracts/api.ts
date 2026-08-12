@@ -161,9 +161,13 @@ export const communityPostFeedItemSchema = z.object({
   timeAgo: z.string(),
   images: z.array(z.object({ src: z.string().url(), alt: z.string() })).optional(),
   responseCount: z.number().int().nonnegative().optional(),
+  score: z.number().int().optional(),
+  myVote: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional(),
+  shareCount: z.number().int().nonnegative().optional(),
   viewCount: z.number().int().nonnegative().optional(),
   authorName: z.string().optional(),
   authorAvatarUrl: z.string().url().nullable().optional(),
+  isOwner: z.boolean().optional(),
 });
 
 export const communityPostFeedResponseSchema = z.object({ posts: z.array(communityPostFeedItemSchema) });

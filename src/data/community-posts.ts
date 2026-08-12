@@ -19,6 +19,9 @@ export type CommunityPost = {
   location: string;
   eventDate?: string;
   responseCount?: number;
+  score?: number;
+  myVote?: -1 | 0 | 1;
+  shareCount?: number;
   viewCount?: number;
   timeAgo?: string;
   image?: string;
@@ -26,6 +29,7 @@ export type CommunityPost = {
   images?: { src: string; alt: string }[];
   authorName?: string;
   authorAvatarUrl?: string | null;
+  isOwner?: boolean;
 };
 
 const fallbackImage = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
