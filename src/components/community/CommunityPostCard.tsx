@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 
-export function CommunityPostCard({ post, showTypeBadge = true }: { post: CommunityPost; showTypeBadge?: boolean }) {
+export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean }) {
   const { t } = useLanguage();
   const responseCount = post.responseCount ?? 0;
   const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
@@ -15,7 +15,7 @@ export function CommunityPostCard({ post, showTypeBadge = true }: { post: Commun
       </div>
       <div className="community-post-body">
         <div className="community-post-title-row">
-          {showTypeBadge ? <span className={`community-post-badge community-post-badge-${post.type}`}>{t(communityPostTypeLabelKeys[post.type])}</span> : null}
+          {showTypeBadge ? <span className={`community-post-badge community-post-badge-${post.type} ${mutedTypeBadge ? "is-muted" : ""}`}>{t(communityPostTypeLabelKeys[post.type])}</span> : null}
           <h2>{post.title}</h2>
           {responseCount > 0 ? <span className={`community-post-comment-count is-${countTone}`} aria-label={`${responseCount} comments`}>{responseCount}</span> : null}
         </div>
