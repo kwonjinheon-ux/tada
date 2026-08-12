@@ -6,6 +6,7 @@ import { CommunityFilterSidebar, type CommunityCategory } from "@/components/com
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
+import { CommunityPostListSkeleton } from "@/components/community/CommunityPostListSkeleton";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import type { CommunityPost } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
@@ -25,6 +26,7 @@ export function CommunityPageClient() {
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const postFeedCache = useRef(new Map<string, { posts: CommunityPost[]; cachedAt: number }>());
 
   const chooseView = (mode: ListingViewMode) => {
@@ -51,8 +53,10 @@ export function CommunityPageClient() {
     const cachedFeed = postFeedCache.current.get(cacheKey);
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
       setPublishedPosts(cachedFeed.posts);
+      setIsLoadingPosts(false);
       return () => controller.abort();
     }
+    setIsLoadingPosts(true);
     void fetch(`/api/community/posts?${cacheKey}`, { signal: controller.signal })
       .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
       .then((result) => {
@@ -63,7 +67,8 @@ export function CommunityPageClient() {
           setPublishedPosts([]);
         }
       })
-      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); });
+      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); })
+      .finally(() => { if (!controller.signal.aborted) setIsLoadingPosts(false); });
     return () => controller.abort();
   }, [activeCategory, mainLocation, subLocation]);
 
@@ -118,11 +123,11 @@ export function CommunityPageClient() {
           resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
         />
 
-        <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
+        {isLoadingPosts && visiblePosts.length === 0 ? <CommunityPostListSkeleton /> : <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
           {viewMode === "grid"
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={false} />)
             : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} showTypeBadge={false} />)}
-        </div>
+        </div>}
       </section>
 
       <CommunityRecentPostsPanel posts={visiblePosts.slice(0, 4)} />

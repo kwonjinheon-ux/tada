@@ -50,7 +50,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
   const savePost = async () => { if (isSaving) return; setIsSaving(true); setEditError(null); try { const response = await fetch(`/api/community/posts/${post.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: editTitle, body: editBody }) }); const payload = await response.json().catch(() => null) as { error?: string } | null; if (!response.ok) throw new Error(payload?.error || t("communityUnableToUpdate")); setIsEditDialogOpen(false); router.refresh(); } catch (error) { setEditError(error instanceof Error ? error.message : t("communityUnableToUpdate")); } finally { setIsSaving(false); } };
 
   return <main className="listing-detail-page community-detail-page">
-    <PageContainer className="community-detail-container">
+    <PageContainer size="narrow" className="community-detail-container">
       <nav className="community-detail-breadcrumb" aria-label="Breadcrumb"><Link href="/community">{t("community")}</Link><i className="fa-solid fa-chevron-right" aria-hidden="true" /><span>{t(communityPostTypeLabelKeys[post.type])}</span></nav>
       <article className="ui-card community-detail-post">
         <header className="community-detail-post-header">
