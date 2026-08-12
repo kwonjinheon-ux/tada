@@ -1,5 +1,6 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
+import { CommunityPostActions } from "@/components/community/CommunityPostActions";
 
 export function CommunityPostCard({ post, showTypeBadge = true, onOpen }: { post: CommunityPost; showTypeBadge?: boolean; onOpen?: () => void }) {
   const { t } = useLanguage();
@@ -28,6 +29,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, onOpen }: { post
             <span><i className="fa-regular fa-clock" aria-hidden="true" />{post.timeAgo}</span>
           ) : null}
         </div>
+        <CommunityPostActions postId={post.id} commentCount={responseCount} compact />
       </div>
       <i className="fa-solid fa-chevron-right community-post-chevron" aria-hidden="true" />
     </article>
