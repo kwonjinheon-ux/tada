@@ -8625,37 +8625,20 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-actions { display: inline-flex; align-items: center; gap: var(--space-2); }.community-post-actions button, .community-post-actions a, .community-vote-control { min-height: var(--control-h-lg); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-pill); background: var(--neutral-200); color: var(--blue-950); font: inherit; font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }.community-post-actions button:hover, .community-post-actions a:hover { background: var(--neutral-250); }.community-vote-control { padding: 0 var(--space-2); gap: var(--space-1); }.community-vote-control button { min-height: 0; padding: var(--space-1); background: transparent; }.community-vote-control button.is-selected { color: var(--color-primary-dark); }.community-vote-control button.is-downvote { color: var(--color-danger); }.community-post-actions.is-compact { margin-top: var(--space-2); }.community-post-actions.is-compact button, .community-post-actions.is-compact a, .community-post-actions.is-compact .community-vote-control { min-height: var(--control-h-xs); padding: 0 var(--space-2); font-size: var(--text-xs); }
 .community-blog-post-footer .community-post-actions button, .community-blog-post-footer .community-post-actions a, .community-blog-post-footer .community-vote-control { min-height: var(--control-h-sm); }
 
-/* Keep the standalone community detail discussion compact without changing the inline feed thread. */
-.community-detail-page .listing-comments-heading h2 { font-size: var(--text-xl); }
-.community-detail-page .listing-comments-heading span { font-size: var(--text-sm); }
-.community-detail-page .listing-comments-composer textarea, .community-detail-page .listing-comment-edit textarea, .community-detail-page .listing-comment-reply-form textarea { font-size: var(--text-base); }
-.community-detail-page .listing-comments-composer button, .community-detail-page .listing-comment-post-button { font-size: var(--text-xs); }
-.community-detail-page .listing-comment-author-row strong { font-size: var(--text-base); }
-.community-detail-page .listing-comment-author-row time, .community-detail-page .listing-comment-edited, .community-detail-page .listing-comment-tools > button { font-size: var(--text-2xs); }
-.community-detail-page .listing-comment-content > p { font-size: calc(var(--text-sm) * var(--text-scale, 1)); }
-
-/* Match the smaller type scale in the market listing discussion without affecting community threads. */
-.listing-detail-page:not(.community-detail-page) .listing-comments-heading h2 { font-size: var(--text-xl); }
-.listing-detail-page:not(.community-detail-page) .listing-comments-heading span { font-size: var(--text-sm); }
-.listing-detail-page:not(.community-detail-page) .listing-comments-composer textarea, .listing-detail-page:not(.community-detail-page) .listing-comment-edit textarea, .listing-detail-page:not(.community-detail-page) .listing-comment-reply-form textarea { font-size: var(--text-base); }
-.listing-detail-page:not(.community-detail-page) .listing-comments-composer-footer span, .listing-detail-page:not(.community-detail-page) .listing-comments-composer button, .listing-detail-page:not(.community-detail-page) .listing-comment-post-button, .listing-detail-page:not(.community-detail-page) .listing-comment-author-row strong, .listing-detail-page:not(.community-detail-page) .listing-comment-cancel-button { font-size: var(--text-xs); }
-.listing-detail-page:not(.community-detail-page) .listing-comments-error { font-size: var(--text-xs); }
-.listing-detail-page:not(.community-detail-page) .listing-comment-author-row time, .listing-detail-page:not(.community-detail-page) .listing-comment-edited, .listing-detail-page:not(.community-detail-page) .listing-comment-tools > button, .listing-detail-page:not(.community-detail-page) .listing-comment-thread-toggle { font-size: var(--text-2xs); }
-.listing-detail-page:not(.community-detail-page) .listing-comment-content > p { font-size: calc(var(--text-sm) * var(--text-scale, 1)); }
+/* One shared discussion scale for market and community detail pages. */
+.listing-detail-page .listing-comments-heading h2 { font-size: var(--text-xl); }
+.listing-detail-page .listing-comments-heading span { font-size: var(--text-sm); }
+.listing-detail-page .listing-comments-composer textarea, .listing-detail-page .listing-comment-edit textarea, .listing-detail-page .listing-comment-reply-form textarea { font-size: var(--text-md); }
+.listing-detail-page .listing-comments-composer-footer span, .listing-detail-page .listing-comments-composer button, .listing-detail-page .listing-comment-post-button, .listing-detail-page .listing-comment-cancel-button { font-size: var(--text-xs); }
+.listing-detail-page .listing-comment-author-row strong, .listing-detail-page .listing-comment-content > p { font-size: var(--text-md); }
+.listing-detail-page .listing-comments-error { font-size: var(--text-xs); }
+.listing-detail-page .listing-comment-author-row time, .listing-detail-page .listing-comment-edited, .listing-detail-page .listing-comment-tools > button, .listing-detail-page .listing-comment-thread-toggle { font-size: var(--text-2xs); }
 
 @media (max-width: 767.98px) {
-  .community-detail-page .listing-comments-heading h2 { font-size: var(--text-lg); }
-  .community-detail-page .listing-comments-heading span { font-size: var(--text-xs); }
+  .listing-detail-page .listing-comments-heading h2 { font-size: var(--text-lg); }
+  .listing-detail-page .listing-comments-heading span { font-size: var(--text-xs); }
   /* Mobile textareas stay at 16px to avoid Safari zooming the page on focus. */
-  .community-detail-page .listing-comments-composer textarea, .community-detail-page .listing-comment-edit textarea, .community-detail-page .listing-comment-reply-form textarea { font-size: var(--text-lg); }
-  .community-detail-page .listing-comment-author-row strong { font-size: var(--text-sm); }
-  .community-detail-page .listing-comment-content > p { font-size: calc(var(--text-sm) * var(--text-scale, 1)); }
-  .listing-detail-page:not(.community-detail-page) .listing-comments-heading h2 { font-size: var(--text-lg); }
-  .listing-detail-page:not(.community-detail-page) .listing-comments-heading span { font-size: var(--text-xs); }
-  /* Mobile textareas stay at 16px to avoid Safari zooming the page on focus. */
-  .listing-detail-page:not(.community-detail-page) .listing-comments-composer textarea, .listing-detail-page:not(.community-detail-page) .listing-comment-edit textarea, .listing-detail-page:not(.community-detail-page) .listing-comment-reply-form textarea { font-size: var(--text-lg); }
-  .listing-detail-page:not(.community-detail-page) .listing-comment-author-row strong { font-size: var(--text-sm); }
-  .listing-detail-page:not(.community-detail-page) .listing-comment-content > p { font-size: calc(var(--text-sm) * var(--text-scale, 1)); }
+  .listing-detail-page .listing-comments-composer textarea, .listing-detail-page .listing-comment-edit textarea, .listing-detail-page .listing-comment-reply-form textarea { font-size: var(--text-lg); }
 }
 
 @keyframes community-blog-photo-enter { from { opacity: .4; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
