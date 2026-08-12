@@ -3,6 +3,7 @@ import { CommunityPostDetailClient, type CommunityPostDetail } from "@/component
 import { communityPosts } from "@/data/community-posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { communityPostCategorySchema } from "@/contracts/api";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,10 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
-export default async function CommunityPostPage({ params }: { params: Promise<{ postId: string }> }) {
+export default async function CommunityPostPage({ params, searchParams }: { params: Promise<{ postId: string }>; searchParams: Promise<{ category?: string }> }) {
   const { postId } = await params;
+  const category = communityPostCategorySchema.safeParse((await searchParams).category);
+  const relatedCategory = category.success ? category.data : undefined;
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -32,11 +35,11 @@ export default async function CommunityPostPage({ params }: { params: Promise<{ 
       const { data: author } = await supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle();
       const { data: signedAvatar } = author?.avatar_path ? await supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600) : { data: null };
       const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? "Community member", authorAvatarUrl: signedAvatar?.signedUrl ?? null, viewCount: 0, isOwner: user?.id === post.author_id, images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
-      return <CommunityPostDetailClient post={detail} />;
+      return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} />;
     }
   }
 
   const fallback = communityPosts.find((post) => post.id === postId);
   if (!fallback) notFound();
-  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: cleanHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? fallback.eventDate ?? "Recently", authorName: "Community member", authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, isOwner: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} />;
+  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: cleanHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? fallback.eventDate ?? "Recently", authorName: "Community member", authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, isOwner: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} relatedCategory={relatedCategory} />;
 }

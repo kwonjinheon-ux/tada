@@ -9,6 +9,8 @@ import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { CommunityPostActions } from "@/components/community/CommunityPostActions";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
 import { CommunityPostOwnerMenu } from "@/components/community/CommunityPostOwnerMenu";
+import { CommunityCategoryPosts } from "@/components/community/CommunityCategoryPosts";
+import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { Button } from "@/components/ui/Button";
@@ -17,7 +19,7 @@ import type { CommunityPostType } from "@/data/community-posts";
 
 export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string; authorAvatarUrl: string | null; viewCount: number; isOwner: boolean; images: { src: string; alt: string }[] };
 
-export function CommunityPostDetailClient({ post }: { post: CommunityPostDetail }) {
+export function CommunityPostDetailClient({ post, relatedCategory }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all"> }) {
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -50,6 +52,7 @@ export function CommunityPostDetailClient({ post }: { post: CommunityPostDetail 
         <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} compact />{post.isOwner ? <CommunityPostOwnerMenu onEdit={openEditDialog} onDelete={() => setIsDeleteDialogOpen(true)} /> : null}</div><div><ListingSafetyActions listingId={post.id} sellerId={null} sellerProfileVariant iconOnly space="community" /><Link href="/community">More community posts <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link></div></footer>
       </article>
       <ListingComments listingId={post.id} space="community" />
+      {relatedCategory ? <CommunityCategoryPosts category={relatedCategory} currentPostId={post.id} /> : null}
     </PageContainer>
     {isGalleryOpen && image ? <PopupBackdrop className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${post.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}><Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" onClick={() => setIsGalleryOpen(false)} /><button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button><div className="listing-gallery-lightbox-stage"><Image className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill priority sizes="100vw" /></div>{post.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></button></> : null}<span className="listing-gallery-lightbox-count">{activeImage + 1} / {post.images.length}</span></PopupBackdrop> : null}
     {isEditDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="community-edit-title" onClose={() => setIsEditDialogOpen(false)} isDismissible={!isSaving}><section className="community-post-edit-dialog"><header><h2 id="community-edit-title">Edit post</h2><p>Update the title and details shared with your community.</p></header><form onSubmit={(event) => { event.preventDefault(); void savePost(); }}><div className="post-field"><label htmlFor="community-post-edit-title">Title</label><input id="community-post-edit-title" value={editTitle} onChange={(event) => setEditTitle(event.target.value)} minLength={4} maxLength={120} required /></div><HtmlEditor id="community-post-edit-body" label="Details" value={editBody} onChange={setEditBody} placeholder="Include the important details for your neighbours." />{editError ? <p className="listing-delete-error" role="alert">{editError}</p> : null}<div className="community-post-edit-actions"><Button type="button" variant="secondary" onClick={() => setIsEditDialogOpen(false)} disabled={isSaving}>Cancel</Button><Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Save changes"}</Button></div></form></section></DialogOverlay> : null}

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 
-export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean }) {
+export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
   const { t } = useLanguage();
   const responseCount = post.responseCount ?? 0;
   const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
   const excerpt = post.excerpt.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
   const featuredImage = post.images?.[0] ?? (post.image ? { src: post.image, alt: post.imageAlt ?? "" } : null);
   return (
-    <Link className={`community-post-card community-post-card-${post.type}`} href={`/community/${post.id}`} aria-label={`Open ${post.title}`}>
+    <Link className={`community-post-card community-post-card-${post.type}`} href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`}>
       <div className="community-post-media">
         {featuredImage ? <img src={featuredImage.src} alt={featuredImage.alt} /> : <span className="community-post-placeholder">txt</span>}
       </div>
