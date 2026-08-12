@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
-import { CommunityPostActions } from "@/components/community/CommunityPostActions";
 
 export function CommunityPostCard({ post, showTypeBadge = true }: { post: CommunityPost; showTypeBadge?: boolean }) {
   const { t } = useLanguage();
@@ -27,11 +26,12 @@ export function CommunityPostCard({ post, showTypeBadge = true }: { post: Commun
         </div>
         <p className="community-post-excerpt">{excerpt}</p>
         <div className="community-post-meta">
+          <span><i className="fa-regular fa-eye" aria-hidden="true" />{new Intl.NumberFormat("en-NZ").format(post.viewCount ?? 0)}</span>
           <span><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location}</span>
           {post.eventDate ? <span><i className="fa-regular fa-calendar" aria-hidden="true" />{post.eventDate}</span> : null}
           {post.timeAgo ? <span><i className="fa-regular fa-clock" aria-hidden="true" />{post.timeAgo}</span> : null}
+          <span className="community-post-author">{post.authorName ?? "Community member"}</span>
         </div>
-        {isExpanded ? <CommunityPostActions postId={post.id} commentCount={responseCount} compact hideComments /> : null}
       </div>
     </article>
   );

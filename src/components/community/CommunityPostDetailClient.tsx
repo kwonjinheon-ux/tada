@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
@@ -11,7 +11,7 @@ import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import type { CommunityPostType } from "@/data/community-posts";
 
-export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string; authorAvatarUrl: string | null; isOwner: boolean; images: { src: string; alt: string }[] };
+export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string; authorAvatarUrl: string | null; viewCount: number; isOwner: boolean; images: { src: string; alt: string }[] };
 
 export function CommunityPostDetailClient({ post }: { post: CommunityPostDetail }) {
   const router = useRouter();
@@ -20,6 +20,7 @@ export function CommunityPostDetailClient({ post }: { post: CommunityPostDetail 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  useEffect(() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST" }); }, [post.id]);
   const swipeStartX = useRef<number | null>(null);
   const image = post.images[activeImage];
   const showImage = (index: number) => setActiveImage((index + post.images.length) % post.images.length);

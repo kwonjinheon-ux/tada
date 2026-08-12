@@ -19,6 +19,7 @@ export type CommunityPost = {
   location: string;
   eventDate?: string;
   responseCount?: number;
+  viewCount?: number;
   timeAgo?: string;
   image?: string;
   imageAlt?: string;
