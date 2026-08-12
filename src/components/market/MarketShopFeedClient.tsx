@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
@@ -9,6 +9,7 @@ import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
+import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 
 const priceFilterMaximum = 5000;
 
@@ -51,17 +52,22 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     return () => window.removeEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
   }, []);
 
-  const updateParams = (changes: Record<string, string | null>) => {
+  const updateParams = useCallback((changes: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(changes).forEach(([key, value]) => { if (value) params.set(key, value); else params.delete(key); });
     router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
-  };
+  }, [basePath, router, searchParams]);
   const chooseCategory = (categorySlug: string) => { updateParams({ category: categorySlug === "all" ? null : categorySlug }); setIsFilterOpen(false); };
   const changeLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
     updateParams({ mainLocation: nextMainLocation || null, subLocation: nextSubLocation || null });
   };
+  useProfileMainLocation({
+    hasMainLocationInUrl: searchParams.has("mainLocation"),
+    mainLocation,
+    onResolve: (profileMainLocation) => changeLocation(profileMainLocation, subLocation),
+  });
   const applyFilters = () => {
     updateParams({ maxPrice: maxPrice >= priceFilterMaximum ? null : String(maxPrice), condition: condition === "all" ? null : condition });
     setIsFilterOpen(false);

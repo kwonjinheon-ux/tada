@@ -13,6 +13,7 @@ import { marketplaceCategories } from "@/data/marketplace-categories";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
+import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
@@ -247,6 +248,11 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     if (nextSubLocation) params.set("subLocation", nextSubLocation); else params.delete("subLocation");
     router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
   };
+  useProfileMainLocation({
+    hasMainLocationInUrl: searchParams.has("mainLocation"),
+    mainLocation,
+    onResolve: (profileMainLocation) => applyLocationFilter(profileMainLocation, subLocation),
+  });
   const changeSort = (nextSort: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("cursor");
