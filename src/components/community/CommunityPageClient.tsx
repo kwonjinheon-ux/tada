@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
@@ -18,7 +17,6 @@ import { readApiResponse } from "@/lib/api/client";
 
 export function CommunityPageClient() {
   const { t } = useLanguage();
-  const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>("all");
@@ -108,7 +106,7 @@ export function CommunityPageClient() {
         <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
           {viewMode === "grid"
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={activeCategory === "all"} />)
-            : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} onOpen={() => router.push(`/community/${post.id}`)} />)}
+            : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} />)}
         </div>
       </section>
 
