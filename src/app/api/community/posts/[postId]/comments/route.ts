@@ -16,9 +16,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ postId: st
     authorIds.length ? supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds) : Promise.resolve({ data: [] }),
     user && data?.length ? supabase.from("community_post_comment_votes").select("comment_id,value").eq("user_id", user.id).in("comment_id", data.map((comment) => comment.id)) : Promise.resolve({ data: [] }),
   ]);
+  const avatarPaths = [...new Set((profileData ?? []).map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path)))];
+  const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : { data: [] };
+  const avatarUrls = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const profiles = new Map((profileData ?? []).map((profile) => [profile.id, profile]));
   const votes = new Map((voteData ?? []).map((vote) => [vote.comment_id, vote.value]));
-  return NextResponse.json({ currentUserId: user?.id ?? null, comments: (data ?? []).map((comment) => { const profile = profiles.get(comment.author_id); return { id: comment.id, parentId: comment.parent_id, authorId: comment.author_id, authorName: profile?.display_name ?? "Tada member", authorAvatarUrl: null, depth: comment.depth, body: comment.body, score: comment.score, myVote: votes.get(comment.id) ?? 0, createdAt: comment.created_at, updatedAt: comment.updated_at, deletedAt: comment.deleted_at }; }) });
+  return NextResponse.json({ currentUserId: user?.id ?? null, comments: (data ?? []).map((comment) => { const profile = profiles.get(comment.author_id); return { id: comment.id, parentId: comment.parent_id, authorId: comment.author_id, authorName: profile?.display_name ?? "Tada member", authorAvatarUrl: profile?.avatar_path ? avatarUrls.get(profile.avatar_path) ?? null : null, depth: comment.depth, body: comment.body, score: comment.score, myVote: votes.get(comment.id) ?? 0, createdAt: comment.created_at, updatedAt: comment.updated_at, deletedAt: comment.deleted_at }; }) });
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ postId: string }> }) {
