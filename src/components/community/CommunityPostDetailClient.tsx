@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
-import { CommunityPostComments } from "@/components/community/CommunityPostComments";
+import { ListingComments } from "@/components/market/ListingComments";
 import type { CommunityPostType } from "@/data/community-posts";
 
 export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; images: { src: string; alt: string }[] };
@@ -19,6 +19,6 @@ export function CommunityPostDetailClient({ post }: { post: CommunityPostDetail 
       <aside className="listing-detail-summary"><div className="listing-detail-heading"><div><div className="listing-detail-status-row"><span className={`community-post-badge community-post-badge-${post.type}`}>{post.type}</span><span>{post.createdAt}</span></div><h1>{post.title}</h1></div></div><p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {post.location}</p></aside>
     </div>
     <TextSizeSection className="listing-detail-description" title="Details"><div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} /></TextSizeSection>
-    <CommunityPostComments postId={post.id} />
+    <ListingComments listingId={post.id} space="community" />
   </main>;
 }

@@ -89,8 +89,9 @@ function relativeTime(value: string) {
   return days < 7 ? `${days}d ago` : new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short" }).format(new Date(value));
 }
 
-export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: "market" | "bargain" }) {
+export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: "market" | "bargain" | "community" }) {
   const apiBase = `/api/${space}`;
+  const resource = space === "community" ? "posts" : "listings";
   const [comments, setComments] = useState<ListingComment[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +118,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
 
   const loadComments = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBase}/listings/${listingId}/comments`, { cache: "no-store" });
+      const response = await fetch(`${apiBase}/${resource}/${listingId}/comments`, { cache: "no-store" });
       const payload = await response.json().catch(() => null) as CommentsResponse | null;
       if (!response.ok || !payload) throw new Error(payload?.error || "Unable to load comments right now.");
       setComments(payload.comments);
@@ -128,7 +129,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     } finally {
       setIsLoading(false);
     }
-  }, [apiBase, listingId]);
+  }, [apiBase, listingId, resource]);
 
   useEffect(() => { void loadComments(); }, [loadComments]);
 
@@ -182,7 +183,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     setIsSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBase}/listings/${listingId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) });
+      const response = await fetch(`${apiBase}/${resource}/${listingId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (response.status === 401) throw new Error("Please log in to post a comment.");
       if (!response.ok) throw new Error(payload?.error || "Unable to post your comment right now.");
