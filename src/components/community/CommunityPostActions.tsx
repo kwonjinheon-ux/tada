@@ -1,10 +1,17 @@
-import Link from "next/link";
+"use client";
 
-export function CommunityPostActions({ postId, commentCount = 0, compact = false }: { postId: string; commentCount?: number; compact?: boolean }) {
+import Link from "next/link";
+import { useState } from "react";
+
+export function CommunityPostActions({ postId, commentCount = 0, compact = false, onCommentsToggle, commentsOpen = false }: { postId: string; commentCount?: number; compact?: boolean; onCommentsToggle?: () => void; commentsOpen?: boolean }) {
+  const [vote, setVote] = useState<-1 | 0 | 1>(0);
+  const [shared, setShared] = useState(false);
+  const score = vote;
+  const share = async () => { const url = `${window.location.origin}/community/${postId}`; try { await navigator.clipboard.writeText(url); } catch { if (navigator.share) await navigator.share({ url }); } setShared(true); window.setTimeout(() => setShared(false), 2000); };
   return <div className={`community-post-actions ${compact ? "is-compact" : ""}`} onClick={(event) => event.stopPropagation()}>
-    <button type="button" aria-label="Upvote post"><i className="fa-solid fa-arrow-up" aria-hidden="true" /><span>0</span><i className="fa-solid fa-arrow-down" aria-hidden="true" /></button>
-    <Link href={`/community/${postId}#community-comments-title`} aria-label="Open comments"><i className="fa-regular fa-comment" aria-hidden="true" /><span>{commentCount}</span></Link>
+    <span className="community-vote-control"><button type="button" className={vote === 1 ? "is-selected" : ""} aria-label="Upvote post" onClick={() => setVote((value) => value === 1 ? 0 : 1)}><i className="fa-solid fa-arrow-up" aria-hidden="true" /></button><span aria-label={`${score} votes`}>{score}</span><button type="button" className={vote === -1 ? "is-selected is-downvote" : ""} aria-label="Downvote post" onClick={() => setVote((value) => value === -1 ? 0 : -1)}><i className="fa-solid fa-arrow-down" aria-hidden="true" /></button></span>
+    {onCommentsToggle ? <button type="button" aria-label={commentsOpen ? "Hide comments" : "Open comments"} aria-expanded={commentsOpen} onClick={onCommentsToggle}><i className="fa-regular fa-comment" aria-hidden="true" /><span>{commentCount}</span></button> : <Link href={`/community/${postId}#community-comments-title`} aria-label="Open comments"><i className="fa-regular fa-comment" aria-hidden="true" /><span>{commentCount}</span></Link>}
     <button type="button" aria-label="Repost"><i className="fa-solid fa-retweet" aria-hidden="true" /></button>
-    <button type="button" aria-label="Share post" onClick={() => { if (typeof navigator !== "undefined" && navigator.share) void navigator.share({ url: `${window.location.origin}/community/${postId}` }); else void navigator.clipboard?.writeText(`${window.location.origin}/community/${postId}`); }}><i className="fa-solid fa-share" aria-hidden="true" /><span>Share</span></button>
+    <button type="button" aria-label="Share post" onClick={() => void share()}><i className={`fa-solid ${shared ? "fa-check" : "fa-share"}`} aria-hidden="true" /><span>{shared ? "Copied" : "Share"}</span></button>
   </div>;
 }

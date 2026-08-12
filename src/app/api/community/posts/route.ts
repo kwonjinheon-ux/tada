@@ -45,6 +45,7 @@ export async function GET(request: Request) {
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const postIds = (data ?? []).map((post) => post.id);
   const { data: imageRows } = postIds.length ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : { data: [] };
+  const { data: commentRows } = postIds.length ? await supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null) : { data: [] };
   const paths = (imageRows ?? []).map((image) => image.storage_path);
   const signed = await getSignedStorageImages("community-post-images", paths, "gallery");
   const authorIds = [...new Set((data ?? []).map((post) => post.author_id))];
@@ -53,6 +54,8 @@ export async function GET(request: Request) {
   const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : { data: [] };
   const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const authorsById = new Map((authors ?? []).map((author) => [author.id, author]));
+  const commentCounts = new Map<string, number>();
+  for (const comment of commentRows ?? []) commentCounts.set(comment.post_id, (commentCounts.get(comment.post_id) ?? 0) + 1);
   const imagesByPost = new Map<string, { src: string; alt: string }[]>();
   for (const image of imageRows ?? []) {
     const src = signed.get(image.storage_path);
@@ -67,6 +70,7 @@ export async function GET(request: Request) {
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
       timeAgo: relativeTime(post.created_at),
       images: imagesByPost.get(post.id) ?? [],
+      responseCount: commentCounts.get(post.id) ?? 0,
       authorName: authorsById.get(post.author_id)?.display_name ?? "Community member",
       authorAvatarUrl: authorsById.get(post.author_id)?.avatar_path ? avatars.get(authorsById.get(post.author_id)?.avatar_path ?? "") ?? null : null,
     })),
