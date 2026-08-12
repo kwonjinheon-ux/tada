@@ -11,12 +11,13 @@ export function CommunityPostCard({ post, showTypeBadge = true }: { post: Commun
   const responseCount = post.responseCount ?? 0;
   const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
   const excerpt = post.excerpt.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  const featuredImage = post.images?.[0] ?? (post.image ? { src: post.image, alt: post.imageAlt ?? "" } : null);
   const toggle = () => setIsExpanded((expanded) => !expanded);
 
   return (
     <article className={`community-post-card community-post-card-${post.type} ${isExpanded ? "is-expanded" : ""}`} role="button" tabIndex={0} aria-expanded={isExpanded} onClick={toggle} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }}>
       <div className="community-post-media">
-        {post.image ? <img src={post.image} alt={post.imageAlt ?? ""} /> : <span className="community-post-placeholder">txt</span>}
+        {featuredImage ? <img src={featuredImage.src} alt={featuredImage.alt} /> : <span className="community-post-placeholder">txt</span>}
       </div>
       <div className="community-post-body">
         <div className="community-post-title-row">
