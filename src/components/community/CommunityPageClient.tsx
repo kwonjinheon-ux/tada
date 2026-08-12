@@ -46,7 +46,7 @@ export function CommunityPageClient() {
     if (subLocation) params.set("subLocation", subLocation);
     void fetch(`/api/community/posts?${params.toString()}`, { signal: controller.signal })
       .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
-      .then((result) => { if (result.data) setPublishedPosts(result.data.posts); })
+      .then((result) => { if (result.data) setPublishedPosts(result.data.posts); else setPublishedPosts([]); })
       .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); });
     return () => controller.abort();
   }, [activeCategory, mainLocation, subLocation]);

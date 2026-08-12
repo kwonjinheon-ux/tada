@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
   const { data: { user } } = await supabase.auth.getUser();
-  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  let query = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
   if (category.success) query = query.eq("category_slug", category.data);
   if (mainLocation) query = query.eq("region_city", mainLocation);
   if (subLocation) query = query.eq("region_suburb", subLocation);
@@ -45,6 +45,7 @@ export async function GET(request: Request) {
   const { data, error } = await query;
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const postIds = (data ?? []).map((post) => post.id);
+  const { data: engagementRows } = postIds.length ? await supabase.from("community_posts").select("id,score,share_count").in("id", postIds) : { data: [] };
   const { data: imageRows } = postIds.length ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : { data: [] };
   const [{ data: commentRows }, { data: voteRows }] = await Promise.all([
     postIds.length ? supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null) : Promise.resolve({ data: [] }),
@@ -59,6 +60,7 @@ export async function GET(request: Request) {
   const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const authorsById = new Map((authors ?? []).map((author) => [author.id, author]));
   const commentCounts = new Map<string, number>();
+  const engagement = new Map((engagementRows ?? []).map((post) => [post.id, post]));
   const votes = new Map((voteRows ?? []).map((vote) => [vote.post_id, vote.value]));
   for (const comment of commentRows ?? []) commentCounts.set(comment.post_id, (commentCounts.get(comment.post_id) ?? 0) + 1);
   const imagesByPost = new Map<string, { src: string; alt: string }[]>();
@@ -76,9 +78,9 @@ export async function GET(request: Request) {
       timeAgo: relativeTime(post.created_at),
       images: imagesByPost.get(post.id) ?? [],
       responseCount: commentCounts.get(post.id) ?? 0,
-      score: post.score ?? 0,
+      score: engagement.get(post.id)?.score ?? 0,
       myVote: votes.get(post.id) ?? 0,
-      shareCount: post.share_count ?? 0,
+      shareCount: engagement.get(post.id)?.share_count ?? 0,
       viewCount: post.view_count ?? 0,
       authorName: authorsById.get(post.author_id)?.display_name ?? undefined,
       authorAvatarUrl: authorsById.get(post.author_id)?.avatar_path ? avatars.get(authorsById.get(post.author_id)?.avatar_path ?? "") ?? null : null,
