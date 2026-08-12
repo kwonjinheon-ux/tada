@@ -7,7 +7,6 @@ import { CommunityResultsToolbar } from "@/components/community/CommunityResults
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
-import { communityPosts } from "@/data/community-posts";
 import type { CommunityPost } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -52,7 +51,7 @@ export function CommunityPageClient() {
     return () => controller.abort();
   }, [activeCategory, mainLocation, subLocation]);
 
-  const visiblePosts = [...publishedPosts, ...communityPosts];
+  const visiblePosts = publishedPosts;
 
   useEffect(() => {
     const openFilters = (event: Event) => {

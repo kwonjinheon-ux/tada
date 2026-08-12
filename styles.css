@@ -1445,15 +1445,11 @@ a {
   color: var(--neutral-50);
 }
 
-.shop-type-filter .filter-list .shop-type-all > i { color: var(--teal-soft-900); }
-.shop-type-filter .filter-list .shop-type-secondhand > i { color: var(--green-600); }
-.shop-type-filter .filter-list .shop-type-garage-sale > i { color: var(--blue-700); }
-.shop-type-filter .filter-list .shop-type-moving-sale > i { color: var(--blue-450); }
-.shop-type-filter .filter-list .shop-type-2dollarshop > i { color: var(--rose-500); }
-.shop-type-filter .filter-list .shop-type-groupbuy > i { color: var(--amber-450); }
+.shop-type-filter .filter-list > a > i { color: var(--blue-soft-650); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 
 .community-category-all > i { color: var(--teal-soft-900); }.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-events > i { color: var(--violet-700); }.community-category-qna > i { color: var(--amber-550); }.community-category-recommendations > i { color: var(--green-600); }.community-category-free-stuff > i { color: var(--green-650); }.community-category-lost-found > i { color: var(--red-750); }.community-category-parents-kids > i { color: var(--rose-700); }.community-category-jobs-services > i { color: var(--blue-soft-750); }.community-category-housing-flatmates > i { color: var(--blue-450); }.community-category-study-language > i { color: var(--blue-400); }.community-category-clubs-meetups > i { color: var(--violet-700); }
+.community-category-list > button > i { color: var(--blue-soft-650); }
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
 
 .price-filter input {
