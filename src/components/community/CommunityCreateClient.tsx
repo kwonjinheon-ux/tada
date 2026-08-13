@@ -8,7 +8,7 @@ import { ListingLocationSelector } from "@/components/market/ListingLocationSele
 import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
-import { Button } from "@/components/ui/Button";
+import { PostSubmitButton } from "@/components/post-ad/PostSubmitButton";
 import { communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { MainLocation } from "@/data/nzLocations";
@@ -30,6 +30,17 @@ export function CommunityCreateClient() {
   const [location, setLocation] = useState<LocationDraft>(emptyLocation);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+
+  useEffect(() => {
+    if (!isSubmitting) {
+      setSubmitProgress(0);
+      return;
+    }
+    setSubmitProgress(8);
+    const timer = window.setInterval(() => setSubmitProgress((current) => Math.min(88, current + Math.max(2, Math.ceil((88 - current) * 0.18)))), 700);
+    return () => window.clearInterval(timer);
+  }, [isSubmitting]);
 
   useEffect(() => { void (async () => { const supabase = createBrowserSupabaseClient(); const { data: { user } } = await supabase?.auth.getUser() ?? { data: { user: null } }; if (!supabase || !user) return; const { data } = await supabase.from("profiles").select("region_city, region_suburb").eq("id", user.id).maybeSingle(); const mainLocation = findMainLocation(data?.region_city ?? ""); if (mainLocation) setLocation((current) => current.mainLocation ? current : { ...emptyLocation, mainLocation, subLocation: findSubLocation(mainLocation, data?.region_suburb ?? "") ?? "" }); })(); }, []);
 
@@ -53,17 +64,19 @@ export function CommunityCreateClient() {
       return;
     }
     setIsSubmitting(true);
+    setSubmitProgress(18);
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ categorySlug, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
-    setIsSubmitting(false);
     if (result.error) {
+      setIsSubmitting(false);
       setError(result.error.message);
       return;
     }
+    setSubmitProgress(100);
     router.push("/community");
     router.refresh();
   };
@@ -101,7 +114,7 @@ export function CommunityCreateClient() {
             {error ? <p className="post-create-status is-error" role="alert">{error}</p> : null}
             <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
-              <Button className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`} type="submit" disabled={isSubmitting} aria-busy={isSubmitting}><span>{isSubmitting ? t("communityPublishing") : t("communityPublishPost")}</span></Button>
+              <PostSubmitButton type="submit" disabled={isSubmitting} isProgressing={isSubmitting} progress={submitProgress}>{isSubmitting ? `${t("communityPublishing")} ${submitProgress}%` : t("communityPublishPost")}</PostSubmitButton>
             </div>
           </form>
         </section>

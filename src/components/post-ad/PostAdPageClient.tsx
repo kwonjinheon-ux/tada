@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import { ProductCard } from "@/components/ProductCard";
 import type { Listing } from "@/data/listings";
 import { BargainSaleItemsEditor, type BargainSaleItemDraft } from "@/components/bargain/BargainSaleItemsEditor";
 import { BargainSaleCoverPreview } from "@/components/bargain/BargainSaleCoverPreview";
+import { PostSubmitButton } from "@/components/post-ad/PostSubmitButton";
 import { bargainListingTypes, getBargainTypeMaximumPrice, isMultiItemBargain, type BargainListingType } from "@/lib/bargain/listing-types";
 
 type SelectOption = SelectMenuOption;
@@ -1325,19 +1326,14 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
             {!showGroupBuyNotice && <div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
-              <button
-                className={`post-submit-button ${isSubmitting ? "is-progress" : ""}`}
+              <PostSubmitButton
                 type="submit"
                 disabled={isSubmitting || isProcessingPhotos}
-                aria-busy={isSubmitting}
-                aria-valuemin={isSubmitting ? 0 : undefined}
-                aria-valuemax={isSubmitting ? 100 : undefined}
-                aria-valuenow={isSubmitting ? submitButtonProgress : undefined}
-                role={isSubmitting ? "progressbar" : undefined}
-                style={{ "--post-submit-progress": `${submitButtonProgress}%` } as CSSProperties}
+                isProgressing={isSubmitting}
+                progress={submitButtonProgress}
               >
-                <span>{isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}</span>
-              </button>
+                {isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}
+              </PostSubmitButton>
             </div>}
           </form>
         </section>
