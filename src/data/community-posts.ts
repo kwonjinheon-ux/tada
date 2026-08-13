@@ -30,6 +30,7 @@ export type CommunityPost = {
   authorName?: string;
   authorAvatarUrl?: string | null;
   isOwner?: boolean;
+  isSaved?: boolean;
 };
 
 const fallbackImage = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";

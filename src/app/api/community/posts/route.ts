@@ -69,11 +69,12 @@ export async function GET(request: Request) {
     return post ? [post] : [];
   });
   const postIds = data.map((post: CommunityPostRow) => post.id);
-  const [{ data: engagementRows }, { data: imageRows }, { data: commentRows }, { data: voteRows }] = await Promise.all([
+  const [{ data: engagementRows }, { data: imageRows }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }] = await Promise.all([
     postIds.length ? supabase.from("community_posts").select("id,score,share_count").in("id", postIds) : Promise.resolve({ data: [] }),
     postIds.length ? supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : Promise.resolve({ data: [] }),
     postIds.length ? supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null) : Promise.resolve({ data: [] }),
     user && postIds.length ? supabase.from("community_post_votes").select("post_id,value").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
+    user && postIds.length ? supabase.from("community_wishlist").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
   ]);
   const paths = (imageRows ?? []).map((image) => image.storage_path);
   const authorIds = [...new Set(data.map((post: CommunityPostRow) => post.author_id))];
@@ -88,6 +89,7 @@ export async function GET(request: Request) {
   const commentCounts = new Map<string, number>();
   const engagement = new Map((engagementRows ?? []).map((post) => [post.id, post]));
   const votes = new Map((voteRows ?? []).map((vote) => [vote.post_id, vote.value]));
+  const savedPostIds = new Set((wishlistRows ?? []).map((row) => row.post_id));
   for (const comment of commentRows ?? []) commentCounts.set(comment.post_id, (commentCounts.get(comment.post_id) ?? 0) + 1);
   const imagesByPost = new Map<string, { src: string; alt: string }[]>();
   for (const image of imageRows ?? []) {
@@ -111,6 +113,7 @@ export async function GET(request: Request) {
       authorName: authorsById.get(post.author_id)?.display_name ?? undefined,
       authorAvatarUrl: authorsById.get(post.author_id)?.avatar_path ? avatars.get(authorsById.get(post.author_id)?.avatar_path ?? "") ?? null : null,
       isOwner: user?.id === post.author_id,
+      isSaved: savedPostIds.has(post.id),
     })),
   });
 }
