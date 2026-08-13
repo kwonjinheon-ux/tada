@@ -3,6 +3,7 @@
 import { type CSSProperties, FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
+import { invalidateComments, loadComments as fetchComments, readCachedComments, type CommentRecord, type CommentSpace } from "@/lib/comment-cache";
 
 // Draws the reply-thread connector as smooth SVG curves from the parent
 // comment's avatar centre to each reply's avatar centre, measured from the
@@ -60,23 +61,7 @@ function CommentThreadConnector({ signature }: { signature: string }) {
   </svg>;
 }
 
-type ListingComment = {
-  id: string;
-  parentId: string | null;
-  authorId: string;
-  authorName: string;
-  authorAvatarUrl: string | null;
-  depth: number;
-  body: string;
-  score: number;
-  myVote: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  isPending?: boolean;
-};
-
-type CommentsResponse = { comments: ListingComment[]; currentUserId: string | null; error?: string };
+type ListingComment = CommentRecord;
 
 function relativeTime(value: string) {
   const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
@@ -89,12 +74,13 @@ function relativeTime(value: string) {
   return days < 7 ? `${days}d ago` : new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short" }).format(new Date(value));
 }
 
-export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: "market" | "bargain" | "community" }) {
+export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: CommentSpace }) {
   const apiBase = `/api/${space}`;
   const resource = space === "community" ? "posts" : "listings";
-  const [comments, setComments] = useState<ListingComment[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const cached = readCachedComments(listingId, space);
+  const [comments, setComments] = useState<ListingComment[]>(cached?.comments ?? []);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(cached?.currentUserId ?? null);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [busyCommentId, setBusyCommentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,11 +102,9 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     });
   };
 
-  const loadComments = useCallback(async () => {
+  const refreshComments = useCallback(async (options?: { force?: boolean }) => {
     try {
-      const response = await fetch(`${apiBase}/${resource}/${listingId}/comments`, { cache: "no-store" });
-      const payload = await response.json().catch(() => null) as CommentsResponse | null;
-      if (!response.ok || !payload) throw new Error(payload?.error || "Unable to load comments right now.");
+      const payload = await fetchComments(listingId, space, options);
       setComments(payload.comments);
       setCurrentUserId(payload.currentUserId);
       setError(null);
@@ -129,9 +113,12 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     } finally {
       setIsLoading(false);
     }
-  }, [apiBase, listingId, resource]);
+  }, [listingId, space]);
 
-  useEffect(() => { void loadComments(); }, [loadComments]);
+  useEffect(() => {
+    setIsLoading(!readCachedComments(listingId, space));
+    void refreshComments();
+  }, [listingId, refreshComments, space]);
 
   const commentsByParent = useMemo(() => {
     const groups = new Map<string | null, ListingComment[]>();
@@ -187,7 +174,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (response.status === 401) throw new Error("Please log in to post a comment.");
       if (!response.ok) throw new Error(payload?.error || "Unable to post your comment right now.");
-      void loadComments();
+      invalidateComments(listingId, space);
+      void refreshComments({ force: true });
     } catch (submitError) {
       setComments((current) => current.filter((comment) => comment.id !== optimisticComment.id));
       if (parentId) {
@@ -214,7 +202,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       const response = await fetch(`${apiBase}/comments/${comment.id}/vote`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: targetValue }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to record your vote.");
-      await loadComments();
+      invalidateComments(listingId, space);
+      await refreshComments({ force: true });
     } catch (voteError) {
       setError(voteError instanceof Error ? voteError.message : "Unable to record your vote.");
     } finally {
@@ -231,7 +220,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to update this comment.");
       setEditingId(null);
-      await loadComments();
+      invalidateComments(listingId, space);
+      await refreshComments({ force: true });
     } catch (editError) {
       setError(editError instanceof Error ? editError.message : "Unable to update this comment.");
     } finally {
@@ -246,7 +236,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "DELETE" });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(payload?.error || "Unable to delete this comment.");
-      await loadComments();
+      invalidateComments(listingId, space);
+      await refreshComments({ force: true });
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unable to delete this comment.");
     } finally {
