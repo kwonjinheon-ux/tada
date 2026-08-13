@@ -12,7 +12,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   const excerpt = post.excerpt.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
   const featuredImage = post.images?.[0] ?? (post.image ? { src: post.image, alt: post.imageAlt ?? "" } : null);
   return (
-    <article className={`community-post-card community-post-card-${post.type}`}>
+    <article className={`community-post-card community-post-card-${post.type} ${featuredImage ? "" : "community-post-card-no-media"}`}>
       <Link className="community-post-card-link" href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`} onClick={() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST", keepalive: true }); }}>
         {featuredImage ? <div className="community-post-media"><img src={featuredImage.src} alt={featuredImage.alt} /></div> : null}
         <div className="community-post-body">
