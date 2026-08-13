@@ -9339,58 +9339,13 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .home-sponsor-visual { right: var(--space-8); width: calc(var(--control-h-2xl) * 8); }
 }
 
-/* Shared comment typography and avatar density across market and community. */
-.listing-comments {
-  --listing-comment-avatar-size: calc(42px * .75);
-  --listing-comment-child-avatar-size: calc(34px * .75);
-}
-
-.listing-comment {
-  grid-template-columns: var(--listing-comment-avatar-size) minmax(0, 1fr);
-}
-
-.listing-comment-avatar {
-  width: var(--listing-comment-avatar-size);
-  height: var(--listing-comment-avatar-size);
-}
-
-.listing-comment-children .listing-comment {
-  grid-template-columns: var(--listing-comment-child-avatar-size) minmax(0, 1fr);
-}
-
-.listing-comment-children .listing-comment-avatar {
-  width: var(--listing-comment-child-avatar-size);
-  height: var(--listing-comment-child-avatar-size);
+/* Shared comment typography across market and community. */
+.listing-comments .listing-comment-author-row strong {
+  font-weight: var(--weight-regular);
 }
 
 .listing-comments .listing-comment-content > p,
 .listing-detail-page .listing-comment-content > p,
 .community-blog-post .listing-comment-content > p {
-  font-size: var(--text-base);
-}
-
-.community-blog-post .listing-comments {
-  --listing-comment-avatar-size: calc(32px * .75);
-  --listing-comment-child-avatar-size: calc(32px * .75);
-}
-
-.community-blog-post .listing-comment {
-  grid-template-columns: var(--listing-comment-avatar-size) minmax(0, 1fr);
-}
-
-.community-blog-post .listing-comment-avatar {
-  width: var(--listing-comment-avatar-size);
-  height: var(--listing-comment-avatar-size);
-}
-
-@media (max-width: 767.98px) {
-  .listing-comments {
-    --listing-comment-avatar-size: calc(36px * .75);
-    --listing-comment-child-avatar-size: calc(30px * .75);
-  }
-
-  .community-blog-post .listing-comments {
-    --listing-comment-avatar-size: calc(32px * .75);
-    --listing-comment-child-avatar-size: calc(32px * .75);
-  }
+  font-size: var(--text-md);
 }
