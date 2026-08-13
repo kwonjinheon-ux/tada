@@ -8628,7 +8628,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--blue-soft-600); font-size: var(--text-xs); }
 .community-post-meta span { display: inline-flex; align-items: center; gap: 5px; }
 .community-post-meta .community-post-author { margin-left: auto; text-align: right; }
-.community-post-save { width: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0 !important; }.community-post-save.is-saved { color: var(--color-danger); }.community-post-save:disabled { cursor: wait; opacity: .65; }.community-post-card-save { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 1; }.community-post-card-link .community-post-title-row { padding-right: var(--control-h-xs); }
+.community-post-save { width: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0 !important; }.community-post-save.is-saved { color: var(--color-danger); }.community-post-save:disabled { cursor: wait; opacity: .65; }
 
 .community-post-list.is-grid-view { display: grid; grid-template-columns: minmax(0, 760px); justify-content: center; gap: 0; }
 .community-blog-post { display: grid; gap: var(--space-3); padding: var(--space-5) 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; background: transparent; box-shadow: none; }
@@ -8677,7 +8677,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 @media (max-width: 767.98px) {
   .community-post-card { margin: 0; }.community-post-card-link { grid-template-columns: 75px minmax(0, 1fr); gap: 12px; padding: 14px 0; }
   .community-post-media { width: 75px; height: 75px; }
-  .community-post-body h2 { font-size: var(--text-md); white-space: normal; }
+  .community-post-body h2 { font-size: var(--text-lg); white-space: normal; }
+  .community-post-meta { font-size: var(--text-sm); }
   .community-post-list.is-grid-view { grid-template-columns: minmax(0, 1fr); }.community-blog-post { padding: var(--space-4) 0; }.community-blog-post h2 { font-size: var(--text-xl); }.community-blog-main-image { min-height: 240px; touch-action: pan-y; }.community-blog-author span:last-child { display: none; }
 }
 

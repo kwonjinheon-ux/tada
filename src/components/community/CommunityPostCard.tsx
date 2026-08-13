@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
-import { CommunityPostSaveButton } from "@/components/community/CommunityPostSaveButton";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
@@ -31,7 +30,6 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           </div>
         </div>
       </Link>
-      <CommunityPostSaveButton postId={post.id} initialIsSaved={post.isSaved} className="community-post-card-save" />
     </article>
   );
 }
