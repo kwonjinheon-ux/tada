@@ -18,7 +18,8 @@ function formatLocation(city: string | null, suburb: string | null) { return [su
 function safeSearch(value: string) { return value.replace(/[,%()]/g, " ").trim(); }
 function exactFilterValue(value: string) { return JSON.stringify(value); }
 
-export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+  const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;
@@ -38,7 +39,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     const operator = ascending ? "gt" : "lt";
     request = request.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`);
   }
-  const primaryResult = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(PAGE_SIZE + 1);
+  const primaryResult = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1);
   let data = primaryResult.data as Row[] | null;
   // Deployments can temporarily run newer application code before the additive
   // location migration. Fall back to the legacy columns instead of presenting an
@@ -53,10 +54,10 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     if (query.subLocation) legacyRequest = legacyRequest.eq("region_suburb", query.subLocation);
     if (search) legacyRequest = legacyRequest.or(`title.ilike.%${search}%,region_city.ilike.%${search}%,region_suburb.ilike.%${search}%`);
     if (cursor) { const operator = ascending ? "gt" : "lt"; legacyRequest = legacyRequest.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`); }
-    data = (await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(PAGE_SIZE + 1)).data as Row[] | null;
+    data = (await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1)).data as Row[] | null;
   }
   const rows = ((data ?? []) as Row[]);
-  const page = rows.slice(0, PAGE_SIZE);
+  const page = rows.slice(0, pageSize);
   const ids = page.map((row) => row.id);
   const { data: photoRows } = ids.length ? await supabase.from("market_listing_photos").select("listing_id,storage_path,original_name,is_primary,display_order").in("listing_id", ids).order("display_order") : { data: [] };
   const photos = new Map<string, Photo>();
@@ -75,7 +76,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", sortValue: query.sort === "newest" ? row.created_at : row.price_cents /* , commentCount: commentCounts.get(row.id) ?? 0 */ } satisfies Listing;
   });
   const last = page.at(-1);
-  return { listings, savedListingIds, nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };
+  return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };
 }
 
 const allBargainTypes = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"];
@@ -101,14 +102,15 @@ function decodeMergedCursor(cursor: string | undefined): MergedCursorPayload | n
 // cursor tracks, per source, the last item actually shown (not merely fetched), so any
 // unshown "leftover" candidates from a source that lost out this round get re-fetched
 // (not skipped) the next time that source's cursor is used.
-export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+  const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
   const mergedCursor = decodeMergedCursor(query.cursor);
   const marketCursor = mergedCursor?.market ?? null;
   const bargainCursor = mergedCursor?.bargain ?? null;
 
   const [marketResult, bargainResult] = await Promise.all([
-    getMarketFeed(supabase, { ...query, cursor: marketCursor ? encodeCursor(marketCursor.value, marketCursor.id) : undefined }, userId),
+    getMarketFeed(supabase, { ...query, cursor: marketCursor ? encodeCursor(marketCursor.value, marketCursor.id) : undefined }, userId, { pageSize }),
     getBargainFeed(supabase, {
       q: query.q,
       sort: query.sort,
@@ -120,7 +122,7 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
       condition: query.condition,
       bargain: "all",
       cursor: bargainCursor ? encodeCursor(bargainCursor.value, bargainCursor.id) : undefined,
-    }, userId, { bargainTypes: allBargainTypes, pageSize: PAGE_SIZE }),
+    }, userId, { bargainTypes: allBargainTypes, pageSize }),
   ]);
 
   const ascending = query.sort === "priceAsc";
@@ -130,14 +132,14 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
     if (a === b) return 0;
     return ascending ? (a < b ? -1 : 1) : (a > b ? -1 : 1);
   });
-  const page = merged.slice(0, PAGE_SIZE);
+  const page = merged.slice(0, pageSize);
   const marketIds = new Set(marketResult.listings.map((listing) => listing.id));
   const bargainIds = new Set(bargainResult.listings.map((listing) => listing.id));
   const lastShownMarket = [...page].reverse().find((listing) => marketIds.has(listing.id));
   const lastShownBargain = [...page].reverse().find((listing) => bargainIds.has(listing.id));
   const nextMarketCursor: Cursor | null = lastShownMarket ? { value: lastShownMarket.sortValue ?? "", id: lastShownMarket.id } : marketCursor;
   const nextBargainCursor: Cursor | null = lastShownBargain ? { value: lastShownBargain.sortValue ?? "", id: lastShownBargain.id } : bargainCursor;
-  const hasNextPage = merged.length > PAGE_SIZE || Boolean(marketResult.nextCursor) || Boolean(bargainResult.nextCursor);
+  const hasNextPage = merged.length > pageSize || Boolean(marketResult.nextCursor) || Boolean(bargainResult.nextCursor);
 
   return {
     listings: page,

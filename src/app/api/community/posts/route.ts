@@ -59,7 +59,7 @@ export async function GET(request: Request) {
   const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([rankedPostIdsRequest ?? Promise.resolve({ data: [], error: null }), userRequest]);
   if (rankedPostIdsError) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
-  let directSearchRequest = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  let directSearchRequest = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(search ? 100 : 40);
   if (category.success && category.data) directSearchRequest = directSearchRequest.eq("category_slug", category.data);
   if (mainLocation) directSearchRequest = directSearchRequest.eq("region_city", mainLocation);
   if (subLocation) directSearchRequest = directSearchRequest.eq("region_suburb", subLocation);
