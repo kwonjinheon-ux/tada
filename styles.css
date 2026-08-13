@@ -8624,7 +8624,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-title-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .community-post-body h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
 .community-post-title-row h2 { flex: 0 1 auto; min-width: 0; }
-.community-post-comment-count.is-low { background: var(--color-warning); }.community-post-comment-count.is-medium { background: var(--color-primary); }.community-post-comment-count.is-high { background: var(--blue-500); }.community-post-comment-count.is-hot { background: var(--color-danger); }
+.community-post-comment-count.is-low { background: var(--amber-350); color: var(--blue-900); }.community-post-comment-count.is-medium { background: var(--color-primary); }.community-post-comment-count.is-high { background: var(--blue-500); }.community-post-comment-count.is-hot { background: var(--color-danger); }
 .community-post-comment-count { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--radius-circle); background: var(--amber-450); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-bold); }
 .community-post-list:not(.is-grid-view) .community-post-comment-count { transform: scale(.9375); }
 .community-post-excerpt { overflow: hidden; margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.community-post-card.is-expanded .community-post-excerpt { overflow: visible; text-overflow: clip; white-space: normal; }
@@ -8695,6 +8695,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (min-width: 1200px) {
   .marketplace-page.community-page { grid-template-columns: 272px minmax(0, 1fr) 300px; gap: 0; }
+  /* MobileDrawer stays mounted for the compact category trigger. It must not
+     participate in the desktop browse grid, where the persistent filter rail
+     below owns the first column. */
+  .community-desktop-layout > .mobile-side-drawer { display: none; }
   .community-recent-panel { display: block; position: sticky; top: var(--desktop-header-height); align-self: start; max-height: calc(100vh - var(--desktop-header-height)); margin: 12px max(var(--page-padding-inline), env(safe-area-inset-right)) 12px 12px; padding: 12px; border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--surface); overflow-y: auto; }
   /* Detail and publishing screens share the feed's central column. The browse
      rails stay fixed while only the centre surface changes. */
