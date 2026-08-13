@@ -1455,7 +1455,7 @@ a {
 .shop-type-filter .filter-list > a.shop-type-groupbuy > i { color: var(--amber-450); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 
-.community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-free-stuff > i { color: var(--green-650); }.community-category-list > button.community-category-lost-found > i { color: var(--red-750); }.community-category-list > button.community-category-parents-kids > i { color: var(--rose-700); }.community-category-list > button.community-category-jobs-services > i { color: var(--blue-soft-750); }.community-category-list > button.community-category-housing-flatmates > i { color: var(--blue-450); }.community-category-list > button.community-category-study-language > i { color: var(--blue-400); }.community-category-list > button.community-category-clubs-meetups > i { color: var(--violet-700); }
+.community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-free-stuff > i, .post-shop-type-options > button.community-category-free-stuff > i { color: var(--green-650); }.community-category-list > button.community-category-lost-found > i, .post-shop-type-options > button.community-category-lost-found > i { color: var(--red-750); }.community-category-list > button.community-category-parents-kids > i, .post-shop-type-options > button.community-category-parents-kids > i { color: var(--rose-700); }.community-category-list > button.community-category-jobs-services > i, .post-shop-type-options > button.community-category-jobs-services > i { color: var(--blue-soft-750); }.community-category-list > button.community-category-housing-flatmates > i, .post-shop-type-options > button.community-category-housing-flatmates > i { color: var(--blue-450); }.community-category-list > button.community-category-study-language > i, .post-shop-type-options > button.community-category-study-language > i { color: var(--blue-400); }.community-category-list > button.community-category-clubs-meetups > i, .post-shop-type-options > button.community-category-clubs-meetups > i { color: var(--violet-700); }
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
 
 .price-filter input {
@@ -4687,6 +4687,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-family: Consolas, "Courier New", monospace;
   font-size: var(--text-base);
 }
+
+.community-create-page .post-editor-content,
+.community-create-page .post-editor-source { min-height: 180px; }
 
 .category-template-panel {
   display: grid;
