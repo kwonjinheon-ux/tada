@@ -8675,7 +8675,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 @media (max-width: 767.98px) { .community-detail-gallery .listing-detail-main-image { display: block; }.community-detail-gallery .listing-detail-thumbnails { display: none; }.community-detail-gallery .listing-detail-image-count { display: inline-flex; align-items: center; gap: 4px; } }
 
 @media (max-width: 767.98px) {
-  .community-post-card { margin: 0; }.community-post-card-link { grid-template-columns: 75px minmax(0, 1fr); gap: 12px; padding: 14px 0; }
+  .community-post-card { margin: 0; border-radius: 0; }.community-post-card-link { grid-template-columns: 75px minmax(0, 1fr); gap: 12px; padding: 14px 0; }
   .community-post-media { width: 75px; height: 75px; }
   .community-post-body h2 { font-size: var(--text-lg); white-space: normal; }
   .community-post-meta { font-size: var(--text-sm); }
