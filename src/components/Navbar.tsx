@@ -376,11 +376,7 @@ export function Navbar() {
   };
 
   const runSearch = (query: string) => {
-    if (pathname !== "/market") {
-      router.push(`/market${query ? `?q=${encodeURIComponent(query)}` : ""}`);
-      return;
-    }
-    window.dispatchEvent(new CustomEvent("market-search-query-change", { detail: query }));
+    router.push(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -410,9 +406,6 @@ export function Navbar() {
 
   const updateSearchQuery = (value: string) => {
     setSearchQuery(value);
-    if (pathname === "/market") {
-      window.dispatchEvent(new CustomEvent("market-search-query-change", { detail: value }));
-    }
   };
 
   const isMarket = pathname.startsWith("/market");

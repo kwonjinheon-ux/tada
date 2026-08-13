@@ -48,23 +48,31 @@ export async function GET(request: Request) {
 
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
+  const search = url.searchParams.get("q")?.replace(/[,%()]/g, " ").trim().slice(0, 60) ?? "";
   const userRequest = supabase.auth.getUser();
-  const rankedPostIdsRequest = supabase.rpc("get_ranked_community_post_ids", {
+  const rankedPostIdsRequest = search ? null : supabase.rpc("get_ranked_community_post_ids", {
     p_category_slug: category.success ? category.data ?? null : null,
     p_region_city: mainLocation || null,
     p_region_suburb: subLocation || null,
     p_limit: 40,
   });
-  const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([rankedPostIdsRequest, userRequest]);
+  const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([rankedPostIdsRequest ?? Promise.resolve({ data: [], error: null }), userRequest]);
   if (rankedPostIdsError) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
-  const { data: unorderedPostsData, error } = orderedPostIds.length
-    ? await supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").in("id", orderedPostIds)
-    : { data: [], error: null };
+  let directSearchRequest = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(40);
+  if (category.success && category.data) directSearchRequest = directSearchRequest.eq("category_slug", category.data);
+  if (mainLocation) directSearchRequest = directSearchRequest.eq("region_city", mainLocation);
+  if (subLocation) directSearchRequest = directSearchRequest.eq("region_suburb", subLocation);
+  if (search) directSearchRequest = directSearchRequest.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
+  const { data: unorderedPostsData, error } = search
+    ? await directSearchRequest
+    : orderedPostIds.length
+      ? await supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").in("id", orderedPostIds)
+      : { data: [], error: null };
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const unorderedPosts = (unorderedPostsData ?? []) as CommunityPostRow[];
   const postsById = new Map<string, CommunityPostRow>(unorderedPosts.map((post) => [post.id, post]));
-  const data: CommunityPostRow[] = orderedPostIds.flatMap((postId: string) => {
+  const data: CommunityPostRow[] = search ? unorderedPosts : orderedPostIds.flatMap((postId: string) => {
     const post = postsById.get(postId);
     return post ? [post] : [];
   });

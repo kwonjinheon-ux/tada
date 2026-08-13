@@ -4688,6 +4688,25 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-size: var(--text-base);
 }
 
+.global-search-page { min-height: calc(100vh - var(--site-header-height)); background: var(--color-surface); }
+.global-search-results { display: grid; gap: var(--section-gap); padding-block: var(--section-gap); }
+.global-search-results > h1 { margin: 0; color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.global-search-section { display: grid; gap: var(--content-gap); min-width: 0; }
+.global-search-section-heading { display: flex; align-items: center; gap: var(--space-2); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-line-soft); color: var(--color-ink); }
+.global-search-section-heading i { color: var(--color-primary-dark); }
+.global-search-section-heading h2 { margin: 0; font-size: var(--text-xl); }
+.global-search-section-heading span { display: inline-grid; min-width: var(--control-h-xs); height: var(--control-h-xs); place-items: center; border-radius: var(--radius-circle); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.global-search-market-list, .global-search-community-list { width: 100%; }
+.global-search-no-results, .global-search-loading, .global-search-empty { margin: 0; color: var(--color-ink-soft); font-size: var(--text-md); }
+.global-search-loading, .global-search-empty { display: grid; justify-items: center; gap: var(--space-2); padding: var(--space-6); text-align: center; }
+.global-search-loading i, .global-search-empty i { color: var(--color-primary); font-size: var(--text-xl); }
+.global-search-empty strong { color: var(--color-ink); font-size: var(--text-xl); }
+
+@media (max-width: 767.98px) {
+  .global-search-results { padding-block: var(--space-5); gap: var(--space-6); }
+  .global-search-results > h1 { font-size: var(--text-xl); }
+}
+
 .community-create-page .post-editor-content,
 .community-create-page .post-editor-source { min-height: 180px; }
 
