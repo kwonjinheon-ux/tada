@@ -8682,7 +8682,26 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-card-link { --community-thumb: clamp(62px, 19.231vw, 75px); min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 12px; border-radius: inherit; color: inherit; text-decoration: none; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
 .community-post-card:hover .community-post-card-link { background: var(--neutral-150); }
 .community-post-card-link { cursor: pointer; }.community-post-card-link:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
-.community-post-card-skeleton { cursor: default; pointer-events: none; }.community-post-skeleton-media, .community-post-skeleton-body i { display: block; border-radius: var(--radius-xs); background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%); background-size: 220% 100%; animation: infinite-market-shimmer 1.1s ease-in-out infinite; }.community-post-skeleton-media { width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); }.community-post-skeleton-body { display: grid; gap: var(--space-2); }.community-post-skeleton-body i { width: 78%; height: var(--space-4); }.community-post-skeleton-body i:nth-child(2) { width: 94%; height: var(--space-3); }.community-post-skeleton-body i:nth-child(3) { width: 56%; height: var(--space-3); }
+/* The skeleton reuses the real card's classes, so it only needs to neutralise
+   interaction and paint the shimmer bars — the grid, gaps and row heights all
+   come from the real rules above and therefore match what replaces them. */
+.community-post-card-skeleton .community-post-card-link { cursor: default; pointer-events: none; }
+.community-post-card-skeleton:hover .community-post-card-link { background: transparent; }
+.community-post-skeleton-media, .community-post-skeleton-title, .community-post-skeleton-meta i { display: block; border-radius: var(--radius-xs); background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%); background-size: 220% 100%; animation: infinite-market-shimmer 1.1s ease-in-out infinite; }
+.community-post-skeleton-media { width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); }
+/* Sized off the same tokens the real title and meta text use, so the bars
+   occupy the exact line box the copy will. */
+/* Bar heights are the token times its line-height, so each bar fills the same
+   line box the real h2 and meta text occupy rather than just the glyph height —
+   that is what makes the placeholder row the same height as the finished card. */
+.community-post-skeleton-title { height: calc(var(--text-lg) * 1.5); }
+/* Widths are set so the author bar overflows onto a second line exactly like
+   the real meta row does, which keeps the placeholder the same height as the
+   card that replaces it. */
+.community-post-skeleton-meta i { width: 52px; height: calc(var(--text-sm) * 1.45); }
+.community-post-skeleton-meta i:nth-child(2) { width: 38px; }
+.community-post-skeleton-meta i:nth-child(3) { width: 140px; }
+.community-post-skeleton-meta i:nth-child(4) { width: 72px; margin-left: auto; }
 .community-post-media { position: relative; width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); overflow: hidden; border-radius: var(--radius-xs); background: var(--neutral-200); }
 .community-post-media img { width: 100%; height: 100%; object-fit: cover; }
 .community-post-body { min-width: 0; display: grid; gap: 4px; }.community-post-card.is-expanded { align-items: start; }.community-post-card.is-expanded .community-post-media { align-self: start; }
@@ -8731,6 +8750,21 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-detail-container { display: grid; gap: var(--space-6); min-width: 0; padding-top: var(--space-6); padding-bottom: var(--space-10); }
 .community-detail-breadcrumb { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--color-ink-soft); font-size: var(--text-md); }
 .community-detail-breadcrumb a { color: inherit; text-decoration: none; }.community-detail-breadcrumb a:hover { color: var(--color-primary-dark); text-decoration: underline; }.community-detail-breadcrumb i { font-size: var(--text-2xs); }.community-detail-breadcrumb span { color: var(--color-ink); font-weight: var(--weight-semibold); text-transform: capitalize; }
+/* Bars for the route's loading.tsx. Heights come from the same tokens the real
+   breadcrumb, h1, meta and body use, so the shell does not resize when the
+   post arrives. */
+.community-detail-skeleton-breadcrumb i, .community-detail-skeleton-title, .community-detail-skeleton-meta i, .community-detail-skeleton-body i { display: block; border-radius: var(--radius-xs); background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%); background-size: 220% 100%; animation: infinite-market-shimmer 1.1s ease-in-out infinite; }
+.community-detail-skeleton-breadcrumb i { width: 72px; height: var(--text-md); }
+.community-detail-skeleton-breadcrumb i:nth-child(2) { width: 54px; }
+.community-detail-skeleton-title { width: 62%; height: var(--text-2xl); }
+.community-detail-skeleton-meta i { width: 64px; height: var(--text-sm); }
+.community-detail-skeleton-meta i:nth-child(2) { width: 118px; }
+.community-detail-skeleton-meta i:nth-child(3) { width: 86px; }
+.community-detail-skeleton-body { display: grid; gap: var(--space-3); }
+.community-detail-skeleton-body i { width: 96%; height: var(--text-md); }
+.community-detail-skeleton-body i:nth-child(2) { width: 91%; }
+.community-detail-skeleton-body i:nth-child(4) { width: 57%; }
+@media (max-width: 767.98px) { .community-detail-skeleton-title { height: var(--text-xl); } .community-detail-skeleton-body i { height: var(--text-lg); } }
 .community-detail-post { display: grid; gap: var(--space-5); width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
 .community-detail-post-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }.community-detail-post-heading { min-width: 0; display: grid; gap: var(--space-3); }.community-detail-title-row { display: flex; align-items: center; gap: var(--space-3); }.community-detail-title-row h1 { margin: 0; color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-bold); line-height: 1.25; }.community-detail-post-meta { display: flex; flex-wrap: wrap; gap: var(--space-4); color: var(--color-ink-soft); font-size: var(--text-sm); }.community-detail-post-meta span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .community-detail-author { display: grid; justify-items: center; gap: var(--space-2); min-width: 90px; color: var(--color-ink-soft); font-size: var(--text-sm); text-align: center; }.community-detail-author-identity { display: grid; justify-items: center; gap: var(--space-2); }.community-detail-author-avatar { width: var(--control-h-xl); height: var(--control-h-xl); display: grid; place-items: center; overflow: hidden; border: 3px solid var(--color-surface-soft); border-radius: var(--radius-circle); object-fit: cover; clip-path: circle(50%); box-shadow: var(--shadow-xs); }.community-post-owner-menu { position: relative; }.community-post-owner-menu-trigger { width: var(--control-h-xs); min-height: var(--control-h-xs); padding: 0; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-950); }.community-post-owner-menu-trigger:hover { background: var(--neutral-250); color: var(--blue-950); }.community-post-owner-menu-popover { position: absolute; top: calc(100% + var(--space-2)); right: 0; z-index: 5; display: grid; min-width: 136px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }.community-post-owner-menu-popover button { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font: inherit; font-size: var(--text-sm); text-align: left; cursor: pointer; }.community-post-owner-menu-popover button:hover { background: var(--color-surface-soft); }.community-post-owner-menu-popover button.is-danger { color: var(--color-danger); }.community-post-owner-menu-popover button:focus-visible, .community-post-owner-menu-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }

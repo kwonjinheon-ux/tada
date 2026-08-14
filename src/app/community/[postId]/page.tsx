@@ -28,21 +28,30 @@ export default async function CommunityPostPage({ params, searchParams }: { para
   const relatedCategory = category.success ? category.data : undefined;
   const supabase = await createServerSupabaseClient();
   if (supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: post } = await supabase.from("community_posts").select("id,author_id,post_type,title,body,region_city,region_suburb,created_at,view_count").eq("id", postId).eq("status", "published").maybeSingle();
+    // These three waves replace what used to be seven sequential round trips.
+    // Nothing here depends on the auth lookup, and score/share_count come off
+    // the post row itself rather than a second read of the same row.
+    const [{ data: { user } }, { data: post }] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from("community_posts").select("id,author_id,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle(),
+    ]);
     if (post) {
-      const { data: imageRows } = await supabase.from("community_post_images").select("storage_path").eq("post_id", post.id).order("display_order");
-      const paths = (imageRows ?? []).map((image) => image.storage_path as string);
-      const urls = await getSignedStorageImages("community-post-images", paths, "gallery");
-      const { data: author } = await supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle();
-      const { data: signedAvatar } = author?.avatar_path ? await supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600) : { data: null };
-      const [{ count: responseCount }, { data: engagement }, { data: vote }, { data: saved }] = await Promise.all([
+      // Everything below needs only post.id / post.author_id / user, so it all
+      // goes out together instead of images -> author -> counts in series.
+      const [{ data: imageRows }, { data: author }, { count: responseCount }, { data: vote }, { data: saved }] = await Promise.all([
+        supabase.from("community_post_images").select("storage_path").eq("post_id", post.id).order("display_order"),
+        supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle(),
         supabase.from("community_post_comments").select("id", { count: "exact", head: true }).eq("post_id", post.id).is("deleted_at", null),
-        supabase.from("community_posts").select("score,share_count").eq("id", post.id).maybeSingle(),
         user ? supabase.from("community_post_votes").select("value").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
         user ? supabase.from("community_wishlist").select("post_id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
-      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? null, authorAvatarUrl: signedAvatar?.signedUrl ?? null, viewCount: post.view_count ?? 0, score: engagement?.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: engagement?.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
+      // Both signing calls depend on the wave above but not on each other.
+      const paths = (imageRows ?? []).map((image) => image.storage_path as string);
+      const [urls, { data: signedAvatar }] = await Promise.all([
+        getSignedStorageImages("community-post-images", paths, "gallery"),
+        author?.avatar_path ? supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600) : Promise.resolve({ data: null }),
+      ]);
+      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? null, authorAvatarUrl: signedAvatar?.signedUrl ?? null, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} initialAction={initialAction} />;
     }
   }
