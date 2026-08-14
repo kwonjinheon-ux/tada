@@ -376,7 +376,11 @@ export function Navbar() {
   };
 
   const runSearch = (query: string) => {
-    router.push(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (pathname.startsWith("/community")) params.set("scope", "community");
+    const search = params.toString();
+    router.push(`/search${search ? `?${search}` : ""}`);
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -549,6 +553,12 @@ export function Navbar() {
             <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
           <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} onFocus={() => { setIsSearchSuggestionsOpen(true); if (!trendingSearches.length) void loadTrendingSearches(); }} onBlur={() => window.setTimeout(() => setIsSearchSuggestionsOpen(false), 120)} type="search" role="combobox" placeholder={t("search")} aria-autocomplete="list" aria-expanded={isSearchSuggestionsOpen && trendingSearches.length > 0} aria-controls="trending-searches" />
+          <button className="nav-search-submit" type="submit" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+              <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
           {isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
             <div className="nav-search-suggestions" id="trending-searches" role="listbox" aria-label="Popular searches">
               <span>Popular searches</span>
