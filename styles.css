@@ -5546,6 +5546,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: var(--text-lg);
   }
 
+  /* The mobile field is a two-column grid (leading icon + input), so the
+     desktop submit button had no column and wrapped onto a second row —
+     which is what made the search box render two lines tall. Hiding it costs
+     nothing: the form's onSubmit still fires on Enter and on the mobile
+     keyboard's Search key, and the leading icon keeps the affordance. */
+  .nav-search-submit {
+    display: none;
+  }
+
   .nav-menu-button {
     grid-area: menu;
     justify-self: start;
