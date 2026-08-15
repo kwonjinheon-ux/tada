@@ -383,7 +383,8 @@ export function Navbar() {
     if (query) params.set("q", query);
     else params.delete("q");
     const search = params.toString();
-    const destination = pathname.startsWith("/community") ? "/community" : pathname.startsWith("/services") ? "/services" : "/market";
+    const isMarketBrowseRoute = pathname === "/market" || /^\/market\/(secondhands|garage-sales|moving-sales|2dollarshop|groupbuy)$/.test(pathname);
+    const destination = pathname.startsWith("/community") ? "/community" : pathname.startsWith("/services") ? "/services" : isMarketBrowseRoute ? pathname : "/market";
     router.push(`${destination}${search ? `?${search}` : ""}`);
   };
 

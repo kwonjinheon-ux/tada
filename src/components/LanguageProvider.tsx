@@ -42,7 +42,7 @@ const copy = {
     communityMoreInCategory: "More in this category", communityMorePosts: "More community posts", communityPostOptions: "Post options", communityHideComments: "Hide comments", communityOpenComments: "Open comments", communitySharePost: "Share post", communityCopied: "Copied", communityShare: "Share",
   },
   ko: {
-    search: "물품 검색...", searchCommunity: "커뮤니티 글 검색...", searchServices: "서비스 검색...", market: "마켓", jobs: "일자리", services: "서비스", community: "커뮤니티", create: "등록", home: "홈", messages: "메시지", categories: "카테고리", more: "더보기",
+    search: "물품 검색", searchCommunity: "커뮤니티 전체 검색", searchServices: "서비스 검색", market: "마켓", jobs: "일자리", services: "서비스", community: "커뮤니티", create: "등록", home: "홈", messages: "메시지", categories: "카테고리", more: "더보기",
     dashboard: "대시보드", profileSettings: "프로필 설정", notifications: "알림", wishlist: "찜 목록", keywords: "키워드", manageListings: "판매 관리", nearbyMap: "내 주변 지도", logOut: "로그아웃", adminCentre: "관리자 센터", accountMenu: "계정", logIn: "로그인", signUp: "회원가입",
     languageSettings: "언어 설정", displayLanguage: "표시 언어", supportedNow: "영어와 한국어는 지금 바로 지원됩니다. 다른 언어는 향후 번역을 위해 설정값만 저장됩니다.", languageSaved: "언어 설정이 저장되었습니다.",
     account: "계정", security: "보안", emailAddress: "이메일 주소", phoneNumber: "전화번호", nickname: "닉네임", password: "비밀번호", currentPassword: "현재 비밀번호", newPassword: "새 비밀번호", confirmNewPassword: "새 비밀번호 확인", updatePassword: "비밀번호 변경", save: "저장", cancel: "취소", update: "수정", verify: "인증", verified: "인증됨", changeEmail: "이메일 변경", changePhoneNumber: "전화번호 변경", verifyCode: "인증 코드 확인",
