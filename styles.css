@@ -8860,7 +8860,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
   .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-location {
     z-index: 1;
-    padding-bottom: var(--space-4);
+    padding-bottom: 0;
     background: var(--neutral-50);
   }
 
