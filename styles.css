@@ -1875,23 +1875,15 @@ a {
    detail, mobile dock — uses this look and this burst; only --save-button-size
    changes. Do not restyle the heart locally.
 
-   .save-feedback carries the behaviour (burst room, pop, saved colour) so the
+   .save-feedback carries the behaviour (clipping, pop, saved colour) so the
    dock heart, which keeps the dock's own shape instead of this circle, still
    gets exactly the same feedback. */
 .save-feedback {
-  --save-burst-reach: 52px;
   isolation: isolate;
-  /* The burst has to escape the button, but it must not escape into the page:
-     a heart landing past the viewport edge grows the document's scrollable
-     width, which on mobile turns into sideways scrolling and a layout that
-     drifts out from under the fixed header and dock. Clipping keeps the
-     particles out of that scroll area; the clip margin is the room they are
-     allowed to paint into, and it costs the page nothing. Browsers without a
-     clip margin fall back to clipping at the button itself — a smaller burst,
-     never a broken page. */
+  /* Keep particle feedback inside its save control so it cannot paint over
+     adjacent cards, rows, or page controls. */
   overflow: hidden;
   overflow: clip;
-  overflow-clip-margin: var(--save-burst-reach);
 }
 
 .save-feedback.is-saved,
@@ -1944,8 +1936,8 @@ a {
   pointer-events: none;
 }
 
-/* Only a coordinate origin — the particles are centred on it and travel by
-   transform, and how far they may show is set by --save-burst-reach. */
+/* The particles are centred on this coordinate origin and clipped by the
+   shared save control. */
 .save-heart-particles {
   inset: 0;
   z-index: 3;
@@ -8865,15 +8857,18 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-recent-ad-copy { position: relative; z-index: 1; display: grid; gap: var(--space-1); padding: var(--space-3); }.community-recent-ad-copy strong { font-size: var(--text-lg); font-weight: var(--weight-semibold); }.community-recent-ad-copy small { font-size: var(--text-sm); }
 .community-recent-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .community-recent-panel-heading h2 { margin: 0; color: var(--blue-soft-650); font-size: var(--text-xs); font-weight: var(--weight-regular); letter-spacing: .08em; text-transform: uppercase; }
-.community-recent-panel-list { display: grid; gap: 16px; }
-.community-recent-post { display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--neutral-250); }
-.community-recent-post-no-media { grid-template-columns: minmax(0, 1fr); }
-.community-recent-post:last-child { padding-bottom: 0; border-bottom: 0; }
-.community-recent-post-body { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.community-recent-panel-list { display: grid; gap: var(--space-2); }
+.community-recent-post { border-bottom: 1px solid var(--neutral-250); }
+.community-recent-post:last-child { border-bottom: 0; }
+.community-recent-post-link { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius-sm); color: inherit; text-decoration: none; transition: background-color 140ms ease, box-shadow 140ms ease, transform 140ms ease; }
+.community-recent-post-no-media .community-recent-post-link { grid-template-columns: minmax(0, 1fr); }
+.community-recent-post-link:hover, .community-recent-post-link:focus-visible { background: var(--color-surface-soft); box-shadow: var(--shadow-xs); transform: translateY(-2px); }
+.community-recent-post-link:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }
+.community-recent-post-body { min-width: 0; display: grid; gap: var(--space-1); align-content: start; }
 .community-recent-post-meta { color: var(--blue-soft-600); font-size: var(--text-2xs); font-weight: var(--weight-regular); }
 .community-recent-post-body h3 { display: -webkit-box; overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-sm); font-weight: var(--weight-regular); line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .community-recent-post-stats { color: var(--blue-soft-550); font-size: var(--text-xs); }
-.community-recent-post-media { width: 72px; height: 72px; overflow: hidden; border-radius: var(--radius-sm); background: var(--neutral-200); }
+.community-recent-post-media { width: 56px; height: 56px; overflow: hidden; border-radius: var(--radius-sm); background: var(--neutral-200); }
 .community-recent-post-media img { width: 100%; height: 100%; object-fit: cover; }
 .community-recent-post-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--blue-soft-500); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; }
 

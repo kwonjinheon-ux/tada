@@ -21,6 +21,7 @@ type CommunityPostActionsProps = {
   myVote?: Vote;
   shareCount?: number;
   initialIsSaved?: boolean;
+  isOwner?: boolean;
   onCommentsToggle?: () => void;
   onCommentsIntent?: () => void;
   commentsOpen?: boolean;
@@ -36,6 +37,7 @@ export function CommunityPostActions({
   myVote = 0,
   shareCount = 0,
   initialIsSaved = false,
+  isOwner = false,
   onCommentsToggle,
   onCommentsIntent,
   commentsOpen = false,
@@ -111,7 +113,7 @@ export function CommunityPostActions({
 
   return (
     <div className="community-post-actions" onClick={(event) => event.stopPropagation()}>
-      <CommunityPostSaveButton postId={postId} initialIsSaved={initialIsSaved} />
+      {!isOwner ? <CommunityPostSaveButton postId={postId} initialIsSaved={initialIsSaved} /> : null}
       <span className="community-vote-control">
         <button
           type="button"

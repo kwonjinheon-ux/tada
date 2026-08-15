@@ -142,7 +142,7 @@ export function CommunityPageClient() {
         </div> : <CommunityEmptyState />}
       </section>
 
-      <CommunityRecentPostsPanel posts={visiblePosts.slice(0, 4)} />
+      <CommunityRecentPostsPanel category={activeCategory} />
     </main>
   );
 }

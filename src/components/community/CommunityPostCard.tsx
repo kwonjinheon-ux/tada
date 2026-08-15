@@ -71,7 +71,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           </div>
           </div>
         </Link>
-        <CommunityPostSaveButton postId={post.id} initialIsSaved={post.isSaved} className="community-post-card-save" redirectTo={href ?? `/community/${post.id}`} />
+        {!post.isOwner ? <CommunityPostSaveButton postId={post.id} initialIsSaved={post.isSaved} className="community-post-card-save" redirectTo={href ?? `/community/${post.id}`} /> : null}
       </div>
       {isGalleryOpen && galleryImage ? <DialogOverlay className="listing-gallery-lightbox" aria-label={`${post.title} photo gallery`} onClose={() => setIsGalleryOpen(false)} dismissHint="Click outside to close">
         <img className="listing-gallery-lightbox-backdrop" src={galleryImage.src} alt="" aria-hidden="true" />

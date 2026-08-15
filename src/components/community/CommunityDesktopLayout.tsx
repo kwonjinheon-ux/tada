@@ -5,19 +5,17 @@ import { useRouter } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
-import type { CommunityPost } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
 
 type CommunityDesktopLayoutProps = {
   children: ReactNode;
   activeCategory?: CommunityCategory;
-  recentPosts?: CommunityPost[];
 };
 
 // Keeps every desktop community surface on the same browse-grid: filters,
 // content column, and recent-post rail. The rail is intentionally hidden by
 // the existing responsive styles below desktop sizes.
-export function CommunityDesktopLayout({ children, activeCategory = "all", recentPosts }: CommunityDesktopLayoutProps) {
+export function CommunityDesktopLayout({ children, activeCategory = "all" }: CommunityDesktopLayoutProps) {
   const router = useRouter();
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
@@ -71,7 +69,7 @@ export function CommunityDesktopLayout({ children, activeCategory = "all", recen
         />
       </aside>
       <section className="market-results community-results community-desktop-main">{children}</section>
-      <CommunityRecentPostsPanel posts={recentPosts} />
+      <CommunityRecentPostsPanel category={activeCategory} />
     </main>
   );
 }

@@ -4,24 +4,28 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
+import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
 import { readApiResponse } from "@/lib/api/client";
 
-export function CommunityRecentPostsPanel({ posts: initialPosts }: { posts?: CommunityPost[] }) {
+// One desktop rail adapts its data source to the selected community category.
+export function CommunityRecentPostsPanel({ category = "all" }: { category?: CommunityCategory }) {
   const { t } = useLanguage();
-  const [fetchedPosts, setFetchedPosts] = useState<CommunityPost[]>([]);
-  const posts = initialPosts ?? fetchedPosts;
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
-    if (initialPosts) return;
     const controller = new AbortController();
-    void fetch("/api/community/posts", { signal: controller.signal })
+    const params = new URLSearchParams({ sort: "recent" });
+    if (category !== "all") params.set("category", category);
+
+    void fetch(`/api/community/posts?${params}`, { signal: controller.signal })
       .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
-      .then((result) => { if (result.data) setFetchedPosts(result.data.posts.slice(0, 4)); })
-      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setFetchedPosts([]); });
+      .then((result) => { if (result.data) setPosts(result.data.posts); })
+      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPosts([]); });
+
     return () => controller.abort();
-  }, [initialPosts]);
+  }, [category]);
 
   return (
     <aside className="community-recent-panel" aria-label={t("communityRecentPostsHeading")}>
@@ -36,12 +40,14 @@ export function CommunityRecentPostsPanel({ posts: initialPosts }: { posts?: Com
       <div className="community-recent-panel-list">
         {posts.map((post) => (
           <article className={`community-recent-post ${post.image ? "" : "community-recent-post-no-media"}`} key={post.id}>
-            <div className="community-recent-post-body">
-              <span className="community-recent-post-meta">{t(communityPostTypeLabelKeys[post.type])} · {post.timeAgo ?? post.eventDate ?? t("communityNewPost")}</span>
-              <h3>{post.title}</h3>
-              <span className="community-recent-post-stats">{post.responseCount != null ? `${post.responseCount} ${t("communityResponses")}` : t("communityNoResponsesYet")}</span>
-            </div>
-            {post.image ? <div className="community-recent-post-media"><img src={post.image} alt="" /></div> : null}
+            <Link className="community-recent-post-link" href={`/community/${post.id}${category === "all" ? "" : `?category=${category}`}`}>
+              <div className="community-recent-post-body">
+                <span className="community-recent-post-meta">{t(communityPostTypeLabelKeys[post.type])} · {post.timeAgo ?? post.eventDate ?? t("communityNewPost")}</span>
+                <h3>{post.title}</h3>
+                <span className="community-recent-post-stats">{post.responseCount != null ? `${post.responseCount} ${t("communityResponses")}` : t("communityNoResponsesYet")}</span>
+              </div>
+              {post.image ? <div className="community-recent-post-media"><img src={post.image} alt="" /></div> : null}
+            </Link>
           </article>
         ))}
       </div>

@@ -19,8 +19,8 @@ export const saveFeedbackClasses = {
 
 const heartColors = ["#ff3b6b", "#ff5d8f", "#ff8a5b", "#ffbd4a", "#e94683"];
 
-// Travel is kept inside the --save-burst-reach the buttons paint into (52px
-// past their own edge), so no heart is ever cut off mid-flight.
+// The shared save control clips this feedback to its own bounds so a burst
+// never paints over neighbouring page content.
 export function createHeartParticles() {
   return Array.from({ length: 12 }, (_, index): HeartParticle => {
     const angle = (Math.PI * 2 * index) / 12 + (Math.random() - 0.5) * 0.45;

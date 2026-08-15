@@ -41,12 +41,15 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const category = communityPostCategorySchema.safeParse(url.searchParams.get("category"));
   if (url.searchParams.has("category") && !category.success) return apiFailure("BAD_REQUEST", "Invalid community category.", 400);
+  const sort = url.searchParams.get("sort");
+  if (sort && sort !== "recent") return apiFailure("BAD_REQUEST", "Invalid community post sort.", 400);
+  const isRecentFeed = sort === "recent";
 
   const mainLocation = url.searchParams.get("mainLocation")?.trim();
   const subLocation = url.searchParams.get("subLocation")?.trim();
   const search = url.searchParams.get("q")?.replace(/[,%()]/g, " ").trim().slice(0, 60) ?? "";
   const userRequest = supabase.auth.getUser();
-  const rankedPostIdsRequest = search ? null : supabase.rpc("get_ranked_community_post_ids", {
+  const rankedPostIdsRequest = search || isRecentFeed ? null : supabase.rpc("get_ranked_community_post_ids", {
     p_category_slug: category.success ? category.data ?? null : null,
     p_region_city: mainLocation || null,
     p_region_suburb: subLocation || null,
@@ -55,12 +58,12 @@ export async function GET(request: Request) {
   const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([rankedPostIdsRequest ?? Promise.resolve({ data: [], error: null }), userRequest]);
   if (rankedPostIdsError) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
-  let directSearchRequest = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(search ? 100 : 40);
+  let directSearchRequest = supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").eq("status", "published").order("created_at", { ascending: false }).limit(search ? 100 : isRecentFeed ? 10 : 40);
   if (category.success && category.data) directSearchRequest = directSearchRequest.eq("category_slug", category.data);
   if (mainLocation) directSearchRequest = directSearchRequest.eq("region_city", mainLocation);
   if (subLocation) directSearchRequest = directSearchRequest.eq("region_suburb", subLocation);
   if (search) directSearchRequest = directSearchRequest.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
-  const { data: unorderedPostsData, error } = search
+  const { data: unorderedPostsData, error } = search || isRecentFeed
     ? await directSearchRequest
     : orderedPostIds.length
       ? await supabase.from("community_posts").select("id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count").in("id", orderedPostIds)
@@ -68,7 +71,7 @@ export async function GET(request: Request) {
   if (error) return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   const unorderedPosts = (unorderedPostsData ?? []) as CommunityPostRow[];
   const postsById = new Map<string, CommunityPostRow>(unorderedPosts.map((post) => [post.id, post]));
-  const data: CommunityPostRow[] = search ? unorderedPosts : orderedPostIds.flatMap((postId: string) => {
+  const data: CommunityPostRow[] = search || isRecentFeed ? unorderedPosts : orderedPostIds.flatMap((postId: string) => {
     const post = postsById.get(postId);
     return post ? [post] : [];
   });
