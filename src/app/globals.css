@@ -212,31 +212,21 @@
   --radius-ui: var(--radius-md);
   --radius-card: var(--radius-lg);
 
-  /* --text-base matches the browser/user-agent default (16px = 1rem), the de
-     facto web standard for body text. Every var(--text-base) consumer picks
-     this up automatically; --text-lg now coincides with it at 16px too,
-     which is fine — two token names, same value. The other steps are
-     unchanged, so relative hierarchy above and below base is unaffected. */
-  /* Each step is `clamp(floor, <its px size as a share of 390px>, its px size)`.
-     390px is the iPhone width this design was drawn at, so at 390px and wider
-     the vw term always exceeds the max and every token resolves to exactly its
-     original px — desktop and iPhone are untouched. Below 390px the vw term
-     takes over and the whole scale shrinks in proportion to the viewport, so a
-     360px Android phone renders a 92% copy of the iPhone layout (same line
-     breaks) instead of squeezing 390px-sized type into a narrower screen. The
-     floors are the 320px equivalents, so the smallest phones stop scaling
-     rather than shrinking without limit. */
-  --text-2xs: clamp(8px, 2.564vw, 10px);
-  --text-xs: clamp(9px, 2.821vw, 11px);
-  --text-sm: clamp(10px, 3.077vw, 12px);
-  --text-base: clamp(13px, 4.103vw, 16px);
-  --text-md: clamp(11.5px, 3.590vw, 14px);
-  --text-lg: clamp(13px, 4.103vw, 16px);
-  --text-xl: clamp(15px, 4.615vw, 18px);
-  --text-2xl: clamp(16px, 5.128vw, 20px);
-  --text-3xl: clamp(20px, 6.154vw, 24px);
-  --text-4xl: clamp(23px, 7.179vw, 28px);
-  --text-5xl: clamp(26px, 8.205vw, 32px);
+  /* Keep the 16px browser default for body copy, and preserve the same type
+     hierarchy on every phone. Android handsets commonly expose a 360px CSS
+     viewport while recent iPhones expose 390px; global token scaling made
+     those devices look like separate designs rather than responsive variants. */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 16px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+  --text-4xl: 28px;
+  --text-5xl: 32px;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -261,19 +251,17 @@
   --control-h-xl: 44px;
   --control-h-2xl: 48px;
 
-  /* Scaled on the same 390px basis as the type steps above, so gaps shrink with
-     the text instead of eating a fixed slice of a narrower screen. The
-     --control-h-* heights above are deliberately NOT scaled: they are touch
-     targets, and --control-h-xl is already at the 44px minimum. */
-  --space-1: clamp(3px, 1.026vw, 4px);
-  --space-2: clamp(7px, 2.051vw, 8px);
-  --space-3: clamp(10px, 3.077vw, 12px);
-  --space-4: clamp(13px, 4.103vw, 16px);
-  --space-5: clamp(16px, 5.128vw, 20px);
-  --space-6: clamp(20px, 6.154vw, 24px);
-  --space-8: clamp(26px, 8.205vw, 32px);
-  --space-10: clamp(33px, 10.256vw, 40px);
-  --space-12: clamp(39px, 12.308vw, 48px);
+  /* Touch targets and spacing stay stable; individual narrow layouts use
+     responsive grid or flex rules where they need to make more room. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
 
   --font-app: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --transition-fast: 160ms ease;
@@ -317,7 +305,13 @@
    every centred element jumps sideways as the panel appears. Reserving the
    gutter permanently keeps the layout width constant whether or not the
    scrollbar is drawn. No-op where scrollbars overlay (macOS, touch). */
-html { min-width: 320px; background: var(--color-background); scrollbar-gutter: stable; }
+html {
+  min-width: 320px;
+  background: var(--color-background);
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 body { min-height: 100vh; margin: 0; color: var(--color-ink); background: var(--color-background); font-family: var(--font-app); }
 button, input, select, textarea { font: inherit; }
 a { color: inherit; text-decoration: none; }

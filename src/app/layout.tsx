@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  interactiveWidget: "resizes-content",
+  // Android no longer resizes the whole layout on keyboard focus. The mobile
+  // dock and message thread already follow VisualViewport measurements.
+  interactiveWidget: "resizes-visual",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
