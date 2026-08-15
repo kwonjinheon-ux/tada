@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
-import { useLanguage } from "@/components/LanguageProvider";
-import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
+import { type CommunityPost } from "@/data/community-posts";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
+import { CommunityPostBadge } from "@/components/community/CommunityPostBadge";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
-  const { t } = useLanguage();
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const responseCount = post.responseCount ?? 0;
@@ -57,7 +56,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
         <Link className="community-post-body-link" href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`} onClick={() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST", keepalive: true }); }}>
           <div className="community-post-body">
           <div className="community-post-title-row">
-            {showTypeBadge ? <span className={`community-post-badge community-post-badge-${post.type} ${mutedTypeBadge ? "is-muted" : ""}`}>{t(communityPostTypeLabelKeys[post.type])}</span> : null}
+            {showTypeBadge ? <CommunityPostBadge type={post.type} muted={mutedTypeBadge} /> : null}
             <h2>{post.title}</h2>
             {responseCount > 0 ? <span className={`community-post-comment-count is-${countTone}`} aria-label={`${responseCount} comments`}>{responseCount}</span> : null}
           </div>
