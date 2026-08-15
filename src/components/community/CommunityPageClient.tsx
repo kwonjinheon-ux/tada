@@ -133,7 +133,7 @@ export function CommunityPageClient() {
         {isLoadingPosts && visiblePosts.length === 0 ? <CommunityPostListSkeleton /> : <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
           {viewMode === "grid"
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={false} />)
-            : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} showTypeBadge={false} />)}
+            : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} />)}
         </div>}
       </section>
 

@@ -10,8 +10,7 @@ const postTypeByCategory = {
   recommendations: "recommendation",
   together: "event",
   immigration: "notice",
-  visa: "notice",
-  "working-holiday": "notice",
+  "free-board": "notice",
 } as const;
 
 type CommunityPostRow = {

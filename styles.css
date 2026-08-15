@@ -1486,7 +1486,7 @@ a {
 .shop-type-filter .filter-list > a.shop-type-groupbuy > i { color: var(--amber-450); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 
-.community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-free-stuff > i, .post-shop-type-options > button.community-category-free-stuff > i { color: var(--green-650); }.community-category-list > button.community-category-lost-found > i, .post-shop-type-options > button.community-category-lost-found > i { color: var(--red-750); }.community-category-list > button.community-category-parents-kids > i, .post-shop-type-options > button.community-category-parents-kids > i { color: var(--rose-700); }.community-category-list > button.community-category-jobs-services > i, .post-shop-type-options > button.community-category-jobs-services > i { color: var(--blue-soft-750); }.community-category-list > button.community-category-housing-flatmates > i, .post-shop-type-options > button.community-category-housing-flatmates > i { color: var(--blue-450); }.community-category-list > button.community-category-study-language > i, .post-shop-type-options > button.community-category-study-language > i { color: var(--blue-400); }.community-category-list > button.community-category-clubs-meetups > i, .post-shop-type-options > button.community-category-clubs-meetups > i { color: var(--violet-700); }
+.community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-free-board > i { color: var(--blue-500); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-together > i { color: var(--violet-700); }.community-category-list > button.community-category-immigration > i { color: var(--blue-soft-750); }
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
 
 .price-filter input {
@@ -2866,6 +2866,14 @@ body.listing-gallery-open { overflow: hidden; }
   filter: blur(34px) brightness(.45);
   opacity: .76;
   transform: scale(1.12);
+}
+
+img.listing-gallery-lightbox-backdrop,
+img.listing-gallery-lightbox-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .listing-gallery-lightbox-stage {
@@ -8679,9 +8687,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 /* 75px is 19.231vw at 390px, so this holds at exactly 75px on iPhone and wider
    and only scales down on narrower phones — same basis as the type scale. The
    custom property cascades to .community-post-media and the skeleton below. */
-.community-post-card-link { --community-thumb: clamp(62px, 19.231vw, 75px); min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 12px; border-radius: inherit; color: inherit; text-decoration: none; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
+.community-post-card-link { --community-thumb: clamp(62px, 19.231vw, 75px); min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 12px; border-radius: inherit; color: inherit; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
 .community-post-card:hover .community-post-card-link { background: var(--neutral-150); }
-.community-post-card-link { cursor: pointer; }.community-post-card-link:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
+.community-post-body-link { min-width: 0; color: inherit; text-decoration: none; cursor: pointer; }.community-post-body-link:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
 /* The skeleton reuses the real card's classes, so it only needs to neutralise
    interaction and paint the shimmer bars — the grid, gaps and row heights all
    come from the real rules above and therefore match what replaces them. */
@@ -8702,8 +8710,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-skeleton-meta i:nth-child(2) { width: 38px; }
 .community-post-skeleton-meta i:nth-child(3) { width: 140px; }
 .community-post-skeleton-meta i:nth-child(4) { width: 72px; margin-left: auto; }
-.community-post-media { position: relative; width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); overflow: hidden; border-radius: var(--radius-xs); background: var(--neutral-200); }
+.community-post-media { position: relative; width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); overflow: hidden; padding: 0; border: 0; border-radius: var(--radius-xs); background: var(--neutral-200); cursor: zoom-in; }
 .community-post-media img { width: 100%; height: 100%; object-fit: cover; }
+.community-post-media:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
 .community-post-body { min-width: 0; display: grid; gap: 4px; }.community-post-card.is-expanded { align-items: start; }.community-post-card.is-expanded .community-post-media { align-self: start; }
 .community-post-badge { flex: 0 0 auto; padding: 3px 8px; border-radius: var(--radius-xs); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
 .community-post-badge-event { background: var(--violet-700); }
@@ -8718,7 +8727,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-title-row h2 { flex: 0 1 auto; min-width: 0; }
 .community-post-comment-count.is-low { background: var(--amber-350); }.community-post-comment-count.is-medium { background: var(--color-primary); }.community-post-comment-count.is-high { background: var(--blue-500); }.community-post-comment-count.is-hot { background: var(--color-danger); }
 .community-post-comment-count { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--radius-circle); background: var(--amber-450); color: var(--color-on-primary); font-size: var(--text-2xs); font-weight: var(--weight-bold); }
-.community-post-list:not(.is-grid-view) .community-post-comment-count { transform: scale(.9375); }
+.community-post-list:not(.is-grid-view) .community-post-comment-count { min-width: 20px; height: 20px; padding-inline: 5px; }
 .community-post-list:not(.is-grid-view) .community-post-vote-summary, .community-post-list:not(.is-grid-view) .community-post-author { display: none; }
 .community-post-excerpt { overflow: hidden; margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.community-post-card.is-expanded .community-post-excerpt { overflow: visible; text-overflow: clip; white-space: normal; }
 .community-post-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--blue-soft-600); font-size: var(--text-xs); }
@@ -8832,8 +8841,11 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .community-page > .market-filter-panel .community-category-filter { min-height: 0; padding-bottom: var(--space-6); overflow-y: auto; overscroll-behavior: contain; }
 }
 
-.community-recent-ad-slot { display: grid; min-height: 90px; place-items: center; gap: var(--space-1); margin-bottom: var(--space-3); border: 1px dashed var(--neutral-300); border-radius: var(--radius-md); background: var(--neutral-100); color: var(--blue-soft-600); font-size: var(--text-xs); }
-.community-recent-ad-slot i { font-size: var(--text-lg); }
+.community-recent-ad-slot { position: relative; display: grid; min-height: 250px; align-items: end; margin-bottom: var(--space-3); overflow: hidden; border-radius: var(--radius-md); background: var(--blue-950); color: var(--neutral-50); text-decoration: none; }
+.community-recent-ad-slot::after { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, transparent, var(--blue-950)); opacity: .82; }
+.community-recent-ad-slot img { object-fit: cover; }
+.community-recent-ad-label { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 1; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--neutral-50); color: var(--blue-soft-650); font-size: var(--text-2xs); font-weight: var(--weight-semibold); }
+.community-recent-ad-copy { position: relative; z-index: 1; display: grid; gap: var(--space-1); padding: var(--space-3); }.community-recent-ad-copy strong { font-size: var(--text-lg); font-weight: var(--weight-semibold); }.community-recent-ad-copy small { font-size: var(--text-sm); }
 .community-recent-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .community-recent-panel-heading h2 { margin: 0; color: var(--blue-soft-650); font-size: var(--text-xs); font-weight: var(--weight-regular); letter-spacing: .08em; text-transform: uppercase; }
 .community-recent-panel-list { display: grid; gap: 16px; }
@@ -8841,8 +8853,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-recent-post-no-media { grid-template-columns: minmax(0, 1fr); }
 .community-recent-post:last-child { padding-bottom: 0; border-bottom: 0; }
 .community-recent-post-body { min-width: 0; display: grid; gap: 6px; align-content: start; }
-.community-recent-post-meta { color: var(--blue-soft-600); font-size: var(--text-2xs); font-weight: var(--weight-semibold); text-transform: uppercase; }
-.community-recent-post-body h3 { display: -webkit-box; overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.community-recent-post-meta { color: var(--blue-soft-600); font-size: var(--text-2xs); font-weight: var(--weight-regular); }
+.community-recent-post-body h3 { display: -webkit-box; overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-sm); font-weight: var(--weight-regular); line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .community-recent-post-stats { color: var(--blue-soft-550); font-size: var(--text-xs); }
 .community-recent-post-media { width: 72px; height: 72px; overflow: hidden; border-radius: var(--radius-sm); background: var(--neutral-200); }
 .community-recent-post-media img { width: 100%; height: 100%; object-fit: cover; }

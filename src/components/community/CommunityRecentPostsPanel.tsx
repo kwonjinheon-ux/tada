@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { communityPostTypeLabelKeys, type CommunityPost } from "@/data/community-posts";
@@ -23,10 +25,11 @@ export function CommunityRecentPostsPanel({ posts: initialPosts }: { posts?: Com
 
   return (
     <aside className="community-recent-panel" aria-label={t("communityRecentPostsHeading")}>
-      <div className="community-recent-ad-slot" aria-label="Advertisement">
-        <i className="fa-solid fa-rectangle-ad" aria-hidden="true" />
-        <span>Advertisement</span>
-      </div>
+      <Link className="community-recent-ad-slot" href="/market">
+        <Image src="/images/home/journey-market.png" alt="Discover home finds on Tada Market" fill sizes="300px" />
+        <span className="community-recent-ad-label">Advertisement</span>
+        <span className="community-recent-ad-copy"><strong>Fresh finds for your home</strong><small>Explore Tada Market</small></span>
+      </Link>
       <div className="community-recent-panel-heading">
         <h2>{t("communityRecentPostsHeading")}</h2>
       </div>

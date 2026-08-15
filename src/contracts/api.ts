@@ -131,8 +131,7 @@ export const communityPostCategorySchema = z.enum([
   "recommendations",
   "together",
   "immigration",
-  "visa",
-  "working-holiday",
+  "free-board",
 ]);
 
 export const communityPostCreateRequestSchema = z.object({

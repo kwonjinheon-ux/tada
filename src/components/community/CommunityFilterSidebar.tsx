@@ -13,19 +13,17 @@ export type CommunityCategory =
   | "recommendations"
   | "together"
   | "immigration"
-  | "visa"
-  | "working-holiday";
+  | "free-board";
 
 export const communityCategories: Array<{ value: CommunityCategory; labelKey: TranslationKey; icon: string }> = [
   { value: "all", labelKey: "all", icon: "fa-border-all" },
+  { value: "qna", labelKey: "communityCategoryQnA", icon: "fa-circle-question" },
+  { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "fa-comments" },
   { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "fa-bullhorn" },
   { value: "events", labelKey: "communityCategoryEvents", icon: "fa-calendar-day" },
-  { value: "qna", labelKey: "communityCategoryQnA", icon: "fa-circle-question" },
   { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "fa-thumbs-up" },
   { value: "together", labelKey: "communityCategoryTogether", icon: "fa-people-group" },
   { value: "immigration", labelKey: "communityCategoryImmigration", icon: "fa-plane-departure" },
-  { value: "visa", labelKey: "communityCategoryVisa", icon: "fa-passport" },
-  { value: "working-holiday", labelKey: "communityCategoryWorkingHoliday", icon: "fa-briefcase" },
 ];
 
 // This is the single category catalogue used by both community browsing and
