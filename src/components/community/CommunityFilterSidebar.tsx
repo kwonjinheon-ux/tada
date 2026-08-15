@@ -11,13 +11,10 @@ export type CommunityCategory =
   | "events"
   | "qna"
   | "recommendations"
-  | "free-stuff"
-  | "lost-found"
-  | "parents-kids"
-  | "jobs-services"
-  | "housing-flatmates"
-  | "study-language"
-  | "clubs-meetups";
+  | "together"
+  | "immigration"
+  | "visa"
+  | "working-holiday";
 
 export const communityCategories: Array<{ value: CommunityCategory; labelKey: TranslationKey; icon: string }> = [
   { value: "all", labelKey: "all", icon: "fa-border-all" },
@@ -25,13 +22,10 @@ export const communityCategories: Array<{ value: CommunityCategory; labelKey: Tr
   { value: "events", labelKey: "communityCategoryEvents", icon: "fa-calendar-day" },
   { value: "qna", labelKey: "communityCategoryQnA", icon: "fa-circle-question" },
   { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "fa-thumbs-up" },
-  { value: "free-stuff", labelKey: "communityCategoryFreeStuff", icon: "fa-gift" },
-  { value: "lost-found", labelKey: "communityCategoryLostFound", icon: "fa-magnifying-glass" },
-  { value: "parents-kids", labelKey: "communityCategoryParentsKids", icon: "fa-people-roof" },
-  { value: "jobs-services", labelKey: "communityCategoryJobsServices", icon: "fa-briefcase" },
-  { value: "housing-flatmates", labelKey: "communityCategoryHousingFlatmates", icon: "fa-house-chimney" },
-  { value: "study-language", labelKey: "communityCategoryStudyLanguage", icon: "fa-graduation-cap" },
-  { value: "clubs-meetups", labelKey: "communityCategoryClubsMeetups", icon: "fa-people-group" },
+  { value: "together", labelKey: "communityCategoryTogether", icon: "fa-people-group" },
+  { value: "immigration", labelKey: "communityCategoryImmigration", icon: "fa-plane-departure" },
+  { value: "visa", labelKey: "communityCategoryVisa", icon: "fa-passport" },
+  { value: "working-holiday", labelKey: "communityCategoryWorkingHoliday", icon: "fa-briefcase" },
 ];
 
 // This is the single category catalogue used by both community browsing and

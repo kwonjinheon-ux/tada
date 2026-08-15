@@ -129,13 +129,10 @@ export const communityPostCategorySchema = z.enum([
   "events",
   "qna",
   "recommendations",
-  "free-stuff",
-  "lost-found",
-  "parents-kids",
-  "jobs-services",
-  "housing-flatmates",
-  "study-language",
-  "clubs-meetups",
+  "together",
+  "immigration",
+  "visa",
+  "working-holiday",
 ]);
 
 export const communityPostCreateRequestSchema = z.object({

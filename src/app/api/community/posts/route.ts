@@ -8,13 +8,10 @@ const postTypeByCategory = {
   events: "event",
   qna: "question",
   recommendations: "recommendation",
-  "free-stuff": "free",
-  "lost-found": "notice",
-  "parents-kids": "notice",
-  "jobs-services": "notice",
-  "housing-flatmates": "housing",
-  "study-language": "question",
-  "clubs-meetups": "event",
+  together: "event",
+  immigration: "notice",
+  visa: "notice",
+  "working-holiday": "notice",
 } as const;
 
 type CommunityPostRow = {
