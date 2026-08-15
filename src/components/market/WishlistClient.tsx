@@ -18,11 +18,13 @@ export type WishlistItem = {
 };
 
 type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[] };
-type Filter = "all" | "market" | "bargain" | "community";
-const filterLabels: Record<Filter, string> = { all: "All items", market: "Second Hands", bargain: "Bargain", community: "Community" };
+type Filter = "all" | "market" | "community";
+const filterLabels: Record<Filter, string> = { all: "All items", market: "Market", community: "Community" };
 
 function matchesFilter(item: WishlistItem, filter: Filter) {
-  return filter === "all" || item.space === filter;
+  if (filter === "all") return true;
+  if (filter === "market") return item.space !== "community";
+  return item.space === "community";
 }
 
 export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientProps) {
@@ -31,7 +33,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
-  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market") ? ["market" as const] : []), ...(items.some((item) => item.space === "bargain") ? ["bargain" as const] : []), ...(items.some((item) => item.space === "community") ? ["community" as const] : [])], [items]);
+  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space !== "community") ? ["market" as const] : []), ...(items.some((item) => item.space === "community") ? ["community" as const] : [])], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
   useEffect(() => {
