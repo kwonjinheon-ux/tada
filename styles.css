@@ -8865,6 +8865,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   }
 
   .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-menu {
+    align-content: start;
     min-height: 0;
     padding-bottom: var(--space-6);
     overflow-y: auto;
