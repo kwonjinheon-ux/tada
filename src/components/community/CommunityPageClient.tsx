@@ -7,6 +7,7 @@ import { communityCategories, CommunityFilterSidebar, type CommunityCategory } f
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
+import { CommunityEmptyState } from "@/components/community/CommunityEmptyState";
 import { CommunityPostListSkeleton } from "@/components/community/CommunityPostListSkeleton";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import type { CommunityPost } from "@/data/community-posts";
@@ -134,11 +135,11 @@ export function CommunityPageClient() {
           resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
         />
 
-        {isLoadingPosts && visiblePosts.length === 0 ? <CommunityPostListSkeleton /> : <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
+        {isLoadingPosts && visiblePosts.length === 0 ? <CommunityPostListSkeleton /> : visiblePosts.length ? <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
           {viewMode === "grid"
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={activeCategory === "all"} />)
             : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={activeCategory === "all"} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} />)}
-        </div>}
+        </div> : <CommunityEmptyState />}
       </section>
 
       <CommunityRecentPostsPanel posts={visiblePosts.slice(0, 4)} />

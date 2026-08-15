@@ -12,7 +12,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const responseCount = post.responseCount ?? 0;
-  const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
+  const countTone = responseCount < 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
   const featuredImage = post.images?.[0] ?? (post.image ? { src: post.image, alt: post.imageAlt ?? "" } : null);
   const galleryImages = post.images?.length ? post.images : featuredImage ? [featuredImage] : [];
   const galleryImage = galleryImages[activeImage];
