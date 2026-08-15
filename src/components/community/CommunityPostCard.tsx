@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { type CommunityPost } from "@/data/community-posts";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
 import { CommunityPostBadge } from "@/components/community/CommunityPostBadge";
+import { CommunityPostSaveButton } from "@/components/community/CommunityPostSaveButton";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
@@ -70,6 +71,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           </div>
           </div>
         </Link>
+        <CommunityPostSaveButton postId={post.id} initialIsSaved={post.isSaved} className="community-post-card-save" redirectTo={href ?? `/community/${post.id}`} />
       </div>
       {isGalleryOpen && galleryImage ? <DialogOverlay className="listing-gallery-lightbox" aria-label={`${post.title} photo gallery`} onClose={() => setIsGalleryOpen(false)} dismissHint="Click outside to close">
         <img className="listing-gallery-lightbox-backdrop" src={galleryImage.src} alt="" aria-hidden="true" />

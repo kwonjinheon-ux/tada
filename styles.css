@@ -8701,7 +8701,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 /* 75px is 19.231vw at 390px, so this holds at exactly 75px on iPhone and wider
    and only scales down on narrower phones — same basis as the type scale. The
    custom property cascades to .community-post-media and the skeleton below. */
-.community-post-card-link { --community-thumb: clamp(62px, 19.231vw, 75px); min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 12px; border-radius: inherit; color: inherit; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
+.community-post-card-link { --community-thumb: clamp(62px, 19.231vw, 75px); position: relative; min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 12px; border-radius: inherit; color: inherit; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
 .community-post-card:hover .community-post-card-link { background: var(--neutral-150); }
 .community-post-body-link { min-width: 0; color: inherit; text-decoration: none; cursor: pointer; }.community-post-body-link:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
 /* The skeleton reuses the real card's classes, so it only needs to neutralise
@@ -8727,7 +8727,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-media { position: relative; width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); overflow: hidden; padding: 0; border: 0; border-radius: var(--radius-xs); background: var(--neutral-200); cursor: zoom-in; }
 .community-post-media img { width: 100%; height: 100%; object-fit: cover; }
 .community-post-media:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
-.community-post-body { min-width: 0; display: grid; gap: 4px; }.community-post-card.is-expanded { align-items: start; }.community-post-card.is-expanded .community-post-media { align-self: start; }
+.community-post-body { min-width: 0; display: grid; gap: 4px; padding-right: calc(var(--control-h-xs) + var(--space-3)); }.community-post-card.is-expanded { align-items: start; }.community-post-card.is-expanded .community-post-media { align-self: start; }
 .community-post-badge { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; padding: 3px 8px; border-radius: var(--radius-xs); font-size: var(--text-2xs); font-weight: var(--weight-regular); text-transform: uppercase; }
 .community-post-badge-event { background: var(--violet-soft-100); color: var(--violet-750); }
 .community-post-badge-question { background: var(--amber-50); color: var(--amber-700); }
@@ -8750,7 +8750,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-meta .community-post-author { display: inline-flex; align-items: center; gap: var(--space-1); margin-left: auto; text-align: right; }
 .community-post-author-avatar { width: var(--space-4); height: var(--space-4); display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-700); font-size: var(--text-2xs); font-weight: var(--weight-bold); }
 .community-post-author-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.community-post-save { width: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0 !important; }.community-post-save.is-saved { color: var(--color-danger); }.community-post-save:disabled { cursor: wait; opacity: .65; }
+.community-post-save { width: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0 !important; }.community-post-save:disabled { cursor: wait; opacity: .65; }.community-post-card-save { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; width: var(--control-h-xs); height: var(--control-h-xs); padding: 0 !important; border: 0; border-radius: var(--radius-circle); background: var(--color-surface-soft); color: var(--color-muted); box-shadow: var(--shadow-xs); }.community-post-card-save:hover { background: var(--neutral-150); }
 
 .community-post-list.is-grid-view { display: grid; grid-template-columns: minmax(0, 760px); justify-content: center; gap: 0; }
 .community-blog-post { display: grid; gap: var(--space-3); padding: var(--space-5) 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; background: transparent; box-shadow: none; }

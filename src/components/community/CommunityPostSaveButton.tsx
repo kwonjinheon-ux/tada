@@ -1,19 +1,43 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SaveHeartBurst, createHeartParticles, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { communityWishlistResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
-export function CommunityPostSaveButton({ postId, initialIsSaved = false, className = "" }: { postId: string; initialIsSaved?: boolean; className?: string }) {
+type CommunityPostSaveButtonProps = {
+  postId: string;
+  initialIsSaved?: boolean;
+  className?: string;
+  redirectTo?: string;
+};
+
+export function CommunityPostSaveButton({ postId, initialIsSaved = false, className = "", redirectTo }: CommunityPostSaveButtonProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPopping, setIsPopping] = useState(false);
+  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const burstTimer = useRef<number | null>(null);
+  const popTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
+  }, []);
 
   const toggleSaved = async () => {
     if (isSaving) return;
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
+    setIsPopping(false);
+    setHeartParticles(createHeartParticles());
+    window.requestAnimationFrame(() => setIsPopping(true));
+    if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
+    popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
+    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
     setIsSaving(true);
     try {
       const response = await fetch("/api/community/wishlist", {
@@ -22,7 +46,7 @@ export function CommunityPostSaveButton({ postId, initialIsSaved = false, classN
         body: JSON.stringify({ postId }),
       });
       if (response.status === 401) {
-        router.push(`/login?redirectTo=${encodeURIComponent(`/community/${postId}`)}`);
+        router.push(`/login?redirectTo=${encodeURIComponent(redirectTo ?? `/community/${postId}`)}`);
         return;
       }
       const result = await readApiResponse(response, communityWishlistResponseSchema);
@@ -34,7 +58,8 @@ export function CommunityPostSaveButton({ postId, initialIsSaved = false, classN
     }
   };
 
-  return <button className={`community-post-save ${isSaved ? "is-saved" : ""} ${className}`.trim()} type="button" aria-label={isSaved ? "Remove from saved posts" : "Save post"} aria-pressed={isSaved} disabled={isSaving} onClick={() => void toggleSaved()}>
+  return <button className={`community-post-save ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""} ${className}`.trim()} type="button" aria-label={isSaved ? "Remove from saved posts" : "Save post"} aria-pressed={isSaved} disabled={isSaving} onClick={() => void toggleSaved()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}>
     <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
+    <SaveHeartBurst particles={heartParticles} />
   </button>;
 }
