@@ -11,14 +11,13 @@ export const communityPostTypeLabelKeys: Record<CommunityPostType, TranslationKe
   housing: "communityTypeHousing",
 };
 
-// These match the category icons used in the community sidebar and composer.
-export const communityPostTypeIcons: Record<CommunityPostType, string> = {
-  event: "fa-calendar-day",
-  question: "fa-circle-question",
-  recommendation: "fa-thumbs-up",
-  free: "fa-comments",
-  notice: "fa-bullhorn",
-  housing: "fa-house",
+export const communityPostTypeEnglishLabels: Record<CommunityPostType, string> = {
+  event: "Event",
+  question: "Question",
+  recommendation: "Rec",
+  free: "Free",
+  notice: "Notice",
+  housing: "Housing",
 };
 
 export type CommunityPost = {
