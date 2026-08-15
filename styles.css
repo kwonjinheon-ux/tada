@@ -1114,6 +1114,7 @@ a {
 .browse-filter-sidebar,
 .browse-filter-sidebar-menu {
   display: grid;
+  align-content: start;
   gap: 16px;
 }
 
