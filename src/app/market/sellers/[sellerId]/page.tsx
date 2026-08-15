@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
+import { SellerReviews, type SellerReview } from "@/components/market/SellerReviews";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
 
@@ -14,6 +15,8 @@ type SellerRow = {
   rating_average?: number | string;
   rating_count?: number;
 };
+type ReviewRow = { id: string; score: number | string; comment: string | null; created_at: string; rater_id: string };
+type ReviewerRow = { id: string; display_name: string; avatar_path: string | null };
 
 export default async function SellerProfilePage({ params }: { params: Promise<{ sellerId: string }> }) {
   const { sellerId } = await params;
@@ -36,6 +39,25 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
     .select("id", { count: "exact", head: true })
     .eq("owner_id", seller.id)
     .eq("status", "published");
+  const { data: reviewsData } = await supabase
+    .from("market_seller_ratings")
+    .select("id,score,comment,created_at,rater_id")
+    .eq("seller_id", seller.id)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  const rawReviews = (reviewsData ?? []) as ReviewRow[];
+  const reviewerIds = [...new Set(rawReviews.map((review) => review.rater_id))];
+  const { data: reviewerData } = reviewerIds.length
+    ? await supabase.from("market_comment_profiles").select("id,display_name,avatar_path").in("id", reviewerIds)
+    : { data: [] };
+  const reviewers = new Map(((reviewerData ?? []) as ReviewerRow[]).map((reviewer) => [reviewer.id, reviewer]));
+  const reviewerAvatarUrls = new Map(await Promise.all(
+    [...reviewers.values()].filter((reviewer) => reviewer.avatar_path).map(async (reviewer) => [reviewer.id, await getSignedStorageImage("profile-avatars", reviewer.avatar_path!, "avatar")] as const),
+  ));
+  const reviews: SellerReview[] = rawReviews.map((review) => {
+    const reviewer = reviewers.get(review.rater_id);
+    return { id: review.id, score: Number(review.score), comment: review.comment, createdAt: review.created_at, reviewer: { name: reviewer?.display_name || "Tada buyer", avatarUrl: reviewerAvatarUrls.get(review.rater_id) ?? null } };
+  });
   const signedAvatar = seller.avatar_path
     ? await getSignedStorageImage("profile-avatars", seller.avatar_path, "avatar")
     : null;
@@ -55,6 +77,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
           <small>{listingCount ?? 0} active listings</small>
         </div>
       </section>
+      <SellerReviews reviews={reviews} />
     </main>
   );
 }

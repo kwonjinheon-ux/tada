@@ -17,6 +17,7 @@ type PhotoRow = { listing_id: string; storage_path: string | null; display_order
 type ProfileRow = { id: string; display_name: string | null; avatar_path: string | null };
 type MessageRow = { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
 type OfferRow = { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
+type ReviewRow = { offer_id: string; created_at: string };
 
 export default async function MarketMessagesPage({ searchParams }: { searchParams: Promise<{ conversation?: string }> }) {
   const { conversation: requestedConversationId } = await searchParams;
@@ -54,6 +55,10 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     selectedConversationId ? supabase.from("market_messages").select("id,conversation_id,sender_id,recipient_id,body,created_at,read_at").eq("conversation_id", selectedConversationId).order("created_at") : Promise.resolve({ data: [] }),
     selectedConversationId ? supabase.from("market_trade_offers").select("id,conversation_id,listing_id,buyer_id,seller_id,amount_cents,note,status,created_at,responded_at,completed_at").eq("conversation_id", selectedConversationId).order("created_at", { ascending: true }) : Promise.resolve({ data: [] }),
   ]);
+  const offerIds = ((rawOffers ?? []) as OfferRow[]).map((offer) => offer.id);
+  const { data: rawReviews } = offerIds.length
+    ? await supabase.from("market_seller_ratings").select("offer_id,created_at").in("offer_id", offerIds).eq("rater_id", user.id)
+    : { data: [] };
   const listings = new Map(((rawListings ?? []) as ListingRow[]).map((listing) => [listing.id, listing]));
   const primaryPhotos = new Map<string, string>();
   for (const photo of (rawPhotos ?? []) as PhotoRow[]) if (photo.storage_path && !primaryPhotos.has(photo.listing_id)) primaryPhotos.set(photo.listing_id, photo.storage_path);
@@ -91,7 +96,8 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
     };
   });
   const initialMessages: MarketMessage[] = ((rawMessages ?? []) as MessageRow[]).map((message) => ({ id: message.id, conversationId: message.conversation_id, senderId: message.sender_id, recipientId: message.recipient_id, body: message.body, createdAt: message.created_at, readAt: message.read_at }));
-  const initialOffers: TradeOffer[] = ((rawOffers ?? []) as OfferRow[]).map((offer) => ({ id: offer.id, conversationId: offer.conversation_id, listingId: offer.listing_id, buyerId: offer.buyer_id, sellerId: offer.seller_id, amountCents: offer.amount_cents, note: offer.note, status: offer.status, createdAt: offer.created_at, respondedAt: offer.responded_at, completedAt: offer.completed_at }));
+  const reviewedAtByOfferId = new Map(((rawReviews ?? []) as ReviewRow[]).map((review) => [review.offer_id, review.created_at]));
+  const initialOffers: TradeOffer[] = ((rawOffers ?? []) as OfferRow[]).map((offer) => ({ id: offer.id, conversationId: offer.conversation_id, listingId: offer.listing_id, buyerId: offer.buyer_id, sellerId: offer.seller_id, amountCents: offer.amount_cents, note: offer.note, status: offer.status, createdAt: offer.created_at, respondedAt: offer.responded_at, completedAt: offer.completed_at, reviewedAt: reviewedAtByOfferId.get(offer.id) ?? null }));
 
   return <main className="marketplace-page dashboard-page dashboard-layout messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} /></main>;
 }

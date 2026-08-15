@@ -143,6 +143,21 @@ export const communityPostCreateRequestSchema = z.object({
   imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),
 });
 
+export const marketTradeReviewRequestSchema = z.object({
+  offerId: uuidSchema,
+  score: z.number().min(0.5).max(5).refine((value) => Number.isInteger(value * 2), "Choose a half-star rating."),
+  comment: z.string().trim().min(1).max(1_000),
+});
+
+export const marketTradeReviewResponseSchema = z.object({
+  reviewId: uuidSchema,
+  offerId: uuidSchema,
+  sellerId: uuidSchema,
+  score: z.number().min(0.5).max(5),
+  comment: z.string(),
+  createdAt: z.string().datetime({ offset: true }),
+});
+
 export const communityPostCreateResponseSchema = z.object({ id: uuidSchema });
 
 export const communityPostUpdateRequestSchema = z.object({
