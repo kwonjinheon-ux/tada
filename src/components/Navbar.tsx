@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
@@ -25,6 +25,7 @@ declare global {
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isDesktopDashboardOpen, setIsDesktopDashboardOpen] = useState(false);
@@ -53,7 +54,7 @@ export function Navbar() {
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get("q") ?? "";
     setSearchQuery(query);
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     const showCopiedState = () => {
@@ -376,17 +377,20 @@ export function Navbar() {
   };
 
   const runSearch = (query: string) => {
-    const params = new URLSearchParams();
+    const isSectionSearch = pathname.startsWith("/community") || pathname.startsWith("/services") || pathname.startsWith("/market");
+    const params = new URLSearchParams(isSectionSearch ? window.location.search : "");
+    params.delete("cursor");
     if (query) params.set("q", query);
-    if (pathname.startsWith("/community")) params.set("scope", "community");
+    else params.delete("q");
     const search = params.toString();
-    router.push(`/search${search ? `?${search}` : ""}`);
+    const destination = pathname.startsWith("/community") ? "/community" : pathname.startsWith("/services") ? "/services" : "/market";
+    router.push(`${destination}${search ? `?${search}` : ""}`);
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = searchQuery.trim();
-    recordSearch(query);
+    if (pathname.startsWith("/market")) recordSearch(query);
     setIsSearchSuggestionsOpen(false);
     runSearch(query);
   };
@@ -416,6 +420,7 @@ export function Navbar() {
   const isCommunity = pathname.startsWith("/community");
   const isJobs = pathname.startsWith("/jobs");
   const isServices = pathname.startsWith("/services");
+  const searchPlaceholder = isCommunity ? t("searchCommunity") : isServices ? t("searchServices") : t("search");
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
   const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
@@ -553,14 +558,14 @@ export function Navbar() {
             <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
             <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} onFocus={() => { setIsSearchSuggestionsOpen(true); if (!trendingSearches.length) void loadTrendingSearches(); }} onBlur={() => window.setTimeout(() => setIsSearchSuggestionsOpen(false), 120)} type="search" role="combobox" placeholder={t("search")} aria-autocomplete="list" aria-expanded={isSearchSuggestionsOpen && trendingSearches.length > 0} aria-controls="trending-searches" />
+          <input value={searchQuery} onChange={(event) => updateSearchQuery(event.target.value)} onFocus={() => { if (!isMarket) return; setIsSearchSuggestionsOpen(true); if (!trendingSearches.length) void loadTrendingSearches(); }} onBlur={() => window.setTimeout(() => setIsSearchSuggestionsOpen(false), 120)} type="search" role="combobox" placeholder={searchPlaceholder} aria-autocomplete={isMarket ? "list" : "none"} aria-expanded={isMarket && isSearchSuggestionsOpen && trendingSearches.length > 0} aria-controls={isMarket ? "trending-searches" : undefined} />
           <button className="nav-search-submit" type="submit" aria-label="Search">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
               <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
-          {isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
+          {isMarket && isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
             <div className="nav-search-suggestions" id="trending-searches" role="listbox" aria-label="Popular searches">
               <span>Popular searches</span>
               {trendingSearches.map((term) => (

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Button } from "@/components/ui/Button";
@@ -199,20 +200,35 @@ const serviceCopy = {
 
 export function ServicesPageClient() {
   const { locale } = useLanguage();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const text = locale === "ko" ? serviceCopy.ko : serviceCopy.en;
   const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | null>(null);
   const [activeFilter, setActiveFilter] = useState<QuickFilterId | null>(null);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
+  const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
+
+  useEffect(() => {
+    setQuery(searchQuery);
+  }, [searchQuery]);
 
   const visibleServices = useMemo(() => {
-    if (!activeCategory) return services;
-    return services.filter((service) => service.category === activeCategory);
-  }, [activeCategory]);
+    const normalizedQuery = searchQuery.toLocaleLowerCase();
+    return services.filter((service) => {
+      if (activeCategory && service.category !== activeCategory) return false;
+      if (!normalizedQuery) return true;
+      const listing = text.listings[service.id];
+      return [listing.title, service.provider, text.categories[service.category]].some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [activeCategory, searchQuery, text]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setNotice(text.searchNotice(query.trim()));
+    const params = new URLSearchParams(searchParams.toString());
+    if (query.trim()) params.set("q", query.trim()); else params.delete("q");
+    router.push(`/services${params.size ? `?${params.toString()}` : ""}`);
+    setNotice("");
   };
 
   const chooseCategory = (category: ServiceCategoryId) => {

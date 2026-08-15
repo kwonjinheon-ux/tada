@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { communityCategories, CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
@@ -19,6 +20,8 @@ const POST_FEED_CACHE_TTL_MS = 30_000;
 
 export function CommunityPageClient() {
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>("all");
@@ -54,6 +57,7 @@ export function CommunityPageClient() {
     const controller = new AbortController();
     const params = new URLSearchParams();
     if (activeCategory !== "all") params.set("category", activeCategory);
+    if (searchQuery) params.set("q", searchQuery);
     if (mainLocation) params.set("mainLocation", mainLocation);
     if (subLocation) params.set("subLocation", subLocation);
     const cacheKey = params.toString();
@@ -77,7 +81,7 @@ export function CommunityPageClient() {
       .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); })
       .finally(() => { if (!controller.signal.aborted) setIsLoadingPosts(false); });
     return () => controller.abort();
-  }, [activeCategory, mainLocation, subLocation]);
+  }, [activeCategory, mainLocation, searchQuery, subLocation]);
 
   const visiblePosts = publishedPosts;
 
