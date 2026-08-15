@@ -415,6 +415,7 @@ export function Navbar() {
   const isMarket = pathname.startsWith("/market");
   const isCommunity = pathname.startsWith("/community");
   const isJobs = pathname.startsWith("/jobs");
+  const isServices = pathname.startsWith("/services");
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
   const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
@@ -604,6 +605,10 @@ export function Navbar() {
             <i className="fa-solid fa-users" aria-hidden="true" />
             <span>{t("community")}</span>
           </Link>
+          <Link className={isServices ? "is-active" : ""} href="/services">
+            <i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" />
+            <span>Services</span>
+          </Link>
         </nav>
 
         <div className="nav-actions">
@@ -639,6 +644,10 @@ export function Navbar() {
           <Link className={isCommunity ? "is-active" : ""} href="/community" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-users" aria-hidden="true" />
             {t("community")}
+          </Link>
+          <Link className={isServices ? "is-active" : ""} href="/services" onClick={() => setIsOpen(false)}>
+            <i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" />
+            Services
           </Link>
         </nav>
 

@@ -42,6 +42,7 @@ const journeys: Journey[] = [
     title: "Services",
     description: "Book trusted local help",
     detail: "Launching soon",
+    href: "/services",
     art: "services",
     image: "/images/home/journey-services.png",
     comingSoon: true,
