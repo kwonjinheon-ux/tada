@@ -8,8 +8,7 @@ export function CommunityPostBadge({ type, muted = false }: { type: CommunityPos
 
   return (
     <span className={`community-post-badge community-post-badge-${type} ${muted ? "is-muted" : ""}`}>
-      <i className={`fa-solid ${communityPostTypeIcons[type]}`} aria-hidden="true" />
-      {t(communityPostTypeLabelKeys[type])}
+      <i className={`fa-solid ${communityPostTypeIcons[type]}`} aria-label={t(communityPostTypeLabelKeys[type])} />
     </span>
   );
 }
