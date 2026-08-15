@@ -8714,7 +8714,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-media img { width: 100%; height: 100%; object-fit: cover; }
 .community-post-media:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
 .community-post-body { min-width: 0; display: grid; gap: 4px; }.community-post-card.is-expanded { align-items: start; }.community-post-card.is-expanded .community-post-media { align-self: start; }
-.community-post-badge { flex: 0 0 auto; padding: 3px 8px; border-radius: var(--radius-xs); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-extrabold); text-transform: uppercase; }
+.community-post-badge { flex: 0 0 auto; padding: 3px 8px; border-radius: var(--radius-xs); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-regular); text-transform: uppercase; }
 .community-post-badge-event { background: var(--violet-700); }
 .community-post-badge-question { background: var(--amber-550); }
 .community-post-badge-recommendation { background: var(--green-600); }
