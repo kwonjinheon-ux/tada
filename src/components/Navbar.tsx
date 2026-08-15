@@ -607,7 +607,7 @@ export function Navbar() {
           </Link>
           <Link className={isServices ? "is-active" : ""} href="/services">
             <i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" />
-            <span>Services</span>
+            <span>{t("services")}</span>
           </Link>
         </nav>
 
@@ -647,7 +647,7 @@ export function Navbar() {
           </Link>
           <Link className={isServices ? "is-active" : ""} href="/services" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" />
-            Services
+            {t("services")}
           </Link>
         </nav>
 
