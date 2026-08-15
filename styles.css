@@ -8845,34 +8845,13 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .community-desktop-layout .post-ad-sidebar { display: none; }
 }
 
-/* The location controls are fixed inside the shared Market and Community rail;
-   only the product-specific menu scrolls, so category count cannot alter the
-   sidebar's position, dimensions, or margins. */
+/* Market and Community share one sidebar scroller: location and category
+   controls must travel together rather than separating into fixed and scrolling
+   regions. */
 @media (min-width: 768px) {
   .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) {
     height: calc(100dvh - var(--desktop-header-height));
     max-height: none;
-    overflow: hidden;
-  }
-
-  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar {
-    grid-template-rows: auto minmax(0, 1fr);
-    height: 100%;
-    min-height: 0;
-    gap: 0;
-    overflow: hidden;
-  }
-
-  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-location {
-    z-index: 1;
-    padding-bottom: 0;
-    background: var(--neutral-50);
-  }
-
-  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-menu {
-    align-content: start;
-    min-height: 0;
-    padding-bottom: var(--space-6);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
