@@ -1,6 +1,7 @@
 "use client";
 
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
+import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { type MainLocation } from "@/data/nzLocations";
@@ -59,8 +60,9 @@ export type MarketFilterSidebarProps = {
 export function MarketFilterSidebar({ activeShopType, activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange, priceCondition }: MarketFilterSidebarProps) {
   const { t } = useLanguage();
 
-  return <>
+  return <BrowseFilterSidebar location={
     <LocationFilterSection title="Location" mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="market" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
+  }>
 
     <section className="filter-block shop-type-filter">
       <h2>Shop Type</h2>
@@ -111,5 +113,5 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
         {t("applyFilters")}
       </button>
     </> : null}
-  </>;
+  </BrowseFilterSidebar>;
 }

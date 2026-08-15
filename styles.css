@@ -1109,6 +1109,14 @@ a {
   background: var(--neutral-50);
 }
 
+/* Shared browse filter shell: Market and Community provide different menus,
+   but retain the same spacing and rail structure. */
+.browse-filter-sidebar,
+.browse-filter-sidebar-menu {
+  display: grid;
+  gap: 16px;
+}
+
 .floating-filter-button,
 .filter-close-button {
   border: 0;
@@ -8832,13 +8840,36 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .community-desktop-layout .post-ad-sidebar { display: none; }
 }
 
-/* The shared LocationFilterSection stays anchored at the top of every
-   community category rail. Only the category list scrolls, matching the
-   Marketplace filter behaviour regardless of how many categories exist. */
+/* The location controls are fixed inside the shared Market and Community rail;
+   only the product-specific menu scrolls, so category count cannot alter the
+   sidebar's position, dimensions, or margins. */
 @media (min-width: 768px) {
-  .community-page > .market-filter-panel { grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
-  .community-page > .market-filter-panel .market-filter-location-section { z-index: 1; margin: 0; padding-bottom: var(--space-4); background: var(--neutral-50); }
-  .community-page > .market-filter-panel .community-category-filter { min-height: 0; padding-bottom: var(--space-6); overflow-y: auto; overscroll-behavior: contain; }
+  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) {
+    height: calc(100dvh - var(--desktop-header-height));
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-location {
+    z-index: 1;
+    padding-bottom: var(--space-4);
+    background: var(--neutral-50);
+  }
+
+  .marketplace-page > .market-filter-panel:not(.dashboard-sidebar) .browse-filter-sidebar-menu {
+    min-height: 0;
+    padding-bottom: var(--space-6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 .community-recent-ad-slot { position: relative; display: grid; min-height: 250px; align-items: end; margin-bottom: var(--space-3); overflow: hidden; border-radius: var(--radius-md); background: var(--blue-950); color: var(--neutral-50); text-decoration: none; }

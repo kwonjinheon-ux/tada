@@ -1,6 +1,7 @@
 "use client";
 
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
+import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { type MainLocation } from "@/data/nzLocations";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
@@ -44,8 +45,9 @@ export type CommunityFilterSidebarProps = {
 export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange }: CommunityFilterSidebarProps) {
   const { t } = useLanguage();
 
-  return <>
+  return <BrowseFilterSidebar location={
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="community" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
+  }>
 
     <section className="filter-block community-category-filter">
       <h2>{t("categories")}</h2>
@@ -58,5 +60,5 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
         ))}
       </div>
     </section>
-  </>;
+  </BrowseFilterSidebar>;
 }
