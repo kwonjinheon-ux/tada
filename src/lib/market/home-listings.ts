@@ -5,7 +5,7 @@ import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
-const RAIL_SIZE = 4;
+const RAIL_SIZE = 6;
 const FETCH_SIZE = 16;
 
 type ListingRow = {

@@ -1,47 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { useLanguage } from "@/components/LanguageProvider";
+import { communityPosts } from "@/data/community-posts";
 import type { Listing } from "@/data/listings";
 
-type Journey = {
-  title: string;
-  description: string;
-  href: string;
-  icon: string;
-  comingSoon?: boolean;
-};
+const destinations = [
+  { title: "Market", description: "Buy & sell locally", href: "/market", icon: "fa-store", tone: "market" },
+  { title: "Community", description: "Share with neighbours", href: "/community", icon: "fa-comments", tone: "community" },
+  { title: "Services", description: "Find trusted local help", href: "/services", icon: "fa-screwdriver-wrench", tone: "services" },
+  { title: "Jobs", description: "Find work near you", href: "/jobs", icon: "fa-briefcase", tone: "jobs", comingSoon: true },
+];
 
-const journeys: Journey[] = [
-  {
-    title: "Market",
-    description: "Buy and sell nearby",
-    href: "/market",
-    // Keep this in step with the Market entry in MarketFilterSidebar.
-    icon: "fa-store",
-  },
-  {
-    title: "Community",
-    description: "Connect nearby",
-    href: "/community",
-    icon: "fa-users",
-  },
-  {
-    title: "Services",
-    description: "Book local help",
-    href: "/services",
-    icon: "fa-screwdriver-wrench",
-    comingSoon: true,
-  },
-  {
-    title: "Jobs",
-    description: "Find local work",
-    href: "/jobs",
-    icon: "fa-briefcase",
-    comingSoon: true,
-  },
+const koreanDestinations = [
+  { title: "마켓", description: "사고 팔고 나눠요", href: "/market", icon: "fa-store", tone: "market" },
+  { title: "동네이야기", description: "묻고 나누고 연결해요", href: "/community", icon: "fa-comments", tone: "community" },
+  { title: "생활도움", description: "청소, 이사, 수리, 과외", href: "/services", icon: "fa-screwdriver-wrench", tone: "services" },
+  { title: "일자리", description: "가까운 일자리 찾기", href: "/jobs", icon: "fa-briefcase", tone: "jobs", comingSoon: true },
 ];
 
 const marketShortcuts = [
@@ -52,63 +31,148 @@ const marketShortcuts = [
   { label: "Group Buy", href: "/market/groupbuy", icon: "fa-people-group" },
 ];
 
-const trustItems = [
-  { icon: "fa-tag", title: "Free to list", description: "List an item in minutes" },
-  { icon: "fa-people-group", title: "Made for locals", description: "Useful things happen nearby" },
-  { icon: "fa-shield-halved", title: "Safer together", description: "Trust guides every deal" },
-  { icon: "fa-bolt", title: "Simple by design", description: "Find what you need faster" },
+const koreanMarketShortcuts = [
+  { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "fa-store" },
+  { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "fa-warehouse" },
+  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "fa-truck-ramp-box" },
+  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "fa-coins" },
+  { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "fa-people-group" },
 ];
 
-function JourneyCard({ journey }: { journey: Journey }) {
+const helpCategories = [
+  { label: "Cleaning", icon: "fa-spray-can-sparkles" },
+  { label: "Moving", icon: "fa-truck" },
+  { label: "Handyman", icon: "fa-screwdriver-wrench" },
+  { label: "Gardening", icon: "fa-seedling" },
+  { label: "Tutoring", icon: "fa-graduation-cap" },
+  { label: "Pet care", icon: "fa-paw" },
+  { label: "Auto", icon: "fa-car" },
+  { label: "Beauty", icon: "fa-wand-magic-sparkles" },
+];
+
+const koreanHelpCategories = ["청소", "이사", "수리", "정원", "과외", "펫케어", "자동차", "뷰티"];
+
+const trustItems = [
+  { icon: "fa-tag", title: "Free to list", description: "Share items in minutes" },
+  { icon: "fa-people-group", title: "Local first", description: "Made for nearby life" },
+  { icon: "fa-shield-halved", title: "Safer deals", description: "Trust guides every trade" },
+  { icon: "fa-bolt", title: "Quick to use", description: "Find what matters faster" },
+];
+
+const koreanTrustItems = [
+  { icon: "fa-tag", title: "무료로 등록", description: "무료 나눔과 물품을 등록하세요" },
+  { icon: "fa-people-group", title: "가까운 이웃과 연결", description: "이웃과 묻고 나누고 연결해요" },
+  { icon: "fa-shield-halved", title: "안전한 거래", description: "신뢰할 수 있는 거래를 만들어요" },
+  { icon: "fa-bolt", title: "빠르고 간편하게", description: "처음부터 끝까지 쉽게 사용해요" },
+];
+
+type HomeCopy = {
+  heroLead: string;
+  heroBrand: string;
+  heroDescription: string;
+  explore: string;
+  post: string;
+  soon: string;
+  marketPrompt: string;
+  marketTitle: string;
+  nearby: string;
+  seeAll: string;
+  listingEmpty: string;
+  browseMarket: string;
+  sponsored: string;
+  sponsorTitle: string;
+  sponsorDescription: string;
+  sponsorAction: string;
+  stories: string;
+  help: string;
+  helpDescription: string;
+  servicesAction: string;
+  jobsTitle: string;
+  jobsDescription: string;
+};
+
+const homeCopy: Record<"en" | "ko", HomeCopy> = {
+  en: {
+    heroLead: "When you need it,", heroBrand: "Tada.", heroDescription: "Buy, share and connect — made for everyday local life.", explore: "Explore Market", post: "Post an item", soon: "Soon", marketPrompt: "What are you looking for?", marketTitle: "Explore Market", nearby: "New near you", seeAll: "See all", listingEmpty: "New local listings will appear here.", browseMarket: "Browse Market", sponsored: "Sponsored", sponsorTitle: "Moving made simple.", sponsorDescription: "Trusted local help for your next move.", sponsorAction: "Explore moving sales", stories: "Local stories", help: "Need a hand?", helpDescription: "Find useful local help for everyday jobs.", servicesAction: "Explore services", jobsTitle: "Find work close to home with Tada Jobs", jobsDescription: "Local opportunities are coming soon.",
+  },
+  ko: {
+    heroLead: "필요한 순간,", heroBrand: "타다.", heroDescription: "사고팔고, 나누고, 연결하고 — 일상을 타다.", explore: "둘러보기", post: "등록하기", soon: "준비중", marketPrompt: "어떤 마켓을 찾으세요?", marketTitle: "", nearby: "내 근처 새 상품", seeAll: "전체보기", listingEmpty: "내 근처 새 상품을 준비하고 있어요.", browseMarket: "마켓 둘러보기", sponsored: "Sponsored", sponsorTitle: "이사 준비 중이신가요?", sponsorDescription: "믿을 수 있는 이사 서비스와 함께 해보세요!", sponsorAction: "이사 서비스 보기", stories: "우리 동네 이야기", help: "생활에 도움이 필요하세요?", helpDescription: "필요한 도움을 가까운 곳에서 찾아보세요.", servicesAction: "서비스 둘러보기", jobsTitle: "가까운 일자리도 곧 Tada에서", jobsDescription: "함께 구할 수 있는 지역의 일자리를 찾아보세요.",
+  },
+};
+
+const communityIcons: Record<string, string> = {
+  event: "fa-calendar-day",
+  question: "fa-circle-question",
+  recommendation: "fa-thumbs-up",
+  free: "fa-gift",
+  notice: "fa-bullhorn",
+  housing: "fa-house",
+};
+
+type HomeListingRailProps = {
+  listings: Listing[];
+  locationLabel?: string | null;
+  savedListingIds: string[];
+  text: typeof homeCopy.en;
+};
+
+function HomeListingRail({ listings, locationLabel, savedListingIds, text }: HomeListingRailProps) {
   return (
-    <Link className="home-journey-card ui-card" href={journey.href}>
-      <i className={`fa-solid ${journey.icon}`} aria-hidden="true" />
-      <div className="home-journey-copy">
-        <div className="home-journey-title-row">
-          <h2>{journey.title}</h2>
-          {journey.comingSoon ? <span className="ui-pill">Soon</span> : null}
+    <section className="home-reference-listing-section" aria-labelledby="nearby-title">
+      <header className="home-reference-section-heading">
+        <div><i className="fa-solid fa-location-dot" aria-hidden="true" /><h2 id="nearby-title">{text.nearby}</h2>{locationLabel ? <span>{locationLabel}</span> : null}</div>
+        <Link href="/market">{text.seeAll} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+      </header>
+      {listings.length ? (
+        <div className="home-reference-listing-grid">
+          {listings.map((listing, index) => (
+            <ProductCard
+              imageSizes="(max-width: 767px) 240px, (min-width: 1280px) 220px, 25vw"
+              initialIsSaved={savedListingIds.includes(listing.id)}
+              key={listing.id}
+              listing={listing}
+              priority={index < 3}
+            />
+          ))}
         </div>
-        <p>{journey.description}</p>
-      </div>
-      <i className="fa-solid fa-chevron-right home-journey-arrow" aria-hidden="true" />
-    </Link>
+      ) : (
+        <div className="home-reference-listing-empty ui-card"><i className="fa-solid fa-store" aria-hidden="true" /><p>{text.listingEmpty}</p><Link href="/market">{text.browseMarket}</Link></div>
+      )}
+    </section>
   );
 }
 
-type HomeListingRailProps = {
-  id: string;
-  title: string;
-  titleIcon: string;
-  eyebrow?: string | null;
-  listings: Listing[];
-  savedListingIds: string[];
-};
-
-function HomeListingRail({ id, title, titleIcon, eyebrow, listings, savedListingIds }: HomeListingRailProps) {
-  if (!listings.length) return null;
-
+function HomeCommunityHighlights({ text }: { text: typeof homeCopy.en }) {
   return (
-    <section className="home-listing-rail" aria-labelledby={id}>
-      <div className="home-listing-heading">
-        <div>
-          {eyebrow ? <p className="home-eyebrow"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {eyebrow}</p> : null}
-          <div className="home-listing-title">
-            <i className={`fa-solid ${titleIcon}`} aria-hidden="true" />
-            <h2 id={id}>{title}</h2>
-          </div>
-        </div>
-        <Link href="/market">See all <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+    <section className="home-reference-community ui-card" aria-labelledby="community-highlights-title">
+      <header className="home-reference-panel-heading">
+        <div><i className="fa-solid fa-comments" aria-hidden="true" /><h2 id="community-highlights-title">{text.stories}</h2></div>
+        <Link href="/community">{text.seeAll}</Link>
+      </header>
+      <div className="home-reference-community-list">
+        {communityPosts.slice(0, 3).map((post) => (
+          <Link href={`/community/${post.id}`} key={post.id}>
+            <i className={`fa-solid ${communityIcons[post.type] ?? "fa-comments"}`} aria-hidden="true" />
+            <span><strong>{post.title}</strong><small>{post.location} · {post.timeAgo ?? post.eventDate ?? "New"}</small></span>
+            <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+          </Link>
+        ))}
       </div>
+    </section>
+  );
+}
 
-      <div className="home-listing-grid">
-        {listings.map((listing, index) => (
-          <ProductCard
-            imageSizes="(max-width: 767px) 240px, (min-width: 1280px) 320px, 33vw"
-            initialIsSaved={savedListingIds.includes(listing.id)}
-            key={listing.id}
-            listing={listing}
-            priority={index < 2}
-          />
+function HomeHelpPanel({ isKorean, text }: { isKorean: boolean; text: typeof homeCopy.en }) {
+  return (
+    <section className="home-reference-help ui-card" aria-labelledby="help-panel-title">
+      <header className="home-reference-panel-heading">
+        <div><i className="fa-solid fa-handshake-angle" aria-hidden="true" /><h2 id="help-panel-title">{text.help}</h2></div>
+        <Link href="/services">{text.servicesAction}</Link>
+      </header>
+      <p>{text.helpDescription}</p>
+      <div className="home-reference-help-grid">
+        {helpCategories.map((category, index) => (
+          <Link href="/services" key={category.label}><i className={`fa-solid ${category.icon}`} aria-hidden="true" /><span>{isKorean ? koreanHelpCategories[index] : category.label}</span><small>{text.soon}</small></Link>
         ))}
       </div>
     </section>
@@ -128,102 +192,66 @@ export function HomePageClient({
   justListedListings = [],
   savedListingIds = [],
 }: HomePageClientProps) {
+  const { locale } = useLanguage();
+  const isKorean = locale === "ko";
+  const text = isKorean ? homeCopy.ko : homeCopy.en;
+  const visibleDestinations = isKorean ? koreanDestinations : destinations;
+  const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
+  const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
+  const discoveryListings = nearbyListings.length ? nearbyListings : justListedListings;
+
   return (
     <>
-      <main className="market-home">
-        <PageContainer className="home-page-content">
-          <section className="home-hero" aria-labelledby="home-hero-title">
-            <div className="home-hero-copy">
-              <p className="home-hero-kicker"><i className="fa-solid fa-location-dot" aria-hidden="true" /> Your local everyday app</p>
-              <h1 id="home-hero-title">Everything local,<br /><span>one Tada</span> away.</h1>
-              <p className="home-hero-intro">Buy, sell and connect with people and useful services in your community.</p>
-              <div className="home-hero-actions">
-                <Link className="ui-button ui-button--primary ui-button--pill home-hero-primary" href="/market"><i className="fa-solid fa-store" aria-hidden="true" /> Explore Market <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
-                <Link className="home-hero-secondary" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" /> Post an item</Link>
+      <main className="market-home home-reference">
+        <PageContainer className="home-reference-content">
+          <section className="home-reference-hero" aria-labelledby="home-reference-title">
+            <div className="home-reference-hero-copy">
+              <h1 id="home-reference-title">{text.heroLead} <span>{text.heroBrand}</span></h1>
+              <p>{text.heroDescription}</p>
+              <div>
+                <Link className="home-reference-primary" href="/market">{text.explore} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+                <Link className="home-reference-secondary" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {text.post}</Link>
               </div>
             </div>
+            <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
+          </section>
 
-            <div className="home-hero-illustration" aria-hidden="true">
-              <div className="home-hero-illustration-orbit home-hero-illustration-orbit--one" />
-              <div className="home-hero-illustration-orbit home-hero-illustration-orbit--two" />
-              <div className="home-hero-illustration-card home-hero-illustration-card--market"><i className="fa-solid fa-store" /></div>
-              <div className="home-hero-illustration-card home-hero-illustration-card--community"><i className="fa-solid fa-users" /></div>
-              <div className="home-hero-illustration-card home-hero-illustration-card--home"><i className="fa-solid fa-house" /></div>
-              <i className="fa-solid fa-location-dot home-hero-illustration-pin" />
+          <section className="home-reference-destinations" aria-label="Explore Tada">
+            {visibleDestinations.map((destination) => (
+              <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
+                <i className={`fa-solid ${destination.icon}`} aria-hidden="true" />
+                <span><strong>{destination.title}</strong><small>{destination.description}</small></span>
+                {destination.comingSoon ? <em>{text.soon}</em> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
+              </Link>
+            ))}
+          </section>
+
+          <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
+            <header><p>{text.marketPrompt}</p><h2 id="market-shortcuts-title">{text.marketTitle}</h2></header>
+            <div>
+              {visibleMarketShortcuts.map((shortcut) => {
+                const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
+                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}><i className={`fa-solid ${shortcut.icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span></Link>;
+              })}
             </div>
           </section>
 
-          <section className="home-journey-section" aria-labelledby="home-journey-title">
-            <header className="home-section-heading">
-              <p>Explore Tada</p>
-              <h2 id="home-journey-title">One place for local life</h2>
-            </header>
-            <div className="home-journey-grid" aria-label="Explore Tada">
-              {journeys.map((journey) => <JourneyCard journey={journey} key={journey.title} />)}
-            </div>
+          <HomeListingRail listings={discoveryListings} locationLabel={locationLabel} savedListingIds={savedListingIds} text={text} />
+
+          <section className="home-reference-sponsor ui-card" aria-labelledby="sponsor-title">
+            <div><p>{text.sponsored}</p><h2 id="sponsor-title">{text.sponsorTitle}</h2><span>{text.sponsorDescription}</span><Link href="/market">{text.sponsorAction} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link></div>
+            <div aria-hidden="true"><i className="fa-solid fa-truck-fast" /><strong>SwiftMove</strong></div>
           </section>
 
-          <section className="home-market-shortcuts-section" aria-labelledby="home-market-shortcuts-title">
-            <header className="home-section-heading home-section-heading--inline">
-              <div><p>Browse Market</p><h2 id="home-market-shortcuts-title">What are you looking for?</h2></div>
-              <Link href="/market">View Market <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
-            </header>
-            <div className="home-market-shortcuts">
-              {marketShortcuts.map((shortcut) => (
-                <Link className="home-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}>
-                  <i className={`fa-solid ${shortcut.icon}`} aria-hidden="true" />
-                  <span>{shortcut.label}</span>
-                  <i className="fa-solid fa-chevron-right" aria-hidden="true" />
-                </Link>
-              ))}
-            </div>
-          </section>
+          <div className="home-reference-lower-grid">
+            <HomeCommunityHighlights text={text} />
+            <HomeHelpPanel isKorean={isKorean} text={text} />
+          </div>
 
-          <section className="home-listing-rails" aria-label="Marketplace discoveries">
-            <HomeListingRail
-              eyebrow={locationLabel}
-              id="nearby-title"
-              listings={nearbyListings}
-              savedListingIds={savedListingIds}
-              title="Explore near you"
-              titleIcon="fa-location-dot"
-            />
-            <HomeListingRail
-              id="just-listed-title"
-              listings={justListedListings}
-              savedListingIds={savedListingIds}
-              title="Just listed"
-              titleIcon="fa-clock"
-            />
-          </section>
+          <Link className="home-reference-jobs-cta ui-card" href="/jobs"><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
 
-          <section className="home-sponsor ui-card" aria-labelledby="home-sponsor-title">
-            <div className="home-sponsor-copy">
-              <p>Sponsored</p>
-              <h2 id="home-sponsor-title">Move with ease.</h2>
-              <span>Trusted local movers for your next move, from pickup to delivery.</span>
-              <Link href="/market"><span>Learn more</span> <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
-            </div>
-            <div className="home-sponsor-visual" aria-hidden="true">
-              <div className="home-sponsor-van"><i className="fa-solid fa-truck-fast" /></div>
-              <div className="home-sponsor-box home-sponsor-box--one" />
-              <div className="home-sponsor-box home-sponsor-box--two" />
-            </div>
-          </section>
-
-          <section className="home-trust-section ui-panel" aria-labelledby="home-trust-title">
-            <header className="home-section-heading">
-              <p>Tada, for everyday life</p>
-              <h2 id="home-trust-title">Made to feel simple and local</h2>
-            </header>
-            <div className="home-trust-grid">
-              {trustItems.map((item) => (
-                <article className="home-trust-item" key={item.title}>
-                  <i className={`fa-solid ${item.icon}`} aria-hidden="true" />
-                  <div><h3>{item.title}</h3><p>{item.description}</p></div>
-                </article>
-              ))}
-            </div>
+          <section className="home-reference-trust" aria-label="Why use Tada">
+            {visibleTrustItems.map((item) => <article className="ui-card" key={item.title}><i className={`fa-solid ${item.icon}`} aria-hidden="true" /><div><h2>{item.title}</h2><p>{item.description}</p></div></article>)}
           </section>
         </PageContainer>
       </main>
