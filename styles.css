@@ -107,20 +107,6 @@ a {
   }
 }
 
-/* Sidebar application surfaces keep their full workspace through ordinary
-   desktop widths. Only ultra-wide displays are capped, leaving every tablet
-   and mobile drawer, dock, and viewport rule untouched. */
-.app-shell {
-  width: 100%;
-}
-
-@media (min-width: 1681px) {
-  .app-shell {
-    width: min(100%, var(--app-shell-max-width));
-    margin-inline: auto;
-  }
-}
-
 .blank-page {
   min-height: 100vh;
   display: grid;
@@ -10041,14 +10027,4 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .services-content-layout { grid-template-columns: minmax(11rem, 0.7fr) minmax(0, 2.2fr) minmax(13rem, 0.85fr); }
   .services-side-rail { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
   .services-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-/* Legacy marketplace surfaces are existing App Shells. This declaration stays
-   after feature rules so it caps only ultra-wide screens without changing the
-   established mobile, tablet, or ordinary-desktop layout. */
-@media (min-width: 1681px) {
-  .marketplace-page {
-    width: min(100%, var(--app-shell-max-width));
-    margin-inline: auto;
-  }
 }

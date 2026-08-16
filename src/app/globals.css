@@ -282,7 +282,6 @@
   --global-shell-tablet-gutter: 24px;
   --global-shell-desktop-width: 90%;
   --global-shell-max-width: 1360px;
-  --app-shell-max-width: 1680px;
   --page-inner-reading-max-width: 760px;
   --page-inner-form-max-width: 900px;
   --page-padding-inline: var(--page-padding-mobile);
