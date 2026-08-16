@@ -140,7 +140,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
           {listing.commentCount ? <span className={`product-comment-count is-${commentCountTier(listing.commentCount)}`} aria-label={`${listing.commentCount} comments`}>{listing.commentCount}</span> : null}
         </div>
         */}
-        <div className="product-title-row"><h2>{listing.title}</h2><CommentCountBadge count={listing.commentCount} className="product-comment-count" /></div>
+        <div className="product-title-row"><h2>{listing.title}<CommentCountBadge count={listing.commentCount} className={`product-comment-count ${listing.commentCount && listing.commentCount <= 10 ? "is-low" : ""}`} /></h2></div>
         <div className="price-row">
           {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="fa-regular fa-calendar" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>

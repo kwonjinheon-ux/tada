@@ -8792,12 +8792,12 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-post-badge-housing { background: var(--blue-100); color: var(--blue-700); }
 .community-post-badge.is-muted { background: var(--neutral-500); }
 .community-post-title-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.product-title-row { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }.product-title-row h2 { min-width: 0; }.comment-count-badge { flex: 0 0 auto; }
+.product-title-row { min-width: 0; }.product-title-row h2 { min-width: 0; }.comment-count-badge { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: var(--space-1); }
 .community-post-body h2 { overflow: hidden; margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-medium); text-overflow: ellipsis; white-space: nowrap; }
 .community-post-title-row h2 { flex: 0 1 auto; min-width: 0; }
 .community-post-comment-count.is-low { background: var(--neutral-400); }.community-post-comment-count.is-medium { background: var(--color-primary); }.community-post-comment-count.is-high { background: var(--blue-500); }.community-post-comment-count.is-hot { background: var(--color-danger); }
 .community-post-comment-count { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--radius-circle); background: var(--amber-450); color: var(--color-on-primary); font-size: var(--text-2xs); font-weight: var(--weight-regular); }
-.product-comment-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding-inline: var(--space-1); border-radius: var(--radius-circle); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-2xs); font-weight: var(--weight-regular); }
+.product-comment-count { min-width: 20px; height: 20px; padding-inline: var(--space-1); border-radius: var(--radius-circle); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-2xs); font-weight: var(--weight-regular); }.product-comment-count.is-low { background: var(--neutral-400); }
 .community-post-list:not(.is-grid-view) .community-post-comment-count { min-width: 20px; height: 20px; padding-inline: 5px; }
 .community-post-list:not(.is-grid-view) .community-post-vote-summary, .community-post-list:not(.is-grid-view) .community-post-author { display: none; }
 .community-post-excerpt { overflow: hidden; margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.community-post-card.is-expanded .community-post-excerpt { overflow: visible; text-overflow: clip; white-space: normal; }

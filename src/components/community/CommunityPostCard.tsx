@@ -13,7 +13,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const responseCount = post.responseCount ?? 0;
-  const countTone = responseCount < 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
+  const countTone = responseCount <= 10 ? "low" : responseCount <= 20 ? "medium" : responseCount <= 30 ? "high" : "hot";
   const featuredImage = post.images?.[0] ?? (post.image ? { src: post.image, alt: post.imageAlt ?? "" } : null);
   const galleryImages = post.images?.length ? post.images : featuredImage ? [featuredImage] : [];
   const galleryImage = galleryImages[activeImage];
@@ -59,8 +59,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           <div className="community-post-body">
           <div className="community-post-title-row">
             {showTypeBadge ? <CommunityPostBadge type={post.type} muted={mutedTypeBadge} /> : null}
-            <h2>{post.title}</h2>
-            <CommentCountBadge count={responseCount} className={`community-post-comment-count is-${countTone}`} />
+            <h2>{post.title}<CommentCountBadge count={responseCount} className={`community-post-comment-count is-${countTone}`} /></h2>
           </div>
           <div className="community-post-meta">
             <span className="community-post-vote-summary" aria-label={`${post.score ?? 0} votes`}><i className="fa-solid fa-arrow-up" aria-hidden="true" />{new Intl.NumberFormat("en-NZ").format(post.score ?? 0)}<i className="fa-solid fa-arrow-down" aria-hidden="true" /></span>
