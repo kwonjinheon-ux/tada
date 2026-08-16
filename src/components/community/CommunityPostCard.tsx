@@ -6,6 +6,7 @@ import { type CommunityPost } from "@/data/community-posts";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
 import { CommunityPostBadge } from "@/components/community/CommunityPostBadge";
 import { CommunityPostSaveButton } from "@/components/community/CommunityPostSaveButton";
+import { CommentCountBadge } from "@/components/ui/CommentCountBadge";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
@@ -59,7 +60,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           <div className="community-post-title-row">
             {showTypeBadge ? <CommunityPostBadge type={post.type} muted={mutedTypeBadge} /> : null}
             <h2>{post.title}</h2>
-            {responseCount > 0 ? <span className={`community-post-comment-count is-${countTone}`} aria-label={`${responseCount} comments`}>{responseCount}</span> : null}
+            <CommentCountBadge count={responseCount} className={`community-post-comment-count is-${countTone}`} />
           </div>
           <div className="community-post-meta">
             <span className="community-post-vote-summary" aria-label={`${post.score ?? 0} votes`}><i className="fa-solid fa-arrow-up" aria-hidden="true" />{new Intl.NumberFormat("en-NZ").format(post.score ?? 0)}<i className="fa-solid fa-arrow-down" aria-hidden="true" /></span>

@@ -11,7 +11,7 @@ import { encodeCursor, decodeCursor, type Cursor } from "@/lib/pagination/cursor
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
-type Row = { id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair"; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
+type Row = { id: string; owner_id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair"; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 
 function formatLocation(city: string | null, suburb: string | null) { return [suburb, city].filter(Boolean).join(", ") || "New Zealand"; }
@@ -26,7 +26,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const sortColumn = query.sort === "newest" ? "created_at" : "price_cents";
   const ascending = query.sort === "priceAsc";
   const cursor = decodeCursor(query.cursor);
-  let request = supabase.from("market_listings").select("id,title,price_cents,region_city,region_suburb,main_location,sub_location,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+  let request = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,main_location,sub_location,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
   if (category) request = request.eq("category_slug", category);
   if (subcategory) request = request.eq("subcategory_slug", subcategory);
   if (query.maxPrice) request = request.lte("price_cents", query.maxPrice * 100);
@@ -45,7 +45,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   // location migration. Fall back to the legacy columns instead of presenting an
   // empty marketplace while the migration is applied.
   if (primaryResult.error && ["42703", "PGRST204"].includes(primaryResult.error.code)) {
-    let legacyRequest = supabase.from("market_listings").select("id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+    let legacyRequest = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
     if (category) legacyRequest = legacyRequest.eq("category_slug", category);
     if (subcategory) legacyRequest = legacyRequest.eq("subcategory_slug", subcategory);
     if (query.maxPrice) legacyRequest = legacyRequest.lte("price_cents", query.maxPrice * 100);
@@ -60,6 +60,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const page = rows.slice(0, pageSize);
   const ids = page.map((row) => row.id);
   const { data: photoRows } = ids.length ? await supabase.from("market_listing_photos").select("listing_id,storage_path,original_name,is_primary,display_order").in("listing_id", ids).order("display_order") : { data: [] };
+  const { data: commentRows } = ids.length ? await supabase.from("market_listing_comments").select("listing_id").in("listing_id", ids).is("deleted_at", null) : { data: [] };
   const photos = new Map<string, Photo>();
   for (const photo of (photoRows ?? []) as Photo[]) {
     const current = photos.get(photo.listing_id);
@@ -70,10 +71,11 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const savedListingIds = userId && ids.length
     ? ((await supabase.from("market_wishlist").select("listing_id").eq("user_id", userId).in("listing_id", ids)).data ?? []).map((row) => row.listing_id as string)
     : [];
-  // const commentCounts = await getCommentCounts(supabase, ids);
+  const commentCounts = new Map<string, number>();
+  for (const row of (commentRows ?? []) as { listing_id: string }[]) commentCounts.set(row.listing_id, (commentCounts.get(row.listing_id) ?? 0) + 1);
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", sortValue: query.sort === "newest" ? row.created_at : row.price_cents /* , commentCount: commentCounts.get(row.id) ?? 0 */ } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "newest" ? row.created_at : row.price_cents } satisfies Listing;
   });
   const last = page.at(-1);
   return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };

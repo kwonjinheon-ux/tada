@@ -6,6 +6,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { marketWishlistResponseSchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
+import { CommentCountBadge } from "@/components/ui/CommentCountBadge";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -139,7 +140,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
           {listing.commentCount ? <span className={`product-comment-count is-${commentCountTier(listing.commentCount)}`} aria-label={`${listing.commentCount} comments`}>{listing.commentCount}</span> : null}
         </div>
         */}
-        <h2>{listing.title}</h2>
+        <div className="product-title-row"><h2>{listing.title}</h2><CommentCountBadge count={listing.commentCount} className="product-comment-count" /></div>
         <div className="price-row">
           {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="fa-regular fa-calendar" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>
@@ -149,7 +150,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
           {listing.location}
         </p>
       </div>
-      {!isPreview ? <button
+      {!isPreview && !listing.isOwner ? <button
         className={`save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
         aria-label={`${t("saveListing")}: ${listing.title}`}
