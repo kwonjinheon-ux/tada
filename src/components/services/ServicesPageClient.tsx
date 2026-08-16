@@ -238,7 +238,7 @@ export function ServicesPageClient() {
 
   return (
     <main className="services-page">
-      <PageContainer size="wide" className="services-page-content">
+      <PageContainer className="services-page-content">
         <section className="services-hero" aria-labelledby="services-title">
           <div className="services-hero-copy">
             <span className="services-preview-label ui-pill"><i className="fa-solid fa-sparkles" aria-hidden="true" /> {text.preview}</span>

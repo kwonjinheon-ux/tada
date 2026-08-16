@@ -549,7 +549,7 @@ export function Navbar() {
   return (
     <>
       <header className="site-header">
-      <div className="site-nav">
+      <div className="site-nav global-shell">
         <Link className="site-logo" href="/" aria-label="Tada home">
           <img src="/images/logo.png" alt="Tada" />
         </Link>

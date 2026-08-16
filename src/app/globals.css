@@ -277,6 +277,13 @@
   --page-padding-tablet: 24px;
   --page-padding-desktop: 32px;
   --page-padding-wide: 40px;
+  /* Global page frame: every page surface aligns to this shell. */
+  --global-shell-mobile-gutter: 16px;
+  --global-shell-tablet-gutter: 24px;
+  --global-shell-desktop-width: 90%;
+  --global-shell-max-width: 1360px;
+  --page-inner-reading-max-width: 760px;
+  --page-inner-form-max-width: 900px;
   --page-padding-inline: var(--page-padding-mobile);
   --page-max-width: 1200px;
   --page-narrow-max-width: 760px;

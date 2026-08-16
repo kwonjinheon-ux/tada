@@ -153,7 +153,7 @@ export function HomePageClient({
   return (
     <>
       <main className="market-home">
-        <PageContainer size="home" className="home-page-content">
+        <PageContainer className="home-page-content">
           <section className="home-hero" aria-labelledby="home-hero-title">
             <div className="home-hero-copy">
               <h1 id="home-hero-title">Everything you need,<br />one <span>Tada</span> away.</h1>

@@ -1,70 +1,94 @@
-# Layout System
+# Global Page Shell
 
-Tada uses one shared responsive page layout system for ordinary page content.
+Tada has one shared outer layout rule:
 
-## Spacing Tokens
+> **Backgrounds are full-bleed. Content lives in one Global Shell.**
 
-- `--page-padding-mobile`: 16px
-- `--page-padding-tablet`: 24px
-- `--page-padding-desktop`: 32px
-- `--page-padding-wide`: 40px
-- `--page-max-width`: 1200px
-- `--section-gap`: 32px
-- `--content-gap`: 16px
+Every new page uses the same outer frame. Differences between a browse page, a
+detail page, and a form belong inside that frame, never in a page-specific
+outer width, margin, or desktop gutter.
 
-`--page-padding-inline` changes by breakpoint:
+## Shell dimensions
 
-- default mobile: 16px
-- `375px` and `768px` and up: 24px
-- `1024px` and up: 32px
-- `1280px` and up: 40px
+| Viewport | Global Shell rule |
+| --- | --- |
+| Below `768px` | Full width with `16px` inline gutters |
+| `768px` to `1023px` | Full width with `24px` inline gutters |
+| `1024px` and above | `90%` viewport width, centered, capped at `1360px` |
 
-Outer page padding uses `env(safe-area-inset-left)` and `env(safe-area-inset-right)` where the page touches viewport edges.
+The tokens live in `src/app/globals.css`:
 
-## Required Page Rule
+- `--global-shell-mobile-gutter`
+- `--global-shell-tablet-gutter`
+- `--global-shell-desktop-width`
+- `--global-shell-max-width`
 
-All ordinary top-level page content must use `PageContainer` from `src/components/layout/PageContainer.tsx`.
+## Required composition
+
+Use `PageContainer` for every new ordinary page. It is Tada's Global Shell;
+it has no wide, home, narrow, or page-specific outer-width variants.
 
 ```tsx
-import { PageContainer } from "@/components/layout/PageContainer";
+import { PageContainer, PageInner } from "@/components/layout/PageContainer";
 
 export default function ExamplePage() {
   return (
     <main>
       <PageContainer>
-        <h1>Page title</h1>
+        <PageInner size="reading">
+          <h1>Page title</h1>
+        </PageInner>
       </PageContainer>
     </main>
   );
 }
 ```
 
-Use variants only when the page has a clear layout reason:
+`PageInner` is optional. Use it only when the content itself needs to be more
+focused than the shared frame:
 
-```tsx
-<PageContainer size="narrow">...</PageContainer>
-<PageContainer size="wide">...</PageContainer>
-<PageContainer size="full" disablePadding>...</PageContainer>
+- `size="reading"` for long-form text, help, profile summaries, and detail copy.
+- `size="form"` for focused forms.
+
+The page still begins and ends on the Global Shell's alignment line.
+
+## Full-bleed surfaces
+
+Header and footer backgrounds, section backgrounds, borders, maps, image
+lightboxes, dialogs, mobile drawers, and mobile bottom navigation may extend to
+the viewport edge. Their ordinary contents must sit in the Global Shell.
+
+For application layouts, the entire working surface belongs inside the shell:
+
+```text
+Full-bleed page background
+└─ Global Shell
+   ├─ sidebar, when present
+   └─ main content
 ```
 
-## Rules For New Work
+Marketplace, Community, dashboard, and admin screens must keep the sidebar and
+main content together inside this shared frame. When a viewport becomes too
+narrow, collapse columns or reduce grid density; do not widen the outer frame.
 
-- Every ordinary page's top-level content area uses `PageContainer`.
-- Do not write ad hoc `max-w-*`, `mx-auto`, or responsive `px-*` combinations directly in page files.
-- If a new outer spacing value is needed, update layout tokens or a `PageContainer` variant instead of adding one-off page CSS.
-- Do not confuse card internal padding with page outer padding.
-- Use `size="full"` or `disablePadding` only for clear full-width surfaces such as app shells, maps, edge-to-edge media, or dashboards.
-- Reuse existing common layout components before creating new ones.
+## Rules for new work
 
-## Exceptions
+- Do not add page-specific `max-width`, `width: 90vw`, `margin-inline: auto`,
+  or outer `padding-inline` rules.
+- Do not use an outer `wide`, `home`, `narrow`, or `full` container variant.
+- Do not place a persistent sidebar against the viewport while centering only
+  its main content.
+- Keep Header navigation and Footer content on the same Global Shell line as
+  page content.
+- Use `PageInner` or a component's internal grid to constrain readable text,
+  focused forms, or detail panels.
+- Keep card padding and grid gaps separate from page-shell spacing.
 
-Full application shells may manage their own outer layout:
+## Existing exceptions
 
-- Marketplace browse page with a desktop sidebar.
-- Dashboard pages with persistent side navigation.
-- Messages pages with fixed-height panes.
-- Full-width banners, maps, edge-to-edge images, modals, headers, footers, and mobile bottom navigation.
+Fixed-height message panes, modal overlays, photo viewers, maps, mobile
+drawers, and bottom navigation can be viewport-anchored. This does not permit a
+different ordinary page width behind the overlay.
 
-These exceptions should still use the shared spacing tokens for inner content when they need ordinary content gutters.
-
-Dashboard pages must use `marketplace-page dashboard-page dashboard-layout` on the top-level `main`. The `dashboard-layout` reference owns the sidebar rail, border, and content gutter so profile settings, messages, wishlist, and keyword alerts stay aligned across mobile and desktop.
+Before introducing a new page shell, extend `PageContainer` or `PageInner`
+instead. A new outer-width variant requires an explicit design-system decision.
