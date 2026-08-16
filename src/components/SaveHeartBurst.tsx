@@ -1,4 +1,6 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 export type HeartParticle = {
   id: string;
@@ -16,6 +18,30 @@ export const saveFeedbackClasses = {
   saved: "is-saved",
   popping: "is-popping",
 } as const;
+
+export function useSaveHeartFeedback() {
+  const [isPopping, setIsPopping] = useState(false);
+  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const burstTimer = useRef<number | null>(null);
+  const popTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
+  }, []);
+
+  const play = useCallback(() => {
+    setIsPopping(false);
+    setHeartParticles(createHeartParticles());
+    window.requestAnimationFrame(() => setIsPopping(true));
+    if (burstTimer.current) window.clearTimeout(burstTimer.current);
+    if (popTimer.current) window.clearTimeout(popTimer.current);
+    popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
+    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+  }, []);
+
+  return { heartParticles, isPopping, play, stopPopping: () => setIsPopping(false) };
+}
 
 const heartColors = ["#ff3b6b", "#ff5d8f", "#ff8a5b", "#ffbd4a", "#e94683"];
 
@@ -58,4 +84,8 @@ export function SaveHeartBurst({ particles }: { particles: HeartParticle[] }) {
       </span>
     ))}
   </span>;
+}
+
+export function SaveHeartIcon({ isSaved, particles }: { isSaved: boolean; particles: HeartParticle[] }) {
+  return <><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={particles} /></>;
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
-import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
+import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
@@ -73,8 +73,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [viewCount, setViewCount] = useState(listing.viewCount);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
-  const [isPopping, setIsPopping] = useState(false);
-  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
   const [isOpeningMessage, setIsOpeningMessage] = useState(false);
   const [messageError, setMessageError] = useState<string | null>(null);
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
@@ -89,7 +88,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isMarkingSold, setIsMarkingSold] = useState(false);
   const [listingStatus, setListingStatus] = useState(listing.status);
   const [isSellerOnline, setIsSellerOnline] = useState(false);
-  const burstTimer = useRef<number | null>(null);
   const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
@@ -125,10 +123,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [isGalleryOpen, listing.images.length]);
-
-  useEffect(() => () => {
-    if (burstTimer.current) window.clearTimeout(burstTimer.current);
-  }, []);
 
   useEffect(() => {
     if (!isBargainListing) router.prefetch("/market/dashboard/messages");
@@ -203,11 +197,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     if (isBargainListing) return;
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
-    setIsPopping(false);
-    setHeartParticles(createHeartParticles());
-    window.requestAnimationFrame(() => setIsPopping(true));
-    if (burstTimer.current) window.clearTimeout(burstTimer.current);
-    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    playSaveFeedback();
     try {
       const response = await fetch("/api/market/wishlist", {
         method: nextSaved ? "POST" : "DELETE",
@@ -451,7 +441,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
               <div className="listing-detail-status-row"><span className={`listing-status status-${listingStatus}`}>{statusLabel[listingStatus]}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) setIsPopping(false); }}><i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" /><SaveHeartBurst particles={heartParticles} /></button> : null}
+            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="fa-solid fa-trash-can" aria-hidden="true" /></button> : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>

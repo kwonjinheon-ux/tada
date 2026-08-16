@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { memo, useEffect, useRef, useState } from "react";
 import { marketWishlistResponseSchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
-import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
+import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -33,11 +33,8 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const { t } = useLanguage();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
-  const [isPopping, setIsPopping] = useState(false);
-  const [heartParticles, setHeartParticles] = useState<HeartParticle[]>([]);
+  const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
   const [imageFailed, setImageFailed] = useState(false);
-  const burstTimer = useRef<number | null>(null);
-  const popTimer = useRef<number | null>(null);
   const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status === "sold" ? t("soldOut") : listing.status === "pending" ? t("pending") : t("available");
   const saleBadge = listing.bargainType === "garage-sale"
@@ -46,11 +43,6 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       ? { label: "Moving Sale", className: "moving-sale" }
       : null;
 
-  useEffect(() => () => {
-    if (burstTimer.current) window.clearTimeout(burstTimer.current);
-    if (popTimer.current) window.clearTimeout(popTimer.current);
-  }, []);
-
   useEffect(() => {
     setImageFailed(false);
   }, [listing.image]);
@@ -58,13 +50,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const toggleSaved = async () => {
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
-    setIsPopping(false);
-    setHeartParticles(createHeartParticles());
-    window.requestAnimationFrame(() => setIsPopping(true));
-    if (burstTimer.current) window.clearTimeout(burstTimer.current);
-    if (popTimer.current) window.clearTimeout(popTimer.current);
-    popTimer.current = window.setTimeout(() => setIsPopping(false), 440);
-    burstTimer.current = window.setTimeout(() => setHeartParticles([]), 1_050);
+    playSaveFeedback();
     if (!persistSave) return;
     try {
       const response = await fetch(wishlistEndpoint, {
@@ -175,12 +161,11 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         onKeyDown={(event) => event.stopPropagation()}
         onAnimationEnd={(event) => {
           if (event.currentTarget === event.target) {
-            setIsPopping(false);
+            stopPopping();
           }
         }}
       >
-        <i className={`${isSaved ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
-        <SaveHeartBurst particles={heartParticles} />
+        <SaveHeartIcon isSaved={isSaved} particles={heartParticles} />
       </button> : null}
     </article>
   );
