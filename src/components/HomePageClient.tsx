@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useLanguage } from "@/components/LanguageProvider";
-import { communityPosts } from "@/data/community-posts";
+import { communityPosts, type CommunityPost } from "@/data/community-posts";
 import type { Listing } from "@/data/listings";
 
 const destinations = [
@@ -142,7 +142,7 @@ function HomeListingRail({ listings, locationLabel, savedListingIds, text }: Hom
   );
 }
 
-function HomeCommunityHighlights({ text }: { text: typeof homeCopy.en }) {
+function HomeCommunityHighlights({ posts, text }: { posts: CommunityPost[]; text: typeof homeCopy.en }) {
   return (
     <section className="home-reference-community ui-card" aria-labelledby="community-highlights-title">
       <header className="home-reference-panel-heading">
@@ -150,8 +150,8 @@ function HomeCommunityHighlights({ text }: { text: typeof homeCopy.en }) {
         <Link href="/community">{text.seeAll}</Link>
       </header>
       <div className="home-reference-community-list">
-        {communityPosts.slice(0, 3).map((post) => (
-          <Link href={`/community/${post.id}`} key={post.id}>
+        {posts.slice(0, 3).map((post, index) => (
+          <Link className={`home-reference-community-post home-reference-community-post--${post.type}${index === 0 ? " is-featured" : ""}`} href={`/community/${post.id}`} key={post.id}>
             <i className={`fa-solid ${communityIcons[post.type] ?? "fa-comments"}`} aria-hidden="true" />
             <span><strong>{post.title}</strong><small>{post.location} · {post.timeAgo ?? post.eventDate ?? "New"}</small></span>
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
@@ -180,6 +180,7 @@ function HomeHelpPanel({ isKorean, text }: { isKorean: boolean; text: typeof hom
 }
 
 type HomePageClientProps = {
+  communityHighlights?: CommunityPost[];
   locationLabel?: string | null;
   nearbyListings?: Listing[];
   justListedListings?: Listing[];
@@ -187,6 +188,7 @@ type HomePageClientProps = {
 };
 
 export function HomePageClient({
+  communityHighlights = [],
   locationLabel = null,
   nearbyListings = [],
   justListedListings = [],
@@ -199,6 +201,7 @@ export function HomePageClient({
   const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
   const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
   const discoveryListings = nearbyListings.length ? nearbyListings : justListedListings;
+  const highlightedCommunityPosts = communityHighlights.length ? communityHighlights : communityPosts;
 
   return (
     <>
@@ -244,7 +247,7 @@ export function HomePageClient({
           </section>
 
           <div className="home-reference-lower-grid">
-            <HomeCommunityHighlights text={text} />
+            <HomeCommunityHighlights posts={highlightedCommunityPosts} text={text} />
             <HomeHelpPanel isKorean={isKorean} text={text} />
           </div>
 

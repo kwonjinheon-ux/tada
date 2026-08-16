@@ -1,5 +1,6 @@
 import { HomePageClient } from "@/components/HomePageClient";
 import { getServerUser } from "@/lib/auth-server";
+import { getHomeCommunityHighlights } from "@/lib/community/home-highlights";
 import { getHomeListingRails } from "@/lib/market/home-listings";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -16,13 +17,21 @@ export default async function HomePage() {
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .map((value) => value.trim())
     .join(", ");
-  const homeListings = supabase
-    ? await getHomeListingRails(supabase, {
-      city: profile?.region_city,
-      suburb: profile?.region_suburb,
-      userId: user?.id,
-    })
-    : { nearbyListings: [], justListedListings: [], savedListingIds: [] };
+  const [homeListings, communityHighlights] = supabase
+    ? await Promise.all([
+      getHomeListingRails(supabase, {
+        city: profile?.region_city,
+        suburb: profile?.region_suburb,
+        userId: user?.id,
+      }),
+      getHomeCommunityHighlights(supabase, {
+        city: profile?.region_city,
+        suburb: profile?.region_suburb,
+      }),
+    ])
+    : [{
+      nearbyListings: [], justListedListings: [], savedListingIds: [],
+    }, []];
 
-  return <HomePageClient locationLabel={locationLabel || null} {...homeListings} />;
+  return <HomePageClient communityHighlights={communityHighlights} locationLabel={locationLabel || null} {...homeListings} />;
 }
