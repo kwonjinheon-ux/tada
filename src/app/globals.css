@@ -245,6 +245,7 @@
   --ring-focus-strong: 0 0 0 4px rgb(16 185 129 / 16%);
 
   --control-h-xs: 28px;
+  --control-h-compact: 30px;
   --control-h-sm: 32px;
   --control-h-md: 36px;
   --control-h-lg: 40px;

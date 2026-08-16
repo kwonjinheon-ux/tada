@@ -60,7 +60,7 @@ Adding a vertical (property, community) means adding roles here, not new hexes.
 | `--weight-*` | `regular 400` `medium 500` `semibold 600` `bold 700` `extrabold 800` |
 | `--shadow-*` | `xs` `sm` `md` `lg` `xl` `card` `primary` |
 | `--ring-focus`, `--ring-focus-strong` | Focus states — never `outline: none` without one |
-| `--control-h-*` | `xs 28` `sm 32` `md 36` `lg 40` `xl 44` `2xl 48` |
+| `--control-h-*` | `xs 28` `compact 30` `sm 32` `md 36` `lg 40` `xl 44` `2xl 48` |
 | `--space-*` | `1 4` `2 8` `3 12` `4 16` `5 20` `6 24` `8 32` `10 40` `12 48` |
 
 `--radius-ui` and `--radius-card` remain as aliases of `md` and `lg`.
