@@ -11,15 +11,6 @@ export const communityPostTypeLabelKeys: Record<CommunityPostType, TranslationKe
   housing: "communityTypeHousing",
 };
 
-export const communityPostTypeEnglishLabels: Record<CommunityPostType, string> = {
-  event: "Event",
-  question: "Question",
-  recommendation: "Rec",
-  free: "Free",
-  notice: "Notice",
-  housing: "Housing",
-};
-
 export type CommunityPost = {
   id: string;
   type: CommunityPostType;
