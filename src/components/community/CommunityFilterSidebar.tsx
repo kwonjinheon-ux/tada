@@ -34,6 +34,13 @@ export const communityPostCategories = communityCategories.filter(
   (category): category is (typeof communityCategories)[number] & { value: Exclude<CommunityCategory, "all"> } => category.value !== "all",
 );
 
+const togetherSubmenu: Array<{ labelKey: TranslationKey; icon: string }> = [
+  { labelKey: "communityTogetherParenting", icon: "fa-baby" },
+  { labelKey: "communityTogetherSports", icon: "fa-futbol" },
+  { labelKey: "communityTogetherStudy", icon: "fa-book-open" },
+  { labelKey: "communityTogetherBookClub", icon: "fa-book" },
+];
+
 export type CommunityFilterSidebarProps = {
   activeCategory: CommunityCategory;
   onCategorySelect: (category: CommunityCategory) => void;
@@ -52,12 +59,22 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
     <section className="filter-block community-category-filter">
       <h2>{t("categories")}</h2>
       <div className="filter-list community-category-list">
-        {communityCategories.map(({ value, labelKey, icon }) => (
-          <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
+        {communityCategories.map(({ value, labelKey, icon }) => {
+          const categoryButton = <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
-          </button>
-        ))}
+          </button>;
+          if (value !== "together") return categoryButton;
+          return <div className="community-category-group" key={value}>
+            {categoryButton}
+            <div className="community-category-submenu" aria-label={`${t(labelKey)} subcategories`}>
+              {togetherSubmenu.map(({ labelKey: submenuLabelKey, icon: submenuIcon }) => <button key={submenuLabelKey} type="button" onClick={() => onCategorySelect("together")}>
+                <i className={`fa-solid ${submenuIcon}`} aria-hidden="true" />
+                <span>{t(submenuLabelKey)}</span>
+              </button>)}
+            </div>
+          </div>;
+        })}
       </div>
     </section>
   </BrowseFilterSidebar>;
