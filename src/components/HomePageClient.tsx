@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPosts, type CommunityPost } from "@/data/community-posts";
 import type { Listing } from "@/data/listings";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const destinations = [
   { title: "Market", description: "Buy & sell locally", href: "/market", icon: "fa-store", tone: "market" },
@@ -92,7 +95,7 @@ type HomeCopy = {
 
 const homeCopy: Record<"en" | "ko", HomeCopy> = {
   en: {
-    heroLead: "When you need it,", heroBrand: "Tada.", heroDescription: "Buy, share and connect — made for everyday local life.", explore: "Explore Market", post: "Post an item", soon: "Soon", marketPrompt: "What are you looking for?", marketTitle: "Explore Market", nearby: "New near you", seeAll: "See all", listingEmpty: "New local listings will appear here.", browseMarket: "Browse Market", sponsored: "Sponsored", sponsorTitle: "Moving made simple.", sponsorDescription: "Trusted local help for your next move.", sponsorAction: "Explore moving sales", stories: "Local stories", help: "Need a hand?", helpDescription: "Find useful local help for everyday jobs.", servicesAction: "Explore services", jobsTitle: "Find work close to home with Tada Jobs", jobsDescription: "Local opportunities are coming soon.",
+    heroLead: "When you need it,", heroBrand: "Tada.", heroDescription: "Buy, share and connect — made for everyday local life.", explore: "Explore Tada", post: "Post an item", soon: "Soon", marketPrompt: "What are you looking for?", marketTitle: "Explore Market", nearby: "New near you", seeAll: "See all", listingEmpty: "New local listings will appear here.", browseMarket: "Browse Market", sponsored: "Sponsored", sponsorTitle: "Moving made simple.", sponsorDescription: "Trusted local help for your next move.", sponsorAction: "Explore moving sales", stories: "Community", help: "Need a hand?", helpDescription: "Find useful local help for everyday jobs.", servicesAction: "Explore services", jobsTitle: "Find work close to home with Tada Jobs", jobsDescription: "Local opportunities are coming soon.",
   },
   ko: {
     heroLead: "필요한 순간,", heroBrand: "타다.", heroDescription: "사고팔고, 나누고, 연결하고 — 일상을 타다.", explore: "둘러보기", post: "등록하기", soon: "준비중", marketPrompt: "어떤 마켓을 찾으세요?", marketTitle: "", nearby: "내 근처 새 상품", seeAll: "전체보기", listingEmpty: "내 근처 새 상품을 준비하고 있어요.", browseMarket: "마켓 둘러보기", sponsored: "Sponsored", sponsorTitle: "이사 준비 중이신가요?", sponsorDescription: "믿을 수 있는 이사 서비스와 함께 해보세요!", sponsorAction: "이사 서비스 보기", stories: "우리 동네 이야기", help: "생활에 도움이 필요하세요?", helpDescription: "필요한 도움을 가까운 곳에서 찾아보세요.", servicesAction: "서비스 둘러보기", jobsTitle: "가까운 일자리도 곧 Tada에서", jobsDescription: "함께 구할 수 있는 지역의 일자리를 찾아보세요.",
@@ -159,7 +162,7 @@ function HomeCommunityHighlights({ posts, text }: { posts: CommunityPost[]; text
           <Link className={`home-reference-community-card home-reference-community-card--${post.type}`} href={`/community/${post.id}`} key={post.id}>
             <i className={`fa-solid ${communityIcons[post.type] ?? "fa-comments"}`} aria-hidden="true" />
             <div><strong>{post.title}</strong><p>{communityExcerpt(post.excerpt)}</p><small><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location} • {post.timeAgo ?? post.eventDate ?? "New"}</small></div>
-            <footer><span><i className="fa-regular fa-heart" aria-hidden="true" />{post.score ?? 0}</span><span><i className="fa-regular fa-comment" aria-hidden="true" />{post.responseCount ?? 0}</span></footer>
+            <footer><span><i className="fa-regular fa-eye" aria-hidden="true" />{post.viewCount ?? 0}</span><span><i className="fa-regular fa-heart" aria-hidden="true" />{post.score ?? 0}</span><span><i className="fa-regular fa-comment" aria-hidden="true" />{post.responseCount ?? 0}</span></footer>
             <span><strong>{post.title}</strong><small>{post.location} · {post.timeAgo ?? post.eventDate ?? "New"}</small></span>
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
           </Link>
@@ -211,6 +214,7 @@ export function HomePageClient({
   savedListingIds = [],
 }: HomePageClientProps) {
   const { locale } = useLanguage();
+  const router = useRouter();
   const isKorean = locale === "ko";
   const text = isKorean ? homeCopy.ko : homeCopy.en;
   const heroWordmark = isKorean
@@ -221,6 +225,28 @@ export function HomePageClient({
   const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
   const discoveryListings = nearbyListings.length ? nearbyListings : justListedListings;
   const highlightedCommunityPosts = communityHighlights.length ? communityHighlights : communityPosts;
+
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+    let refreshFrame: number | null = null;
+    const refreshHighlights = () => {
+      if (refreshFrame !== null) return;
+      refreshFrame = window.requestAnimationFrame(() => {
+        refreshFrame = null;
+        router.refresh();
+      });
+    };
+    const channel = supabase
+      .channel("home-community-engagement-live")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "community_posts" }, refreshHighlights)
+      .on("postgres_changes", { event: "*", schema: "public", table: "community_post_comments" }, refreshHighlights)
+      .subscribe();
+    return () => {
+      if (refreshFrame !== null) window.cancelAnimationFrame(refreshFrame);
+      void supabase.removeChannel(channel).catch(() => undefined);
+    };
+  }, [router]);
 
   return (
     <>

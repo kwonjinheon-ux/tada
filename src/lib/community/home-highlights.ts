@@ -37,9 +37,18 @@ export async function getHomeCommunityHighlights(supabase: SupabaseClient): Prom
     .limit(6);
   if (error) return [];
 
-  return ((data ?? []) as CommunityHighlightRow[]).flatMap((post) => {
-    if (!post || !validPostTypes.has(post.post_type as CommunityPostType)) return [];
-    return [{
+  const posts = ((data ?? []) as CommunityHighlightRow[])
+    .filter((post) => post && validPostTypes.has(post.post_type as CommunityPostType));
+  const postIds = posts.map((post) => post.id);
+  const { data: commentRows } = postIds.length
+    ? await supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null)
+    : { data: [] as { post_id: string }[] };
+  const commentCounts = new Map<string, number>();
+  for (const comment of commentRows ?? []) {
+    commentCounts.set(comment.post_id, (commentCounts.get(comment.post_id) ?? 0) + 1);
+  }
+
+  return posts.map((post) => ({
       id: post.id,
       type: post.post_type as CommunityPostType,
       title: post.title,
@@ -49,6 +58,6 @@ export async function getHomeCommunityHighlights(supabase: SupabaseClient): Prom
       viewCount: post.view_count ?? 0,
       score: post.score ?? 0,
       shareCount: post.share_count ?? 0,
-    } satisfies CommunityPost];
-  });
+      responseCount: commentCounts.get(post.id) ?? 0,
+    } satisfies CommunityPost));
 }

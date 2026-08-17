@@ -9852,6 +9852,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-hero-copy { position: relative; z-index: 1; display: grid; gap: var(--space-3); max-width: 42rem; }
 .home-reference-hero h1 { margin: 0; color: var(--color-ink); font-size: var(--text-5xl); font-weight: var(--weight-extrabold); letter-spacing: -0.04em; line-height: 1.12; }
 .home-reference-hero-wordmark { display: inline-flex; width: clamp(6rem, 12vw, 10.5rem); margin-left: var(--space-1); vertical-align: -0.15em; }
+.home-reference-hero-wordmark.is-english { vertical-align: -0.42em; }
 .home-reference-hero-wordmark img { width: 100%; height: auto; object-fit: contain; }
 .home-reference-hero-copy > p { max-width: 34rem; margin: 0; color: var(--color-ink-soft); font-size: var(--text-base); font-weight: var(--weight-medium); line-height: 1.55; }
 .home-reference-hero-copy > div { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-1); }
