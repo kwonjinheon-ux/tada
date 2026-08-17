@@ -52,6 +52,12 @@ const helpCategories = [
 
 const koreanHelpCategories = ["청소", "이사", "수리", "정원", "과외", "펫케어", "자동차", "뷰티"];
 
+const recentServicePosts = [
+  { icon: "fa-spray-can-sparkles", title: "Home cleaning", titleKo: "집 청소", provider: "Sparkle Clean", location: "Hamilton Central", locationKo: "해밀턴 센트럴", price: "From $40 / hr", priceKo: "시간당 $40부터", tone: "cleaning" },
+  { icon: "fa-truck", title: "Moving help", titleKo: "이사 도움", provider: "Move It", location: "Hamilton North", locationKo: "해밀턴 노스", price: "From $120 / hr", priceKo: "시간당 $120부터", tone: "moving" },
+  { icon: "fa-screwdriver-wrench", title: "Furniture assembly", titleKo: "가구 조립", provider: "FixIt Hamilton", location: "Frankton", locationKo: "프랭크턴", price: "From $60 / hr", priceKo: "시간당 $60부터", tone: "handyman" },
+];
+
 const trustItems = [
   { icon: "fa-tag", title: "Free to list", description: "Share items in minutes" },
   { icon: "fa-people-group", title: "Local first", description: "Made for nearby life" },
@@ -166,13 +172,22 @@ function HomeHelpPanel({ isKorean, text }: { isKorean: boolean; text: typeof hom
   return (
     <section className="home-reference-help ui-card" aria-labelledby="help-panel-title">
       <header className="home-reference-panel-heading">
-        <div><i className="fa-solid fa-handshake-angle" aria-hidden="true" /><h2 id="help-panel-title">{text.help}</h2></div>
+        <div><i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" /><h2 id="help-panel-title">{text.help}</h2></div>
         <Link href="/services">{text.servicesAction}</Link>
       </header>
       <p>{text.helpDescription}</p>
       <div className="home-reference-help-grid">
         {helpCategories.map((category, index) => (
           <Link href="/services" key={category.label}><i className={`fa-solid ${category.icon}`} aria-hidden="true" /><span>{isKorean ? koreanHelpCategories[index] : category.label}</span><small>{text.soon}</small></Link>
+        ))}
+      </div>
+      <div className="home-reference-help-posts" aria-label="Recent service posts">
+        {recentServicePosts.map((post) => (
+          <Link className={`home-reference-help-post home-reference-help-post--${post.tone}`} href="/services" key={post.provider}>
+            <i className={`fa-solid ${post.icon}`} aria-hidden="true" />
+            <span><strong>{isKorean ? post.titleKo : post.title}</strong><small>{post.provider} · {isKorean ? post.locationKo : post.location}</small></span>
+            <em>{isKorean ? post.priceKo : post.price}</em>
+          </Link>
         ))}
       </div>
     </section>
