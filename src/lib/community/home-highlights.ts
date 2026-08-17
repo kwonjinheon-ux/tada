@@ -27,32 +27,17 @@ function relativeTime(createdAt: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-/** Uses the Community feed's existing ranking function, so home promotes live popular posts. */
-export async function getHomeCommunityHighlights(
-  supabase: SupabaseClient,
-  { city, suburb }: { city?: string | null; suburb?: string | null },
-): Promise<CommunityPost[]> {
-  const { data: rankedRows, error: rankingError } = await supabase.rpc("get_ranked_community_post_ids", {
-    p_category_slug: null,
-    p_region_city: city?.trim() || null,
-    p_region_suburb: suburb?.trim() || null,
-    p_limit: 3,
-  });
-  if (rankingError) return [];
-
-  const rankedIds = ((rankedRows ?? []) as { id?: unknown }[])
-    .flatMap((row) => typeof row.id === "string" ? [row.id] : []);
-  if (!rankedIds.length) return [];
-
-  const { data } = await supabase
+/** Home shows the latest community conversations, matching the user's immediate local pulse. */
+export async function getHomeCommunityHighlights(supabase: SupabaseClient): Promise<CommunityPost[]> {
+  const { data, error } = await supabase
     .from("community_posts")
     .select("id,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count")
     .eq("status", "published")
-    .in("id", rankedIds);
-  const postsById = new Map((data ?? []).map((post) => [post.id, post as CommunityHighlightRow]));
+    .order("created_at", { ascending: false })
+    .limit(6);
+  if (error) return [];
 
-  return rankedIds.flatMap((id) => {
-    const post = postsById.get(id);
+  return ((data ?? []) as CommunityHighlightRow[]).flatMap((post) => {
     if (!post || !validPostTypes.has(post.post_type as CommunityPostType)) return [];
     return [{
       id: post.id,

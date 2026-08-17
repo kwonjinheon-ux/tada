@@ -24,10 +24,7 @@ export default async function HomePage() {
         suburb: profile?.region_suburb,
         userId: user?.id,
       }),
-      getHomeCommunityHighlights(supabase, {
-        city: profile?.region_city,
-        suburb: profile?.region_suburb,
-      }),
+      getHomeCommunityHighlights(supabase),
     ])
     : [{
       nearbyListings: [], justListedListings: [], savedListingIds: [],

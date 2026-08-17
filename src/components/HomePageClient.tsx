@@ -40,23 +40,16 @@ const koreanMarketShortcuts = [
 ];
 
 const helpCategories = [
-  { label: "Cleaning", icon: "fa-spray-can-sparkles" },
+  { label: "Food", icon: "fa-utensils" },
+  { label: "Repairs", icon: "fa-screwdriver-wrench" },
   { label: "Moving", icon: "fa-truck" },
-  { label: "Handyman", icon: "fa-screwdriver-wrench" },
   { label: "Gardening", icon: "fa-seedling" },
-  { label: "Tutoring", icon: "fa-graduation-cap" },
-  { label: "Pet care", icon: "fa-paw" },
   { label: "Auto", icon: "fa-car" },
-  { label: "Beauty", icon: "fa-wand-magic-sparkles" },
+  { label: "Other", icon: "fa-ellipsis" },
 ];
 
-const koreanHelpCategories = ["청소", "이사", "수리", "정원", "과외", "펫케어", "자동차", "뷰티"];
-
-const recentServicePosts = [
-  { icon: "fa-spray-can-sparkles", title: "Home cleaning", titleKo: "집 청소", provider: "Sparkle Clean", location: "Hamilton Central", locationKo: "해밀턴 센트럴", price: "From $40 / hr", priceKo: "시간당 $40부터", tone: "cleaning" },
-  { icon: "fa-truck", title: "Moving help", titleKo: "이사 도움", provider: "Move It", location: "Hamilton North", locationKo: "해밀턴 노스", price: "From $120 / hr", priceKo: "시간당 $120부터", tone: "moving" },
-  { icon: "fa-screwdriver-wrench", title: "Furniture assembly", titleKo: "가구 조립", provider: "FixIt Hamilton", location: "Frankton", locationKo: "프랭크턴", price: "From $60 / hr", priceKo: "시간당 $60부터", tone: "handyman" },
-];
+const koreanHelpCategories = ["음식", "수리", "이사", "정원", "자동차", "기타"];
+const recentServicePosts: Array<{ icon: string; title: string; titleKo: string; provider: string; location: string; locationKo: string; price: string; priceKo: string; tone: string }> = [];
 
 const trustItems = [
   { icon: "fa-tag", title: "Free to list", description: "Share items in minutes" },
@@ -115,6 +108,12 @@ const communityIcons: Record<string, string> = {
   housing: "fa-house",
 };
 
+function communityExcerpt(excerpt: string) {
+  const plain = excerpt.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const firstSentence = plain.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? plain;
+  return `${firstSentence.slice(0, 92).trim()}...`;
+}
+
 type HomeListingRailProps = {
   listings: Listing[];
   locationLabel?: string | null;
@@ -150,15 +149,17 @@ function HomeListingRail({ listings, locationLabel, savedListingIds, text }: Hom
 
 function HomeCommunityHighlights({ posts, text }: { posts: CommunityPost[]; text: typeof homeCopy.en }) {
   return (
-    <section className="home-reference-community ui-card" aria-labelledby="community-highlights-title">
+    <section className="home-reference-community-feed" aria-labelledby="community-highlights-title">
       <header className="home-reference-panel-heading">
         <div><i className="fa-solid fa-comments" aria-hidden="true" /><h2 id="community-highlights-title">{text.stories}</h2></div>
         <Link href="/community">{text.seeAll}</Link>
       </header>
-      <div className="home-reference-community-list">
-        {posts.slice(0, 3).map((post, index) => (
-          <Link className={`home-reference-community-post home-reference-community-post--${post.type}${index === 0 ? " is-featured" : ""}`} href={`/community/${post.id}`} key={post.id}>
+      <div className="home-reference-community-cards">
+        {posts.slice(0, 4).map((post) => (
+          <Link className={`home-reference-community-card home-reference-community-card--${post.type}`} href={`/community/${post.id}`} key={post.id}>
             <i className={`fa-solid ${communityIcons[post.type] ?? "fa-comments"}`} aria-hidden="true" />
+            <div><strong>{post.title}</strong><p>{communityExcerpt(post.excerpt)}</p><small><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location} • {post.timeAgo ?? post.eventDate ?? "New"}</small></div>
+            <footer><span><i className="fa-regular fa-heart" aria-hidden="true" />{post.score ?? 0}</span><span><i className="fa-regular fa-comment" aria-hidden="true" />{post.responseCount ?? 0}</span></footer>
             <span><strong>{post.title}</strong><small>{post.location} · {post.timeAgo ?? post.eventDate ?? "New"}</small></span>
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
           </Link>
@@ -212,6 +213,9 @@ export function HomePageClient({
   const { locale } = useLanguage();
   const isKorean = locale === "ko";
   const text = isKorean ? homeCopy.ko : homeCopy.en;
+  const heroWordmark = isKorean
+    ? { src: "/images/brand/tada-wordmark.png", width: 2048, height: 850 }
+    : { src: "/images/logo.png", width: 1536, height: 1024 };
   const visibleDestinations = isKorean ? koreanDestinations : destinations;
   const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
   const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
@@ -224,7 +228,7 @@ export function HomePageClient({
         <PageContainer className="home-reference-content">
           <section className="home-reference-hero" aria-labelledby="home-reference-title">
             <div className="home-reference-hero-copy">
-              <h1 id="home-reference-title">{text.heroLead} <span>{text.heroBrand}</span></h1>
+              <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
               <div>
                 <Link className="home-reference-primary" href="/market">{text.explore} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
@@ -261,12 +265,12 @@ export function HomePageClient({
             <div aria-hidden="true"><i className="fa-solid fa-truck-fast" /><strong>SwiftMove</strong></div>
           </section>
 
-          <div className="home-reference-lower-grid">
-            <HomeCommunityHighlights posts={highlightedCommunityPosts} text={text} />
-            <HomeHelpPanel isKorean={isKorean} text={text} />
-          </div>
+          <HomeCommunityHighlights posts={highlightedCommunityPosts} text={text} />
 
-          <Link className="home-reference-jobs-cta ui-card" href="/jobs"><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+          <div className="home-reference-support-grid">
+            <HomeHelpPanel isKorean={isKorean} text={text} />
+            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+          </div>
 
           <section className="home-reference-trust" aria-label="Why use Tada">
             {visibleTrustItems.map((item) => <article className="ui-card" key={item.title}><i className={`fa-solid ${item.icon}`} aria-hidden="true" /><div><h2>{item.title}</h2><p>{item.description}</p></div></article>)}
