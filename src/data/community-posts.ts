@@ -25,6 +25,7 @@ export type CommunityPost = {
   viewCount?: number;
   timeAgo?: string;
   image?: string;
+  thumbnail?: string;
   imageAlt?: string;
   images?: { src: string; alt: string }[];
   authorName?: string;

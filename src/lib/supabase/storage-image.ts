@@ -3,10 +3,11 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
-export type StorageImageVariant = "avatar" | "gallery" | "thumbnail";
+export type StorageImageVariant = "avatar" | "card" | "gallery" | "thumbnail";
 
 const variants = {
   avatar: { width: 256, height: 256, quality: 76, resize: "cover" as const },
+  card: { width: 200, height: 200, quality: 70, resize: "cover" as const },
   gallery: { width: 1600, quality: 82, resize: "contain" as const },
   thumbnail: { width: 720, height: 720, quality: 72, resize: "cover" as const },
 };

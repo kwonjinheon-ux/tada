@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import { communityCategories, CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
@@ -19,19 +19,32 @@ import { readApiResponse } from "@/lib/api/client";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
 
-export function CommunityPageClient() {
+const buildFeedCacheKey = ({ category, search, mainLocation, subLocation }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string }) => {
+  const params = new URLSearchParams();
+  if (category !== "all") params.set("category", category);
+  if (search) params.set("q", search);
+  if (mainLocation) params.set("mainLocation", mainLocation);
+  if (subLocation) params.set("subLocation", subLocation);
+  return params.toString();
+};
+
+export function CommunityPageClient({ initialCategory = "all", initialPosts = null }: { initialCategory?: CommunityCategory; initialPosts?: CommunityPost[] | null }) {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
-  const [activeCategory, setActiveCategory] = useState<CommunityCategory>("all");
+  const [activeCategory, setActiveCategory] = useState<CommunityCategory>(initialCategory);
   const [activeChip, setActiveChip] = useState("all");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
-  const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>([]);
-  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
-  const postFeedCache = useRef(new Map<string, { posts: CommunityPost[]; cachedAt: number }>());
+  const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>(initialPosts ?? []);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(!initialPosts);
+  // Seeding the cache with the server-rendered feed keeps the first paint from
+  // firing a duplicate request for data the page already shipped.
+  const postFeedCache = useRef(new Map<string, { posts: CommunityPost[]; cachedAt: number }>(
+    initialPosts ? [[buildFeedCacheKey({ category: initialCategory, search: searchQuery, mainLocation: "", subLocation: "" }), { posts: initialPosts, cachedAt: Date.now() }]] : [],
+  ));
 
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
@@ -48,20 +61,8 @@ export function CommunityPageClient() {
   }, []);
 
   useEffect(() => {
-    const category = new URLSearchParams(window.location.search).get("category");
-    if (category && communityCategories.some(({ value }) => value === category)) {
-      setActiveCategory(category as CommunityCategory);
-    }
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
-    const params = new URLSearchParams();
-    if (activeCategory !== "all") params.set("category", activeCategory);
-    if (searchQuery) params.set("q", searchQuery);
-    if (mainLocation) params.set("mainLocation", mainLocation);
-    if (subLocation) params.set("subLocation", subLocation);
-    const cacheKey = params.toString();
+    const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, mainLocation, subLocation });
     const cachedFeed = postFeedCache.current.get(cacheKey);
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
       setPublishedPosts(cachedFeed.posts);

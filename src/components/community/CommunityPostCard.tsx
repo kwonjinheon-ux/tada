@@ -54,7 +54,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   return (
     <article className={`community-post-card community-post-card-${post.type} ${featuredImage ? "" : "community-post-card-no-media"}`}>
       <div className="community-post-card-link">
-        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={featuredImage.src} alt={featuredImage.alt} /></button> : null}
+        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={post.thumbnail ?? featuredImage.src} alt={featuredImage.alt} width={200} height={200} loading="lazy" decoding="async" /></button> : null}
         <Link className="community-post-body-link" href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`} onClick={() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST", keepalive: true }); }}>
           <div className="community-post-body">
           <div className="community-post-title-row">
