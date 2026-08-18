@@ -259,7 +259,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
         <MarketResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
-          chips={marketShopTypes.map(({ label, value, href }) => ({ label, value, href }))}
+          chips={marketShopTypes.map(({ labelKey, value, href }) => ({ label: t(labelKey), value, href }))}
           activeChipValue={shopType}
           onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
           sortValue={searchParams.get("sort") ?? "newest"}

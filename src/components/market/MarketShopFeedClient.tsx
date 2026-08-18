@@ -6,6 +6,7 @@ import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/compon
 import { ProductCard } from "@/components/ProductCard";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
+import { useLanguage } from "@/components/LanguageProvider";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
@@ -22,6 +23,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
@@ -98,7 +100,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
       <MarketResultsToolbar
         viewMode={viewMode}
         onViewModeChange={chooseView}
-        chips={marketShopTypes.map(({ label, value, href }) => ({ label, value, href }))}
+        chips={marketShopTypes.map(({ labelKey, value, href }) => ({ label: t(labelKey), value, href }))}
         activeChipValue={shopType}
         onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
         sortValue={searchParams.get("sort") ?? "newest"}
