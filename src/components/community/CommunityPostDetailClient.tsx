@@ -52,7 +52,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
   return <>
     <CommunityDesktopLayout activeCategory={relatedCategory ?? "all"}>
       <div className="listing-detail-page community-detail-page community-detail-container">
-      <nav className="community-detail-breadcrumb" aria-label="Breadcrumb"><Link href="/community">{t("community")}</Link><i className="fa-solid fa-chevron-right" aria-hidden="true" /><span>{t(communityPostTypeLabelKeys[post.type])}</span></nav>
+      <nav className="detail-breadcrumb" aria-label="Breadcrumb"><Link href="/community">{t("community")}</Link><i className="fa-solid fa-chevron-right" aria-hidden="true" /><span>{t(communityPostTypeLabelKeys[post.type])}</span></nav>
       <article className="ui-card community-detail-post">
         <header className="community-detail-post-header">
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span><i className="fa-regular fa-eye" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {post.location}</span><span><i className="fa-regular fa-clock" aria-hidden="true" /> {post.createdAt}</span></div></div>

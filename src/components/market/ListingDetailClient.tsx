@@ -449,8 +449,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   return (
     <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
-        <Link className="listing-detail-back" href={listingHomePath}><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>
-        {listing.category ? <nav className="listing-detail-category-path" aria-label="Listing category"><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><span aria-hidden="true">/</span><Link href={listing.category.subcategory.href}>{listing.category.subcategory.label}</Link></> : null}</nav> : null}
+        {listing.category ? <nav className="detail-breadcrumb" aria-label="Listing category"><Link href={listingHomePath}>Market</Link><i className="fa-solid fa-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><i className="fa-solid fa-chevron-right" aria-hidden="true" /><span>{listing.category.subcategory.label}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Back to listings</Link>}
       </div>
 
       <div className="listing-detail-layout">

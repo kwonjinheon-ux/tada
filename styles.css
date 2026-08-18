@@ -8033,9 +8033,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-weight: var(--weight-bold);
 }
 
-.listing-detail-category-path { display: inline-flex; align-items: center; gap: 7px; padding-left: 10px; border-left: 1px solid var(--neutral-300); color: var(--blue-soft-650); font-size: var(--text-md); font-weight: var(--weight-semibold); }
-.listing-detail-category-path a { color: var(--blue-500); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color 160ms ease, text-decoration-color 160ms ease; }
-.listing-detail-category-path a:hover, .listing-detail-category-path a:focus-visible { color: var(--green-750); text-decoration-color: currentColor; }
+.detail-breadcrumb { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--color-ink-soft); font-size: var(--text-md); }.detail-breadcrumb a { color: inherit; text-decoration: none; }.detail-breadcrumb a:hover { color: var(--color-primary-dark); text-decoration: underline; }.detail-breadcrumb i { font-size: var(--text-2xs); }.detail-breadcrumb span { color: var(--color-ink); font-weight: var(--weight-semibold); text-transform: capitalize; }
 
 .notification-listing-title i {
   flex: 0 0 auto;
@@ -8179,7 +8177,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
       + var(--mobile-dock-height, 64px)
     );
   }
-  .listing-detail-back-row, .listing-detail-summary { display: none; }
+  .listing-detail-back-row { display: flex; margin: var(--space-4) var(--page-padding-mobile) var(--space-3); }.listing-detail-back-row .listing-detail-back { display: none; }.listing-detail-summary { display: none; }
   .listing-detail-gallery-safety { display: none; }
 
   .listing-detail-layout { display: block; }
@@ -8950,8 +8948,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 /* Community post detail follows the single-card discussion composition. */
 .community-detail-container { display: grid; gap: var(--space-6); min-width: 0; padding-top: var(--space-6); padding-bottom: var(--space-10); }
-.community-detail-breadcrumb { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--color-ink-soft); font-size: var(--text-md); }
-.community-detail-breadcrumb a { color: inherit; text-decoration: none; }.community-detail-breadcrumb a:hover { color: var(--color-primary-dark); text-decoration: underline; }.community-detail-breadcrumb i { font-size: var(--text-2xs); }.community-detail-breadcrumb span { color: var(--color-ink); font-weight: var(--weight-semibold); text-transform: capitalize; }
 /* Bars for the route's loading.tsx. Heights come from the same tokens the real
    breadcrumb, h1, meta and body use, so the shell does not resize when the
    post arrives. */
@@ -8982,7 +8978,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .listing-detail-page .listing-comments-heading span { font-size: var(--text-xs); }
   /* Mobile textareas stay at 16px to avoid Safari zooming the page on focus. */
   .listing-detail-page .listing-comments-composer textarea, .listing-detail-page .listing-comment-edit textarea, .listing-detail-page .listing-comment-reply-form textarea { font-size: var(--text-lg); }
-  .community-detail-container { gap: var(--space-5); padding-top: var(--space-4); }.community-detail-breadcrumb { font-size: var(--text-sm); }.community-detail-post { gap: var(--space-4); padding: 0; border: 0; border-radius: 0; box-shadow: none; }.community-detail-post-header { gap: var(--space-3); }.community-detail-title-row { align-items: flex-start; gap: var(--space-2); }.community-detail-title-row h1 { font-size: var(--text-xl); }.community-detail-post-meta { gap: var(--space-3); font-size: var(--text-sm); }.community-detail-author { min-width: 54px; font-size: var(--text-xs); }.community-detail-author-avatar { width: var(--control-h-lg); height: var(--control-h-lg); }.community-post-edit-dialog { padding: var(--space-5); }.community-detail-post .listing-detail-main-image { min-height: 230px; margin: 0; border-radius: 0; }.community-detail-post .community-detail-gallery { width: 100vw; margin-inline: calc(50% - 50vw); }.community-detail-post .community-detail-body { width: auto; margin-inline: 0; padding-inline: 0; font-size: var(--text-lg); }.community-detail-post-footer { align-items: flex-start; flex-direction: column; padding-top: 0; }.community-detail-post-footer > div { width: 100%; justify-content: flex-start; }.community-detail-post-footer .community-detail-post-actions { width: auto; justify-content: flex-start; }.community-detail-container > .listing-comments { margin-inline: 0; }.community-category-posts h2 { font-size: var(--text-lg); }
+  .community-detail-container { gap: var(--space-5); padding-top: var(--space-4); }.detail-breadcrumb { font-size: var(--text-sm); }.community-detail-post { gap: var(--space-4); padding: 0; border: 0; border-radius: 0; box-shadow: none; }.community-detail-post-header { gap: var(--space-3); }.community-detail-title-row { align-items: flex-start; gap: var(--space-2); }.community-detail-title-row h1 { font-size: var(--text-xl); }.community-detail-post-meta { gap: var(--space-3); font-size: var(--text-sm); }.community-detail-author { min-width: 54px; font-size: var(--text-xs); }.community-detail-author-avatar { width: var(--control-h-lg); height: var(--control-h-lg); }.community-post-edit-dialog { padding: var(--space-5); }.community-detail-post .listing-detail-main-image { min-height: 230px; margin: 0; border-radius: 0; }.community-detail-post .community-detail-gallery { width: 100vw; margin-inline: calc(50% - 50vw); }.community-detail-post .community-detail-body { width: auto; margin-inline: 0; padding-inline: 0; font-size: var(--text-lg); }.community-detail-post-footer { align-items: flex-start; flex-direction: column; padding-top: 0; }.community-detail-post-footer > div { width: 100%; justify-content: flex-start; }.community-detail-post-footer .community-detail-post-actions { width: auto; justify-content: flex-start; }.community-detail-container > .listing-comments { margin-inline: 0; }.community-category-posts h2 { font-size: var(--text-lg); }
   .community-create-page { padding: 0; }.community-create-page .post-ad-card { padding: 0; border: 0; border-radius: 0; }.community-create-page .post-ad-create-bar { margin-bottom: 0; }
 }
 
