@@ -8509,15 +8509,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .listing-comment-tools > button:hover { background: var(--neutral-200); color: var(--green-750); }
 .listing-comment-tools > button.is-selected { background: var(--green-soft-50); color: var(--green-700); }
 .listing-comment-tools > button.is-downvote.is-selected { background: var(--neutral-200); color: var(--rose-800); }
-/* Community comments carry the post vote design at a smaller weight, so the
-   thread reads as subordinate to the post it hangs under. */
-.listing-comments.is-community .listing-comment-tools > button.is-upvote { color: var(--color-vote-up); }
-.listing-comments.is-community .listing-comment-tools > button.is-downvote { color: var(--color-vote-down); }
+/* Comments carry the post vote design at a smaller weight. The score sits
+   between the two buttons so the gap either side of it is identical. */
 .listing-comment-tools .community-vote-arrow { width: 15px; height: 15px; stroke-width: 2.8; }
-.listing-comments.is-community .listing-comment-tools > button:hover { background: var(--neutral-200); }
-.listing-comments.is-community .listing-comment-tools > button.is-upvote:hover { color: var(--color-vote-up-strong); }
-.listing-comments.is-community .listing-comment-tools > button.is-downvote:hover { color: var(--color-vote-down-strong); }
-.listing-comments.is-community .listing-comment-tools > button.is-upvote.is-selected { background: var(--color-vote-up-soft); color: var(--color-vote-up-strong); }
+.listing-comment-tools > button.is-upvote, .listing-comment-tools > button.is-downvote { padding: 0 4px; }
+.listing-comment-vote-score { min-width: var(--space-3); color: var(--color-vote-idle); font-size: var(--text-xs); font-weight: var(--weight-bold); text-align: center; }
+.listing-comments.is-community .listing-comment-tools > button.is-upvote:hover { color: var(--color-vote-up); background: var(--color-vote-up-soft); }
+.listing-comments.is-community .listing-comment-tools > button.is-downvote:hover { color: var(--color-vote-down-strong); background: var(--blue-soft-100); }
+.listing-comments.is-community .listing-comment-tools > button.is-upvote.is-selected { background: var(--color-vote-up-soft); color: var(--color-vote-up); }
 .listing-comments.is-community .listing-comment-tools > button.is-downvote.is-selected { background: var(--blue-soft-100); color: var(--color-vote-down-strong); }
 .listing-comment-tools > button.is-selected .community-vote-arrow { fill: currentColor; }
 .listing-comment-text-button.is-muted { color: var(--blue-soft-600); }.listing-comment-text-button.is-danger { color: var(--red-850); }
@@ -8836,16 +8835,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .community-vote-control > span { min-width: var(--space-4); color: var(--color-muted); text-align: center; }
 .community-vote-control button { min-height: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0; border-radius: var(--radius-circle); background: transparent; }
 .community-vote-arrow { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; transition: transform 140ms ease; }
-.community-vote-control button.is-upvote { color: var(--color-vote-up); }
-.community-vote-control button.is-downvote { color: var(--color-vote-down); }
-.community-vote-control button:hover { background: var(--neutral-200); }
-.community-vote-control button.is-upvote:hover { color: var(--color-vote-up-strong); }
-.community-vote-control button.is-downvote:hover { color: var(--color-vote-down-strong); }
-/* A cast vote needs to survive the resting colours above, so the active side
-   gains a tinted disc and the downvote fills in. */
-.community-vote-control button.is-upvote.is-selected { background: var(--color-vote-up-soft); color: var(--color-vote-up-strong); }
-.community-vote-control button.is-upvote.is-selected .community-vote-arrow { fill: currentColor; transform: translateY(-1px); }
+/* Both arrows rest grey; casting a vote is what brings in the colour and the
+   solid fill, so the control reads as unvoted until you act on it. */
+.community-vote-control button { color: var(--color-vote-idle); }
+.community-vote-control button.is-upvote:hover { color: var(--color-vote-up); background: var(--color-vote-up-soft); }
+.community-vote-control button.is-downvote:hover { color: var(--color-vote-down-strong); background: var(--blue-soft-100); }
+.community-vote-control button.is-upvote.is-selected { background: var(--color-vote-up-soft); color: var(--color-vote-up); }
 .community-vote-control button.is-downvote.is-selected { background: var(--blue-soft-100); color: var(--color-vote-down-strong); }
+.community-vote-control button.is-upvote.is-selected .community-vote-arrow { fill: currentColor; transform: translateY(-1px); }
 .community-vote-control button.is-downvote.is-selected .community-vote-arrow { fill: currentColor; transform: translateY(1px); }.community-post-share-count { cursor: default; }.community-post-actions > button:hover, .community-post-actions > a:hover, .community-post-save:hover { background: var(--neutral-250); }.community-post-actions.is-compact { margin-top: var(--space-2); }.community-post-actions.is-compact button, .community-post-actions.is-compact a { min-height: var(--control-h-xs); padding: 0 var(--space-2); font-size: var(--text-xs); }
 
 /* One shared discussion scale for market and community detail pages. */
