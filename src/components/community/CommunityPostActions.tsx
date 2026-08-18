@@ -110,6 +110,9 @@ export function CommunityPostActions({
       if (typeof payload?.score === "number" && isVote(payload.myVote)) {
         setCurrentScore(payload.score);
         setCurrentVote(payload.myVote);
+        // The feed cards and the detail page both render this score from the
+        // server, so drop the cached payloads still holding the pre-vote count.
+        router.refresh();
       } else {
         setCurrentScore(previousScore);
         setCurrentVote(previousVote);

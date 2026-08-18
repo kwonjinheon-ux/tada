@@ -65,7 +65,7 @@ export function BargainSaleItemGallery({ activeIndex, items, onClose, onSelect }
 
   if (!item) return null;
 
-  return <DialogOverlay className="listing-gallery-lightbox bargain-sale-item-gallery" onClose={onClose} aria-label={`${item.title} photo gallery`} dismissHint="Click outside to close">
+  return <DialogOverlay className="listing-gallery-lightbox bargain-sale-item-gallery" onClose={onClose} aria-label={`${item.title} photo gallery`}>
     <Image className="listing-gallery-lightbox-backdrop" src={item.image.src} alt="" fill aria-hidden="true" unoptimized sizes="100vw" />
     <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={onClose}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
     <div className="listing-gallery-lightbox-stage" onClick={closeWhenClickingOutsidePhoto}>

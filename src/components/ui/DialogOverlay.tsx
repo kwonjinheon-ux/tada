@@ -10,12 +10,7 @@ type PopupBackdropProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "onC
 
 type DialogOverlayProps = PopupBackdropProps & {
   children: ReactNode;
-  dismissHint?: string;
 };
-
-export function DialogDismissHint({ children = "Click outside to close" }: { children?: ReactNode }) {
-  return <p className="dialog-overlay-dismiss-hint" aria-hidden="true">{children}</p>;
-}
 
 /**
  * Shared popup backdrop. It consumes outside clicks before dismissing so a
@@ -43,7 +38,7 @@ export function PopupBackdrop({ children, className, onClose, isDismissible = tr
   );
 }
 
-export function DialogOverlay({ children, className, onClose, isDismissible = true, dismissHint, ...props }: DialogOverlayProps) {
+export function DialogOverlay({ children, className, onClose, isDismissible = true, ...props }: DialogOverlayProps) {
   return (
     <PopupBackdrop
       {...props}
@@ -54,7 +49,6 @@ export function DialogOverlay({ children, className, onClose, isDismissible = tr
       isDismissible={isDismissible}
     >
       {children}
-      {isDismissible ? <DialogDismissHint>{dismissHint}</DialogDismissHint> : null}
     </PopupBackdrop>
   );
 }

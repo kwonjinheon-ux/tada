@@ -8,8 +8,10 @@ import { CommunityPostBadge } from "@/components/community/CommunityPostBadge";
 import { CommunityPostSaveButton } from "@/components/community/CommunityPostSaveButton";
 import { CommentCountBadge } from "@/components/ui/CommentCountBadge";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
+  const { t } = useLanguage();
   const [activeImage, setActiveImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const responseCount = post.responseCount ?? 0;
@@ -63,7 +65,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
           </div>
           <div className="community-post-meta">
             <span className="community-post-vote-summary" aria-label={`${post.score ?? 0} votes`}><i className="fa-solid fa-arrow-up" aria-hidden="true" />{new Intl.NumberFormat("en-NZ").format(post.score ?? 0)}<i className="fa-solid fa-arrow-down" aria-hidden="true" /></span>
-            <span><i className="fa-regular fa-eye" aria-hidden="true" />{new Intl.NumberFormat("en-NZ").format(post.viewCount ?? 0)}</span>
+            <span><span>{t("communityViewsLabel")}</span>{new Intl.NumberFormat("en-NZ").format(post.viewCount ?? 0)}</span>
             <span><i className="fa-solid fa-location-dot" aria-hidden="true" />{post.location}</span>
             {post.eventDate ? <span><i className="fa-regular fa-calendar" aria-hidden="true" />{post.eventDate}</span> : null}
             {post.timeAgo ? <span><i className="fa-regular fa-clock" aria-hidden="true" />{post.timeAgo}</span> : null}
@@ -73,7 +75,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
         </Link>
         {!post.isOwner ? <CommunityPostSaveButton postId={post.id} initialIsSaved={post.isSaved} className="community-post-card-save" redirectTo={href ?? `/community/${post.id}`} /> : null}
       </div>
-      {isGalleryOpen && galleryImage ? <DialogOverlay className="listing-gallery-lightbox" aria-label={`${post.title} photo gallery`} onClose={() => setIsGalleryOpen(false)} dismissHint="Click outside to close">
+      {isGalleryOpen && galleryImage ? <DialogOverlay className="listing-gallery-lightbox" aria-label={`${post.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}>
         <img className="listing-gallery-lightbox-backdrop" src={galleryImage.src} alt="" aria-hidden="true" />
         <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
         <div className="listing-gallery-lightbox-stage" onClick={closeGalleryWhenClickingOutsidePhoto}>
