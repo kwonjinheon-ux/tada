@@ -64,8 +64,8 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <LocationFilterSection title="Location" mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="market" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
   }>
 
-    <section className="filter-block shop-type-filter market-type-filter">
-      <h2>Market type</h2>
+    <section className="filter-block shop-type-filter">
+      <h2>Shop Type</h2>
       <div className="filter-list">
         {shopTypes.map(({ value, label, icon, href }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
@@ -78,8 +78,8 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
 
     <section className="filter-block category-filter">
       <h2>{t("category")}</h2>
-      <div className="filter-list category-filter-list">
-        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+      <div className="filter-list">
+        {[{ label: t("all"), value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
