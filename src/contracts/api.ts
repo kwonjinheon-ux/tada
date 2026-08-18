@@ -104,6 +104,17 @@ export const marketFeedQuerySchema = z.object({
 export const bargainTypeSchema = z.enum(["all", "2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale", "newly-listed", "nearby-deals"]);
 export const bargainFeedQuerySchema = marketFeedQuerySchema.pick({ q: true, sort: true, mainLocation: true, subLocation: true, category: true, subcategory: true, maxPrice: true, condition: true, cursor: true }).extend({ bargain: bargainTypeSchema.default("all") });
 
+export const bargainPickupReservationRequestSchema = z.object({
+  listingId: uuidSchema,
+  itemId: uuidSchema,
+  pickupStartAt: z.string().datetime({ offset: true }),
+  pickupEndAt: z.string().datetime({ offset: true }),
+}).refine(({ pickupStartAt, pickupEndAt }) => new Date(pickupEndAt).getTime() - new Date(pickupStartAt).getTime() === 30 * 60 * 1000, "Choose a 30-minute pickup time.");
+
+export const bargainPickupReservationActionSchema = z.object({
+  action: z.enum(["accept", "decline", "cancel", "on_the_way", "picked_up", "no_show"]),
+});
+
 export const marketFeedListingSchema = z.object({
   id: uuidSchema,
   title: z.string(),

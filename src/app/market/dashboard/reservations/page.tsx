@@ -9,7 +9,7 @@ import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Bargain Reservations" };
 
-type ReservationRow = { id: string; listing_id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: "pending" | "accepted" | "declined" | "cancelled" | "completed"; created_at: string };
+type ReservationRow = { id: string; listing_id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: "requested" | "confirmed" | "on_the_way" | "picked_up" | "declined" | "cancelled" | "expired" | "no_show"; created_at: string };
 type ItemRow = { id: string; listing_id: string; title: string; photo_id: string };
 type ListingRow = { id: string; title: string };
 type PhotoRow = { id: string; storage_path: string };
@@ -47,11 +47,11 @@ export default async function BargainReservationsPage() {
     const item = items.get(reservation.item_id);
     const listing = listings.get(reservation.listing_id);
     const imageUrl = item ? imageUrls.get(photos.get(item.photo_id) ?? "") ?? "/images/logo.png" : "/images/logo.png";
-    const href = role === "selling" && reservation.status === "pending" ? `/market/${reservation.listing_id}/items/${reservation.item_id}/edit` : `/market/${reservation.listing_id}`;
+    const href = role === "selling" && ["requested", "confirmed", "on_the_way"].includes(reservation.status) ? `/market/${reservation.listing_id}/items/${reservation.item_id}/edit` : `/market/${reservation.listing_id}`;
     return <article className="listing-row" key={reservation.id}>
       <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
       <div className="listing-row-body"><div className="listing-row-title"><h2>{item?.title ?? "Bargain item"}</h2><span className={`is-${reservation.status}`}>{statusLabel(reservation.status)}</span></div><strong className="listing-row-price">{formatMarketPrice(reservation.amount_cents)}</strong><small className="listing-row-meta">{listing?.title ?? "Bargain sale"} · {createdLabel(reservation.created_at)}</small></div>
-      <div className="listing-row-actions manage-listing-actions"><Link href={href}>{role === "selling" && reservation.status === "pending" ? "Review offer" : "View sale"}</Link></div>
+      <div className="listing-row-actions manage-listing-actions"><Link href={href}>{role === "selling" && ["requested", "confirmed", "on_the_way"].includes(reservation.status) ? "Manage pickup" : "View sale"}</Link></div>
     </article>;
   });
 

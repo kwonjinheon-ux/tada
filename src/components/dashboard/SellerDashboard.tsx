@@ -63,8 +63,8 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
     ? await Promise.all([
       supabase.from("bargain_listings").select("id", { count: "exact", head: true }).eq("owner_id", user.id).in("status", ["published", "pending"]),
       supabase.from("bargain_wishlist").select("listing_id", { count: "exact", head: true }).eq("user_id", user.id),
-      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).in("status", ["pending", "accepted"]),
-      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["pending", "accepted"]),
+      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
+      supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
     ])
     : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }];
   const { data: photoRows } = supabase && activeListings.length
