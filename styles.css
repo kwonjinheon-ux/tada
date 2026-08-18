@@ -1758,6 +1758,9 @@ a {
      primary browse mode; categories are intentionally quieter filters. */
   .market-filter-panel:not(.is-open) .market-type-filter {
     gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: linear-gradient(to bottom, var(--blue-soft-100), var(--color-surface));
   }
 
   .market-filter-panel:not(.is-open) .market-type-filter .filter-list,
@@ -1767,7 +1770,7 @@ a {
   }
 
   .market-filter-panel:not(.is-open) .market-type-filter .filter-list a {
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-regular);
   }
 
   .market-filter-panel:not(.is-open) .category-filter {
