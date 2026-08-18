@@ -1,15 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 
 type ServiceCategoryId = "cleaning" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto";
 type ServiceId = "sparkle-clean" | "fixit-furniture" | "math-mentors" | "moving-help" | "garden-lawn" | "beauty-services" | "happy-paws" | "auto-repair";
-type QuickFilterId = "availableToday" | "verified" | "topRated" | "lowPrice" | "nearMe";
 type TrustPointId = "verified" | "payments" | "support";
 
 type ServiceListing = {
@@ -22,15 +20,26 @@ type ServiceListing = {
 };
 
 const categories: Array<{ id: ServiceCategoryId; icon: string }> = [
-  { id: "cleaning", icon: "fa-spray-can-sparkles" },
+  { id: "cleaning", icon: "fa-utensils" },
+  { id: "handyman", icon: "fa-hammer" },
   { id: "moving", icon: "fa-truck" },
-  { id: "handyman", icon: "fa-screwdriver-wrench" },
-  { id: "gardening", icon: "fa-seedling" },
-  { id: "beauty", icon: "fa-wand-magic-sparkles" },
-  { id: "tutoring", icon: "fa-graduation-cap" },
-  { id: "petCare", icon: "fa-paw" },
   { id: "auto", icon: "fa-car" },
+  { id: "gardening", icon: "fa-seedling" },
+  { id: "tutoring", icon: "fa-graduation-cap" },
+  { id: "beauty", icon: "fa-scissors" },
+  { id: "petCare", icon: "fa-paw" },
 ];
+
+const serviceCategoryLabels = {
+  en: {
+    cleaning: "Food & Catering", handyman: "Home & Trades", moving: "Moving & Transport", auto: "Automotive",
+    gardening: "Gardening", tutoring: "Tutoring", beauty: "Beauty", petCare: "Pet Care",
+  },
+  ko: {
+    cleaning: "음식·케이터링", handyman: "집수리·전문기술", moving: "이사·운송", auto: "자동차",
+    gardening: "정원 관리", tutoring: "과외", beauty: "뷰티", petCare: "펫 케어",
+  },
+} as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 
 const services: ServiceListing[] = [
   { id: "sparkle-clean", category: "cleaning", badgeClass: "success", provider: "Sparkle Clean", rating: "4.9 (126)", image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=85" },
@@ -43,14 +52,6 @@ const services: ServiceListing[] = [
   { id: "auto-repair", category: "auto", badgeClass: "success", provider: "Pro Auto Hamilton", rating: "4.9 (112)", image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=720&q=85" },
 ];
 
-const quickFilters: Array<{ id: QuickFilterId; icon: string }> = [
-  { id: "availableToday", icon: "fa-calendar-day" },
-  { id: "verified", icon: "fa-circle-check" },
-  { id: "topRated", icon: "fa-star" },
-  { id: "lowPrice", icon: "fa-tag" },
-  { id: "nearMe", icon: "fa-location-crosshairs" },
-];
-
 const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
   { id: "verified", icon: "fa-shield-halved" },
   { id: "payments", icon: "fa-lock" },
@@ -60,8 +61,8 @@ const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
 const serviceCopy = {
   en: {
     preview: "Services preview",
-    heroTitle: "Trusted local help, close to home.",
-    heroDescription: "Find reliable people for the everyday jobs that make local life easier. Booking and secure payment are coming soon to Tada.",
+    heroTitle: "Find trusted local services near you.",
+    heroDescription: "Browse local providers, compare reviews, and contact them directly.",
     searchLabel: "What service do you need?",
     searchPlaceholder: "What service do you need?",
     locationLabel: "Service location",
@@ -200,36 +201,17 @@ const serviceCopy = {
 
 export function ServicesPageClient() {
   const { locale } = useLanguage();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const text = locale === "ko" ? serviceCopy.ko : serviceCopy.en;
+  const categoryLabels = serviceCategoryLabels[locale === "ko" ? "ko" : "en"];
+  const ui = locale === "ko"
+    ? { sponsored: "스폰서", sponsorTitle: "더 많은 지역 고객에게 서비스를 알려보세요", sponsorDescription: "Tada에서 내 서비스를 홍보하고 지역 고객을 만나보세요.", benefits: ["더 많은 지역 고객에게 노출", "신뢰도와 인지도 향상", "더 많은 지역 문의"] as const, learnMore: "자세히 보기", message: "메시지", viewProfile: "프로필 보기", providerType: "제공자 유형", individuals: "개인", businesses: "업체", suburb: "세부 지역 (선택)", allSuburbs: "모든 지역", serviceDescription: "가까운 곳에서 믿을 수 있는 서비스를 찾아보세요." }
+    : { sponsored: "Sponsored", sponsorTitle: "Reach more local customers", sponsorDescription: "Promote your service on Tada and stand out locally.", benefits: ["Reach more locals", "Build trust and credibility", "More enquiries, locally"] as const, learnMore: "Learn more", message: "Message", viewProfile: "View profile", providerType: "Provider type", individuals: "Individuals", businesses: "Businesses", suburb: "Suburb (optional)", allSuburbs: "All suburbs", serviceDescription: "Trusted help from local providers." };
   const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | null>(null);
-  const [activeFilter, setActiveFilter] = useState<QuickFilterId | null>(null);
-  const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
-  const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
-
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
 
   const visibleServices = useMemo(() => {
-    const normalizedQuery = searchQuery.toLocaleLowerCase();
-    return services.filter((service) => {
-      if (activeCategory && service.category !== activeCategory) return false;
-      if (!normalizedQuery) return true;
-      const listing = text.listings[service.id];
-      return [listing.title, service.provider, text.categories[service.category]].some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
-    });
-  }, [activeCategory, searchQuery, text]);
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (query.trim()) params.set("q", query.trim()); else params.delete("q");
-    router.push(`/services${params.size ? `?${params.toString()}` : ""}`);
-    setNotice("");
-  };
+    return activeCategory ? services.filter((service) => service.category === activeCategory) : services;
+  }, [activeCategory]);
 
   const chooseCategory = (category: ServiceCategoryId) => {
     setActiveCategory((current) => current === category ? null : category);
@@ -241,24 +223,8 @@ export function ServicesPageClient() {
       <PageContainer className="services-page-content">
         <section className="services-hero" aria-labelledby="services-title">
           <div className="services-hero-copy">
-            <span className="services-preview-label ui-pill"><i className="fa-solid fa-sparkles" aria-hidden="true" /> {text.preview}</span>
             <h1 id="services-title">{text.heroTitle}</h1>
             <p>{text.heroDescription}</p>
-          </div>
-
-          <div className="services-search-wrap">
-            <form className="services-search ui-card" role="search" onSubmit={submitSearch}>
-              <label className="sr-only" htmlFor="services-search-input">{text.searchLabel}</label>
-              <i className="fa-solid fa-magnifying-glass" aria-hidden="true" />
-              <input id="services-search-input" value={query} onChange={(event) => setQuery(event.target.value)} type="search" placeholder={text.searchPlaceholder} />
-              <label className="sr-only" htmlFor="services-location">{text.locationLabel}</label>
-              <span className="services-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /><select id="services-location" key={text.location} defaultValue={text.location}><option>{text.location}</option></select></span>
-              <Button className="services-search-submit" type="submit" pill>{text.searchAction}</Button>
-            </form>
-            <div className="services-quick-filters" aria-label={text.quickFilterLabel}>
-              {quickFilters.map((filter) => <button className={activeFilter === filter.id ? "is-active" : ""} type="button" key={filter.id} aria-pressed={activeFilter === filter.id} onClick={() => setActiveFilter((current) => current === filter.id ? null : filter.id)}><i className={`fa-solid ${filter.icon}`} aria-hidden="true" />{text.quickFilters[filter.id]}</button>)}
-            </div>
-            {notice ? <p className="services-notice" role="status">{notice}</p> : null}
           </div>
         </section>
 
@@ -268,14 +234,24 @@ export function ServicesPageClient() {
             {activeCategory ? <button className="services-clear-button" type="button" onClick={() => setActiveCategory(null)}>{text.showAll}</button> : null}
           </div>
           <div className="services-category-grid">
-            {categories.map((category) => <button className={activeCategory === category.id ? "services-category is-active" : "services-category"} type="button" key={category.id} aria-pressed={activeCategory === category.id} onClick={() => chooseCategory(category.id)}><span><i className={`fa-solid ${category.icon}`} aria-hidden="true" /></span><strong>{text.categories[category.id]}</strong></button>)}
+            {categories.map((category) => <button className={activeCategory === category.id ? "services-category is-active" : "services-category"} type="button" key={category.id} aria-pressed={activeCategory === category.id} onClick={() => chooseCategory(category.id)}><span><i className={`fa-solid ${category.icon}`} aria-hidden="true" /></span><strong>{categoryLabels[category.id]}</strong></button>)}
           </div>
+        </section>
+
+        <section className="services-sponsor-banner" aria-label={ui.sponsored}>
+          <div className="services-sponsor-copy"><span>{ui.sponsored}</span><strong>{ui.sponsorTitle}</strong><p>{ui.sponsorDescription}</p></div>
+          <ul>{ui.benefits.map((benefit) => <li key={benefit}><i className="fa-solid fa-circle-check" aria-hidden="true" /> {benefit}</li>)}</ul>
+          <Image src={services[0].image} alt="" width={180} height={108} />
+          <button type="button" onClick={() => setNotice(text.providerNotice)}>{ui.learnMore}</button>
         </section>
 
         <div className="services-content-layout">
           <aside className="services-filter-panel ui-panel" aria-label={text.filters}>
-            <div className="services-filter-heading"><h2>{text.filters}</h2><button type="button" onClick={() => { setActiveCategory(null); setActiveFilter(null); }}>{text.clearAll}</button></div>
-            <label className="ui-field"><span>{text.serviceType}</span><select defaultValue={text.allCategories}><option>{text.allCategories}</option>{categories.map((category) => <option key={category.id}>{text.categories[category.id]}</option>)}</select></label>
+            <div className="services-filter-heading"><h2>{text.filters}</h2><button type="button" onClick={() => setActiveCategory(null)}>{text.clearAll}</button></div>
+            <label className="ui-field"><span>{text.locationLabel}</span><select defaultValue={text.location}><option>{text.location}</option></select></label>
+            <label className="ui-field"><span>{ui.suburb}</span><select defaultValue={ui.allSuburbs}><option>{ui.allSuburbs}</option></select></label>
+            <fieldset className="services-provider-type"><legend>{ui.providerType}</legend><button className="is-active" type="button">All</button><button type="button">{ui.individuals}</button><button type="button">{ui.businesses}</button></fieldset>
+            <label className="ui-field"><span>{text.serviceType}</span><select defaultValue={text.allCategories}><option>{text.allCategories}</option>{categories.map((category) => <option key={category.id}>{categoryLabels[category.id]}</option>)}</select></label>
             <label className="ui-field"><span>{text.priceRange}</span><select defaultValue={text.anyPrice}><option>{text.anyPrice}</option><option>{text.underFifty}</option><option>{text.fiftyToHundred}</option></select></label>
             <label className="ui-field"><span>{text.availability}</span><select defaultValue={text.anytime}><option>{text.anytime}</option><option>{text.quickFilters.availableToday}</option><option>{text.thisWeek}</option></select></label>
             <label className="ui-field"><span>{text.rating}</span><select defaultValue={text.anyRating}><option>{text.anyRating}</option><option>{text.fourFiveAbove}</option><option>{text.fourAbove}</option></select></label>
@@ -286,7 +262,7 @@ export function ServicesPageClient() {
 
           <section className="services-results" aria-labelledby="services-results-title">
             <div className="services-results-heading">
-              <div><p>{activeCategory ? text.categoryNearby(text.categories[activeCategory]) : text.popularServices}</p><h2 id="services-results-title">{activeCategory ? text.exploreCategory(text.categories[activeCategory]) : text.localHelp}</h2></div>
+              <div><p>{activeCategory ? text.categoryNearby(categoryLabels[activeCategory]) : text.popularServices}</p><h2 id="services-results-title">{activeCategory ? text.exploreCategory(categoryLabels[activeCategory]) : text.popularServices}</h2></div>
               <span>{text.serviceCount(visibleServices.length)}</span>
             </div>
             <div className="services-card-grid">
@@ -294,7 +270,7 @@ export function ServicesPageClient() {
                 const listing = text.listings[service.id];
                 return <article className="services-listing ui-card" key={service.id}>
                   <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="(max-width: 767px) 84vw, (max-width: 1023px) 42vw, (min-width: 1280px) 15vw, 24vw" /><button type="button" aria-label={text.saveService(listing.title)} onClick={() => setNotice(text.saveNotice(listing.title))}><i className="fa-regular fa-heart" aria-hidden="true" /></button><span className={`ui-pill ${service.badgeClass === "success" ? "ui-pill--success" : "ui-pill--warning"}`}>{listing.badge}</span></div>
-                  <div className="services-listing-copy"><h3>{listing.title}</h3><p>{service.provider}</p><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating}</span><span>{listing.charge}</span></div><span className="services-listing-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><strong>{listing.price}</strong></div>
+                  <div className="services-listing-copy"><h3>{listing.title}</h3><p><i className="fa-solid fa-user-circle" aria-hidden="true" /> {service.provider}</p><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating}</span><span>{listing.charge}</span></div><span className="services-listing-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><em>{ui.serviceDescription}</em><strong>{listing.price}</strong><footer><button type="button" onClick={() => setNotice(`${ui.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {ui.message}</button><button type="button" onClick={() => setNotice(`${ui.viewProfile}: ${service.provider}`)}>{ui.viewProfile}</button></footer></div>
                 </article>;
               })}
             </div>
