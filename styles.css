@@ -1810,6 +1810,14 @@ a {
   .market-chip-row {
     width: 100%;
     padding-bottom: 0;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+
+  .market-chip-row button {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 }
 
