@@ -6,10 +6,9 @@ import { marketFeedResponseSchema } from "@/contracts/api";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
-import { MarketFilterSidebar, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
 import type { Listing } from "@/data/listings";
-import { marketplaceCategories } from "@/data/marketplace-categories";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
@@ -17,7 +16,6 @@ import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
-const quickCategories = marketplaceCategories.slice(0, 6).map(({ label, value }) => ({ label, value }));
 const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
 
@@ -27,7 +25,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
   const selectedCategory = searchParams.get("category") ?? "all";
-  const selectedSubcategory = searchParams.get("subcategory") ?? "all";
   const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
   const appliedCondition = conditionFilters.includes(searchParams.get("condition") as typeof conditionFilters[number]) ? searchParams.get("condition")! : "all";
   const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
@@ -38,23 +35,12 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   const [condition, setCondition] = useState(appliedCondition);
   const [mainLocation, setMainLocation] = useState<MainLocation | "">((searchParams.get("mainLocation") as MainLocation | null) ?? "");
   const [subLocation, setSubLocation] = useState(searchParams.get("subLocation") ?? "");
-  const [applyingChip, setApplyingChip] = useState<string | null>(null);
   const [listings, setListings] = useState(postedListings);
   const [savedIds, setSavedIds] = useState(savedListingIds);
   const [nextPageCursor, setNextPageCursor] = useState<string | null>(nextCursor);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isLoadRequestInFlight = useRef(false);
-  const selectedCategoryDefinition = useMemo(
-    () => marketplaceCategories.find((category) => category.value === selectedCategory),
-    [selectedCategory],
-  );
-  const toolbarCategories = useMemo(
-    () => selectedCategoryDefinition
-      ? [{ label: t("all"), value: "all" }, ...selectedCategoryDefinition.subcategories.map(({ label, value }) => ({ label, value }))]
-      : [{ label: t("all"), value: "all" }, ...quickCategories],
-    [selectedCategoryDefinition, t],
-  );
   const savedListingIdSet = useMemo(() => new Set(savedIds), [savedIds]);
 
   useEffect(() => {
@@ -163,12 +149,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   }, []);
 
   useEffect(() => {
-    if (!applyingChip) return;
-    const timer = window.setTimeout(() => setApplyingChip(null), 420);
-    return () => window.clearTimeout(timer);
-  }, [applyingChip]);
-
-  useEffect(() => {
     const sentinel = loadMoreRef.current;
     if (!sentinel || !nextPageCursor || isLoadingMore) return;
 
@@ -215,19 +195,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     else params.set("category", categorySlug);
     router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
     setIsFilterOpen(false);
-  };
-  const chooseSubcategory = (subcategorySlug: string) => {
-    if (selectedCategory === "all") return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("cursor");
-    if (subcategorySlug === "all") params.delete("subcategory");
-    else params.set("subcategory", subcategorySlug);
-    router.push(`${basePath}?${params.toString()}`);
-  };
-  const chooseToolbarCategory = (categorySlug: string) => {
-    setApplyingChip(categorySlug);
-    if (selectedCategoryDefinition) chooseSubcategory(categorySlug);
-    else chooseCategory(categorySlug);
   };
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -288,14 +255,13 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
       </MobileDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
-      <section className="market-results" aria-label="Fresh finds" aria-busy={Boolean(applyingChip)}>
+      <section className="market-results" aria-label="Fresh finds">
         <MarketResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
-          chips={toolbarCategories}
-          activeChipValue={selectedCategoryDefinition ? selectedSubcategory : selectedCategory}
-          applyingChip={applyingChip}
-          onChipSelect={chooseToolbarCategory}
+          chips={marketShopTypes.map(({ label, value, href }) => ({ label, value, href }))}
+          activeChipValue={shopType}
+          onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
           sortValue={searchParams.get("sort") ?? "newest"}
           onSortChange={changeSort}
         />

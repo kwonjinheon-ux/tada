@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
-import { MarketFilterSidebar, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
@@ -98,6 +98,9 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
       <MarketResultsToolbar
         viewMode={viewMode}
         onViewModeChange={chooseView}
+        chips={marketShopTypes.map(({ label, value, href }) => ({ label, value, href }))}
+        activeChipValue={shopType}
+        onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
         sortValue={searchParams.get("sort") ?? "newest"}
         onSortChange={(value) => updateParams({ sort: value === "newest" ? null : value })}
         resultsLabel={`Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}

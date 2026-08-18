@@ -1728,6 +1728,46 @@ a {
     top: var(--desktop-header-height);
     max-height: calc(100dvh - var(--desktop-header-height));
   }
+
+  /* Desktop has one navigation source: the left rail. Market type is the
+     primary browse mode; categories are intentionally quieter filters. */
+  .market-filter-panel:not(.is-open) .market-type-filter {
+    gap: var(--space-2);
+  }
+
+  .market-filter-panel:not(.is-open) .market-type-filter .filter-list,
+  .market-filter-panel:not(.is-open) .category-filter .filter-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+
+  .market-filter-panel:not(.is-open) .market-type-filter .filter-list a {
+    font-weight: var(--weight-semibold);
+  }
+
+  .market-filter-panel:not(.is-open) .category-filter {
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line-soft);
+  }
+
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button {
+    min-height: var(--control-h-sm);
+    padding-left: calc(var(--space-3) + 3px);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+  }
+
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected {
+    background: transparent;
+    box-shadow: inset 3px 0 0 var(--color-primary);
+    color: var(--color-ink);
+    font-weight: var(--weight-bold);
+  }
+
+  .market-toolbar .market-chip-row { display: none; }
 }
 
 /* Mobile administrator workspace: navigation and operational data stay usable without horizontal tables. */
