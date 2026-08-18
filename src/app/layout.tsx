@@ -6,7 +6,7 @@ import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: { default: "Tada", template: "%s | Tada" },
+  title: { default: "tada.nz 짜잔! 새로운 정보와 물건들이 여기에 모여 있습니다.", template: "%s | tada.nz" },
   description: "A modern local marketplace.",
 };
 
