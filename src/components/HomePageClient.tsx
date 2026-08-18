@@ -20,10 +20,10 @@ const destinations = [
 ];
 
 const koreanDestinations = [
-  { title: "마켓", description: "사고 팔고 나눠요", href: "/market", icon: "fa-store", tone: "market" },
-  { title: "동네이야기", description: "묻고 나누고 연결해요", href: "/community", icon: "fa-comments", tone: "community" },
-  { title: "생활도움", description: "청소, 이사, 수리, 과외", href: "/services", icon: "fa-screwdriver-wrench", tone: "services" },
-  { title: "일자리", description: "가까운 일자리 찾기", href: "/jobs", icon: "fa-briefcase", tone: "jobs", comingSoon: true },
+  { title: "마켓", subtitle: "Market", description: "사고 팔고 나눠요", href: "/market", icon: "fa-store", tone: "market" },
+  { title: "동네이야기", subtitle: "Community", description: "묻고 나누고 연결해요", href: "/community", icon: "fa-comments", tone: "community" },
+  { title: "생활도움", subtitle: "Services", description: "필요한 도움을 가까운 곳에서 찾아보세요.", href: "/services", icon: "fa-screwdriver-wrench", tone: "services" },
+  { title: "일자리", subtitle: "Jobs", description: "가까운 일자리 찾기", href: "/jobs", icon: "fa-briefcase", tone: "jobs", comingSoon: true },
 ];
 
 const marketShortcuts = [
@@ -95,7 +95,7 @@ type HomeCopy = {
 
 const homeCopy: Record<"en" | "ko", HomeCopy> = {
   en: {
-    heroLead: "When you need it,", heroBrand: "Tada.", heroDescription: "Buy, share and connect — made for everyday local life.", explore: "Explore Tada", post: "Post an item", soon: "Soon", marketPrompt: "What are you looking for?", marketTitle: "Explore Market", nearby: "New near you", seeAll: "See all", listingEmpty: "New local listings will appear here.", browseMarket: "Browse Market", sponsored: "Sponsored", sponsorTitle: "Moving made simple.", sponsorDescription: "Trusted local help for your next move.", sponsorAction: "Explore moving sales", stories: "Community", help: "Need a hand?", helpDescription: "Find useful local help for everyday jobs.", servicesAction: "Explore services", jobsTitle: "Find work close to home with Tada Jobs", jobsDescription: "Local opportunities are coming soon.",
+    heroLead: "Connect,", heroBrand: "Tada", heroDescription: "Buy, sell, share, and find what you need nearby.", explore: "Explore Tada", post: "Post an item", soon: "Soon", marketPrompt: "What are you looking for?", marketTitle: "Explore Market", nearby: "New near you", seeAll: "See all", listingEmpty: "New local listings will appear here.", browseMarket: "Browse Market", sponsored: "Sponsored", sponsorTitle: "Moving made simple.", sponsorDescription: "Trusted local help for your next move.", sponsorAction: "Explore moving sales", stories: "Community", help: "Need a hand?", helpDescription: "Find useful local help for everyday jobs.", servicesAction: "Explore services", jobsTitle: "Find work close to home with Tada Jobs", jobsDescription: "Local opportunities are coming soon.",
   },
   ko: {
     heroLead: "필요한 순간,", heroBrand: "타다.", heroDescription: "사고팔고, 나누고, 연결하고 — 일상을 타다.", explore: "둘러보기", post: "등록하기", soon: "준비중", marketPrompt: "어떤 마켓을 찾으세요?", marketTitle: "", nearby: "내 근처 새 상품", seeAll: "전체보기", listingEmpty: "내 근처 새 상품을 준비하고 있어요.", browseMarket: "마켓 둘러보기", sponsored: "Sponsored", sponsorTitle: "이사 준비 중이신가요?", sponsorDescription: "믿을 수 있는 이사 서비스와 함께 해보세요!", sponsorAction: "이사 서비스 보기", stories: "우리 동네 이야기", help: "생활에 도움이 필요하세요?", helpDescription: "필요한 도움을 가까운 곳에서 찾아보세요.", servicesAction: "서비스 둘러보기", jobsTitle: "가까운 일자리도 곧 Tada에서", jobsDescription: "함께 구할 수 있는 지역의 일자리를 찾아보세요.",
@@ -265,13 +265,14 @@ export function HomePageClient({
           </section>
 
           <section className="home-reference-destinations" aria-label="Explore Tada">
-            {visibleDestinations.map((destination) => (
-              <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
+            {visibleDestinations.map((destination) => {
+              const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
+              return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
                 <i className={`fa-solid ${destination.icon}`} aria-hidden="true" />
-                <span><strong>{destination.title}</strong><small>{destination.description}</small></span>
+                <span><strong>{destination.title}</strong>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
                 {destination.comingSoon ? <em>{text.soon}</em> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
               </Link>
-            ))}
+            })}
           </section>
 
           <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
@@ -295,7 +296,7 @@ export function HomePageClient({
 
           <div className="home-reference-support-grid">
             <HomeHelpPanel isKorean={isKorean} text={text} />
-            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.png" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
           </div>
 
           <section className="home-reference-trust" aria-label="Why use Tada">
