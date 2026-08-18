@@ -19,13 +19,26 @@ export function MarketResultsToolbar({ viewMode, onViewModeChange, chips = [], a
   const { t } = useLanguage();
 
   return <div className="market-toolbar">
-    <div className="view-toggle" aria-label={t("viewMode")}>
-      <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
-        <i className="fa-solid fa-list" aria-hidden="true" />
-      </button>
-      <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
-        <i className="fa-solid fa-border-all" aria-hidden="true" />
-      </button>
+    <div className="market-toolbar-top">
+      <div className="view-toggle" aria-label={t("viewMode")}>
+        <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
+          <i className="fa-solid fa-list" aria-hidden="true" />
+        </button>
+        <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
+          <i className="fa-solid fa-border-all" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="market-tools">
+        {resultsLabel ? <p>{resultsLabel}</p> : null}
+        <label className="sort-control" aria-label={t("sortListings")}>
+          <select value={sortValue} onChange={(event) => onSortChange(event.target.value)}>
+            <option value="newest">{t("newest")}</option>
+            <option value="priceAsc">{t("lowToHigh")}</option>
+            <option value="priceDesc">{t("highToLow")}</option>
+          </select>
+        </label>
+      </div>
     </div>
 
     {chips.length ? <div className="market-chip-row" aria-label={t("quickCategories")}>
@@ -33,7 +46,7 @@ export function MarketResultsToolbar({ viewMode, onViewModeChange, chips = [], a
         const isSelected = chip.value === activeChipValue;
         return <button
           key={chip.value}
-          className={`${isSelected ? "is-selected" : ""} ${applyingChip === chip.value ? "is-applying" : ""}`}
+          className={`market-type-${chip.value} ${isSelected ? "is-selected" : ""} ${applyingChip === chip.value ? "is-applying" : ""}`}
           type="button"
           aria-pressed={isSelected}
           onClick={() => onChipSelect?.(chip.value)}
@@ -43,15 +56,5 @@ export function MarketResultsToolbar({ viewMode, onViewModeChange, chips = [], a
       })}
     </div> : null}
 
-    <div className="market-tools">
-      {resultsLabel ? <p>{resultsLabel}</p> : null}
-      <label className="sort-control" aria-label={t("sortListings")}>
-        <select value={sortValue} onChange={(event) => onSortChange(event.target.value)}>
-          <option value="newest">{t("newest")}</option>
-          <option value="priceAsc">{t("lowToHigh")}</option>
-          <option value="priceDesc">{t("highToLow")}</option>
-        </select>
-      </label>
-    </div>
   </div>;
 }

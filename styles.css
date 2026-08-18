@@ -1594,6 +1594,13 @@ a {
   display: none;
 }
 
+.market-toolbar-top {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
 .market-toolbar h1 {
   margin: 0;
   color: var(--ink);
@@ -1690,6 +1697,24 @@ a {
   color: var(--neutral-50);
 }
 
+/* Market-type chips retain a subtle cue from their matching sidebar icon. */
+.market-chip-row button.market-type-all { background: var(--green-soft-50); color: var(--teal-soft-900); }
+.market-chip-row button.market-type-secondhand { background: var(--green-soft-50); color: var(--green-600); }
+.market-chip-row button.market-type-garage-sale { background: var(--blue-soft-150); color: var(--blue-700); }
+.market-chip-row button.market-type-moving-sale { background: var(--blue-150); color: var(--blue-450); }
+.market-chip-row button.market-type-2dollarshop { background: var(--rose-soft-100); color: var(--rose-500); }
+.market-chip-row button.market-type-groupbuy { background: var(--amber-50); color: var(--amber-550); }
+.market-chip-row button.market-type-all.is-selected { background: var(--green-soft-50); color: var(--teal-soft-900); }
+.market-chip-row button.market-type-secondhand.is-selected { background: var(--green-soft-50); color: var(--green-600); }
+.market-chip-row button.market-type-garage-sale.is-selected { background: var(--blue-soft-150); color: var(--blue-700); }
+.market-chip-row button.market-type-moving-sale.is-selected { background: var(--blue-150); color: var(--blue-450); }
+.market-chip-row button.market-type-2dollarshop.is-selected { background: var(--rose-soft-100); color: var(--rose-500); }
+.market-chip-row button.market-type-groupbuy.is-selected { background: var(--amber-50); color: var(--amber-550); }
+.market-chip-row button.is-selected {
+  box-shadow: inset 0 0 0 1px currentColor;
+  font-weight: var(--weight-bold);
+}
+
 .market-chip-row button.is-applying {
   animation: market-chip-apply 420ms ease-out;
 }
@@ -1761,13 +1786,31 @@ a {
   }
 
   .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected {
-    background: transparent;
+    background: var(--color-primary-soft);
     box-shadow: inset 3px 0 0 var(--color-primary);
     color: var(--color-ink);
     font-weight: var(--weight-bold);
   }
 
   .market-toolbar .market-chip-row { display: none; }
+}
+
+@media (max-width: 1023.98px) {
+  .market-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    overflow: visible;
+  }
+
+  .market-toolbar-top {
+    justify-content: space-between;
+  }
+
+  .market-chip-row {
+    width: 100%;
+    padding-bottom: 0;
+  }
 }
 
 /* Mobile administrator workspace: navigation and operational data stay usable without horizontal tables. */
