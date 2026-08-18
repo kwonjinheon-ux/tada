@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { CommunityPageClient } from "@/components/community/CommunityPageClient";
-import { communityCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import type { CommunityPost } from "@/data/community-posts";
+import { communityPostCategorySchema } from "@/contracts/api";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -21,8 +22,8 @@ async function loadInitialPosts(category: CommunityCategory, search: string) {
 
 export default async function CommunityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const requestedCategory = typeof params.category === "string" ? params.category : "";
-  const category = communityCategories.some(({ value }) => value === requestedCategory) ? requestedCategory as CommunityCategory : "all";
+  const requestedCategory = communityPostCategorySchema.safeParse(typeof params.category === "string" ? params.category : "");
+  const category: CommunityCategory = requestedCategory.success ? requestedCategory.data : "all";
   const search = (typeof params.q === "string" ? params.q : "").trim().slice(0, 60);
   const initialPosts = await loadInitialPosts(category, search);
 
