@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { CommunityPostSaveButton } from "@/components/community/CommunityPostSaveButton";
+import { CommunityVoteArrow } from "@/components/community/CommunityVoteArrow";
 
 type Vote = -1 | 0 | 1;
 
@@ -133,24 +134,24 @@ export function CommunityPostActions({
       <span className="community-vote-control">
         <button
           type="button"
-          className={currentVote === 1 ? "is-selected is-upvote" : ""}
+          className={`is-upvote ${currentVote === 1 ? "is-selected" : ""}`.trim()}
           aria-label="Upvote post"
           aria-pressed={currentVote === 1}
           onClick={() => void vote(1)}
           disabled={isVoting}
         >
-          <i className="fa-solid fa-arrow-up" aria-hidden="true" />
+          <CommunityVoteArrow direction="up" />
         </button>
         <span>{currentScore}</span>
         <button
           type="button"
-          className={currentVote === -1 ? "is-selected is-downvote" : ""}
+          className={`is-downvote ${currentVote === -1 ? "is-selected" : ""}`.trim()}
           aria-label="Downvote post"
           aria-pressed={currentVote === -1}
           onClick={() => void vote(-1)}
           disabled={isVoting}
         >
-          <i className="fa-solid fa-arrow-down" aria-hidden="true" />
+          <CommunityVoteArrow direction="down" />
         </button>
       </span>
       {!hideComments && (onCommentsToggle ? (
