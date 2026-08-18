@@ -9,6 +9,7 @@ import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
+import { prohibitedMarketplaceItemsMessage, violatesMarketplaceProhibitedItemsPolicy } from "@/lib/market/prohibited-items";
 import { AiListingGenerator } from "@/components/post-ad/AiListingGenerator";
 import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
 import type { MainLocation } from "@/data/nzLocations";
@@ -756,6 +757,12 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     }
 
     const plainDescription = body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    if (violatesMarketplaceProhibitedItemsPolicy(title, plainDescription, mainCategory, subCategory, ...saleItems.flatMap((item) => [item.title, item.description, item.category]))) {
+      setError(prohibitedMarketplaceItemsMessage);
+      setSubmitProgress(0);
+      setIsSubmitting(false);
+      return;
+    }
     if (plainDescription.length < 20 || body.length > 5000) {
       setError("Description must contain 20 to 5,000 characters.");
       setSubmitProgress(0);
@@ -1116,7 +1123,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <p className="post-field-hint post-coming-soon-hint">Group Buy isn&apos;t available yet — check back soon!</p>
               ) : <>
                 <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
-                <input id="post-title" name="title" type="text" minLength={4} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
+                <input id="post-title" name="title" type="text" minLength={2} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
                 {isMultiItemSale ? <>
                   <div className="event-schedule-grid">
                     <label>Start date<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>

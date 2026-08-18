@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { prohibitedMarketplaceItemsMessage, violatesMarketplaceProhibitedItemsPolicy } from "@/lib/market/prohibited-items";
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ listingId: string }> }) {
   const supabase = await createServerSupabaseClient();
@@ -99,6 +100,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   const validConditions = new Set(["brand_new", "like_new", "excellent", "good", "fair"]);
   const validTradeMethods = new Set(["pickup_delivery", "pickup", "delivery"]);
   if (title.length < 2 || title.length > 120) return NextResponse.json({ error: "Title must be between 2 and 120 characters." }, { status: 400 });
+  if (violatesMarketplaceProhibitedItemsPolicy(title, description, categorySlug, subcategorySlug)) return NextResponse.json({ error: prohibitedMarketplaceItemsMessage }, { status: 400 });
   if (description.length < 20 || description.length > 5000) return NextResponse.json({ error: "Description must be between 20 and 5,000 characters." }, { status: 400 });
   if (!Number.isInteger(priceCents) || priceCents < 0 || priceCents > 100_000_000) return NextResponse.json({ error: "Enter a valid price." }, { status: 400 });
   if (!validConditions.has(String(itemCondition)) || !validTradeMethods.has(String(tradeMethod))) return NextResponse.json({ error: "Choose valid listing details." }, { status: 400 });

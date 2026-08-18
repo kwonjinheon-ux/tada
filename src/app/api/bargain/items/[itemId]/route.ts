@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { prohibitedMarketplaceItemsMessage, violatesMarketplaceProhibitedItemsPolicy } from "@/lib/market/prohibited-items";
 
 type ItemRow = { id: string; listing_id: string; owner_id: string; photo_id: string };
 
@@ -15,6 +16,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ it
   const description = typeof payload?.description === "string" ? payload.description.trim() : "";
   const priceCents = typeof payload?.priceCents === "number" && Number.isInteger(payload.priceCents) ? payload.priceCents : -1;
   if (!listingId || !title || !description || priceCents < 0) return NextResponse.json({ error: "Enter a valid title, description, and price." }, { status: 400 });
+  if (violatesMarketplaceProhibitedItemsPolicy(title, description)) return NextResponse.json({ error: prohibitedMarketplaceItemsMessage }, { status: 400 });
   const photoPath = typeof payload?.photoPath === "string" ? payload.photoPath : null;
   const originalName = typeof payload?.originalName === "string" ? payload.originalName.slice(0, 255) : null;
   const mimeType = typeof payload?.mimeType === "string" ? payload.mimeType : null;

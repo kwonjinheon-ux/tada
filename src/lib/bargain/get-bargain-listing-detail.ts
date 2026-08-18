@@ -97,6 +97,7 @@ export async function getBargainListingDetail(listingId: string, supabase: Supab
       meetingPlace: sale.meeting_place,
       createdAt: formatCreatedDate(sale.created_at),
       status: sale.status === "sold" ? "sold" : sale.status === "pending" ? "pending" : "available",
+      bargainType: sale.bargain_type,
       viewCount: 0,
       images: photos.map((photo) => ({ src: photo.storage_path ? signedImages.get(photo.storage_path) ?? fallbackImage : fallbackImage, alt: photo.original_name ?? sale.title })),
       seller: { id: seller?.id ?? null, name: seller?.display_name ?? "Tada seller", avatarUrl: sellerAvatarUrl, ratingAverage: 0, ratingCount: 0 },

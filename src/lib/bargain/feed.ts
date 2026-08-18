@@ -8,6 +8,7 @@ import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatBargainEventDateRange } from "@/lib/bargain/format-event-date";
 import { encodeCursor, decodeCursor } from "@/lib/pagination/cursor";
+import { containsProhibitedMarketplaceContent } from "@/lib/market/prohibited-items";
 
 type BargainQuery = z.infer<typeof bargainFeedQuerySchema>;
 type BargainRow = { id: string; owner_id: string; title: string; price_cents: number; bargain_type: string; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; event_start_date: string | null; event_end_date: string | null; status: "published" | "pending" | "sold"; created_at: string };
@@ -27,6 +28,7 @@ export async function getBargainFeed(
   options?: { bargainTypes?: string[]; pageSize?: number },
 ): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
   const query = bargainFeedQuerySchema.parse(rawQuery);
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
   const pageSize = options?.pageSize ?? defaultPageSize;
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;

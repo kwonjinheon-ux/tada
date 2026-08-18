@@ -9847,6 +9847,19 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   min-height: calc(var(--control-h-2xl) * 3.5);
   overflow: hidden;
 }
+.listing-detail-actions--single { grid-template-columns: 1fr; }
+.listing-detail-bargain-offers { display: grid; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--neutral-250); }
+.listing-detail-bargain-offers > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.listing-detail-bargain-offers h2 { margin: 0; color: var(--blue-900); font-size: var(--text-lg); }
+.listing-detail-bargain-offers > div span { color: var(--blue-soft-650); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.listing-detail-bargain-offers > p { margin: 0; color: var(--red-900); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.listing-detail-bargain-offers article { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid var(--green-soft-150); border-radius: var(--radius-sm); background: var(--green-soft-50); }
+.listing-detail-bargain-offers article strong { color: var(--blue-900); font-size: var(--text-lg); }
+.listing-detail-bargain-offers article p { margin: 4px 0 0; color: var(--blue-soft-650); font-size: var(--text-sm); line-height: 1.4; }
+.listing-detail-bargain-offers article > span { display: flex; gap: 6px; }
+.listing-detail-bargain-offers button { min-height: 32px; padding: 0 10px; border: 1px solid var(--green-550); border-radius: var(--radius-xs); background: var(--green-550); color: var(--neutral-50); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-extrabold); cursor: pointer; }
+.listing-detail-bargain-offers button + button { border-color: var(--neutral-300); background: var(--neutral-50); color: var(--blue-650); }
+.listing-detail-bargain-offers button:disabled { cursor: wait; opacity: .72; }
 
 .home-reference-hero::before { display: none; }
 

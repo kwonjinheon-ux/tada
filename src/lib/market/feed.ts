@@ -8,6 +8,7 @@ import { formatMarketPrice } from "@/lib/market/format-price";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { getBargainFeed } from "@/lib/bargain/feed";
 import { encodeCursor, decodeCursor, type Cursor } from "@/lib/pagination/cursor";
+import { containsProhibitedMarketplaceContent } from "@/lib/market/prohibited-items";
 
 const PAGE_SIZE = 24;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
@@ -21,6 +22,7 @@ function exactFilterValue(value: string) { return JSON.stringify(value); }
 export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
   const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;
   const sortColumn = query.sort === "newest" ? "created_at" : "price_cents";
@@ -107,6 +109,7 @@ function decodeMergedCursor(cursor: string | undefined): MergedCursorPayload | n
 export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
   const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
   const mergedCursor = decodeMergedCursor(query.cursor);
   const marketCursor = mergedCursor?.market ?? null;
   const bargainCursor = mergedCursor?.bargain ?? null;

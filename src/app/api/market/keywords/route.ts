@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { suggestCategoryFromTitle } from "@/data/marketplace-categories";
+import { prohibitedMarketplaceItemsMessage, violatesMarketplaceProhibitedItemsPolicy } from "@/lib/market/prohibited-items";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type KeywordRequest = { keyword?: unknown; id?: unknown };
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as KeywordRequest | null;
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim().replace(/\s+/g, " ") : "";
   if (keyword.length < 2 || keyword.length > 80) return NextResponse.json({ error: "Use a keyword between 2 and 80 characters." }, { status: 400 });
+  if (violatesMarketplaceProhibitedItemsPolicy(keyword)) return NextResponse.json({ error: prohibitedMarketplaceItemsMessage }, { status: 400 });
   const categorySlug = suggestCategoryFromTitle(keyword)?.mainCategory ?? null;
   const { data, error } = await context.supabase.from("market_keyword_alerts").insert({ user_id: context.user.id, keyword, category_slug: categorySlug }).select("id,keyword,category_slug,created_at").single();
   if (error?.code === "23505") return NextResponse.json({ error: "That keyword is already being tracked." }, { status: 409 });

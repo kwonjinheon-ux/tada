@@ -35,6 +35,7 @@ export type ListingDetail = {
   viewCount: number;
   images: Array<{ src: string; alt: string }>;
   seller: { id: string | null; name: string; avatarUrl: string | null; ratingAverage: number; ratingCount: number };
+  bargainType?: string | null;
 };
 
 const statusLabel = {
@@ -64,9 +65,12 @@ type ListingDetailClientProps = {
   space?: "market" | "bargain";
 };
 
+type BargainOffer = { id: string; buyer_id: string; amount_cents: number; note: string | null; status: string; created_at: string };
+
 export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
   const isBargainListing = space === "bargain";
+  const supportsBargainOffer = isBargainListing && listing.bargainType === "2-dollar-deals";
   const listingHomePath = "/market";
   const [activeImage, setActiveImage] = useState(0);
   const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
@@ -81,6 +85,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [offerNote, setOfferNote] = useState("");
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [offerError, setOfferError] = useState<string | null>(null);
+  const [bargainOffers, setBargainOffers] = useState<BargainOffer[]>([]);
+  const [isLoadingBargainOffers, setIsLoadingBargainOffers] = useState(false);
+  const [respondingBargainOfferId, setRespondingBargainOfferId] = useState<string | null>(null);
+  const [bargainOfferActionError, setBargainOfferActionError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteAnimating, setIsDeleteAnimating] = useState(false);
@@ -162,6 +170,18 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       .catch(() => undefined);
     return () => { isCurrent = false; };
   }, [isBargainListing, isOwner, listing.id]);
+
+  useEffect(() => {
+    if (!supportsBargainOffer || !isOwner) return;
+    let isCurrent = true;
+    setIsLoadingBargainOffers(true);
+    void fetch(`/api/bargain/offers?listingId=${encodeURIComponent(listing.id)}`)
+      .then(async (response) => ({ response, payload: await response.json().catch(() => null) as { offers?: BargainOffer[] } | null }))
+      .then(({ response, payload }) => { if (isCurrent && response.ok) setBargainOffers(payload?.offers ?? []); })
+      .catch(() => undefined)
+      .finally(() => { if (isCurrent) setIsLoadingBargainOffers(false); });
+    return () => { isCurrent = false; };
+  }, [isOwner, listing.id, supportsBargainOffer]);
 
   const showImage = (index: number) => {
     const nextImage = (index + listing.images.length) % listing.images.length;
@@ -276,18 +296,19 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     }
     const amount = Number(offerAmount);
     const amountCents = Math.round(amount * 100);
-    if (!Number.isFinite(amount) || amount < 0 || amountCents < 0) {
+    if (!isBargainListing && (!Number.isFinite(amount) || amount < 0 || amountCents < 0)) {
       setOfferError("Enter a valid offer amount.");
       return;
     }
     setIsSubmittingOffer(true);
     setOfferError(null);
     try {
-      const requestBody = JSON.stringify({ listingId: listing.id, amountCents, note: offerNote });
+      const requestBody = JSON.stringify(supportsBargainOffer ? { listingId: listing.id, note: offerNote } : { listingId: listing.id, amountCents, note: offerNote });
+      const offerEndpoint = supportsBargainOffer ? "/api/bargain/offers" : "/api/market/offers";
       let response: Response | null = null;
       let payload: { conversationId?: string; error?: string } | null = null;
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        response = await fetch("/api/market/offers", {
+        response = await fetch(offerEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: requestBody,
@@ -301,11 +322,19 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
         return;
       }
-      if (!response.ok || !payload?.conversationId) {
+      if (!response.ok) {
         setOfferError(payload?.error ?? "Unable to make an offer right now.");
         return;
       }
       setIsOfferDialogOpen(false);
+      if (supportsBargainOffer) {
+        setMessageError("Offer sent to the seller.");
+        return;
+      }
+      if (!payload?.conversationId) {
+        setOfferError("Unable to make an offer right now.");
+        return;
+      }
       const conversationPath = `/market/dashboard/messages?conversation=${payload.conversationId}`;
       if (window.matchMedia("(max-width: 767.98px)").matches) {
         window.location.assign(conversationPath);
@@ -316,6 +345,26 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       setOfferError("Unable to reach offers right now. Please try again.");
     } finally {
       setIsSubmittingOffer(false);
+    }
+  };
+
+  const respondToBargainOffer = async (offerId: string, action: "accept" | "decline") => {
+    if (respondingBargainOfferId) return;
+    setRespondingBargainOfferId(offerId);
+    setBargainOfferActionError(null);
+    try {
+      const response = await fetch(`/api/bargain/offers/${offerId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      const payload = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(payload?.error ?? "Unable to update this offer.");
+      setBargainOffers((offers) => offers.filter((offer) => offer.id !== offerId));
+      if (action === "accept") {
+        setListingStatus("sold");
+        setBargainOffers([]);
+      }
+    } catch (error) {
+      setBargainOfferActionError(error instanceof Error ? error.message : "Unable to update this offer.");
+    } finally {
+      setRespondingBargainOfferId(null);
     }
   };
 
@@ -446,10 +495,11 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</p>
 
-          {(isOwner || !isBargainListing) ? <div className="listing-detail-actions">
-            {isOwner ? <><button type="button" className="listing-detail-message" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}><i className="fa-solid fa-tag" aria-hidden="true" /> {listingStatus === "sold" ? "Sold out" : isMarkingSold ? "Marking sold..." : "Mark as sold"}</button><button type="button" className="listing-detail-offer" onClick={editListing} disabled={listingStatus === "sold"}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <><button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button><button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
+          {(isOwner || !isBargainListing || supportsBargainOffer) ? <div className={`listing-detail-actions ${isBargainListing && !isOwner ? "listing-detail-actions--single" : ""}`}>
+            {isOwner ? <><button type="button" className="listing-detail-message" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}><i className="fa-solid fa-tag" aria-hidden="true" /> {listingStatus === "sold" ? "Sold out" : isMarkingSold ? "Marking sold..." : "Mark as sold"}</button><button type="button" className="listing-detail-offer" onClick={editListing} disabled={listingStatus === "sold"}><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> Edit listing</button></> : <>{!isBargainListing ? <button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="fa-regular fa-message" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button> : null}<button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="fa-solid fa-tag" aria-hidden="true" /> Make an offer</button></>}
           </div> : null}
           {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
+          {supportsBargainOffer && isOwner ? <section className="listing-detail-bargain-offers" aria-live="polite"><div><h2>Offers</h2><span>{isLoadingBargainOffers ? "Loading…" : `${bargainOffers.length} pending`}</span></div>{bargainOfferActionError ? <p role="alert">{bargainOfferActionError}</p> : null}{bargainOffers.map((offer) => <article key={offer.id}><div><strong>${(offer.amount_cents / 100).toFixed(2)}</strong>{offer.note ? <p>{offer.note}</p> : null}</div><span><button type="button" onClick={() => void respondToBargainOffer(offer.id, "accept")} disabled={respondingBargainOfferId !== null}>{respondingBargainOfferId === offer.id ? "Saving…" : "Accept"}</button><button type="button" onClick={() => void respondToBargainOffer(offer.id, "decline")} disabled={respondingBargainOfferId !== null}>Decline</button></span></article>)}</section> : null}
 
           <dl className="listing-detail-facts">
             <div><dt>Condition</dt><dd>{listing.condition}</dd></div>
@@ -520,7 +570,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
 
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
-      {!isBargainListing && isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">Make an offer</h2><p>Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points.</p><label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label><label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button></div></section></DialogOverlay> : null}
+      {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="fa-solid fa-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? "Request to buy" : "Make an offer"}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : isBargainListing ? "Send request" : "Send offer"}</button></div></section></DialogOverlay> : null}
       {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="fa-solid fa-trash-can" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="fa-solid fa-trash-can" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></DialogOverlay> : null}
     </main>
   );

@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { marketSearchTermRequestSchema } from "@/contracts/api";
 import { apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { containsProhibitedMarketplaceContent } from "@/lib/market/prohibited-items";
 
 function createSearchAdminClient() {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
   if (!admin) return apiSuccess({ recorded: false });
 
   const term = parsed.data.term.toLocaleLowerCase("en-NZ").replace(/\s+/g, " ");
+  if (containsProhibitedMarketplaceContent(term)) return apiSuccess({ recorded: false });
   const { data: existing } = await admin
     .from("market_search_terms")
     .select("search_count")
