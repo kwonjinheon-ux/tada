@@ -10727,3 +10727,46 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .services-sponsor-banner > img { display: block; width: 7rem; height: 4.75rem; }
   .services-filter-panel { grid-row: 1 / span 6; }
 }
+
+/* The Market type row may scroll inside itself on touch screens, but it must
+   never widen the Market page or the viewport. */
+@media (max-width: 1023.98px) {
+  .market-results,
+  .market-toolbar {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .market-toolbar { overflow: hidden; }
+
+  .market-chip-row {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+
+/* Tablet keeps the compact header instead of forcing the full desktop nav
+   (logo + search + links + actions) into a 768px row. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .site-nav {
+    position: relative;
+    grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;
+    grid-template-rows: 58px 48px auto;
+    grid-template-areas:
+      "menu logo notification language profile"
+      "search search search search search"
+      "mobile mobile mobile mobile mobile";
+    min-height: 0;
+    row-gap: 4px;
+    column-gap: 8px;
+    padding: 3px max(var(--page-padding-tablet), env(safe-area-inset-right)) 3px max(var(--page-padding-tablet), env(safe-area-inset-left));
+  }
+
+  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; transform: translateX(-50%); }
+  .nav-search { grid-area: search; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); padding: 0 18px; border-radius: var(--radius-lg); }
+  .nav-search-submit, .primary-nav, .nav-actions { display: none; }
+  .nav-menu-button { display: grid; grid-area: menu; }
+  .mobile-notifications, .mobile-language-button { display: grid; }
+}
