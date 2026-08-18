@@ -8759,7 +8759,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 /* 75px is 19.231vw at 390px, so this holds at exactly 75px on iPhone and wider
    and only scales down on narrower phones — same basis as the type scale. The
    custom property cascades to .community-post-media and the skeleton below. */
-.community-post-card-link { --community-thumb: 50px; position: relative; min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 10px 12px; border-radius: inherit; color: inherit; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
+.community-post-card-link { --community-thumb: 50px; position: relative; min-height: var(--community-thumb); display: grid; grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: 18px; align-items: center; padding: 13px 12px; border-radius: inherit; color: inherit; transition: background-color 140ms ease; }.community-post-card-no-media .community-post-card-link { grid-template-columns: minmax(0, 1fr); }
 .community-post-card:hover .community-post-card-link { background: var(--neutral-150); }
 .community-post-body-link { min-width: 0; color: inherit; text-decoration: none; cursor: pointer; }.community-post-body-link:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
 /* The skeleton reuses the real card's classes, so it only needs to neutralise
