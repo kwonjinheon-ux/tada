@@ -60,6 +60,15 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     if (stored) setViewMode(stored);
   }, []);
 
+  // A soft navigation swaps the server-rendered category without remounting
+  // this component, so the selection has to follow the URL rather than stay on
+  // whatever it was mounted with. Reseeding the cache first lets the effect
+  // below reuse the posts that arrived with the navigation.
+  useEffect(() => {
+    if (initialPosts) postFeedCache.current.set(buildFeedCacheKey({ category: initialCategory, search: searchQuery, mainLocation: "", subLocation: "" }), { posts: initialPosts, cachedAt: Date.now() });
+    setActiveCategory(initialCategory);
+  }, [initialCategory, initialPosts, searchQuery]);
+
   useEffect(() => {
     const controller = new AbortController();
     const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, mainLocation, subLocation });

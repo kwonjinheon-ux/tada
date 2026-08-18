@@ -56,15 +56,31 @@ export function CommunityPostActions({
     const excerpt = body?.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220);
     const summary = [title, excerpt, url].filter(Boolean).join("\n\n");
 
+    // Only a copy or a completed share sheet counts: a blocked clipboard, a
+    // missing share API or a dismissed sheet must not report success.
+    let didShare = false;
     try {
       await navigator.clipboard.writeText(summary);
+      didShare = true;
     } catch {
-      if (navigator.share) await navigator.share({ title, text: excerpt, url });
+      try {
+        if (navigator.share) {
+          await navigator.share({ title, text: excerpt, url });
+          didShare = true;
+        }
+      } catch {
+        // The viewer dismissed the share sheet.
+      }
     }
+    if (!didShare) return;
 
-    const response = await fetch(`/api/community/posts/${postId}/engagement`, { method: "POST" });
-    const payload = response.ok ? await response.json() as { shareCount?: number } : null;
-    if (typeof payload?.shareCount === "number") setCurrentShareCount(payload.shareCount);
+    try {
+      const response = await fetch(`/api/community/posts/${postId}/engagement`, { method: "POST" });
+      const payload = response.ok ? await response.json() as { shareCount?: number } : null;
+      if (typeof payload?.shareCount === "number") setCurrentShareCount(payload.shareCount);
+    } catch {
+      // The link is already shared, so a failed counter update is not worth surfacing.
+    }
     setShared(true);
     window.setTimeout(() => setShared(false), 2000);
   };
