@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { SellerProfileCard } from "@/components/market/SellerProfileCard";
 import { SellerReviews } from "@/components/market/SellerReviews";
 import { SELLER_REVIEWS_PER_PAGE, sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/lib/market/seller-reviews";
@@ -88,15 +89,17 @@ export default async function SellerProfilePage({ params, searchParams }: {
     : null;
 
   return (
-    <main className="listing-detail-page seller-public-profile">
-      <SellerProfileCard seller={{
-        name: seller.display_name || "Tada seller",
-        avatarUrl: signedAvatar,
-        ratingAverage: Number(seller.rating_average ?? 0),
-        ratingCount: seller.rating_count ?? 0,
-        listingCount: listingCount ?? 0,
-      }} />
-      <SellerReviews sellerId={seller.id} reviews={reviews} total={total} page={page} pageCount={pageCount} sort={sort} />
+    <main className="seller-public-profile">
+      <PageContainer>
+        <SellerProfileCard seller={{
+          name: seller.display_name || "Tada seller",
+          avatarUrl: signedAvatar,
+          ratingAverage: Number(seller.rating_average ?? 0),
+          ratingCount: seller.rating_count ?? 0,
+          listingCount: listingCount ?? 0,
+        }} />
+        <SellerReviews sellerId={seller.id} reviews={reviews} total={total} page={page} pageCount={pageCount} sort={sort} />
+      </PageContainer>
     </main>
   );
 }

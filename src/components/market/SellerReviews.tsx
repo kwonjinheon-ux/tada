@@ -71,9 +71,9 @@ export function SellerReviews({ sellerId, reviews, total, page, pageCount, sort 
       {reviews.map((review) => <article className="seller-review" key={review.id}>
         <Avatar src={review.reviewer.avatarUrl} name={review.reviewer.name} alt="" className="seller-review-avatar" />
         <div>
-          <header><strong>{review.reviewer.name}</strong><span><RatingStars score={review.score} /><b>{review.score.toFixed(1)}</b></span></header>
+          <header><strong>{review.reviewer.name}</strong><time dateTime={review.createdAt}>{formatDate(review.createdAt)}</time></header>
+          <span className="seller-review-rating"><RatingStars score={review.score} /><b>{review.score.toFixed(1)}</b></span>
           {review.comment ? <p>{review.comment}</p> : null}
-          <time dateTime={review.createdAt}>{formatDate(review.createdAt)}</time>
         </div>
       </article>)}
     </div>

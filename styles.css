@@ -2487,8 +2487,11 @@ a {
 
 .listing-detail-mobile-only { display: none; }
 
-/* Seller profile is built mobile first against the 16px page gutter, then
-   given more room from the tablet breakpoint up. */
+/* The page sits on the shared shell so its gutter matches every other Tada
+   page: 16px on a phone, 24px from tablet, centred from desktop. */
+.seller-public-profile { padding: var(--space-6) 0 var(--space-12); background: var(--neutral-50); }
+
+/* Cards are built mobile first, then given more room from the tablet breakpoint. */
 .seller-public-profile-card {
   display: grid;
   gap: var(--space-4);
@@ -2545,13 +2548,14 @@ a {
 .seller-review { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--neutral-50); }
 .seller-review-avatar { width: 40px; height: 40px; display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-circle); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-base); font-weight: var(--weight-extrabold); object-fit: cover; }
 .seller-review > div { min-width: 0; display: grid; gap: var(--space-2); }
-.seller-review header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.seller-review header strong { overflow: hidden; color: var(--blue-850); font-size: var(--text-base); text-overflow: ellipsis; white-space: nowrap; }
-.seller-review header > span { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--space-1); color: var(--blue-soft-700); font-size: var(--text-sm); }
-.seller-review header b { font-weight: var(--weight-bold); }
+.seller-review header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.seller-review header strong { min-width: 0; overflow: hidden; color: var(--blue-850); font-size: var(--text-base); text-overflow: ellipsis; white-space: nowrap; }
+.seller-review header time { flex: 0 0 auto; color: var(--blue-soft-650); font-size: var(--text-xs); white-space: nowrap; }
+.seller-review-rating { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--blue-soft-700); font-size: var(--text-sm); }
+.seller-review-rating b { font-weight: var(--weight-bold); }
 .seller-review-stars { display: inline-flex; gap: 2px; color: var(--amber-350); }
 .seller-review p { margin: 0; color: var(--blue-750); font-size: var(--text-base); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
-.seller-review time, .seller-reviews-empty { color: var(--blue-soft-650); font-size: var(--text-sm); }
+.seller-reviews-empty { color: var(--blue-soft-650); font-size: var(--text-sm); }
 
 .seller-review-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-1); margin-top: var(--space-2); }
 .seller-review-pagination a, .seller-review-pagination > span { min-width: var(--control-h-sm); min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; padding: 0 var(--space-2); border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--blue-750); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
@@ -2567,6 +2571,10 @@ a {
   .seller-profile-stats dd { font-size: var(--text-xl); }
   .seller-profile-stats dt { font-size: var(--text-sm); }
   .seller-reviews > header h2 { font-size: var(--text-xl); }
+}
+
+@media (max-width: 767.98px) {
+  .seller-public-profile { padding: 14px 0 72px; }
 }
 
 .seller-reviews-empty { margin: var(--space-6) 0 0; }
@@ -8456,7 +8464,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .trade-review-error { margin: 0; color: var(--red-900); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .trade-review-dialog footer { display: flex; justify-content: flex-end; gap: var(--space-2); }
 @media (max-width: 767.98px) {
-  .seller-review header { align-items: flex-start; flex-direction: column; gap: var(--space-1); }
   .trade-review-dialog { width: min(100% - var(--space-6), 460px); padding: var(--space-5); }
   .trade-review-stars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .trade-review-dialog footer > button { flex: 1; }
