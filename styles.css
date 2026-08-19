@@ -2487,58 +2487,88 @@ a {
 
 .listing-detail-mobile-only { display: none; }
 
+/* Seller profile is built mobile first against the 16px page gutter, then
+   given more room from the tablet breakpoint up. */
 .seller-public-profile-card {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  display: grid;
+  gap: var(--space-4);
   max-width: 620px;
-  padding: 28px;
+  padding: var(--space-4);
   border: 1px solid var(--neutral-250);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--neutral-50);
 }
 
-.seller-public-profile-card > img,
-.seller-public-profile-card > span {
-  width: 88px;
-  height: 88px;
+.seller-public-profile-identity { min-width: 0; display: flex; align-items: center; gap: var(--space-3); }
+.seller-public-profile-identity > div { min-width: 0; }
+
+/* Avatar covers both branches of <Avatar>: the signed <img> and the initials
+   <span> fallback, so a real photo is never left as a bare square. */
+.seller-public-profile-avatar {
+  width: 64px;
+  height: 64px;
   display: grid;
   flex: 0 0 auto;
   place-items: center;
+  overflow: hidden;
   border-radius: var(--radius-circle);
   background: var(--green-soft-50);
   color: var(--green-700);
-  font-size: var(--text-4xl);
+  font-size: var(--text-2xl);
   font-weight: var(--weight-extrabold);
+  object-fit: cover;
 }
 
-.seller-public-profile-card > img { object-fit: cover; }
-.seller-public-profile-card p,
-.seller-public-profile-card h1,
-.seller-public-profile-card strong,
-.seller-public-profile-card small { margin: 0; }
-.seller-public-profile-card p,
-.seller-public-profile-card small { color: var(--blue-soft-650); font-size: var(--text-md); }
-.seller-public-profile-card h1 { margin: 4px 0 8px; color: var(--blue-900); font-size: var(--text-4xl); }
-.seller-public-profile-card strong { display: block; color: var(--blue-soft-700); font-size: var(--text-md); }
-.seller-public-profile-card strong i { color: var(--amber-350); }
-.seller-public-profile-card small { display: block; margin-top: 6px; }
+.seller-public-profile-card p { margin: 0; color: var(--blue-soft-650); font-size: var(--text-sm); }
+.seller-public-profile-card h1 { margin: 2px 0 0; overflow: hidden; color: var(--blue-900); font-size: var(--text-2xl); line-height: 1.25; overflow-wrap: anywhere; }
 
-.seller-reviews { width: min(100%, 620px); display: grid; gap: var(--space-4); margin-top: var(--space-6); }
-.seller-reviews > header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.seller-reviews > header h2 { margin: 0; color: var(--blue-900); font-size: var(--text-xl); }
+.seller-profile-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin: 0; padding-top: var(--space-4); border-top: 1px solid var(--neutral-250); }
+.seller-profile-stats > div { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; text-align: center; }
+.seller-profile-stats dt { color: var(--blue-soft-650); font-size: var(--text-xs); }
+.seller-profile-stats dd { display: inline-flex; align-items: center; gap: var(--space-1); margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.seller-profile-stats dd i { color: var(--amber-350); font-size: var(--text-base); }
+.seller-profile-stat-empty { color: var(--blue-soft-650); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+
+.seller-reviews { width: min(100%, 620px); display: grid; gap: var(--space-3); margin-top: var(--space-6); }
+.seller-reviews > header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.seller-reviews > header h2 { margin: 0; color: var(--blue-900); font-size: var(--text-lg); }
 .seller-reviews > header > span { min-width: var(--control-h-sm); display: grid; place-items: center; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--green-soft-50); color: var(--green-750); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+
+/* The sort strip scrolls sideways rather than wrapping, so the review list
+   stays at the same place on screen while the viewer switches order. */
+.seller-review-sort { display: flex; gap: var(--space-1); overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.seller-review-sort::-webkit-scrollbar { display: none; }
+.seller-review-sort a { min-height: var(--control-h-sm); display: inline-flex; flex: 0 0 auto; align-items: center; padding: 0 var(--space-3); border: 1px solid var(--neutral-250); border-radius: var(--radius-pill); background: var(--neutral-50); color: var(--blue-soft-700); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.seller-review-sort a.is-selected { border-color: var(--green-550); background: var(--green-soft-50); color: var(--green-750); }
+
 .seller-review-list { display: grid; gap: var(--space-3); }
-.seller-review { display: grid; grid-template-columns: var(--control-h-xl) minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-50); }
-.seller-review > span { width: var(--control-h-xl); height: var(--control-h-xl); font-size: var(--text-md); }
+.seller-review { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--neutral-50); }
+.seller-review-avatar { width: 40px; height: 40px; display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-circle); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-base); font-weight: var(--weight-extrabold); object-fit: cover; }
 .seller-review > div { min-width: 0; display: grid; gap: var(--space-2); }
 .seller-review header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .seller-review header strong { overflow: hidden; color: var(--blue-850); font-size: var(--text-base); text-overflow: ellipsis; white-space: nowrap; }
-.seller-review header > span { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--blue-soft-700); font-size: var(--text-sm); }
+.seller-review header > span { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--space-1); color: var(--blue-soft-700); font-size: var(--text-sm); }
 .seller-review header b { font-weight: var(--weight-bold); }
-.seller-review-stars { display: inline-flex; gap: var(--space-1); color: var(--amber-350); }
+.seller-review-stars { display: inline-flex; gap: 2px; color: var(--amber-350); }
 .seller-review p { margin: 0; color: var(--blue-750); font-size: var(--text-base); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .seller-review time, .seller-reviews-empty { color: var(--blue-soft-650); font-size: var(--text-sm); }
+
+.seller-review-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-1); margin-top: var(--space-2); }
+.seller-review-pagination a, .seller-review-pagination > span { min-width: var(--control-h-sm); min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; padding: 0 var(--space-2); border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--blue-750); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.seller-review-pagination .is-selected { border-color: var(--green-550); background: var(--green-soft-50); color: var(--green-750); }
+.seller-review-pagination .seller-review-pagination-gap { min-width: var(--space-4); padding: 0; border-color: transparent; background: transparent; color: var(--blue-soft-650); }
+
+@media (min-width: 768px) {
+  .seller-public-profile-card { gap: var(--space-5); padding: var(--space-6); }
+  .seller-public-profile-identity { gap: var(--space-4); }
+  .seller-public-profile-avatar { width: 88px; height: 88px; font-size: var(--text-4xl); }
+  .seller-public-profile-card h1 { font-size: var(--text-3xl); }
+  .seller-public-profile-card p { font-size: var(--text-md); }
+  .seller-profile-stats dd { font-size: var(--text-xl); }
+  .seller-profile-stats dt { font-size: var(--text-sm); }
+  .seller-reviews > header h2 { font-size: var(--text-xl); }
+}
+
 .seller-reviews-empty { margin: var(--space-6) 0 0; }
 
 .listing-detail-back-row {
