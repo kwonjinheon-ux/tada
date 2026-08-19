@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { SellerProfileCard } from "@/components/market/SellerProfileCard";
-import { SellerReviews, SELLER_REVIEWS_PER_PAGE, sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/components/market/SellerReviews";
+import { SellerReviews } from "@/components/market/SellerReviews";
+import { SELLER_REVIEWS_PER_PAGE, sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/lib/market/seller-reviews";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
 

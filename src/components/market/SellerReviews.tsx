@@ -4,19 +4,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
-
-export const sellerReviewSorts = ["newest", "highest", "lowest"] as const;
-export type SellerReviewSort = (typeof sellerReviewSorts)[number];
-
-export const SELLER_REVIEWS_PER_PAGE = 20;
-
-export type SellerReview = {
-  id: string;
-  score: number;
-  comment: string | null;
-  createdAt: string;
-  reviewer: { name: string; avatarUrl: string | null };
-};
+import { sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/lib/market/seller-reviews";
 
 const sortLabelKeys: Record<SellerReviewSort, TranslationKey> = {
   newest: "newest",
