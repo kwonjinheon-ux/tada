@@ -62,9 +62,9 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="services" mainLocationLabel={t("mainLocationLabel")} subLocationLabel={t("subLocationLabel")} mainLocationPlaceholder={t("allNewZealand")} subLocationPlaceholder={t("anySubLocation")} />
   }>
 
-    <section className="filter-block category-filter">
+    <section className="filter-block services-type-filter">
       <h2>{text.serviceType}</h2>
-      <div className="filter-list category-filter-list">
+      <div className="filter-list">
         {[{ value: "all" as const, label: text.allCategories, icon: "fa-border-all" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon }))].map(({ value, label, icon }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />

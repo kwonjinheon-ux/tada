@@ -8,7 +8,7 @@ import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/ser
 import { ServicesResultsToolbar } from "@/components/services/ServicesResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
+import { serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", priceBand: "all", availability: "all", rating: "all", verifiedOnly: false };
@@ -91,6 +91,20 @@ export function ServicesPageClient() {
       </MobileDrawer>
 
       <section className="market-results services-results" aria-label={text.popularServices}>
+        <div className="services-intro">
+          <h1>{text.heroTitle}</h1>
+          <p>{text.heroDescription}</p>
+        </div>
+
+        <div className="services-category-grid" role="group" aria-label={text.serviceType}>
+          {serviceCategories.map(({ id, icon }) => (
+            <button key={id} className={activeCategory === id ? "services-category is-active" : "services-category"} type="button" aria-pressed={activeCategory === id} onClick={() => chooseCategory(activeCategory === id ? "all" : id)}>
+              <span><i className={`fa-solid ${icon}`} aria-hidden="true" /></span>
+              <strong>{categoryLabels[id]}</strong>
+            </button>
+          ))}
+        </div>
+
         <ServicesResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
