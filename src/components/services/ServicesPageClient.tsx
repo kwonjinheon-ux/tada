@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
@@ -26,6 +26,7 @@ export function ServicesPageClient() {
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
   const [notice, setNotice] = useState("");
+  const resultsRef = useRef<HTMLElement>(null);
 
   useEffect(() => setViewMode(readListingViewPreference() ?? (window.innerWidth < 1024 ? "list" : "grid")), []);
 
@@ -55,10 +56,13 @@ export function ServicesPageClient() {
     [activeCategory],
   );
 
+  // Picking a category closes the rail and takes the reader straight to the
+  // filtered list, which on a phone is otherwise hidden behind the drawer.
   const chooseCategory = (category: ServiceCategoryId | "all") => {
     setActiveCategory(category);
     setIsFilterOpen(false);
     setNotice("");
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -90,7 +94,7 @@ export function ServicesPageClient() {
         />
       </MobileDrawer>
 
-      <section className="market-results services-results" aria-label={text.popularServices}>
+      <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
         <div className="services-intro">
           <h1>{text.heroTitle}</h1>
           <p>{text.heroDescription}</p>
