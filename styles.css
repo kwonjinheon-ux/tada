@@ -1709,6 +1709,23 @@ a {
   color: var(--neutral-50);
 }
 
+/* Chips and the view toggle lift on hover and press back in, so every browse
+   surface answers a pointer the same way. */
+.market-chip-row button,
+.view-toggle button {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.market-chip-row button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.market-chip-row button:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+.market-chip-row button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+
+.view-toggle button:hover { transform: translateY(-1px); }
+.view-toggle button:active { transform: translateY(0) scale(0.92); }
+
+/* The chip is waiting on a route change; keep it visibly busy. */
+.market-chip-row button.is-applying { opacity: 0.72; transform: scale(0.97); }
+
 /* Market-type chips retain a subtle cue from their matching sidebar icon. */
 .market-chip-row button.market-type-all { background: var(--green-soft-50); color: var(--teal-soft-900); }
 .market-chip-row button.market-type-secondhand { background: var(--green-soft-50); color: var(--green-600); }
@@ -1746,6 +1763,18 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .market-chip-row button,
+  .view-toggle button {
+    transition: none;
+  }
+
+  .market-chip-row button:hover,
+  .market-chip-row button:active,
+  .view-toggle button:hover,
+  .view-toggle button:active {
+    transform: none;
+  }
+
   .market-chip-row button.is-applying {
     animation: none;
   }
@@ -1780,11 +1809,6 @@ a {
     gap: var(--space-1);
   }
 
-  .market-filter-panel:not(.is-open) .market-type-filter .filter-list a,
-  .market-filter-panel:not(.is-open) .services-type-filter .filter-list button {
-    font-weight: var(--weight-semibold);
-  }
-
   .market-filter-panel:not(.is-open) .category-filter {
     gap: var(--space-2);
     margin-top: var(--space-5);
@@ -1804,7 +1828,6 @@ a {
     background: var(--color-primary-soft);
     box-shadow: inset 3px 0 0 var(--color-primary);
     color: var(--color-ink);
-    font-weight: var(--weight-bold);
   }
 
   .market-toolbar .market-chip-row { display: none; }
