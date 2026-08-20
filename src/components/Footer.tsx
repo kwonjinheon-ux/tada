@@ -27,7 +27,7 @@ export function Footer() {
       <div className="site-footer-content global-shell">
         <section className="footer-brand" aria-label="Tada">
           <img src="/images/logo.png" alt="Tada" />
-          <p>{isKorean ? "필요한 순간, 타다. 사고팔고, 나누고, 연결하고 — 일상을 타다." : "Connect, Ta-da."}</p>
+          <p>{isKorean ? <><strong>필요한 순간, 타다.</strong><br />사고팔고, 나누고, 연결하고 — 일상을 타다.</> : "Connect, Ta-da."}</p>
           <nav className="footer-socials" aria-label={isKorean ? "소셜 미디어" : "Social media"}>
             <a href="#" aria-label="Facebook"><i className="fa-brands fa-facebook-f" aria-hidden="true" /></a>
             <a href="#" aria-label="Instagram"><i className="fa-brands fa-instagram" aria-hidden="true" /></a>
@@ -35,7 +35,16 @@ export function Footer() {
           </nav>
         </section>
 
-        <div className="footer-link-groups">
+        <div className="footer-link-groups footer-link-groups-desktop">
+          {groups.map((group) => (
+            <section className="footer-link-group" key={group.title}>
+              <h2 className="footer-link-group-heading">{group.title}</h2>
+              <div>{group.links.map((link) => <Link href={link.href} key={link.label}>{link.label}</Link>)}</div>
+            </section>
+          ))}
+        </div>
+
+        <div className="footer-link-groups footer-link-groups-mobile">
           {groups.map((group) => (
             <details className="footer-link-group" key={group.title}>
               <summary><i className={group.icon} aria-hidden="true" /><span>{group.title}</span><i className="fa-solid fa-chevron-down" aria-hidden="true" /></summary>
