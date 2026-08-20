@@ -93,11 +93,17 @@
   --teal-800: #00656b;
   --teal-900: #294d60;
   --teal-950: #17384b;
+  --teal-955: #17384a;
+  --teal-965: #0a202a;
+  --teal-985: #071820;
   /* teal-soft */
   --teal-soft-150: #d5ebf2;
   --teal-soft-250: #b9d9eb;
   --teal-soft-700: #607076;
   --teal-soft-900: #36454a;
+  --teal-soft-050: #dce7ea;
+  --teal-soft-100: #c4d0d5;
+  --teal-soft-350: #98acb4;
   /* red */
   --red-200: #ffd3c5;
   --red-350: #f3b6b3;
@@ -205,6 +211,14 @@
 
   --color-success: var(--green-700);
   --color-success-soft: var(--green-soft-50);
+
+  /* The footer is the one dark surface in the app and needs its own ink. */
+  --color-footer-surface: var(--teal-955);
+  --color-footer-surface-mid: var(--teal-965);
+  --color-footer-surface-deep: var(--teal-985);
+  --color-footer-ink: var(--teal-soft-050);
+  --color-footer-ink-soft: var(--teal-soft-100);
+  --color-footer-ink-muted: var(--teal-soft-350);
 }
 
 /* ==========================================================================
