@@ -1574,6 +1574,21 @@ a {
   gap: 14px;
 }
 
+/* Every browse surface opens on the same intro: what the page is, in one line
+   plus a sentence. Sized up at each breakpoint rather than hidden on any. */
+.browse-intro { display: grid; gap: var(--space-1); }
+.browse-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-3xl); font-weight: var(--weight-bold); line-height: 1.2; letter-spacing: -0.02em; }
+.browse-intro p { margin: 0; color: var(--color-muted); font-size: var(--text-md); line-height: 1.5; }
+
+@media (min-width: 768px) {
+  .browse-intro h1 { font-size: var(--text-4xl); }
+}
+
+@media (min-width: 1280px) {
+  .browse-intro h1 { font-size: var(--text-5xl); }
+  .browse-intro p { font-size: var(--text-lg); }
+}
+
 
 .market-search-empty {
   min-height: 240px;
@@ -10214,10 +10229,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   padding-bottom: var(--space-10);
 }
 
-.services-intro { display: grid; gap: var(--space-1); }
-.services-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-3xl); font-weight: var(--weight-bold); line-height: 1.2; letter-spacing: -0.02em; }
-.services-intro p { margin: 0; color: var(--color-muted); font-size: var(--text-md); line-height: 1.5; }
-
 .services-category-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -10522,7 +10533,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (min-width: 768px) {
   .services-category-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-  .services-intro h1 { font-size: var(--text-4xl); }
   .services-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .services-request-cta { grid-template-columns: auto minmax(0, 1fr) auto; }
   .services-request-cta .ui-button { grid-column: auto; }

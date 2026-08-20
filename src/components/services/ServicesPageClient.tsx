@@ -96,7 +96,7 @@ export function ServicesPageClient() {
       </MobileDrawer>
 
       <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
-        <div className="services-intro">
+        <div className="browse-intro">
           <h1>{text.heroTitle}</h1>
           <p>{text.heroDescription}</p>
         </div>

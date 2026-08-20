@@ -148,6 +148,11 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       </MobileDrawer>
 
       <section className="market-results community-results" aria-label="Community posts">
+        <div className="browse-intro">
+          <h1>{t("communityIntroTitle")}</h1>
+          <p>{t("communityIntroDescription")}</p>
+        </div>
+
         <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
