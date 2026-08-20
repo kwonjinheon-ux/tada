@@ -26,14 +26,20 @@ export function ServicesResultsToolbar({ viewMode, onViewModeChange, activeChipV
     { value: "nearMe", label: text.quickFilters.nearMe },
   ];
 
+  // market-toolbar-top keeps the toggle at its own width; as a direct child of
+  // the toolbar it would stretch across the column on a phone.
   return <div className="market-toolbar">
-    <div className="view-toggle" aria-label={t("viewMode")}>
-      <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
-        <i className="fa-solid fa-list" aria-hidden="true" />
-      </button>
-      <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
-        <i className="fa-solid fa-border-all" aria-hidden="true" />
-      </button>
+    <div className="market-toolbar-top">
+      <div className="view-toggle" aria-label={t("viewMode")}>
+        <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
+          <i className="fa-solid fa-list" aria-hidden="true" />
+        </button>
+        <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
+          <i className="fa-solid fa-border-all" aria-hidden="true" />
+        </button>
+      </div>
+
+      {resultsLabel ? <div className="market-tools"><p>{resultsLabel}</p></div> : null}
     </div>
 
     <div className="market-chip-row" aria-label={t("quickCategories")}>
@@ -44,7 +50,5 @@ export function ServicesResultsToolbar({ viewMode, onViewModeChange, activeChipV
         </button>;
       })}
     </div>
-
-    {resultsLabel ? <div className="market-tools"><p>{resultsLabel}</p></div> : null}
   </div>;
 }

@@ -1502,6 +1502,18 @@ a {
 
 .community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-free-board > i { color: var(--blue-500); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-together > i { color: var(--rose-500); }.community-category-list > button.community-category-immigration > i { color: var(--blue-soft-750); }
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
+/* Services carries the same per-category icon colours the other rails use, at
+   full saturation so each row is identifiable at a glance. */
+.services-type-filter .filter-list > button.services-type-all > i { color: var(--teal-soft-900); }
+.services-type-filter .filter-list > button.services-type-cleaning > i { color: var(--amber-450); }
+.services-type-filter .filter-list > button.services-type-handyman > i { color: var(--blue-700); }
+.services-type-filter .filter-list > button.services-type-moving > i { color: var(--blue-450); }
+.services-type-filter .filter-list > button.services-type-auto > i { color: var(--red-750); }
+.services-type-filter .filter-list > button.services-type-gardening > i { color: var(--green-600); }
+.services-type-filter .filter-list > button.services-type-tutoring > i { color: var(--violet-700); }
+.services-type-filter .filter-list > button.services-type-beauty > i { color: var(--rose-700); }
+.services-type-filter .filter-list > button.services-type-petCare > i { color: var(--red-550); }
+.services-type-filter .filter-list button.is-selected > i { color: currentColor; }
 .community-category-group { grid-column: 1 / -1; display: grid; gap: var(--space-1); }.community-category-submenu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1); padding-left: var(--space-5); }.community-category-submenu button { display: inline-flex; gap: var(--space-2); align-items: center; justify-content: flex-start; min-height: var(--control-h-sm); padding: 0 var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink-soft); font-size: var(--text-xs); }.community-category-submenu button:hover { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-strong); }.community-category-submenu i { color: var(--rose-500); }
 
 .price-filter input {
