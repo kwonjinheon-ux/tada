@@ -532,6 +532,10 @@ export function Navbar() {
       window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "community" }));
       return;
     }
+    if (isServices) {
+      window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "services" }));
+      return;
+    }
     if (!pathname.startsWith("/market")) {
       router.push("/market?filters=open");
       return;
