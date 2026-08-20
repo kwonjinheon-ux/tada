@@ -7,7 +7,8 @@ import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/compon
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
-import { BrowseResultsToolbar, marketSortOptions } from "@/components/browse/BrowseResultsToolbar";
+import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
+import { marketSortOptions } from "@/lib/market/sort-options";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import type { ListingViewMode } from "@/lib/market/listing-view-preference";
 
 export type BrowseToolbarChip = {
@@ -11,15 +11,6 @@ export type BrowseToolbarChip = {
 };
 
 export type BrowseSortOption = { value: string; label: string };
-
-/** Market and its shop feeds sort the same way, so the list lives here once. */
-export function marketSortOptions(t: (key: TranslationKey) => string): BrowseSortOption[] {
-  return [
-    { value: "newest", label: t("newest") },
-    { value: "priceAsc", label: t("lowToHigh") },
-    { value: "priceDesc", label: t("highToLow") },
-  ];
-}
 
 export type BrowseResultsToolbarProps = {
   viewMode: ListingViewMode;

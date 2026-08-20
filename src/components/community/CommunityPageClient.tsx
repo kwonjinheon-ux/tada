@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
-import { CommunityResultsToolbar } from "@/components/community/CommunityResultsToolbar";
+import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
 import { CommunityEmptyState } from "@/components/community/CommunityEmptyState";
@@ -12,12 +12,23 @@ import { CommunityPostListSkeleton } from "@/components/community/CommunityPostL
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
 import type { CommunityPost } from "@/data/community-posts";
 import type { MainLocation } from "@/data/nzLocations";
-import { useLanguage } from "@/components/LanguageProvider";
+import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
+
+const communityChips: Array<{ value: string; labelKey: TranslationKey }> = [
+  { value: "all", labelKey: "all" },
+  { value: "trending", labelKey: "communityChipTrending" },
+  { value: "recent", labelKey: "communityChipRecent" },
+  { value: "events", labelKey: "communityCategoryEvents" },
+  { value: "questions", labelKey: "communityChipQuestions" },
+  { value: "recommendations", labelKey: "communityCategoryRecommendations" },
+  { value: "free", labelKey: "communityChipFree" },
+  { value: "neighbours", labelKey: "communityChipNeighbours" },
+];
 
 const buildFeedCacheKey = ({ category, search, mainLocation, subLocation }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string }) => {
   const params = new URLSearchParams();
@@ -137,9 +148,10 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       </MobileDrawer>
 
       <section className="market-results community-results" aria-label="Community posts">
-        <CommunityResultsToolbar
+        <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
+          chips={communityChips.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
           resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
