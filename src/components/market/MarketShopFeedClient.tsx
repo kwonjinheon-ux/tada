@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
-import { MarketResultsToolbar } from "@/components/market/MarketResultsToolbar";
+import { BrowseResultsToolbar, marketSortOptions } from "@/components/browse/BrowseResultsToolbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
@@ -97,13 +97,14 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     </MobileDrawer>
     {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
     <section className="market-results bargain-results" aria-label="Listings">
-      <MarketResultsToolbar
+      <BrowseResultsToolbar
         viewMode={viewMode}
         onViewModeChange={chooseView}
-        chips={marketShopTypes.map(({ labelKey, value, href }) => ({ label: t(labelKey), value, href }))}
+        chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
         activeChipValue={shopType}
         onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
         sortValue={searchParams.get("sort") ?? "newest"}
+        sortOptions={marketSortOptions(t)}
         onSortChange={(value) => updateParams({ sort: value === "newest" ? null : value })}
         resultsLabel={`Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
       />

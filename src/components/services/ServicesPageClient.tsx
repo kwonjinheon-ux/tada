@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
-import { ServicesResultsToolbar } from "@/components/services/ServicesResultsToolbar";
+import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
@@ -14,7 +14,7 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 const defaultFilters: ServiceFilterState = { providerType: "all", priceBand: "all", availability: "all", rating: "all", verifiedOnly: false };
 
 export function ServicesPageClient() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const text = servicesText(locale);
   const categoryLabels = servicesCategoryLabels(locale);
 
@@ -22,6 +22,7 @@ export function ServicesPageClient() {
   const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | "all">("all");
   const [activeChip, setActiveChip] = useState("all");
+  const [sort, setSort] = useState("newest");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
@@ -109,11 +110,26 @@ export function ServicesPageClient() {
           ))}
         </div>
 
-        <ServicesResultsToolbar
+        <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
+          chips={[
+            { value: "all", label: t("all") },
+            { value: "availableToday", label: text.quickFilters.availableToday },
+            { value: "verified", label: text.quickFilters.verified },
+            { value: "topRated", label: text.quickFilters.topRated },
+            { value: "lowPrice", label: text.quickFilters.lowPrice },
+            { value: "nearMe", label: text.quickFilters.nearMe },
+          ]}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
+          sortValue={sort}
+          sortOptions={[
+            { value: "newest", label: t("newest") },
+            { value: "topRated", label: text.quickFilters.topRated },
+            { value: "lowPrice", label: text.quickFilters.lowPrice },
+          ]}
+          onSortChange={setSort}
           resultsLabel={text.serviceCount(visibleServices.length)}
         />
 
