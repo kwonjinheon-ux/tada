@@ -426,6 +426,8 @@ export function Navbar() {
   const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
   const createPath = isCommunity ? "/community/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
+  // The create button names what it publishes on the surface you are browsing.
+  const createLabel = isCommunity ? t("createPostAction") : isServices ? t("createServiceAction") : t("createListing");
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
@@ -507,7 +509,7 @@ export function Navbar() {
   const standardDockItems: MobileDockItem[] = [
     { id: "home", label: isCommunity ? "Community home" : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
-    { id: "create", label: t("create"), icon: "create", href: createPath, active: isPostAd, variant: "create" },
+    { id: "create", label: createLabel, icon: "create", href: createPath, active: isPostAd, variant: "create" },
     { id: "categories", label: isCommunity ? "Browse community categories" : "Browse categories", icon: "categories", onClick: openMobileCategories },
     { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
@@ -624,7 +626,7 @@ export function Navbar() {
         <div className="nav-actions">
           <Link className="nav-post" href={createPath} aria-current={isPostAd ? "page" : undefined}>
             <i className="fa-solid fa-plus" aria-hidden="true" />
-            <span>{t("create")}</span>
+            <span>{createLabel}</span>
           </Link>
           <Link className={`nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />

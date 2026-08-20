@@ -518,7 +518,7 @@ a {
 
 .nav-signup,
 .nav-post {
-  background: var(--primary);
+  background: var(--blue-400);
   color: var(--neutral-50);
 }
 
@@ -562,8 +562,8 @@ a {
 }
 
 .nav-post:hover {
-  background: var(--primary-dark);
-  box-shadow: 0 5px 12px rgba(0, 128, 96, 0.22);
+  background: var(--blue-550);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -6624,7 +6624,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock .mobile-dock-create:hover i,
   .mobile-bottom-dock .mobile-dock-create:focus-visible i {
-    background: var(--green-650);
+    background: var(--blue-550);
     transform: translateY(-2px) scale(1.04);
   }
 
@@ -6644,6 +6644,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: var(--text-lg);
     box-shadow: none;
   }
+
+  /* Create is blue; the listing offer button above keeps the green. */
+  .mobile-bottom-dock .mobile-dock-create i { background: var(--blue-400); }
 
   .mobile-bottom-dock .mobile-dock-action-label {
     width: 44px;
