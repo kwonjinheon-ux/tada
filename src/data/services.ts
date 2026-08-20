@@ -77,7 +77,7 @@ const serviceCopy = {
     applyFilters: "Apply filters",
     popularServices: "Popular services near Hamilton",
     categoryNearby: (category: string) => `${category} near Hamilton`,
-    serviceCount: (count: number) => `${count} services previewed`,
+    serviceCount: (count: number) => `${count} ${count === 1 ? "service" : "services"} previewed`,
     saveService: (service: string) => `Save ${service}`,
     whyTadaServices: "Why use Tada Services",
     providerLabel: "For providers",
