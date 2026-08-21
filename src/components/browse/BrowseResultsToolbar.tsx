@@ -56,6 +56,21 @@ export function BrowseResultsToolbar({
         </button>
       </div>
 
+      {chips.length ? <div className="market-chip-row" aria-label={t("quickCategories")}>
+        {chips.map((chip) => {
+          const isSelected = chip.value === activeChipValue;
+          return <button
+            key={chip.value}
+            className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : ""].filter(Boolean).join(" ")}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => onChipSelect?.(chip.value)}
+          >
+            {chip.label}
+          </button>;
+        })}
+      </div> : null}
+
       {resultsLabel || showSort ? <div className="market-tools">
         {resultsLabel ? <p>{resultsLabel}</p> : null}
         {showSort ? <label className="sort-control" aria-label={t("sortListings")}>
@@ -65,20 +80,5 @@ export function BrowseResultsToolbar({
         </label> : null}
       </div> : null}
     </div>
-
-    {chips.length ? <div className="market-chip-row" aria-label={t("quickCategories")}>
-      {chips.map((chip) => {
-        const isSelected = chip.value === activeChipValue;
-        return <button
-          key={chip.value}
-          className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : ""].filter(Boolean).join(" ")}
-          type="button"
-          aria-pressed={isSelected}
-          onClick={() => onChipSelect?.(chip.value)}
-        >
-          {chip.label}
-        </button>;
-      })}
-    </div> : null}
   </div>;
 }

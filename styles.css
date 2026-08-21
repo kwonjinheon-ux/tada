@@ -1635,9 +1635,24 @@ a {
 
 .market-toolbar-top {
   display: flex;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   align-items: center;
   gap: 10px;
+}
+
+/* Chips sit hard against the right of the row; the toggle keeps the left and
+   the count stays last. margin-left:auto pushes them right while there is room
+   and collapses once they fill it, so the overflow scrolls from its first chip
+   instead of stranding it the way justify-content:flex-end would. */
+.market-toolbar-top > .market-chip-row {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.market-toolbar-top > .market-tools {
+  flex: 0 0 auto;
 }
 
 .market-toolbar h1 {
@@ -1869,11 +1884,10 @@ a {
   }
 
   .market-toolbar-top {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .market-chip-row {
-    width: 100%;
     padding-bottom: 0;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
