@@ -11,7 +11,6 @@ export type ServiceListing = {
   category: ServiceCategoryId;
   badges: ServiceBadge[];
   provider: string;
-  phone: string;
   providerType: "individuals" | "businesses";
   availability: "today" | "this-week";
   rating: number;
@@ -42,14 +41,14 @@ const serviceCategoryLabels = {
 } as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 
 export const services: ServiceListing[] = [
-  { id: "sparkle-clean", category: "cleaning", badges: ["verified", "highlyRated", "fastResponder", "popular"], provider: "Sparkle Clean", phone: "021 482 1936", providerType: "businesses", availability: "today", rating: 4.9, reviewCount: 126, image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=85" },
-  { id: "fixit-furniture", category: "handyman", badges: ["verified", "highlyRated", "topRated"], provider: "FixIt Hamilton", phone: "021 391 2084", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 98, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=720&q=85" },
-  { id: "math-mentors", category: "tutoring", badges: ["highlyRated", "topRated", "fastResponder"], provider: "Math Mentors", phone: "021 705 4462", providerType: "individuals", availability: "today", rating: 4.8, reviewCount: 64, image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=720&q=85" },
-  { id: "moving-help", category: "moving", badges: ["verified", "fastResponder", "new"], provider: "Move It", phone: "021 668 9201", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 46, image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=720&q=85" },
-  { id: "garden-lawn", category: "gardening", badges: ["verified", "popular"], provider: "Green Thumb", phone: "021 295 1187", providerType: "individuals", availability: "this-week", rating: 4.7, reviewCount: 41, image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=720&q=85" },
-  { id: "beauty-services", category: "beauty", badges: ["highlyRated", "topRated", "sponsored"], provider: "Glow On The Go", phone: "021 864 5509", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 72, image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=720&q=85" },
-  { id: "happy-paws", category: "petCare", badges: ["verified", "highlyRated", "fastResponder"], provider: "Happy Paws", phone: "021 490 7761", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 53, image: "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=720&q=85" },
-  { id: "auto-repair", category: "auto", badges: ["verified", "highlyRated", "popular"], provider: "Pro Auto Hamilton", phone: "021 329 6174", providerType: "businesses", availability: "this-week", rating: 4.9, reviewCount: 112, image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=720&q=85" },
+  { id: "sparkle-clean", category: "cleaning", badges: ["verified", "highlyRated", "fastResponder", "popular"], provider: "Sparkle Clean", providerType: "businesses", availability: "today", rating: 4.9, reviewCount: 126, image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=85" },
+  { id: "fixit-furniture", category: "handyman", badges: ["verified", "highlyRated", "topRated"], provider: "FixIt Hamilton", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 98, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=720&q=85" },
+  { id: "math-mentors", category: "tutoring", badges: ["highlyRated", "topRated", "fastResponder"], provider: "Math Mentors", providerType: "individuals", availability: "today", rating: 4.8, reviewCount: 64, image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=720&q=85" },
+  { id: "moving-help", category: "moving", badges: ["verified", "fastResponder", "new"], provider: "Move It", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 46, image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=720&q=85" },
+  { id: "garden-lawn", category: "gardening", badges: ["verified", "popular"], provider: "Green Thumb", providerType: "individuals", availability: "this-week", rating: 4.7, reviewCount: 41, image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=720&q=85" },
+  { id: "beauty-services", category: "beauty", badges: ["highlyRated", "topRated", "sponsored"], provider: "Glow On The Go", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 72, image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=720&q=85" },
+  { id: "happy-paws", category: "petCare", badges: ["verified", "highlyRated", "fastResponder"], provider: "Happy Paws", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 53, image: "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=720&q=85" },
+  { id: "auto-repair", category: "auto", badges: ["verified", "highlyRated", "popular"], provider: "Pro Auto Hamilton", providerType: "businesses", availability: "this-week", rating: 4.9, reviewCount: 112, image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=720&q=85" },
 ];
 
 export function serviceBadgeLabel(badge: ServiceBadge, locale: string) {
