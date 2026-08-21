@@ -4,13 +4,17 @@
 export type ServiceCategoryId = "cleaning" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto";
 export type ServiceId = "sparkle-clean" | "fixit-furniture" | "math-mentors" | "moving-help" | "garden-lawn" | "beauty-services" | "happy-paws" | "auto-repair";
 export type TrustPointId = "verified" | "payments" | "support";
+export type ServiceBadge = "verified" | "highlyRated" | "topRated" | "fastResponder" | "new" | "sponsored" | "popular";
 
 export type ServiceListing = {
   id: ServiceId;
   category: ServiceCategoryId;
-  badgeClass: "success" | "warning";
+  badges: ServiceBadge[];
   provider: string;
-  rating: string;
+  providerType: "individuals" | "businesses";
+  availability: "today" | "this-week";
+  rating: number;
+  reviewCount: number;
   image: string;
 };
 
@@ -37,15 +41,22 @@ const serviceCategoryLabels = {
 } as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 
 export const services: ServiceListing[] = [
-  { id: "sparkle-clean", category: "cleaning", badgeClass: "success", provider: "Sparkle Clean", rating: "4.9 (126)", image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=85" },
-  { id: "fixit-furniture", category: "handyman", badgeClass: "success", provider: "FixIt Hamilton", rating: "4.9 (98)", image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=720&q=85" },
-  { id: "math-mentors", category: "tutoring", badgeClass: "warning", provider: "Math Mentors", rating: "4.8 (64)", image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=720&q=85" },
-  { id: "moving-help", category: "moving", badgeClass: "success", provider: "Move It", rating: "4.8 (46)", image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=720&q=85" },
-  { id: "garden-lawn", category: "gardening", badgeClass: "success", provider: "Green Thumb", rating: "4.7 (41)", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=720&q=85" },
-  { id: "beauty-services", category: "beauty", badgeClass: "warning", provider: "Glow On The Go", rating: "4.9 (72)", image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=720&q=85" },
-  { id: "happy-paws", category: "petCare", badgeClass: "success", provider: "Happy Paws", rating: "4.8 (53)", image: "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=720&q=85" },
-  { id: "auto-repair", category: "auto", badgeClass: "success", provider: "Pro Auto Hamilton", rating: "4.9 (112)", image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=720&q=85" },
+  { id: "sparkle-clean", category: "cleaning", badges: ["verified", "highlyRated", "fastResponder", "popular"], provider: "Sparkle Clean", providerType: "businesses", availability: "today", rating: 4.9, reviewCount: 126, image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=85" },
+  { id: "fixit-furniture", category: "handyman", badges: ["verified", "highlyRated", "topRated"], provider: "FixIt Hamilton", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 98, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=720&q=85" },
+  { id: "math-mentors", category: "tutoring", badges: ["highlyRated", "topRated", "fastResponder"], provider: "Math Mentors", providerType: "individuals", availability: "today", rating: 4.8, reviewCount: 64, image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=720&q=85" },
+  { id: "moving-help", category: "moving", badges: ["verified", "fastResponder", "new"], provider: "Move It", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 46, image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=720&q=85" },
+  { id: "garden-lawn", category: "gardening", badges: ["verified", "popular"], provider: "Green Thumb", providerType: "individuals", availability: "this-week", rating: 4.7, reviewCount: 41, image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=720&q=85" },
+  { id: "beauty-services", category: "beauty", badges: ["highlyRated", "topRated", "sponsored"], provider: "Glow On The Go", providerType: "individuals", availability: "this-week", rating: 4.9, reviewCount: 72, image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=720&q=85" },
+  { id: "happy-paws", category: "petCare", badges: ["verified", "highlyRated", "fastResponder"], provider: "Happy Paws", providerType: "businesses", availability: "today", rating: 4.8, reviewCount: 53, image: "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=720&q=85" },
+  { id: "auto-repair", category: "auto", badges: ["verified", "highlyRated", "popular"], provider: "Pro Auto Hamilton", providerType: "businesses", availability: "this-week", rating: 4.9, reviewCount: 112, image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=720&q=85" },
 ];
+
+export function serviceBadgeLabel(badge: ServiceBadge, locale: string) {
+  const labels = locale === "ko"
+    ? { verified: "인증됨", highlyRated: "높은 평점", topRated: "최고 평점", fastResponder: "빠른 응답", new: "신규", sponsored: "스폰서", popular: "인기" }
+    : { verified: "Verified", highlyRated: "Highly Rated", topRated: "Top Rated", fastResponder: "Fast Responder", new: "New", sponsored: "Sponsored", popular: "Popular" };
+  return labels[badge];
+}
 
 export const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
   { id: "verified", icon: "fa-shield-halved" },

@@ -8,10 +8,10 @@ import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/ser
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
+import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
-const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", rating: "all", verifiedOnly: false };
+const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
 export function ServicesPageClient() {
   const { t, locale } = useLanguage();
@@ -22,7 +22,7 @@ export function ServicesPageClient() {
   const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | "all">("all");
   const [activeChip, setActiveChip] = useState("all");
-  const [sort, setSort] = useState("newest");
+  const [sort, setSort] = useState("recommended");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
@@ -52,10 +52,15 @@ export function ServicesPageClient() {
 
   // Services is still a preview, so the rail only filters by category. The rest
   // of the controls carry the shared design without a query behind them yet.
-  const visibleServices = useMemo(
-    () => activeCategory === "all" ? services : services.filter((service) => service.category === activeCategory),
-    [activeCategory],
-  );
+  const visibleServices = useMemo(() => {
+    const matches = services.filter((service) => (activeCategory === "all" || service.category === activeCategory)
+      && (filters.providerType === "all" || service.providerType === filters.providerType)
+      && (filters.availability === "all" || service.availability === filters.availability)
+      && (!filters.verified || service.badges.includes("verified"))
+      && (!filters.highlyRated || service.badges.includes("highlyRated"))
+      && (!filters.fastResponder || service.badges.includes("fastResponder")));
+    return [...matches].sort((a, b) => sort === "highest-rated" ? b.rating - a.rating || b.reviewCount - a.reviewCount : sort === "most-reviewed" ? b.reviewCount - a.reviewCount : sort === "newest" ? Number(b.badges.includes("new")) - Number(a.badges.includes("new")) : b.rating * b.reviewCount - a.rating * a.reviewCount);
+  }, [activeCategory, filters, sort]);
 
   // Picking a category closes the rail and takes the reader straight to the
   // filtered list, which on a phone is otherwise hidden behind the drawer.
@@ -101,20 +106,12 @@ export function ServicesPageClient() {
           onViewModeChange={chooseView}
           chips={[
             { value: "all", label: t("all") },
-            { value: "availableToday", label: text.quickFilters.availableToday },
-            { value: "verified", label: text.quickFilters.verified },
-            { value: "topRated", label: text.quickFilters.topRated },
-            { value: "lowPrice", label: text.quickFilters.lowPrice },
             { value: "nearMe", label: text.quickFilters.nearMe },
           ]}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
           sortValue={sort}
-          sortOptions={[
-            { value: "newest", label: t("newest") },
-            { value: "topRated", label: text.quickFilters.topRated },
-            { value: "lowPrice", label: text.quickFilters.lowPrice },
-          ]}
+          sortOptions={locale === "ko" ? [{ value: "recommended", label: "추천순" }, { value: "highest-rated", label: "평점 높은순" }, { value: "most-reviewed", label: "후기 많은순" }, { value: "newest", label: "최신순" }] : [{ value: "recommended", label: "Recommended" }, { value: "highest-rated", label: "Highest rated" }, { value: "most-reviewed", label: "Most reviewed" }, { value: "newest", label: "Newest" }]}
           onSortChange={setSort}
           resultsLabel={text.serviceCount(visibleServices.length)}
         />
@@ -130,8 +127,8 @@ export function ServicesPageClient() {
           {visibleServices.map((service) => {
             const listing = text.listings[service.id];
             return <article className="services-listing ui-card" key={service.id}>
-              <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="(max-width: 767px) 84vw, (max-width: 1023px) 42vw, (min-width: 1280px) 15vw, 24vw" /><button type="button" aria-label={text.saveService(listing.title)} onClick={() => setNotice(text.saveNotice(listing.title))}><i className="fa-regular fa-heart" aria-hidden="true" /></button><span className={`ui-pill ${service.badgeClass === "success" ? "ui-pill--success" : "ui-pill--warning"}`}>{listing.badge}</span></div>
-              <div className="services-listing-copy"><h3>{listing.title}</h3><div className="services-listing-provider"><span><i className="fa-solid fa-user-circle" aria-hidden="true" /> {service.provider}</span><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span></div><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating}</span><span>{listing.charge}</span></div><strong>{listing.price}</strong><footer><button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {text.message}</button><button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{text.viewProfile}</button></footer></div>
+              <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="(max-width: 767px) 84vw, (max-width: 1023px) 42vw, (min-width: 1280px) 15vw, 24vw" /><button type="button" aria-label={text.saveService(listing.title)} onClick={() => setNotice(text.saveNotice(listing.title))}><i className="fa-regular fa-heart" aria-hidden="true" /></button>{service.badges.some((badge) => ["new", "sponsored", "popular"].includes(badge)) ? <div className="services-listing-image-badges">{service.badges.filter((badge) => ["new", "sponsored", "popular"].includes(badge)).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}</div> : null}</div>
+              <div className="services-listing-copy"><h3>{listing.title}</h3><div className="services-listing-badges">{service.badges.filter((badge) => !["new", "sponsored", "popular"].includes(badge)).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}</div><div className="services-listing-provider"><span><i className="fa-solid fa-user-circle" aria-hidden="true" /> {service.provider}</span><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span></div><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span><span>{listing.charge}</span></div><strong>{listing.price}</strong><footer><button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {text.message}</button><button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{text.viewProfile}</button></footer></div>
             </article>;
           })}
         </div>

@@ -10,8 +10,9 @@ import { serviceCategories, servicesCategoryLabels, servicesText, type ServiceCa
 export type ServiceFilterState = {
   providerType: string;
   availability: string;
-  rating: string;
-  verifiedOnly: boolean;
+  verified: boolean;
+  highlyRated: boolean;
+  fastResponder: boolean;
 };
 
 export type ServicesFilterSidebarProps = {
@@ -35,21 +36,11 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
   const text = servicesText(locale);
   const categoryLabels = servicesCategoryLabels(locale);
 
-  const providerTypes = [
-    { value: "all", label: text.allProviders },
-    { value: "individuals", label: text.individuals },
-    { value: "businesses", label: text.businesses },
-  ];
-  const availabilities = [
-    { value: "all", label: text.anytime },
-    { value: "today", label: text.quickFilters.availableToday },
-    { value: "this-week", label: text.thisWeek },
-  ];
-  const ratings = [
-    { value: "all", label: text.anyRating },
-    { value: "4.5", label: text.fourFiveAbove },
-    { value: "4.0", label: text.fourAbove },
-  ];
+  const qualityLabels = locale === "ko"
+    ? { heading: "신뢰 및 품질", verified: "인증됨", highlyRated: "높은 평점", fastResponder: "빠른 응답" }
+    : { heading: "Trust & Quality", verified: "Verified", highlyRated: "Highly rated", fastResponder: "Fast responder" };
+  const providerTypes = [{ value: "all", label: text.allProviders }, { value: "individuals", label: text.individuals }, { value: "businesses", label: text.businesses }];
+  const availabilities = [{ value: "all", label: text.anytime }, { value: "today", label: text.quickFilters.availableToday }, { value: "this-week", label: text.thisWeek }];
 
   return <BrowseFilterSidebar location={
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="services" mainLocationLabel={t("mainLocationLabel")} subLocationLabel={t("subLocationLabel")} mainLocationPlaceholder={t("allNewZealand")} subLocationPlaceholder={t("anySubLocation")} />
@@ -67,39 +58,15 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
       </div>
     </section>
 
-    <section className="filter-block services-choice-filter">
-      <h2>{text.providerType}</h2>
-      <div className="condition-chips">
-        {providerTypes.map(({ value, label }) => (
-          <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>
-        ))}
-      </div>
-    </section>
+    <section className="filter-block services-choice-filter"><h2>{text.providerType}</h2><div className="condition-chips">{providerTypes.map(({ value, label }) => <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>)}</div></section>
+    <section className="filter-block services-choice-filter"><h2>{text.availability}</h2><div className="condition-chips">{availabilities.map(({ value, label }) => <button key={value} className={filters.availability === value ? "is-selected" : ""} type="button" aria-pressed={filters.availability === value} onClick={() => onFilterChange("availability", value)}>{label}</button>)}</div></section>
 
-    <section className="filter-block services-choice-filter">
-      <h2>{text.availability}</h2>
-      <div className="condition-chips">
-        {availabilities.map(({ value, label }) => (
-          <button key={value} className={filters.availability === value ? "is-selected" : ""} type="button" aria-pressed={filters.availability === value} onClick={() => onFilterChange("availability", value)}>{label}</button>
-        ))}
-      </div>
-    </section>
-
-    <section className="filter-block services-choice-filter">
-      <h2>{text.rating}</h2>
-      <div className="condition-chips">
-        {ratings.map(({ value, label }) => (
-          <button key={value} className={filters.rating === value ? "is-selected" : ""} type="button" aria-pressed={filters.rating === value} onClick={() => onFilterChange("rating", value)}>{label}</button>
-        ))}
-      </div>
-    </section>
-
-    <section className="filter-block services-verified-filter">
-      <h2>{text.verified}</h2>
-      <label className="services-filter-toggle">
-        <input type="checkbox" checked={filters.verifiedOnly} onChange={(event) => onFilterChange("verifiedOnly", event.target.checked)} />
-        <span>{text.verifiedOnly}</span>
-      </label>
+    <section className="filter-block services-quality-filter">
+      <h2>{qualityLabels.heading}</h2>
+      {(["verified", "highlyRated", "fastResponder"] as const).map((key) => <label className="services-filter-toggle" key={key}>
+        <input type="checkbox" checked={filters[key]} onChange={(event) => onFilterChange(key, event.target.checked)} />
+        <span>{qualityLabels[key]}</span>
+      </label>)}
     </section>
 
     <button className="apply-filter-button" type="button" onClick={onApply}>
