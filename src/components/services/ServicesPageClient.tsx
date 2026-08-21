@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
@@ -68,21 +68,7 @@ export function ServicesPageClient() {
 
   return (
     <main className="marketplace-page services-page">
-      <button
-        className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`}
-        type="button"
-        aria-label={isFilterOpen ? text.closeFilters : text.openFilters}
-        aria-expanded={isFilterOpen}
-        onClick={() => setIsFilterOpen((current) => !current)}
-      >
-        <i className="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" />
-        <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
-      </button>
-
-      <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel={text.closeFilters} className="filter-backdrop" panelClassName="market-filter-panel services-filter-rail">
-        <button className="filter-close-button" type="button" aria-label={text.closeFilters} onClick={() => setIsFilterOpen(false)}>
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
-        </button>
+      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel={text.openFilters} closeLabel={text.closeFilters} panelClassName="services-filter-rail">
         <ServicesFilterSidebar
           activeCategory={activeCategory}
           onCategorySelect={chooseCategory}
@@ -93,7 +79,7 @@ export function ServicesPageClient() {
           onFilterChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))}
           onApply={() => setIsFilterOpen(false)}
         />
-      </MobileDrawer>
+      </BrowseFilterDrawer>
 
       <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
         <div className="browse-intro">

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
@@ -123,21 +123,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
 
   return (
     <main className="marketplace-page community-page">
-      <button
-        className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`}
-        type="button"
-        aria-label={isFilterOpen ? "Close community filters" : "Open community filters"}
-        aria-expanded={isFilterOpen}
-        onClick={() => setIsFilterOpen((current) => !current)}
-      >
-        <i className="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" />
-        <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
-      </button>
-
-      <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel="Close community filters" className="filter-backdrop" panelClassName="market-filter-panel">
-        <button className="filter-close-button" type="button" aria-label="Close community filters" onClick={() => setIsFilterOpen(false)}>
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
-        </button>
+      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open community filters" closeLabel="Close community filters">
         <CommunityFilterSidebar
           activeCategory={activeCategory}
           onCategorySelect={(category) => { setActiveCategory(category); setIsFilterOpen(false); }}
@@ -145,7 +131,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           subLocation={subLocation}
           onLocationChange={chooseLocation}
         />
-      </MobileDrawer>
+      </BrowseFilterDrawer>
 
       <section className="market-results community-results" aria-label="Community posts">
         <div className="browse-intro">

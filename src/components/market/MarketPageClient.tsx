@@ -3,7 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { marketFeedResponseSchema } from "@/contracts/api";
-import { MobileDrawer, MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
+import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
@@ -229,21 +230,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
-      <button
-        className={`floating-filter-button ${isFilterOpen ? "is-open" : ""}`}
-        type="button"
-        aria-label={isFilterOpen ? "Close marketplace filters" : "Open marketplace filters"}
-        aria-expanded={isFilterOpen}
-        onClick={() => setIsFilterOpen((current) => !current)}
-      >
-        <i className="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" />
-        <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
-      </button>
-
-      <MobileDrawer open={isFilterOpen} onClose={() => setIsFilterOpen(false)} ariaLabel="Close marketplace filters" className="filter-backdrop" panelClassName="market-filter-panel">
-        <button className="filter-close-button" type="button" aria-label="Close marketplace filters" onClick={() => setIsFilterOpen(false)}>
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
-        </button>
+      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
         <MarketFilterSidebar
           activeShopType={shopType}
           activeCategory={selectedCategory}
@@ -253,7 +240,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           onLocationChange={applyLocationFilter}
           priceCondition={{ maxPrice, condition, onMaxPriceChange: setMaxPrice, onConditionChange: setCondition, onApply: applyFilters }}
         />
-      </MobileDrawer>
+      </BrowseFilterDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
       <section className="market-results" aria-label="Fresh finds">
