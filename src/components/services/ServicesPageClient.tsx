@@ -11,7 +11,7 @@ import { type MainLocation } from "@/data/nzLocations";
 import { serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
-const defaultFilters: ServiceFilterState = { providerType: "all", priceBand: "all", availability: "all", rating: "all", verifiedOnly: false };
+const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", rating: "all", verifiedOnly: false };
 
 export function ServicesPageClient() {
   const { t, locale } = useLanguage();
@@ -131,7 +131,7 @@ export function ServicesPageClient() {
             const listing = text.listings[service.id];
             return <article className="services-listing ui-card" key={service.id}>
               <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="(max-width: 767px) 84vw, (max-width: 1023px) 42vw, (min-width: 1280px) 15vw, 24vw" /><button type="button" aria-label={text.saveService(listing.title)} onClick={() => setNotice(text.saveNotice(listing.title))}><i className="fa-regular fa-heart" aria-hidden="true" /></button><span className={`ui-pill ${service.badgeClass === "success" ? "ui-pill--success" : "ui-pill--warning"}`}>{listing.badge}</span></div>
-              <div className="services-listing-copy"><h3>{listing.title}</h3><p><i className="fa-solid fa-user-circle" aria-hidden="true" /> {service.provider}</p><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating}</span><span>{listing.charge}</span></div><span className="services-listing-location"><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span><em>{text.serviceDescription}</em><strong>{listing.price}</strong><footer><button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {text.message}</button><button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{text.viewProfile}</button></footer></div>
+              <div className="services-listing-copy"><h3>{listing.title}</h3><div className="services-listing-provider"><span><i className="fa-solid fa-user-circle" aria-hidden="true" /> {service.provider}</span><span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span></div><div className="services-listing-meta"><span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating}</span><span>{listing.charge}</span></div><strong>{listing.price}</strong><footer><button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {text.message}</button><button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{text.viewProfile}</button></footer></div>
             </article>;
           })}
         </div>

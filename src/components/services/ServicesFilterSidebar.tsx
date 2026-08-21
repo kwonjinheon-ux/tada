@@ -9,7 +9,6 @@ import { serviceCategories, servicesCategoryLabels, servicesText, type ServiceCa
 
 export type ServiceFilterState = {
   providerType: string;
-  priceBand: string;
   availability: string;
   rating: string;
   verifiedOnly: boolean;
@@ -40,12 +39,6 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
     { value: "all", label: text.allProviders },
     { value: "individuals", label: text.individuals },
     { value: "businesses", label: text.businesses },
-  ];
-  const priceBands = [
-    { value: "all", label: text.anyPrice },
-    { value: "under-50", label: text.underFifty },
-    { value: "50-100", label: text.fiftyToHundred },
-    { value: "over-100", label: text.overHundred },
   ];
   const availabilities = [
     { value: "all", label: text.anytime },
@@ -79,15 +72,6 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
       <div className="condition-chips">
         {providerTypes.map(({ value, label }) => (
           <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>
-        ))}
-      </div>
-    </section>
-
-    <section className="filter-block services-choice-filter">
-      <h2>{text.priceRange}</h2>
-      <div className="condition-chips">
-        {priceBands.map(({ value, label }) => (
-          <button key={value} className={filters.priceBand === value ? "is-selected" : ""} type="button" aria-pressed={filters.priceBand === value} onClick={() => onFilterChange("priceBand", value)}>{label}</button>
         ))}
       </div>
     </section>

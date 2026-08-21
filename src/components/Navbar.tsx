@@ -198,7 +198,7 @@ export function Navbar() {
   }, [userId]);
 
   useEffect(() => {
-    document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
+    document.body.classList.toggle("post-ad-screen", pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || pathname.startsWith("/services/create") || /^\/market\/[^/]+\/edit$/.test(pathname));
     return () => {
       document.body.classList.remove("post-ad-screen");
     };
@@ -424,8 +424,8 @@ export function Navbar() {
   const searchPlaceholder = isCommunity ? t("searchCommunity") : isServices ? t("searchServices") : t("search");
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
   const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
-  const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
-  const createPath = isCommunity ? "/community/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
+  const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || pathname.startsWith("/services/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
+  const createPath = isCommunity ? "/community/create" : isServices ? "/services/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
   // The create button names what it publishes on the surface you are browsing.
   const createLabel = isCommunity ? t("createPostAction") : isServices ? t("createServiceAction") : t("createListing");
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
