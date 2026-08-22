@@ -9,6 +9,7 @@ import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { MarketCategoryGrid } from "@/components/market/MarketCategoryGrid";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
 import type { Listing } from "@/data/listings";
@@ -255,6 +256,8 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
             <span>{t("createListing")}</span>
           </Link>
         </div>
+
+        <MarketCategoryGrid activeCategory={selectedCategory} onCategorySelect={chooseCategory} />
 
         <BrowseResultsToolbar
           viewMode={viewMode}

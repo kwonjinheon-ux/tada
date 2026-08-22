@@ -6,6 +6,7 @@ import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { type MainLocation } from "@/data/nzLocations";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
+import { marketCategoryIcons, marketCategoryLabelKeys } from "@/components/market/MarketCategoryGrid";
 
 export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
@@ -17,45 +18,6 @@ export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey;
   { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "fa-coins", href: "/market/2dollarshop" },
   { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "fa-people-group", href: "/market/groupbuy" },
 ];
-
-const categoryIcons: Record<string, string> = {
-  "mobile-phones-tablets": "fa-mobile-screen-button",
-  "computers-laptops": "fa-laptop",
-  "electronics-appliances": "fa-tv",
-  "furniture-home-decor": "fa-couch",
-  "home-kitchen": "fa-kitchen-set",
-  "clothing-fashion": "fa-shirt",
-  "baby-kids": "fa-baby",
-  "books-music-media": "fa-book-open",
-  "hobbies-collectables": "fa-gem",
-  "games-toys": "fa-gamepad",
-  "sports-leisure": "fa-futbol",
-  "musical-instruments": "fa-guitar",
-  "garden-tools-diy": "fa-screwdriver-wrench",
-  "pet-supplies": "fa-paw",
-  "health-beauty": "fa-heart-pulse",
-};
-
-// Category labels stay canonical English in the data layer because slugs, AI
-// prompts, and keyword matching depend on them. Only this sidebar surface is
-// localised, so an unmapped slug falls back to its English label.
-const marketCategoryLabelKeys: Record<string, TranslationKey> = {
-  "mobile-phones-tablets": "marketCategoryMobilePhonesTablets",
-  "computers-laptops": "marketCategoryComputersLaptops",
-  "electronics-appliances": "marketCategoryElectronicsAppliances",
-  "furniture-home-decor": "marketCategoryFurnitureHomeDecor",
-  "home-kitchen": "marketCategoryHomeKitchen",
-  "clothing-fashion": "marketCategoryClothingFashion",
-  "baby-kids": "marketCategoryBabyKids",
-  "books-music-media": "marketCategoryBooksMusicMedia",
-  "hobbies-collectables": "marketCategoryHobbiesCollectables",
-  "games-toys": "marketCategoryGamesToys",
-  "sports-leisure": "marketCategorySportsLeisure",
-  "musical-instruments": "marketCategoryMusicalInstruments",
-  "garden-tools-diy": "marketCategoryGardenToolsDiy",
-  "pet-supplies": "marketCategoryPetSupplies",
-  "health-beauty": "marketCategoryHealthBeauty",
-};
 
 const priceFilterMinimum = 50;
 const priceFilterMaximum = 5000;
@@ -100,7 +62,7 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block category-filter">
       <h2>{t("category")}</h2>
       <div className="filter-list category-filter-list">
-        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: marketCategoryIcons[value] }))].map(({ icon, label, value }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
