@@ -288,7 +288,8 @@ export function HomePageClient({
               {visibleMarketShortcuts.map((shortcut) => {
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
                 const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
-                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}><i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>;
+                const isTwoDollarDeals = shortcut.href === "/market/2dollarshop";
+                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}>{isTwoDollarDeals ? <Image className="home-reference-market-shortcut-image" src="/images/home/2-dollar-deals-icon.png" alt="" width={48} height={48} /> : <i className={`fa-solid ${icon}`} aria-hidden="true" />}<span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>
