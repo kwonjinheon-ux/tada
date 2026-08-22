@@ -10236,9 +10236,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
    plus results grid, .market-filter-panel styles the rail itself, and
    .market-results owns the centre column. Only the Services-specific surfaces
    below are bespoke. */
-.services-page .services-results {
-  padding-bottom: var(--space-10);
-}
+/* Services uses Community's shared browse gutters and flat card treatment. */
+.services-page .ui-card,
+.services-page .ui-panel { box-shadow: none; }
 
 .services-category-grid {
   display: grid;
@@ -10266,7 +10266,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .services-category.is-active {
   border-color: var(--color-primary);
   background: var(--color-primary-soft);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   transform: translateY(calc(var(--space-1) * -0.5));
 }
 
@@ -10649,7 +10649,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
    the same so the promo and trust panels leave the results column alone. */
 @media (min-width: 1200px) {
   .marketplace-page.services-page { grid-template-columns: 272px minmax(0, 1fr) 300px; gap: 0; }
-  .services-side-rail { grid-template-columns: minmax(0, 1fr); align-self: start; margin: 12px 0; padding: 0 max(var(--page-padding-inline), env(safe-area-inset-right)) 0 12px; }
+  .services-side-rail { grid-template-columns: minmax(0, 1fr); align-self: start; margin: 12px max(var(--page-padding-inline), env(safe-area-inset-right)) 12px 12px; padding: 12px; }
   .services-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 }
 
