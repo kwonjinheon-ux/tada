@@ -269,14 +269,17 @@ export function HomePageClient({
           </section>
 
           <section className="home-reference-destinations" aria-label="Explore Tada">
-            {visibleDestinations.map((destination) => {
-              const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
-              return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
-                <i className={`fa-solid ${destination.icon}`} aria-hidden="true" />
-                <span><strong>{destination.title}</strong>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
-                {destination.comingSoon ? <em>{text.soon}</em> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
-              </Link>
-            })}
+            <h2>{isKorean ? "시작할 곳을 선택하세요" : "Choose where to start"}</h2>
+            <div className="home-reference-destination-grid">
+              {visibleDestinations.map((destination) => {
+                const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
+                return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
+                  <i className={`fa-solid ${destination.icon}`} aria-hidden="true" />
+                  <span><strong>{destination.title}</strong>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
+                  {destination.comingSoon ? <em>{text.soon}</em> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
+                </Link>
+              })}
+            </div>
           </section>
 
           <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
