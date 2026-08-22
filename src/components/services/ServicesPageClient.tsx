@@ -9,7 +9,7 @@ import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/ser
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
+import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId } from "@/data/services";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
@@ -175,9 +175,14 @@ export function ServicesPageClient() {
           <p>{text.providerDescription}</p>
           <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.providerAction} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></button>
         </section>
-        <section className="services-trust-panel ui-panel">
-          {trustPoints.map((point) => <article key={point.id}><i className={`fa-solid ${point.icon}`} aria-hidden="true" /><div><h2>{text.trust[point.id].title}</h2><p>{text.trust[point.id].description}</p></div></article>)}
-          <button type="button" onClick={() => setNotice(text.trustNotice)}>{text.trustAction} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></button>
+        <section className="services-side-ad" aria-label={text.sidebarAdLabel}>
+          <Image src="/images/home/journey-services.png" alt="" fill sizes="(max-width: 1199px) 100vw, 284px" />
+          <div className="services-side-ad-content">
+            <span>{text.sidebarAdLabel}</span>
+            <strong>{text.sidebarAdTitle}</strong>
+            <p>{text.sidebarAdDescription}</p>
+            <button type="button" onClick={() => chooseCategory("cleaning")}>{text.sidebarAdAction} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></button>
+          </div>
         </section>
       </aside>
     </main>
