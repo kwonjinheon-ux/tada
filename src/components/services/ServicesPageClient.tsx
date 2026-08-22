@@ -10,7 +10,6 @@ import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, trustPoints, type ServiceCategoryId } from "@/data/services";
-import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
@@ -20,7 +19,6 @@ export function ServicesPageClient() {
   const categoryLabels = servicesCategoryLabels(locale);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | "all">("all");
   const [activeChip, setActiveChip] = useState("all");
   const [sort, setSort] = useState("recommended");
@@ -29,8 +27,6 @@ export function ServicesPageClient() {
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
   const [notice, setNotice] = useState("");
   const resultsRef = useRef<HTMLElement>(null);
-
-  useEffect(() => setViewMode(readListingViewPreference() ?? (window.innerWidth < 1024 ? "list" : "grid")), []);
 
   // The header's category trigger drives every browse surface's drawer.
   useEffect(() => {
@@ -46,11 +42,6 @@ export function ServicesPageClient() {
       window.removeEventListener("mobile-category-menu-close", closeFilters);
     };
   }, []);
-  const chooseView = (mode: ListingViewMode) => {
-    setViewMode(mode);
-    saveListingViewPreference(mode);
-  };
-
   // Services is still a preview, so the rail only filters by category. The rest
   // of the controls carry the shared design without a query behind them yet.
   const visibleServices = useMemo(() => {
@@ -106,8 +97,9 @@ export function ServicesPageClient() {
         </div>
 
         <BrowseResultsToolbar
-          viewMode={viewMode}
-          onViewModeChange={chooseView}
+          viewMode="grid"
+          onViewModeChange={() => undefined}
+          showViewToggle={false}
           chips={[
             { value: "all", label: t("all") },
             { value: "nearMe", label: text.quickFilters.nearMe },
@@ -127,24 +119,28 @@ export function ServicesPageClient() {
           <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.learnMore}</button>
         </section>
 
-        <div className={`services-card-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+        <div className="services-card-grid">
           {visibleServices.map((service) => {
             const listing = text.listings[service.id];
             return <article className="services-listing ui-card" key={service.id}>
-              <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="64px" /></div>
-              <div className="services-listing-copy">
-                <header>
-                  <div>
-                    <h3>{service.provider}</h3>
-                    <p className="services-listing-category">{categoryLabels[service.category]}</p>
-                    <div className="services-listing-badges">
-                      {service.badges.map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
+              <div className="services-listing-top">
+                <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="64px" /></div>
+                <div className="services-listing-copy">
+                  <header>
+                    <div>
+                      <h3>{service.provider}</h3>
+                      <p className="services-listing-category">{categoryLabels[service.category]}</p>
+                      <div className="services-listing-badges">
+                        {service.badges.map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
+                      </div>
                     </div>
-                  </div>
-                  <a className="services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
-                    <i className="fa-solid fa-phone" aria-hidden="true" />
-                  </a>
-                </header>
+                    <a className="services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
+                      <i className="fa-solid fa-phone" aria-hidden="true" />
+                    </a>
+                  </header>
+                </div>
+              </div>
+              <div className="services-listing-details">
                 <div className="services-listing-contact">
                   <span><i className="fa-solid fa-phone" aria-hidden="true" /> {service.phone}</span>
                   <span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span>

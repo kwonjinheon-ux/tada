@@ -15,6 +15,7 @@ export type BrowseSortOption = { value: string; label: string };
 export type BrowseResultsToolbarProps = {
   viewMode: ListingViewMode;
   onViewModeChange: (mode: ListingViewMode) => void;
+  showViewToggle?: boolean;
   chips?: BrowseToolbarChip[];
   activeChipValue?: string;
   applyingChip?: string | null;
@@ -33,6 +34,7 @@ export type BrowseResultsToolbarProps = {
 export function BrowseResultsToolbar({
   viewMode,
   onViewModeChange,
+  showViewToggle = true,
   chips = [],
   activeChipValue,
   applyingChip,
@@ -47,14 +49,14 @@ export function BrowseResultsToolbar({
 
   return <div className="market-toolbar">
     <div className="market-toolbar-top">
-      <div className="view-toggle" aria-label={t("viewMode")}>
+      {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
           <i className="fa-solid fa-list" aria-hidden="true" />
         </button>
         <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
           <i className="fa-solid fa-border-all" aria-hidden="true" />
         </button>
-      </div>
+      </div> : null}
 
       {chips.length ? <div className="market-chip-row" aria-label={t("quickCategories")}>
         {chips.map((chip) => {
