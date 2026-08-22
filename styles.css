@@ -10277,6 +10277,15 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
 @media (max-width: 767.98px) {
   .home-reference { padding-top: var(--space-5); }
+  .home-reference-destinations { gap: var(--space-2); padding: var(--space-3); }
+  .home-reference-destinations > h2 { font-size: var(--text-base); }
+  .home-reference-destination { min-height: 6.75rem; gap: var(--space-2); align-items: flex-start; padding: var(--space-2); }
+  .home-reference-destination > i:first-child { width: var(--control-h-md); height: var(--control-h-md); border-radius: var(--radius-md); font-size: var(--text-sm); }
+  .home-reference-destination > span { gap: 0.15rem; padding-top: 0.1rem; }
+  .home-reference-destination strong { font-size: var(--text-sm); line-height: 1.2; }
+  .home-reference-destination small { display: -webkit-box; overflow: hidden; font-size: var(--text-2xs); line-height: 1.3; text-overflow: clip; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .home-reference-destination-subtitle { font-size: 0.65rem !important; }
+  .home-reference-destination > em { display: none; }
   .home-reference-market-shortcut { min-width: 6.25rem; flex: 0 0 6.25rem; aspect-ratio: 1; display: grid; place-items: center; gap: var(--space-2); padding: var(--space-2); text-align: center; }
   .home-reference-market-shortcut > i:first-child, .home-reference-market-shortcut-image { width: var(--control-h-lg); height: var(--control-h-lg); font-size: var(--text-md); }
   .home-reference-market-shortcut > span { justify-items: center; }
