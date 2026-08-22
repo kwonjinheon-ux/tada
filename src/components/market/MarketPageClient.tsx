@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { marketFeedResponseSchema } from "@/contracts/api";
@@ -245,7 +246,10 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
 
       <section className="market-results" aria-label="Fresh finds">
         <div className="browse-intro">
-          <h1>{t("marketIntroTitle")}</h1>
+          <div className="browse-intro-heading">
+            <h1>{t("marketIntroTitle")}</h1>
+            <Link className="browse-create-button" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {t("createListing")}</Link>
+          </div>
           <p>{t("marketIntroDescription")}</p>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -88,7 +89,10 @@ export function ServicesPageClient() {
 
       <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
         <div className="browse-intro">
-          <h1>{text.heroTitle}</h1>
+          <div className="browse-intro-heading">
+            <h1>{text.heroTitle}</h1>
+            <Link className="browse-create-button" href="/services/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {t("createServiceAction")}</Link>
+          </div>
           <p>{text.heroDescription}</p>
         </div>
 

@@ -624,10 +624,6 @@ export function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link className="nav-post" href={createPath} aria-current={isPostAd ? "page" : undefined}>
-            <i className="fa-solid fa-plus" aria-hidden="true" />
-            <span>{createLabel}</span>
-          </Link>
           <Link className={`nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
             <i className="fa-regular fa-bell" aria-hidden="true" />
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
