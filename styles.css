@@ -10233,14 +10233,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-hero-art { display: none; }
 
 .home-reference-destinations { display: grid; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--green-soft-50) 64%, var(--color-surface)); }
-.home-reference-destinations > h2 { margin: 0; color: var(--color-ink); font-size: var(--text-sm); line-height: 1.25; }
+.home-reference-destinations > h2 { margin: 0; color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: 1.25; }
 .home-reference-destination-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .home-reference-destination { min-width: 0; min-height: calc(var(--control-h-2xl) * 1.85); display: flex; gap: var(--space-3); align-items: center; padding: var(--space-4); }
 .home-reference-destination > i:first-child { width: var(--control-h-lg); height: var(--control-h-lg); display: grid; flex: 0 0 auto; place-items: center; border-radius: var(--radius-lg); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-lg); }
 .home-reference-destination > span { min-width: 0; display: grid; gap: var(--space-1); }
 .home-reference-destination strong { color: var(--color-ink); font-size: var(--text-base); line-height: 1.25; }
 .home-reference-destination small { overflow: hidden; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
-.home-reference-destination > i:last-child { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; flex: 0 0 auto; place-items: center; margin-left: auto; border: 1px solid currentColor; border-radius: var(--radius-circle); color: var(--color-primary-strong); font-size: var(--text-2xs); }
+.home-reference-destination > i:last-child { display: none; width: var(--control-h-sm); height: var(--control-h-sm); flex: 0 0 auto; place-items: center; margin-left: auto; border: 1px solid currentColor; border-radius: var(--radius-circle); color: var(--color-primary-strong); font-size: var(--text-2xs); }
 .home-reference-destination > em,
 .home-reference-jobs-cta > em { flex: 0 0 auto; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface-soft); color: var(--color-muted); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }
 .home-reference-destination-subtitle { color: var(--color-primary-strong) !important; font-size: var(--text-2xs) !important; font-weight: var(--weight-bold); }
@@ -10276,7 +10276,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-market-shortcut:nth-child(2):hover { border-color: var(--amber-700); }.home-reference-market-shortcut:nth-child(3):hover { border-color: var(--blue-650); }.home-reference-market-shortcut:nth-child(4):hover { border-color: var(--violet-750); }.home-reference-market-shortcut:nth-child(5):hover { border-color: var(--rose-800); }
 
 @media (max-width: 767.98px) {
-  .home-reference-market-shortcut { min-width: 6.75rem; flex: 0 0 6.75rem; aspect-ratio: 1; display: grid; place-items: center; gap: var(--space-2); padding: var(--space-3); text-align: center; }
+  .home-reference { padding-top: var(--space-5); }
+  .home-reference-market-shortcut { min-width: 6.25rem; flex: 0 0 6.25rem; aspect-ratio: 1; display: grid; place-items: center; gap: var(--space-2); padding: var(--space-2); text-align: center; }
   .home-reference-market-shortcut > i:first-child, .home-reference-market-shortcut-image { width: var(--control-h-lg); height: var(--control-h-lg); font-size: var(--text-md); }
   .home-reference-market-shortcut > span { justify-items: center; }
   .home-reference-market-shortcut small, .home-reference-market-shortcut > i:last-child { display: none; }
@@ -10353,6 +10354,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 @media (min-width: 1280px) {
+  .home-reference-destination > i:last-child { display: grid; }
   .home-reference-hero { min-height: calc(var(--control-h-2xl) * 5.1); }
   .home-reference-hero h1 { font-size: calc(var(--text-5xl) + var(--space-3)); }
   .home-reference-listing-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
