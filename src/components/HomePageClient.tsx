@@ -256,10 +256,6 @@ export function HomePageClient({
             <div className="home-reference-hero-copy">
               <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
-              <div>
-                <Link className="home-reference-primary" href="/market">{text.explore} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
-                <Link className="home-reference-secondary" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {text.post}</Link>
-              </div>
             </div>
             <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
@@ -298,10 +294,6 @@ export function HomePageClient({
             <HomeHelpPanel isKorean={isKorean} text={text} />
             <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="fa-solid fa-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="fa-solid fa-arrow-right" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.png" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
           </div>
-
-          <section className="home-reference-trust" aria-label="Why use Tada">
-            {visibleTrustItems.map((item) => <article className="ui-card" key={item.title}><i className={`fa-solid ${item.icon}`} aria-hidden="true" /><div><h2>{item.title}</h2><p>{item.description}</p></div></article>)}
-          </section>
         </PageContainer>
       </main>
       <Footer />
