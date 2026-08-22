@@ -27,10 +27,10 @@ const koreanDestinations = [
 ];
 
 const marketShortcuts = [
-  { label: "Second Hands", href: "/market/secondhands", icon: "fa-store" },
+  { label: "Second Hands", href: "/market/secondhands", icon: "fa-tag" },
   { label: "Garage Sale", href: "/market/garage-sales", icon: "fa-warehouse" },
-  { label: "Moving Sale", href: "/market/moving-sales", icon: "fa-truck-ramp-box" },
-  { label: "$2 Deals", href: "/market/2dollarshop", icon: "fa-coins" },
+  { label: "Moving Sale", href: "/market/moving-sales", icon: "fa-truck" },
+  { label: "$2 Deals", href: "/market/2dollarshop", icon: "fa-dollar-sign" },
   { label: "Group Buy", href: "/market/groupbuy", icon: "fa-people-group" },
 ];
 
@@ -41,6 +41,14 @@ const koreanMarketShortcuts = [
   { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "fa-coins" },
   { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "fa-people-group" },
 ];
+
+const marketShortcutIcons: Record<string, string> = {
+  "/market/secondhands": "fa-tag",
+  "/market/garage-sales": "fa-warehouse",
+  "/market/moving-sales": "fa-truck",
+  "/market/2dollarshop": "fa-dollar-sign",
+  "/market/groupbuy": "fa-people-group",
+};
 
 const helpCategories = [
   { label: "Food", icon: "fa-utensils" },
@@ -276,7 +284,8 @@ export function HomePageClient({
             <div>
               {visibleMarketShortcuts.map((shortcut) => {
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
-                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}><i className={`fa-solid ${shortcut.icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span></Link>;
+                const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
+                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}><i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>
