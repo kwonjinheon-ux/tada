@@ -24,7 +24,7 @@ export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activ
 
           return (
             <button key={value} className={`market-mobile-shop-type ${presentation.tone} ${isActive ? "is-active" : ""}`} type="button" role="tab" aria-selected={isActive} onClick={() => onShopTypeSelect(value)}>
-              <span className="market-mobile-shop-type-icon"><Image src={presentation.image} alt="" width={56} height={56} sizes="56px" /></span>
+              <span className="market-mobile-shop-type-icon"><Image src={presentation.image} alt="" width={64} height={64} sizes="64px" /></span>
               <strong>{t(labelKey)}</strong>
             </button>
           );
