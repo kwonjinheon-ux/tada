@@ -101,6 +101,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
         sortValue={searchParams.get("sort") ?? "newest"}
         sortOptions={marketSortOptions(t)}
         onSortChange={(value) => updateParams({ sort: value === "newest" ? null : value })}
+        sortDisplay="chips"
         resultsLabel={`Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
       />
       {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>

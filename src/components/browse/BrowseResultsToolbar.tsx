@@ -23,6 +23,7 @@ export type BrowseResultsToolbarProps = {
   sortValue?: string;
   sortOptions?: BrowseSortOption[];
   onSortChange?: (value: string) => void;
+  sortDisplay?: "select" | "chips";
   resultsLabel?: string;
 };
 
@@ -42,6 +43,7 @@ export function BrowseResultsToolbar({
   sortValue,
   sortOptions,
   onSortChange,
+  sortDisplay = "select",
   resultsLabel,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
@@ -73,13 +75,20 @@ export function BrowseResultsToolbar({
         })}
       </div> : null}
 
-      {resultsLabel || showSort ? <div className="market-tools">
+      {resultsLabel || (showSort && sortDisplay === "select") ? <div className="market-tools">
         {resultsLabel ? <p>{resultsLabel}</p> : null}
-        {showSort ? <label className="sort-control" aria-label={t("sortListings")}>
+        {showSort && sortDisplay === "select" ? <label className="sort-control" aria-label={t("sortListings")}>
           <select value={sortValue} onChange={(event) => onSortChange?.(event.target.value)}>
             {sortOptions?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </label> : null}
+      </div> : null}
+
+      {showSort && sortDisplay === "chips" ? <div className="market-sort-chip-row" role="tablist" aria-label={t("sortListings")}>
+        {sortOptions?.map((option) => {
+          const isSelected = option.value === sortValue;
+          return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => onSortChange?.(option.value)}>{option.label}</button>;
+        })}
       </div> : null}
     </div>
   </div>;

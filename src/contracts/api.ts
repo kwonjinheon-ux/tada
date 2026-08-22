@@ -97,7 +97,7 @@ export const marketFeedQuerySchema = z.object({
   condition: z.enum(["brand_new", "like_new", "excellent", "good", "fair"]).optional(),
   mainLocation: z.string().trim().max(80).optional(),
   subLocation: z.string().trim().max(80).optional(),
-  sort: z.enum(["newest", "priceAsc", "priceDesc"]).default("newest"),
+  sort: z.enum(["newest", "priceAsc", "priceDesc", "hot"]).default("newest"),
   cursor: z.string().min(1).max(500).optional(),
 });
 

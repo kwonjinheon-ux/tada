@@ -25,7 +25,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;
-  const sortColumn = query.sort === "newest" ? "created_at" : "price_cents";
+  const sortColumn = query.sort === "priceAsc" || query.sort === "priceDesc" ? "price_cents" : "created_at";
   const ascending = query.sort === "priceAsc";
   const cursor = decodeCursor(query.cursor);
   let request = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,main_location,sub_location,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
@@ -77,10 +77,10 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   for (const row of (commentRows ?? []) as { listing_id: string }[]) commentCounts.set(row.listing_id, (commentCounts.get(row.listing_id) ?? 0) + 1);
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "newest" ? row.created_at : row.price_cents } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: row.status === "published" ? "Newly Listed" : undefined, status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "priceAsc" || query.sort === "priceDesc" ? row.price_cents : row.created_at } satisfies Listing;
   });
   const last = page.at(-1);
-  return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "newest" ? last.created_at : last.price_cents, last.id) : null };
+  return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "priceAsc" || query.sort === "priceDesc" ? last.price_cents : last.created_at, last.id) : null };
 }
 
 const allBargainTypes = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"];

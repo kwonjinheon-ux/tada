@@ -265,6 +265,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           sortValue={searchParams.get("sort") ?? "newest"}
           sortOptions={marketSortOptions(t)}
           onSortChange={changeSort}
+          sortDisplay="chips"
         />
 
         <AdSlot placement="market_top" />
