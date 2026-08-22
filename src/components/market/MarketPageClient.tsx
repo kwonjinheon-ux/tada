@@ -248,7 +248,10 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
         <div className="browse-intro">
           <div className="browse-intro-heading">
             <h1>{t("marketIntroTitle")}</h1>
-            <Link className="browse-create-button" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {t("createListing")}</Link>
+            <Link className="browse-create-button ui-button ui-button--lg" href="/market/create">
+              <i className="fa-solid fa-plus" aria-hidden="true" />
+              <span>{t("createListing")}</span>
+            </Link>
           </div>
           <p>{t("marketIntroDescription")}</p>
         </div>

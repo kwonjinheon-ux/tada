@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
@@ -138,7 +139,10 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
         <div className="browse-intro">
           <div className="browse-intro-heading">
             <h1>{t("communityIntroTitle")}</h1>
-            <Link className="browse-create-button" href="/community/create"><i className="fa-solid fa-pen-to-square" aria-hidden="true" /> {t("createPostAction")}</Link>
+            <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
+              <i className="fa-solid fa-plus" aria-hidden="true" />
+              <span>{t("createPostAction")}</span>
+            </Link>
           </div>
           <p>{t("communityIntroDescription")}</p>
         </div>
