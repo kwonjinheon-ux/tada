@@ -169,6 +169,63 @@ a {
   .site-nav.global-shell { padding-left: clamp(24px, 3vw, 48px); padding-right: clamp(24px, 3vw, 48px); }
 }
 
+/* Tablet uses the same compact navigation model as phones. Keeping the search
+   on its own row avoids a cramped hybrid of desktop links and touch controls. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  :root { --desktop-header-height: 118px; }
+
+  .site-header { border-bottom: 0; background: var(--neutral-50); }
+  .site-nav.global-shell {
+    position: relative;
+    grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;
+    grid-template-rows: 58px 48px auto;
+    grid-template-areas:
+      "menu logo notification language profile"
+      "search search search search search"
+      "mobile mobile mobile mobile mobile";
+    row-gap: 4px;
+    column-gap: 8px;
+    min-height: 0;
+    padding: 3px 24px;
+  }
+
+  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; transform: translateX(-50%); }
+  .nav-search { grid-area: search; width: auto; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
+  .nav-search svg { width: 21px; height: 21px; }
+  .nav-search-submit { display: none; }
+
+  .primary-nav,
+  .nav-actions { display: none; }
+
+  .nav-menu-button { grid-area: menu; justify-self: start; width: 38px; height: 38px; padding: 9px; border: 0; border-radius: var(--radius-circle); background: var(--primary); color: var(--neutral-50); box-shadow: none; }
+  .nav-menu-button:hover,
+  .nav-menu-button.is-open { background: var(--primary-dark); color: var(--neutral-50); box-shadow: none; }
+  .nav-menu-button span { width: 18px; height: 2px; }
+  .nav-menu-button.is-open { position: relative; z-index: 31; gap: 0; }
+  .nav-menu-button.is-open span { position: absolute; top: 50%; left: 50%; margin: 0; transform-origin: center; }
+  .nav-menu-button.is-open span:nth-child(1) { transform: translate(-50%, -50%) rotate(45deg); }
+  .nav-menu-button.is-open span:nth-child(2) { opacity: 0; }
+  .nav-menu-button.is-open span:nth-child(3) { transform: translate(-50%, -50%) rotate(-45deg); }
+
+  .mobile-profile-link,
+  .nav-notifications.mobile-notifications,
+  .mobile-language-button { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--blue-soft-150); border-radius: var(--radius-circle); background: var(--neutral-150); }
+  .mobile-profile-link { grid-area: profile; justify-self: end; overflow: hidden; color: var(--blue-350); font-size: var(--text-xl); cursor: pointer; }
+  .nav-notifications.mobile-notifications { grid-area: notification; justify-self: end; display: inline-grid; border: 0; background: transparent; color: var(--ink); font-size: var(--text-xl); }
+  .mobile-language-button { grid-area: language; justify-self: center; padding: 0; color: var(--ink); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-extrabold); cursor: pointer; }
+
+  .mobile-menu-backdrop { position: fixed; inset: 0; z-index: 29; display: block; border: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 180ms ease; }
+  .mobile-menu-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  .mobile-nav-menu { position: absolute; top: 50px; left: 16px; z-index: 30; width: min(250px, calc(100vw - 40px)); display: grid; grid-area: auto; margin: 0; padding: 10px; border: 1px solid var(--blue-soft-450); border-radius: var(--radius-lg); background: var(--neutral-50); box-shadow: 0 12px 32px rgb(16 33 62 / .16); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-10px) scale(.96); transform-origin: top left; transition: opacity 180ms ease, transform 220ms cubic-bezier(.2, .9, .25, 1), visibility 0s linear 220ms; }
+  .mobile-nav-menu.is-open { display: grid; opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); transition-delay: 0s; }
+  .mobile-nav-menu a { min-height: var(--control-h-lg); font-weight: var(--weight-regular); }
+
+  .mobile-dashboard-menu,
+  .mobile-auth-menu { position: absolute; top: 50px; right: 16px; z-index: 30; width: min(276px, calc(100vw - 40px)); display: grid; gap: 4px; margin: 0; padding: 12px; border: 1px solid rgba(187, 202, 191, .9); border-radius: var(--radius-xl); background: rgba(255, 255, 255, .98); box-shadow: 0 20px 42px rgba(16, 33, 62, .22); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-12px) scale(.94); transform-origin: top right; transition: opacity 180ms ease, transform 260ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 260ms; }
+  .mobile-dashboard-menu.is-open,
+  .mobile-auth-menu.is-open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); transition-delay: 0s; }
+}
+
 .site-logo {
   width: var(--site-logo-width);
   height: var(--site-logo-height);
@@ -10902,4 +10959,22 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .footer-link-group a { color: var(--color-footer-ink-soft); font-size: var(--text-base); }
   .footer-trust { display: none; }
   .site-footer .footer-bottom { margin-top: 20px; padding-top: 0; border: 0; font-size: var(--text-sm); }
+}
+
+/* This intentionally comes after the tablet layout rules: the header switches
+   to the same compact, touch-first composition as mobile through 1023px. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .site-nav.global-shell { grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px; grid-template-rows: 58px 48px auto; grid-template-areas: "menu logo notification language profile" "search search search search search" "mobile mobile mobile mobile mobile"; row-gap: 4px; column-gap: 8px; min-height: 0; padding: 3px 24px; }
+  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; justify-self: auto; transform: translateX(-50%); }
+  .nav-search { grid-area: search; width: auto; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
+  .nav-menu-button { display: grid; }
+  .mobile-profile-link,
+  .nav-notifications.mobile-notifications,
+  .mobile-language-button { display: grid; }
+  .mobile-menu-backdrop { display: block; }
+  .mobile-nav-menu.is-open { display: grid; }
+  .mobile-dashboard-menu,
+  .mobile-auth-menu { display: grid; }
+  .primary-nav,
+  .nav-actions { display: none; }
 }
