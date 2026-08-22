@@ -9,7 +9,7 @@ import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
-import { MarketCategoryGrid } from "@/components/market/MarketCategoryGrid";
+import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
 import type { Listing } from "@/data/listings";
@@ -230,6 +230,9 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     if (nextSort === "newest") params.delete("sort"); else params.set("sort", nextSort);
     router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
   };
+  const chooseShopType = (nextShopType: ShopType) => {
+    router.push(marketShopTypes.find(({ value }) => value === nextShopType)?.href ?? "/market");
+  };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
@@ -257,14 +260,14 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           </Link>
         </div>
 
-        <MarketCategoryGrid activeCategory={selectedCategory} onCategorySelect={chooseCategory} />
+        <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
 
         <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
           chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
           activeChipValue={shopType}
-          onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
+          onChipSelect={(value) => chooseShopType(value as ShopType)}
           sortValue={searchParams.get("sort") ?? "newest"}
           sortOptions={marketSortOptions(t)}
           onSortChange={changeSort}
