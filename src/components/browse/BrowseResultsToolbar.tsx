@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { ListingViewMode } from "@/lib/market/listing-view-preference";
 
@@ -47,7 +48,14 @@ export function BrowseResultsToolbar({
   resultsLabel,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
+  const [clickedSort, setClickedSort] = useState<string | null>(null);
   const showSort = Boolean(sortOptions?.length && onSortChange);
+
+  const chooseSort = (value: string) => {
+    setClickedSort(value);
+    window.setTimeout(() => setClickedSort(null), 420);
+    onSortChange?.(value);
+  };
 
   return <div className="market-toolbar">
     <div className="market-toolbar-top">
@@ -87,7 +95,7 @@ export function BrowseResultsToolbar({
       {showSort && sortDisplay === "chips" ? <div className="market-sort-chip-row" role="tablist" aria-label={t("sortListings")}>
         {sortOptions?.map((option) => {
           const isSelected = option.value === sortValue;
-          return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => onSortChange?.(option.value)}>{option.label}</button>;
+          return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}${clickedSort === option.value ? " is-clicking" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => chooseSort(option.value)}>{option.label}</button>;
         })}
       </div> : null}
     </div>
