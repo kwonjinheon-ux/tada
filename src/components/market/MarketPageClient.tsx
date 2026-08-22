@@ -245,8 +245,8 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
       <section className="market-results" aria-label="Fresh finds">
-        <div className="browse-intro market-browse-intro">
-          <div className="market-browse-intro-copy">
+        <div className="browse-intro browse-intro--with-create">
+          <div className="browse-intro-copy">
             <h1>{t("marketIntroTitle")}</h1>
             <p>{t("marketIntroDescription")}</p>
           </div>

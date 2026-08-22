@@ -79,12 +79,15 @@ export function ServicesPageClient() {
       </BrowseFilterDrawer>
 
       <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
-        <div className="browse-intro">
-          <div className="browse-intro-heading">
+        <div className="browse-intro browse-intro--with-create">
+          <div className="browse-intro-copy">
             <h1>{text.heroTitle}</h1>
-            <Link className="browse-create-button" href="/services/create"><i className="fa-solid fa-plus" aria-hidden="true" /> {t("createServiceAction")}</Link>
+            <p>{text.heroDescription}</p>
           </div>
-          <p>{text.heroDescription}</p>
+          <Link className="browse-create-button ui-button ui-button--lg" href="/services/create">
+            <i className="fa-solid fa-plus" aria-hidden="true" />
+            <span>{t("createServiceAction")}</span>
+          </Link>
         </div>
 
         <div className="services-category-grid" role="group" aria-label={text.serviceType}>
