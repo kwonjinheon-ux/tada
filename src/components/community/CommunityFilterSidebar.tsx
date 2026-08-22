@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
@@ -35,13 +34,6 @@ export const communityPostCategories = communityCategories.filter(
   (category): category is (typeof communityCategories)[number] & { value: Exclude<CommunityCategory, "all"> } => category.value !== "all",
 );
 
-const togetherSubmenu: Array<{ labelKey: TranslationKey; icon: string }> = [
-  { labelKey: "communityTogetherParenting", icon: "fa-baby" },
-  { labelKey: "communityTogetherSports", icon: "fa-futbol" },
-  { labelKey: "communityTogetherStudy", icon: "fa-book-open" },
-  { labelKey: "communityTogetherBookClub", icon: "fa-book" },
-];
-
 export type CommunityFilterSidebarProps = {
   activeCategory: CommunityCategory;
   onCategorySelect: (category: CommunityCategory) => void;
@@ -52,11 +44,6 @@ export type CommunityFilterSidebarProps = {
 
 export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange }: CommunityFilterSidebarProps) {
   const { t } = useLanguage();
-  const [isTogetherOpen, setIsTogetherOpen] = useState(activeCategory === "together");
-  const selectCategory = (category: CommunityCategory) => {
-    onCategorySelect(category);
-    if (category !== "together") setIsTogetherOpen(false);
-  };
 
   return <BrowseFilterSidebar location={
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="community" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
@@ -66,29 +53,15 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
       <h2>{t("categories")}</h2>
       <div className="filter-list community-category-list">
         {communityCategories.map(({ value, labelKey, icon }) => {
-          const isTogether = value === "together";
-          const categoryButton = <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} aria-expanded={isTogether ? isTogetherOpen : undefined} aria-controls={isTogether ? "community-together-submenu" : undefined} onClick={() => {
-            if (isTogether) {
-              onCategorySelect("together");
-              setIsTogetherOpen((current) => !current);
-              return;
-            }
-            selectCategory(value);
-          }}>
+          return <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
             <i className={`fa-solid ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </button>;
-          if (!isTogether) return categoryButton;
-          return <div className="community-category-group" key={value}>
-            {categoryButton}
-            {isTogetherOpen ? <div className="community-category-submenu" id="community-together-submenu" aria-label={`${t(labelKey)} subcategories`}>
-              {togetherSubmenu.map(({ labelKey: submenuLabelKey, icon: submenuIcon }) => <button key={submenuLabelKey} type="button" onClick={() => onCategorySelect("together")}>
-                <i className={`fa-solid ${submenuIcon}`} aria-hidden="true" />
-                <span>{t(submenuLabelKey)}</span>
-              </button>)}
-            </div> : null}
-          </div>;
         })}
+        <button type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-parenting`} onClick={() => onCategorySelect("together")}>
+          <i className="fa-solid fa-baby" aria-hidden="true" />
+          <span className={mobileDrawerClasses.menuLabel}>{t("communityTogetherParenting")}</span>
+        </button>
       </div>
     </section>
   </BrowseFilterSidebar>;
