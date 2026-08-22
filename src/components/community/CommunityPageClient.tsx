@@ -136,13 +136,11 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
 
       <section className="market-results community-results" aria-label="Community posts">
         <div className="browse-intro">
-          <div className="browse-intro-heading">
-            <h1>{t("communityIntroTitle")}</h1>
-            <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
-              <i className="fa-solid fa-plus" aria-hidden="true" />
-              <span>{t("createPostAction")}</span>
-            </Link>
-          </div>
+          <h1>{t("communityIntroTitle")}</h1>
+          <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
+            <i className="fa-solid fa-plus" aria-hidden="true" />
+            <span>{t("createPostAction")}</span>
+          </Link>
           <p>{t("communityIntroDescription")}</p>
         </div>
 
