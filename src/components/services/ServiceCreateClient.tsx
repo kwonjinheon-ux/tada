@@ -144,8 +144,8 @@ export function ServiceCreateClient() {
 
   return <main className="post-ad-page service-create-page">
     <PageContainer className="service-create-workspace">
-      <aside className="service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
-      <div className="service-create-main">
+      <aside className="market-filter-panel services-filter-rail service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
+      <div className="market-results service-create-main">
     <div className="post-ad-create-bar"><Link href="/services"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {copy.back}</Link></div>
     <div className="post-ad-layout">
       <section className="post-ad-card">
