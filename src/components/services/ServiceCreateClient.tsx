@@ -70,6 +70,7 @@ export function ServiceCreateClient() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     if (isSubmitting) return;
     if (!category) {
       setNotice(isKorean ? "서비스 종류를 선택해 주세요." : "Choose a service category to continue.");
@@ -85,7 +86,7 @@ export function ServiceCreateClient() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) { setNotice(isKorean ? "서비스를 등록하려면 로그인해 주세요." : "Please sign in to list your service."); return; }
 
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(form);
       const providerName = String(formData.get("service-name") ?? "").trim();
       const description = String(formData.get("service-description") ?? "").trim();
       const phone = String(formData.get("service-phone") ?? "").trim();
