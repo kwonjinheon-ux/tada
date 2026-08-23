@@ -10752,8 +10752,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .services-listing[role="link"] { cursor: pointer; }
 .services-listing[role="link"]:focus-visible { outline: none; box-shadow: var(--ring-focus-strong); }
 
-.service-profile-page { padding-block: var(--space-6) var(--space-10); background: var(--color-background); }
-.service-profile-shell { display: grid; gap: var(--space-4); }
+.service-profile-page { background: var(--color-background); }
+.service-profile-shell { display: grid; gap: var(--space-4); min-width: 0; }
 .service-profile-back { display: inline-flex; width: fit-content; gap: var(--space-2); align-items: center; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
 .service-profile-back:hover { color: var(--color-primary-strong); }
 .service-profile-loading, .service-profile-empty { padding: var(--space-6); color: var(--color-muted); }
@@ -10849,6 +10849,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .service-profile-layout { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 }
 
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .service-profile-support-rail { grid-column: 1 / -1; margin-inline: var(--space-6); }
+}
+
 @media (min-width: 1024px) {
   /* Match the existing browse shell: the fixed filter rail and writing canvas
      share one grid, rather than nesting a second desktop layout inside the
@@ -10861,11 +10865,15 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   /* The support rail follows Community's breakpoint: preserve a broad writing
      canvas until there is room for a dedicated third column. */
   .service-create-support-rail { display: none; }
+  .service-profile-main { min-width: 0; }
+  .service-profile-filter-rail { display: grid; }
+  .service-profile-support-rail { position: static; }
 }
 
 @media (min-width: 1280px) {
   .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr) 300px; }
   .service-create-support-rail { display: grid; grid-column: 3; align-self: start; margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); padding: var(--space-2); }
+  .service-profile-support-rail { grid-column: 3; align-self: start; position: sticky; top: calc(var(--desktop-header-height) + var(--space-3)); margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); }
 }
 
 @media (max-width: 767.98px) {
