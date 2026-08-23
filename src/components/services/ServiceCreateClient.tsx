@@ -7,7 +7,6 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { serviceCategories, serviceDetailFields, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
 import { isAcceptedMarketListingImage, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
@@ -195,10 +194,10 @@ export function ServiceCreateClient() {
     }
   };
 
-  return <main className="post-ad-page service-create-page">
-    <PageContainer className="service-create-workspace">
+  return <main className="marketplace-page services-page service-create-page">
       <aside className="market-filter-panel services-filter-rail service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
-      <div className="market-results service-create-main">
+      <section className="market-results services-results service-create-main">
+    <div className="post-ad-page service-create-content">
     <div className="post-ad-create-bar"><Link href="/services"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {copy.back}</Link></div>
     <div className="post-ad-layout">
       <section className="post-ad-card">
@@ -215,9 +214,9 @@ export function ServiceCreateClient() {
           <div className="post-submit-row service-create-submit"><label className="terms-row"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /><span>{isKorean ? <><Link href="/terms">이용약관</Link> 및 <Link href="/community">커뮤니티 가이드라인</Link>에 동의합니다.</> : <>I agree to Tada’s <Link href="/terms">Terms</Link> and <Link href="/community">Community Guidelines</Link>.</>}</span></label><button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "등록 중..." : "Submitting...") : copy.publish}</span></button></div>
         </form>
       </section>
-      <aside className="post-ad-sidebar service-create-sidebar"><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["fa-solid fa-list-check", "fa-solid fa-location-dot", "fa-solid fa-shield-halved"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="fa-solid fa-shield-halved" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["fa-solid fa-file-lines", "fa-solid fa-id-card", "fa-solid fa-circle-check"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="fa-solid fa-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
     </div>
       </div>
-    </PageContainer>
+      </section>
+      <aside className="post-ad-sidebar service-create-sidebar service-create-support-rail" aria-label={isKorean ? "서비스 등록 도움말" : "Service registration help"}><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["fa-solid fa-list-check", "fa-solid fa-location-dot", "fa-solid fa-shield-halved"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="fa-solid fa-shield-halved" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["fa-solid fa-file-lines", "fa-solid fa-id-card", "fa-solid fa-circle-check"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="fa-solid fa-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
   </main>;
 }

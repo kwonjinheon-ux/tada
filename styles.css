@@ -10816,21 +10816,22 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 @media (min-width: 1024px) {
-  /* Keep the service creation rail in the same viewport-anchored position as
-     the Market and Community rails. The rail owns its scroll so it remains
-     usable beside a long form instead of travelling with the form content. */
-  .service-create-page { min-height: calc(100dvh - var(--desktop-header-height)); padding: 0; background: var(--neutral-50); }
-  .service-create-page > .service-create-workspace { width: 100%; max-width: none; margin-inline: 0; padding-inline: 0; }
-  .service-create-workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: calc(100dvh - var(--desktop-header-height)); gap: 0; align-items: start; }
-  .service-create-filter-rail { align-self: stretch; height: calc(100dvh - var(--desktop-header-height)); max-height: none; }
+  /* Match the existing browse shell: the fixed filter rail and writing canvas
+     share one grid, rather than nesting a second desktop layout inside the
+     form. This keeps Services aligned with Community at every desktop size. */
+  .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr); gap: 0; }
+  .service-create-filter-rail { display: grid; align-self: stretch; height: calc(100dvh - var(--desktop-header-height)); max-height: none; }
+  .service-create-content { min-height: 0; padding: 0; background: transparent; }
   .service-create-main .post-ad-create-bar, .service-create-main .post-ad-layout { width: 100%; margin-inline: 0; }
-  .service-create-main .post-ad-layout { grid-template-columns: minmax(0, 1fr); }
-  .service-create-main .post-ad-sidebar { display: none; }
+  .service-create-main .post-ad-layout { display: block; }
+  /* The support rail follows Community's breakpoint: preserve a broad writing
+     canvas until there is room for a dedicated third column. */
+  .service-create-support-rail { display: none; }
 }
 
 @media (min-width: 1280px) {
-  .service-create-main .post-ad-layout { grid-template-columns: minmax(0, 1fr) 240px; }
-  .service-create-main .post-ad-sidebar { display: grid; }
+  .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr) 300px; }
+  .service-create-support-rail { display: grid; grid-column: 3; align-self: start; margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); padding: var(--space-2); }
 }
 
 @media (max-width: 767.98px) {
