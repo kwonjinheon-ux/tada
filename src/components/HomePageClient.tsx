@@ -230,6 +230,7 @@ export function HomePageClient({
     : { src: "/images/logo.png", width: 1536, height: 1024 };
   const visibleDestinations = isKorean ? koreanDestinations : destinations;
   const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
+  const destinationHeading = isKorean ? "무엇을 도와드릴까요?" : "What do you want to do?";
   const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
   const discoveryListings = nearbyListings.length ? nearbyListings : justListedListings;
   const highlightedCommunityPosts = communityHighlights.length ? communityHighlights : communityPosts;
@@ -269,7 +270,7 @@ export function HomePageClient({
           </section>
 
           <section className="home-reference-destinations" aria-label="Explore Tada">
-            <h2>{isKorean ? "시작할 곳을 선택하세요" : "Choose where to start"}</h2>
+            <h2>{destinationHeading}</h2>
             <div className="home-reference-destination-grid">
               {visibleDestinations.map((destination) => {
                 const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
