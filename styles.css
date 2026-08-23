@@ -1559,6 +1559,13 @@ a {
   color: var(--neutral-50);
 }
 
+.market-type-filter .filter-list a.is-selected,
+.condition-chips button.is-selected {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-primary));
+  box-shadow: var(--shadow-xs);
+  color: var(--color-on-primary);
+}
+
 .shop-type-filter .filter-list > a.shop-type-all > i { color: var(--teal-soft-900); }
 .shop-type-filter .filter-list > a.shop-type-secondhand > i { color: var(--green-600); }
 .shop-type-filter .filter-list > a.shop-type-garage-sale > i { color: var(--blue-700); }
@@ -1588,9 +1595,37 @@ a {
 .services-type-filter .filter-list > button.services-type-petCare > i { color: var(--red-550); }
 .services-type-filter .filter-list button.is-selected > i { color: currentColor; }
 
-.price-filter input {
+.price-filter .price-filter-range {
   width: 100%;
-  accent-color: var(--primary-dark);
+  height: var(--space-2);
+  appearance: none;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-brand), var(--color-primary) var(--price-progress), var(--color-line-soft) var(--price-progress));
+  cursor: pointer;
+}
+
+.price-filter .price-filter-range::-webkit-slider-thumb {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  appearance: none;
+  border: var(--space-1) solid var(--color-surface);
+  border-radius: var(--radius-circle);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.price-filter .price-filter-range::-moz-range-thumb {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  border: var(--space-1) solid var(--color-surface);
+  border-radius: var(--radius-circle);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.price-filter .price-filter-range:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
 }
 
 .price-range {
@@ -1622,8 +1657,9 @@ a {
 .apply-filter-button {
   min-height: var(--control-h-xl);
   border-radius: var(--radius-pill);
-  background: var(--primary-dark);
-  color: var(--neutral-50);
+  background: linear-gradient(135deg, var(--color-brand), var(--color-primary));
+  box-shadow: var(--shadow-xs);
+  color: var(--color-on-primary);
   font-size: var(--text-base);
   font-weight: var(--weight-regular);
 }

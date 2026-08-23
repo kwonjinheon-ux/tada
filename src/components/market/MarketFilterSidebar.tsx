@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
@@ -19,7 +20,8 @@ export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey;
   { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "fa-people-group", href: "/market/groupbuy" },
 ];
 
-export const marketShopTypeIllustrations: Record<Exclude<ShopType, "all">, string> = {
+export const marketShopTypeIllustrations: Record<ShopType, string> = {
+  all: "/images/market/shop-types/all-market.png",
   secondhand: "/images/market/shop-types/secondhand-exchange.png",
   "garage-sale": "/images/market/shop-types/garage-sale.png",
   "moving-sale": "/images/market/shop-types/moving-sale.png",
@@ -86,6 +88,7 @@ export type MarketFilterSidebarProps = {
 
 export function MarketFilterSidebar({ activeShopType, activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange, priceCondition }: MarketFilterSidebarProps) {
   const { t } = useLanguage();
+  const priceProgress = priceCondition ? ((priceCondition.maxPrice - priceFilterMinimum) / (priceFilterMaximum - priceFilterMinimum)) * 100 : 100;
 
   return <BrowseFilterSidebar location={
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="market" mainLocationLabel={t("mainLocationLabel")} subLocationLabel={t("subLocationLabel")} mainLocationPlaceholder={t("allNewZealand")} subLocationPlaceholder={t("anySubLocation")} />
@@ -94,11 +97,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block shop-type-filter market-type-filter">
       <h2>{t("marketType")}</h2>
       <div className="filter-list">
-        {marketShopTypes.map(({ value, labelKey, icon, href }) => (
+        {marketShopTypes.map(({ value, labelKey, href }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            {value === "all"
-              ? <i className={`fa-solid ${icon}`} aria-hidden="true" />
-              : <span className="shop-type-illustration"><Image src={marketShopTypeIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>}
+            <span className="shop-type-illustration"><Image src={marketShopTypeIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </a>
         ))}
@@ -120,7 +121,7 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     {priceCondition ? <>
       <section className="filter-block price-filter">
         <h2>{t("maxPrice")}</h2>
-        <input type="range" min={priceFilterMinimum} max={priceFilterMaximum} value={priceCondition.maxPrice} onChange={(event) => priceCondition.onMaxPriceChange(Number(event.target.value))} aria-valuetext={`$${priceCondition.maxPrice.toLocaleString()}`} />
+        <input className="price-filter-range" style={{ "--price-progress": `${priceProgress}%` } as CSSProperties} type="range" min={priceFilterMinimum} max={priceFilterMaximum} value={priceCondition.maxPrice} onChange={(event) => priceCondition.onMaxPriceChange(Number(event.target.value))} aria-valuetext={`$${priceCondition.maxPrice.toLocaleString()}`} />
         <div className="price-range">
           <span>${priceFilterMinimum}</span>
           <span>${priceCondition.maxPrice.toLocaleString()}</span>
