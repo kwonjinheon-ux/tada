@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
@@ -17,6 +18,7 @@ const defaultFilters: ServiceFilterState = { providerType: "all", availability: 
 
 export function ServicesPageClient() {
   const { t, locale } = useLanguage();
+  const searchParams = useSearchParams();
   const text = servicesText(locale);
   const categoryLabels = servicesCategoryLabels(locale);
 
@@ -30,6 +32,12 @@ export function ServicesPageClient() {
   const [notice, setNotice] = useState("");
   const [databaseServices, setDatabaseServices] = useState<ServiceListing[] | null>(null);
   const resultsRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (searchParams.get("submitted") === "pending") {
+      setNotice(locale === "ko" ? "서비스 등록 신청이 접수되었습니다. 검토가 완료되면 공개됩니다." : "Your service listing was submitted and is awaiting review.");
+    }
+  }, [locale, searchParams]);
 
   useEffect(() => {
     let isCurrent = true;
