@@ -6,6 +6,7 @@ import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDra
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -77,6 +78,9 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     setIsFilterOpen(false);
   };
   const chooseView = (mode: ListingViewMode) => { setViewMode(mode); saveListingViewPreference(mode); };
+  const chooseShopType = (nextShopType: ShopType) => {
+    router.push(marketShopTypes.find(({ value }) => value === nextShopType)?.href ?? "/market");
+  };
 
   return <main className="marketplace-page bargain-page market-page-with-bottom-dock">
     <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open filters" closeLabel="Close filters">
@@ -92,12 +96,13 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     </BrowseFilterDrawer>
     {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
     <section className="market-results bargain-results" aria-label="Listings">
+      <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
       <BrowseResultsToolbar
         viewMode={viewMode}
         onViewModeChange={chooseView}
         chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
         activeChipValue={shopType}
-        onChipSelect={(value) => router.push(marketShopTypes.find((shop) => shop.value === value)?.href ?? "/market")}
+        onChipSelect={(value) => chooseShopType(value as ShopType)}
         sortValue={searchParams.get("sort") ?? "newest"}
         sortOptions={marketSortOptions(t)}
         onSortChange={(value) => updateParams({ sort: value === "newest" ? null : value })}

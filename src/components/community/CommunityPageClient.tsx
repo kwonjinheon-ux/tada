@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
-import { CommunityFilterSidebar, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
+import { CommunityFilterSidebar, communityCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
@@ -145,6 +146,14 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
             <span>{t("createPostAction")}</span>
           </Link>
         </div>
+
+        <MobileBrowseCategoryRail
+          ariaLabel={t("categories")}
+          className="community-mobile-category-rail"
+          activeValue={activeCategory}
+          onSelect={(value) => setActiveCategory(value as CommunityCategory)}
+          items={communityCategories.map(({ value, labelKey, icon }) => ({ value, label: t(labelKey), icon, tone: `community-category-${value}` }))}
+        />
 
         <BrowseResultsToolbar
           viewMode={viewMode}

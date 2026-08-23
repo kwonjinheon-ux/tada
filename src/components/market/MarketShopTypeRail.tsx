@@ -1,7 +1,5 @@
-"use client";
-
-import Image from "next/image";
 import { useLanguage } from "@/components/LanguageProvider";
+import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 
 const shopTypePresentation: Record<Exclude<ShopType, "all">, { image: string; tone: string }> = {
@@ -15,21 +13,14 @@ const shopTypePresentation: Record<Exclude<ShopType, "all">, { image: string; to
 export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activeShopType: ShopType; onShopTypeSelect: (shopType: ShopType) => void }) {
   const { t } = useLanguage();
 
-  return (
-    <section className="market-mobile-shop-type-section" aria-label={t("marketType")}>
-      <div className="market-mobile-shop-type-rail" role="tablist" aria-label={t("marketType")}>
-        {marketShopTypes.filter(({ value }) => value !== "all").map(({ labelKey, value }) => {
-          const presentation = shopTypePresentation[value as Exclude<ShopType, "all">];
-          const isActive = activeShopType === value;
-
-          return (
-            <button key={value} className={`market-mobile-shop-type ${presentation.tone} ${isActive ? "is-active" : ""}`} type="button" role="tab" aria-selected={isActive} onClick={() => onShopTypeSelect(value)}>
-              <span className="market-mobile-shop-type-icon"><Image src={presentation.image} alt="" width={44} height={44} sizes="44px" /></span>
-              <strong>{t(labelKey)}</strong>
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <MobileBrowseCategoryRail
+    ariaLabel={t("marketType")}
+    activeValue={activeShopType}
+    onSelect={(value) => onShopTypeSelect(value as ShopType)}
+    items={marketShopTypes.filter(({ value }) => value !== "all").map(({ labelKey, value }) => ({
+      value,
+      label: t(labelKey),
+      ...shopTypePresentation[value as Exclude<ShopType, "all">],
+    }))}
+  />;
 }
