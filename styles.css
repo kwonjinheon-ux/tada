@@ -1582,6 +1582,11 @@ a {
 .community-category-filter .filter-list > button { grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto; }
 .community-category-illustration { width: calc(var(--control-h-md) * 0.7); height: calc(var(--control-h-md) * 0.7); display: grid; place-items: center; }
 .community-category-illustration img { width: 100%; height: 100%; object-fit: contain; }
+.community-category-list .community-category-all .community-category-illustration {
+  border-radius: var(--radius-circle);
+  background: var(--color-primary);
+}
+.community-category-list .community-category-all .community-category-illustration img { display: none; }
 /* Services carries the same per-category icon colours the other rails use, at
    full saturation so each row is identifiable at a glance. */
 .services-type-filter .filter-list > button.services-type-all > i { color: var(--teal-soft-900); }
@@ -8753,6 +8758,11 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .mobile-browse-category-icon i { font-size: var(--text-xl); }
   .mobile-browse-category strong { color: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.25; white-space: nowrap; }
   .community-mobile-category-rail .mobile-browse-category-icon { color: var(--color-brand); }
+  .community-mobile-category-rail .community-category-all .mobile-browse-category-icon {
+    border-radius: var(--radius-circle);
+    background: var(--color-primary);
+  }
+  .community-mobile-category-rail .community-category-all .mobile-browse-category-icon img { display: none; }
 
   .market-toolbar { min-width: 0; overflow: hidden; }
   .market-toolbar-top { min-width: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
