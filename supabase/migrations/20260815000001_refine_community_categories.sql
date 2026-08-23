@@ -5,7 +5,9 @@ set sort_order = sort_order + 1000
 where slug in ('free-stuff', 'lost-found', 'parents-kids', 'jobs-services', 'housing-flatmates', 'study-language', 'clubs-meetups', 'visa', 'working-holiday');
 
 update public.community_categories
-set sort_order = sort_order + 2000
+-- Use a separate range from the legacy categories moved above so the
+-- temporary values remain unique on an already-seeded database.
+set sort_order = sort_order + 3000
 where slug in ('local-noticeboard', 'events', 'qna', 'recommendations', 'together', 'immigration');
 
 insert into public.community_categories (slug, label, sort_order) values

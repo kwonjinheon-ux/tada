@@ -8,6 +8,7 @@ alter table public.market_seller_ratings
 
 alter table public.market_seller_ratings
   drop constraint if exists market_seller_ratings_score_check,
+  drop constraint if exists market_seller_ratings_comment_check,
   add constraint market_seller_ratings_score_check
     check (score >= 0.5 and score <= 5 and score * 2 = trunc(score * 2)),
   add constraint market_seller_ratings_comment_check
@@ -22,6 +23,7 @@ create index if not exists market_seller_ratings_seller_review_idx
 
 grant select on table public.market_seller_ratings to anon, authenticated;
 
+drop policy if exists "Completed trade reviews are readable" on public.market_seller_ratings;
 create policy "Completed trade reviews are readable"
 on public.market_seller_ratings for select to anon, authenticated
 using (true);
@@ -29,6 +31,7 @@ using (true);
 -- A completed sale can be the seller's only listing, so their profile and
 -- avatar must remain visible while its verified reviews are visible.
 drop policy if exists "Published seller profiles are readable" on public.market_seller_profiles;
+drop policy if exists "Marketplace seller profiles are readable" on public.market_seller_profiles;
 create policy "Marketplace seller profiles are readable" on public.market_seller_profiles
 for select to anon, authenticated
 using (
@@ -46,6 +49,7 @@ using (
 );
 
 drop policy if exists "Published seller avatars are readable" on storage.objects;
+drop policy if exists "Marketplace seller avatars are readable" on storage.objects;
 create policy "Marketplace seller avatars are readable" on storage.objects
 for select to anon, authenticated
 using (
@@ -60,6 +64,7 @@ using (
 -- A reviewer only becomes publicly identifiable through their name/avatar
 -- after they publish a verified review.
 drop policy if exists "Commenter profiles are readable" on public.market_comment_profiles;
+drop policy if exists "Commenter and reviewer profiles are readable" on public.market_comment_profiles;
 create policy "Commenter and reviewer profiles are readable"
 on public.market_comment_profiles for select to anon, authenticated
 using (
@@ -76,6 +81,7 @@ using (
 );
 
 drop policy if exists "Commenter avatars are readable" on storage.objects;
+drop policy if exists "Commenter and reviewer avatars are readable" on storage.objects;
 create policy "Commenter and reviewer avatars are readable" on storage.objects
 for select to anon, authenticated
 using (
