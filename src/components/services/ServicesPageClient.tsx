@@ -100,7 +100,10 @@ export function ServicesPageClient() {
   // Services is still a preview, so the rail only filters by category. The rest
   // of the controls carry the shared design without a query behind them yet.
   const visibleServices = useMemo(() => {
-    const sourceServices = databaseServices?.length ? databaseServices : services;
+    // Published services complement the preview catalogue; they must not replace
+    // it when the first real provider registers.
+    const databaseServiceIds = new Set(databaseServices?.map((service) => service.id) ?? []);
+    const sourceServices = databaseServices ? [...databaseServices, ...services.filter((service) => !databaseServiceIds.has(service.id))] : services;
     const matches = sourceServices.filter((service) => (activeCategory === "all" || service.category === activeCategory)
       && (filters.providerType === "all" || service.providerType === filters.providerType)
       && (filters.availability === "all" || service.availability === filters.availability)
