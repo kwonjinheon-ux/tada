@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
@@ -18,6 +18,7 @@ const defaultFilters: ServiceFilterState = { providerType: "all", availability: 
 
 export function ServicesPageClient() {
   const { t, locale } = useLanguage();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const text = servicesText(locale);
   const categoryLabels = servicesCategoryLabels(locale);
@@ -192,7 +193,7 @@ export function ServicesPageClient() {
             const location = service.location ?? listing?.location ?? "New Zealand";
             const price = service.price ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
             const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
-            return <article className="services-listing ui-card" key={service.id}>
+            return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
               <div className="services-listing-top">
                 <div className="services-listing-image"><Image src={service.image} alt={imageAlt} fill sizes="64px" /></div>
                 <div className="services-listing-copy">
@@ -220,7 +221,7 @@ export function ServicesPageClient() {
                   <strong>{price}</strong>
                 </div>
                 <footer>
-                  <button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>
+                  <button type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>
                   <button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="fa-regular fa-message" aria-hidden="true" /> {text.message}</button>
                 </footer>
               </div>

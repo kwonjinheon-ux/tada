@@ -24,6 +24,7 @@ export type ServicesFilterSidebarProps = {
   filters: ServiceFilterState;
   onFilterChange: <Key extends keyof ServiceFilterState>(key: Key, value: ServiceFilterState[Key]) => void;
   onApply: () => void;
+  compact?: boolean;
 };
 
 /**
@@ -31,7 +32,7 @@ export type ServicesFilterSidebarProps = {
  * filter-block sections, shared chip and apply controls — carrying the labels
  * and inputs that only Services has.
  */
-export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange, filters, onFilterChange, onApply }: ServicesFilterSidebarProps) {
+export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLocation, subLocation, onLocationChange, filters, onFilterChange, onApply, compact = false }: ServicesFilterSidebarProps) {
   const { t, locale } = useLanguage();
   const text = servicesText(locale);
   const categoryLabels = servicesCategoryLabels(locale);
@@ -58,19 +59,19 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
       </div>
     </section>
 
-    <section className="filter-block services-choice-filter"><h2>{text.providerType}</h2><div className="condition-chips">{providerTypes.map(({ value, label }) => <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>)}</div></section>
-    <section className="filter-block services-choice-filter"><h2>{text.availability}</h2><div className="condition-chips">{availabilities.map(({ value, label }) => <button key={value} className={filters.availability === value ? "is-selected" : ""} type="button" aria-pressed={filters.availability === value} onClick={() => onFilterChange("availability", value)}>{label}</button>)}</div></section>
+    {!compact ? <><section className="filter-block services-choice-filter"><h2>{text.providerType}</h2><div className="condition-chips">{providerTypes.map(({ value, label }) => <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>)}</div></section>
+      <section className="filter-block services-choice-filter"><h2>{text.availability}</h2><div className="condition-chips">{availabilities.map(({ value, label }) => <button key={value} className={filters.availability === value ? "is-selected" : ""} type="button" aria-pressed={filters.availability === value} onClick={() => onFilterChange("availability", value)}>{label}</button>)}</div></section>
 
-    <section className="filter-block services-quality-filter">
-      <h2>{qualityLabels.heading}</h2>
-      {(["verified", "highlyRated", "fastResponder"] as const).map((key) => <label className="services-filter-toggle" key={key}>
-        <input type="checkbox" checked={filters[key]} onChange={(event) => onFilterChange(key, event.target.checked)} />
-        <span>{qualityLabels[key]}</span>
-      </label>)}
-    </section>
+      <section className="filter-block services-quality-filter">
+        <h2>{qualityLabels.heading}</h2>
+        {(["verified", "highlyRated", "fastResponder"] as const).map((key) => <label className="services-filter-toggle" key={key}>
+          <input type="checkbox" checked={filters[key]} onChange={(event) => onFilterChange(key, event.target.checked)} />
+          <span>{qualityLabels[key]}</span>
+        </label>)}
+      </section>
 
-    <button className="apply-filter-button" type="button" onClick={onApply}>
-      {text.applyFilters}
-    </button>
+      <button className="apply-filter-button" type="button" onClick={onApply}>
+        {text.applyFilters}
+      </button></> : null}
   </BrowseFilterSidebar>;
 }

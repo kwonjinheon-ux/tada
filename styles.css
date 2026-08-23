@@ -10715,6 +10715,40 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .services-listing-details footer button { min-height: var(--control-h-sm); overflow: hidden; padding: 0 var(--space-2); border: 1px solid var(--green-200); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-primary-strong); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-bold); text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .services-listing-details footer button:last-child { border-color: var(--green-150); background: var(--color-primary-soft); }
 .services-listing-details footer button:last-child:hover { background: var(--green-soft-100); }
+.services-listing[role="link"] { cursor: pointer; }
+.services-listing[role="link"]:focus-visible { outline: none; box-shadow: var(--ring-focus-strong); }
+
+.service-profile-page { padding-block: var(--space-6) var(--space-10); background: var(--color-background); }
+.service-profile-shell { display: grid; gap: var(--space-4); }
+.service-profile-back { display: inline-flex; width: fit-content; gap: var(--space-2); align-items: center; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.service-profile-back:hover { color: var(--color-primary-strong); }
+.service-profile-loading, .service-profile-empty { padding: var(--space-6); color: var(--color-muted); }
+.service-profile-empty { display: grid; gap: var(--space-3); }
+.service-profile-empty h1, .service-profile-empty p { margin: 0; }
+.service-profile-hero { display: grid; gap: var(--space-4); padding: var(--space-4); }
+.service-profile-media { min-height: calc(var(--space-12) * 5); overflow: hidden; display: grid; place-items: center; border-radius: var(--radius-md); background: var(--color-surface-soft); color: var(--color-primary-strong); font-size: var(--text-4xl); }
+.service-profile-media img { width: 100%; height: 100%; object-fit: cover; }
+.service-profile-hero-copy { display: grid; align-content: center; gap: var(--space-2); }
+.service-profile-hero-copy > p, .service-profile-hero-copy h1 { margin: 0; }
+.service-profile-hero-copy > p, .service-profile-eyebrow { color: var(--color-primary-strong); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.service-profile-hero-copy h1 { color: var(--color-ink); font-size: var(--text-3xl); line-height: 1.2; }
+.service-profile-rating { display: flex; gap: var(--space-1); align-items: center; color: var(--color-muted); font-size: var(--text-sm); }
+.service-profile-rating > i { color: var(--color-warning); }
+.service-profile-rating > strong { color: var(--color-ink); }
+.service-profile-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.service-profile-actions > a { text-decoration: none; }
+.service-profile-layout { display: grid; gap: var(--space-4); }
+.service-profile-content { display: grid; gap: var(--space-4); }
+.service-profile-section, .service-profile-contact { display: grid; gap: var(--space-3); padding: var(--space-4); }
+.service-profile-section h2, .service-profile-section p, .service-profile-contact h2, .service-profile-contact p { margin: 0; }
+.service-profile-section > p:last-child { color: var(--color-ink-soft); line-height: 1.7; white-space: pre-wrap; }
+.service-profile-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.service-profile-gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); }
+.service-profile-contact { align-content: start; }
+.service-profile-contact h2 { color: var(--color-ink); font-size: var(--text-lg); }
+.service-profile-contact p { display: flex; gap: var(--space-2); align-items: flex-start; color: var(--color-ink-soft); font-size: var(--text-sm); line-height: 1.5; }
+.service-profile-contact i { width: var(--space-4); flex: 0 0 auto; color: var(--color-primary-strong); }
+.service-profile-contact a { color: inherit; }
 
 @media (max-width: 767.98px) {
   .services-listing-top { grid-template-columns: 64px minmax(0, 1fr); }
@@ -10736,6 +10770,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .service-create-page textarea:focus { border-color: rgba(0, 122, 84, .58); box-shadow: 0 0 0 3px rgba(16, 185, 129, .1); }
 .service-create-contact { display: grid; gap: var(--space-3); }
 .service-create-sidebar .post-ad-tips article { min-height: 0; }
+.service-create-workspace { display: block; }
+.service-create-filter-rail { display: none; }
+.service-create-main { min-width: 0; }
 .service-create-information { display: grid; gap: var(--space-3); margin: 0 0 var(--space-4); padding: var(--space-4); border: 1px solid var(--green-150); border-radius: var(--radius-md); background: var(--green-soft-50); }
 .service-create-information article { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--space-2); align-items: start; }
 .service-create-information article > i { color: var(--color-primary-strong); font-size: var(--text-xl); }
@@ -10752,6 +10789,25 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .service-create-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .service-create-contact .post-section-heading { grid-column: 1 / -1; }
   .service-trust-requirements > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .service-profile-hero { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); align-items: stretch; }
+  .service-profile-media { min-height: calc(var(--space-12) * 6); }
+  .service-profile-layout { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
+}
+
+@media (min-width: 1024px) {
+  .service-create-workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+  .service-create-filter-rail { display: block; position: sticky; top: calc(var(--space-6) + var(--control-h-xl)); }
+  .service-create-main .post-ad-create-bar, .service-create-main .post-ad-layout { width: 100%; margin-inline: 0; }
+  .service-create-main .post-ad-layout { grid-template-columns: minmax(0, 1fr); }
+  .service-create-main .post-ad-sidebar { display: none; }
+}
+
+@media (min-width: 1280px) {
+  .service-create-main .post-ad-layout { grid-template-columns: minmax(0, 1fr) 240px; }
+  .service-create-main .post-ad-sidebar { display: grid; }
 }
 
 @media (max-width: 767.98px) {

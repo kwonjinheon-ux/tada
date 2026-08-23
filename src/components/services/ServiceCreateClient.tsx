@@ -5,8 +5,10 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SelectMenu } from "@/components/ui/SelectMenu";
+import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { serviceCategories, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
-import { NZ_MAIN_LOCATIONS, getSubLocations } from "@/data/nzLocations";
+import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
 import { isAcceptedMarketListingImage, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
@@ -30,6 +32,7 @@ export function ServiceCreateClient() {
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [serviceArea, setServiceArea] = useState("Hamilton");
   const [suburb, setSuburb] = useState("");
   const allAreasValue = "__all_nz__";
@@ -140,6 +143,9 @@ export function ServiceCreateClient() {
   };
 
   return <main className="post-ad-page service-create-page">
+    <PageContainer className="service-create-workspace">
+      <aside className="service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
+      <div className="service-create-main">
     <div className="post-ad-create-bar"><Link href="/services"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {copy.back}</Link></div>
     <div className="post-ad-layout">
       <section className="post-ad-card">
@@ -157,5 +163,7 @@ export function ServiceCreateClient() {
       </section>
       <aside className="post-ad-sidebar service-create-sidebar"><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["fa-solid fa-list-check", "fa-solid fa-location-dot", "fa-solid fa-shield-halved"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="fa-solid fa-shield-halved" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["fa-solid fa-file-lines", "fa-solid fa-id-card", "fa-solid fa-circle-check"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="fa-solid fa-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
     </div>
+      </div>
+    </PageContainer>
   </main>;
 }
