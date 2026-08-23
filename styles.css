@@ -1566,6 +1566,9 @@ a {
 .shop-type-filter .filter-list > a.shop-type-2dollarshop > i { color: var(--rose-500); }
 .shop-type-filter .filter-list > a.shop-type-groupbuy > i { color: var(--amber-450); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
+.shop-type-filter .filter-list > a { grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto; }
+.shop-type-illustration { width: var(--control-h-md); height: var(--control-h-md); display: grid; place-items: center; }
+.shop-type-illustration img { width: 100%; height: 100%; object-fit: contain; }
 
 .community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-free-board > i { color: var(--blue-500); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-together > i { color: var(--rose-500); }.community-category-list > button.community-category-parenting > i { color: var(--rose-500); }.community-category-list > button.community-category-immigration > i { color: var(--blue-soft-750); }
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
@@ -8721,6 +8724,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .market-toolbar-top > .market-tools { flex: 0 0 auto; }
   .market-toolbar-top > .market-chip-row { margin-left: 0; overflow: visible; }
   .market-toolbar-top > .market-sort-chip-row { overflow: visible; }
+  .market-toolbar--hide-chips-mobile .market-chip-row { display: none; }
 
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }

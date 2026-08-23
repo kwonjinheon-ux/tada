@@ -26,6 +26,7 @@ export type BrowseResultsToolbarProps = {
   onSortChange?: (value: string) => void;
   sortDisplay?: "select" | "chips";
   resultsLabel?: string;
+  hideChipsOnMobile?: boolean;
 };
 
 /**
@@ -46,6 +47,7 @@ export function BrowseResultsToolbar({
   onSortChange,
   sortDisplay = "select",
   resultsLabel,
+  hideChipsOnMobile = false,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
   const [clickedSort, setClickedSort] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function BrowseResultsToolbar({
     onSortChange?.(value);
   };
 
-  return <div className="market-toolbar">
+  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}`}>
     <div className="market-toolbar-top">
       {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>

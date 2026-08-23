@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { marketFeedResponseSchema } from "@/contracts/api";
@@ -10,6 +9,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
+import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
 import type { Listing } from "@/data/listings";
@@ -249,22 +249,14 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
       <section className="market-results" aria-label="Fresh finds">
-        <div className="browse-intro browse-intro--with-create">
-          <div className="browse-intro-copy">
-            <h1>{t("marketIntroTitle")}</h1>
-            <p>{t("marketIntroDescription")}</p>
-          </div>
-          <Link className="browse-create-button ui-button ui-button--lg" href="/market/create">
-            <i className="fa-solid fa-plus" aria-hidden="true" />
-            <span>{t("createListing")}</span>
-          </Link>
-        </div>
+        <MarketBrowseIntro shopType={shopType} />
 
         <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
 
         <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
+          hideChipsOnMobile
           chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
           activeChipValue={shopType}
           onChipSelect={(value) => chooseShopType(value as ShopType)}

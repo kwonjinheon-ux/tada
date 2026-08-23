@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
@@ -17,6 +18,14 @@ export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey;
   { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "fa-coins", href: "/market/2dollarshop" },
   { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "fa-people-group", href: "/market/groupbuy" },
 ];
+
+export const marketShopTypeIllustrations: Record<Exclude<ShopType, "all">, string> = {
+  secondhand: "/images/market/shop-types/secondhand-exchange.png",
+  "garage-sale": "/images/market/shop-types/garage-sale.png",
+  "moving-sale": "/images/market/shop-types/moving-sale.png",
+  "2dollarshop": "/images/market/shop-types/dollar-shop.png",
+  groupbuy: "/images/market/shop-types/group-buy.png",
+};
 
 const categoryIcons: Record<string, string> = {
   "mobile-phones-tablets": "fa-mobile-screen-button",
@@ -87,7 +96,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
       <div className="filter-list">
         {marketShopTypes.map(({ value, labelKey, icon, href }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" />
+            {value === "all"
+              ? <i className={`fa-solid ${icon}`} aria-hidden="true" />
+              : <span className="shop-type-illustration"><Image src={marketShopTypeIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>}
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </a>
         ))}

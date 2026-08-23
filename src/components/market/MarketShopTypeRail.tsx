@@ -1,13 +1,13 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
-import { marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
+import { marketShopTypeIllustrations, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 
-const shopTypePresentation: Record<Exclude<ShopType, "all">, { image: string; tone: string }> = {
-  secondhand: { image: "/images/market/shop-types/secondhand-exchange.png", tone: "is-trade" },
-  "garage-sale": { image: "/images/market/shop-types/garage-sale.png", tone: "is-garage" },
-  "moving-sale": { image: "/images/market/shop-types/moving-sale.png", tone: "is-moving" },
-  "2dollarshop": { image: "/images/market/shop-types/dollar-shop.png", tone: "is-dollar" },
-  groupbuy: { image: "/images/market/shop-types/group-buy.png", tone: "is-group" },
+const shopTypeTones: Record<Exclude<ShopType, "all">, string> = {
+  secondhand: "is-trade",
+  "garage-sale": "is-garage",
+  "moving-sale": "is-moving",
+  "2dollarshop": "is-dollar",
+  groupbuy: "is-group",
 };
 
 export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activeShopType: ShopType; onShopTypeSelect: (shopType: ShopType) => void }) {
@@ -20,7 +20,8 @@ export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activ
     items={marketShopTypes.filter(({ value }) => value !== "all").map(({ labelKey, value }) => ({
       value,
       label: t(labelKey),
-      ...shopTypePresentation[value as Exclude<ShopType, "all">],
+      image: marketShopTypeIllustrations[value as Exclude<ShopType, "all">],
+      tone: shopTypeTones[value as Exclude<ShopType, "all">],
     }))}
   />;
 }

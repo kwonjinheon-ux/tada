@@ -7,6 +7,7 @@ import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
+import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -96,10 +97,12 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     </BrowseFilterDrawer>
     {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
     <section className="market-results bargain-results" aria-label="Listings">
+      <MarketBrowseIntro shopType={shopType} />
       <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
       <BrowseResultsToolbar
         viewMode={viewMode}
         onViewModeChange={chooseView}
+        hideChipsOnMobile
         chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
         activeChipValue={shopType}
         onChipSelect={(value) => chooseShopType(value as ShopType)}
