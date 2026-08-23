@@ -50,6 +50,20 @@ const marketShortcutIcons: Record<string, string> = {
   "/market/groupbuy": "fa-people-group",
 };
 
+const destinationActions = {
+  market: { primary: "Browse listings", secondary: "Sell something" },
+  community: { primary: "See local posts", secondary: "Start a post" },
+  services: { primary: "Explore services", secondary: "Offer a service" },
+  jobs: { primary: "Coming soon", secondary: null },
+} as const;
+
+const koreanDestinationActions = {
+  market: { primary: "상품 둘러보기", secondary: "판매 등록" },
+  community: { primary: "동네 글 보기", secondary: "글쓰기" },
+  services: { primary: "서비스 보기", secondary: "서비스 등록" },
+  jobs: { primary: "준비중", secondary: null },
+} as const;
+
 const helpCategories = [
   { label: "Food", icon: "fa-utensils" },
   { label: "Repairs", icon: "fa-screwdriver-wrench" },
@@ -230,7 +244,13 @@ export function HomePageClient({
     : { src: "/images/logo.png", width: 1536, height: 1024 };
   const visibleDestinations = isKorean ? koreanDestinations : destinations;
   const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
-  const destinationHeading = isKorean ? "무엇을 도와드릴까요?" : "What do you want to do?";
+  const destinationHeading = isKorean ? "바로 시작하기" : "What do you want to do?";
+  const destinationIntro = isKorean ? null : "Start with the action that fits you best.";
+  const marketHeading = isKorean ? "타다 마켓 둘러보기" : "Browse market your way";
+  const marketDescription = isKorean ? "Tada 마켓을 빠르게 둘러보세요." : "Quick ways to explore Tada Market.";
+  const heroNearbyAction = isKorean ? "내 주변 보기" : "See what's nearby";
+  const heroPostAction = isKorean ? "글 올리기" : "Post something";
+  const heroTrust = isKorean ? "무료 등록  ·  1분이면 충분해요  ·  가까운 이웃과 연결" : "Free to post  ·  Takes about a minute  ·  Local first";
   const visibleTrustItems = isKorean ? koreanTrustItems : trustItems;
   const discoveryListings = nearbyListings.length ? nearbyListings : justListedListings;
   const highlightedCommunityPosts = communityHighlights.length ? communityHighlights : communityPosts;
@@ -265,26 +285,30 @@ export function HomePageClient({
             <div className="home-reference-hero-copy">
               <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
+              <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="fa-solid fa-location-dot" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="fa-solid fa-plus" aria-hidden="true" />{heroPostAction}</Link></div>
+              <small className="home-reference-hero-trust"><i className="fa-regular fa-heart" aria-hidden="true" />{heroTrust}</small>
             </div>
             <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
 
           <section className="home-reference-destinations" aria-label="Explore Tada">
             <h2>{destinationHeading}</h2>
+            {destinationIntro ? <p>{destinationIntro}</p> : null}
             <div className="home-reference-destination-grid">
               {visibleDestinations.map((destination) => {
                 const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
+                const action = (isKorean ? koreanDestinationActions : destinationActions)[destination.tone as keyof typeof destinationActions];
                 return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
                   <i className={`fa-solid ${destination.icon}`} aria-hidden="true" />
                   <span><strong>{destination.title}</strong>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
-                  {destination.comingSoon ? <em>{text.soon}</em> : <i className="fa-solid fa-chevron-right" aria-hidden="true" />}
+                  <footer className={isKorean ? "is-korean" : undefined}><strong>{destination.comingSoon ? action.primary : action.primary} {!destination.comingSoon ? <i className="fa-solid fa-arrow-right" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="fa-solid fa-plus" aria-hidden="true" /> {action.secondary}</small> : <em>{text.soon}</em>}</footer>
                 </Link>
               })}
             </div>
           </section>
 
           <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
-            <header><p>{text.marketPrompt}</p><h2 id="market-shortcuts-title">{text.marketTitle}</h2></header>
+            <header><p>{marketHeading}</p><h2 id="market-shortcuts-title">{marketDescription}</h2></header>
             <div>
               {visibleMarketShortcuts.map((shortcut) => {
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
@@ -295,7 +319,7 @@ export function HomePageClient({
             </div>
           </section>
 
-          <HomeListingRail listings={discoveryListings} locationLabel={locationLabel} savedListingIds={savedListingIds} text={text} />
+          <HomeListingRail listings={discoveryListings} locationLabel={locationLabel} savedListingIds={savedListingIds} text={isKorean ? { ...text, nearby: "우리동네 새상품" } : text} />
 
           <section className="home-reference-sponsor ui-card" aria-labelledby="sponsor-title">
             <div><p>{text.sponsored}</p><h2 id="sponsor-title">{text.sponsorTitle}</h2><span>{text.sponsorDescription}</span><Link href="/market">{text.sponsorAction} <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link></div>
