@@ -11,7 +11,7 @@ import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
+import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
@@ -48,7 +48,7 @@ export function ServicesPageClient() {
 
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,created_at,service_listing_photos(storage_path,display_order)")
+        .select("id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
         .order("created_at", { ascending: false });
       if (error || !data || !isCurrent) return;
 
@@ -61,7 +61,8 @@ export function ServicesPageClient() {
       const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
       setDatabaseServices(data.map((listing) => {
         const photos = [...(listing.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
-        const image = photos[0]?.storage_path ? signedByPath.get(photos[0].storage_path) : undefined;
+        const galleryPhoto = photos.find((photo) => photo.photo_kind !== "logo") ?? photos.find((photo) => photo.photo_kind === "logo");
+        const image = galleryPhoto?.storage_path ? signedByPath.get(galleryPhoto.storage_path) : undefined;
         return {
           id: listing.id,
           category: listing.category_slug as ServiceCategoryId,
@@ -74,7 +75,7 @@ export function ServicesPageClient() {
           reviewCount: listing.review_count,
           image: image ?? "/images/home/journey-services.png",
           location: listing.service_areas[0] ?? "New Zealand",
-          price: locale === "ko" ? "가격 문의" : "Contact for pricing",
+          price: listing.price_from === null || !listing.price_unit ? (locale === "ko" ? "가격 문의" : "Contact for pricing") : serviceDetailsSummary(listing.category_slug as ServiceCategoryId, { price_from: String(listing.price_from), price_unit: listing.price_unit }, locale)[0]?.value ?? (locale === "ko" ? "가격 문의" : "Contact for pricing"),
           imageAlt: listing.provider_name,
         } satisfies ServiceListing;
       }));

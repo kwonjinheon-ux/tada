@@ -230,3 +230,103 @@ export function servicesText(locale: string): ServicesText {
 export function servicesCategoryLabels(locale: string): Record<ServiceCategoryId, string> {
   return serviceCategoryLabels[locale === "ko" ? "ko" : "en"];
 }
+
+type ServiceDetailLocale = "en" | "ko";
+type LocalizedText = Record<ServiceDetailLocale, string>;
+
+type ServiceDetailOptionDefinition = {
+  value: string;
+  label: LocalizedText;
+};
+
+type ServiceDetailFieldDefinition = {
+  key: string;
+  input: "text" | "number" | "select";
+  label: LocalizedText;
+  placeholder?: LocalizedText;
+  options?: readonly ServiceDetailOptionDefinition[];
+  min?: number;
+  step?: number;
+};
+
+export type ServiceDetailField = Omit<ServiceDetailFieldDefinition, "label" | "placeholder" | "options"> & {
+  label: string;
+  placeholder?: string;
+  options?: ReadonlyArray<{ value: string; label: string }>;
+};
+
+const localized = (en: string, ko: string): LocalizedText => ({ en, ko });
+const option = (value: string, en: string, ko: string): ServiceDetailOptionDefinition => ({ value, label: localized(en, ko) });
+
+const priceFields = (units: readonly ServiceDetailOptionDefinition[]): readonly ServiceDetailFieldDefinition[] => [
+  { key: "price_from", input: "number", label: localized("Starting price (NZD)", "시작 금액 (NZD)"), placeholder: localized("e.g. 45", "예: 45"), min: 0, step: 1 },
+  { key: "price_unit", input: "select", label: localized("Price unit", "금액 기준"), options: units },
+];
+
+const serviceDetailDefinitions: Record<ServiceCategoryId, readonly ServiceDetailFieldDefinition[]> = {
+  cleaning: [
+    { key: "service_type", input: "select", label: localized("Catering service", "케이터링 서비스"), options: [option("catering", "Catering", "케이터링"), option("private-chef", "Private chef", "프라이빗 셰프"), option("meal-prep", "Meal preparation", "식사 준비"), option("food-stall", "Food stall", "푸드 스톨")] },
+    { key: "minimum_guests", input: "number", label: localized("Minimum guests or orders", "최소 인원 또는 주문 수"), placeholder: localized("e.g. 10", "예: 10"), min: 1, step: 1 },
+    ...priceFields([option("person", "Per person", "1인 기준"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  handyman: [
+    { key: "service_type", input: "select", label: localized("Specialty", "전문 서비스"), options: [option("repairs", "Repairs", "수리"), option("assembly", "Assembly", "조립"), option("painting", "Painting", "페인트"), option("electrical", "Electrical", "전기"), option("plumbing", "Plumbing", "배관")] },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("visit", "Per visit", "방문당"), option("job", "Per job", "건당")]),
+  ],
+  moving: [
+    { key: "service_type", input: "select", label: localized("Moving service", "이사 서비스"), options: [option("house-move", "House move", "가정 이사"), option("furniture", "Furniture delivery", "가구 운송"), option("packing", "Packing help", "포장 도움"), option("rubbish", "Rubbish removal", "폐기물 처리")] },
+    { key: "vehicle", input: "select", label: localized("Vehicle", "차량"), options: [option("ute", "Ute", "유트"), option("van", "Van", "밴"), option("truck", "Truck", "트럭"), option("multiple", "Multiple vehicles", "복수 차량")] },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  auto: [
+    { key: "service_type", input: "select", label: localized("Automotive service", "자동차 서비스"), options: [option("repair", "Repairs", "정비·수리"), option("service", "Routine servicing", "정기 점검"), option("detailing", "Detailing", "디테일링"), option("tyres", "Tyres", "타이어")] },
+    { key: "vehicle_types", input: "text", label: localized("Vehicle types served", "가능 차량"), placeholder: localized("e.g. Cars, SUVs", "예: 승용차, SUV") },
+    ...priceFields([option("job", "Per job", "건당"), option("hour", "Per hour", "시간당"), option("quote", "Quote", "견적")]),
+  ],
+  gardening: [
+    { key: "service_type", input: "select", label: localized("Garden service", "정원 서비스"), options: [option("lawn", "Lawn mowing", "잔디 관리"), option("tidy", "Garden tidy-up", "정원 정리"), option("hedges", "Hedge trimming", "울타리 전정"), option("landscaping", "Landscaping", "조경") ] },
+    { key: "garden_size", input: "select", label: localized("Typical garden size", "주요 작업 규모"), options: [option("small", "Small", "소형"), option("medium", "Medium", "중형"), option("large", "Large", "대형"), option("any", "Any size", "규모 무관")] },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("visit", "Per visit", "방문당"), option("job", "Per job", "건당")]),
+  ],
+  tutoring: [
+    { key: "subject", input: "text", label: localized("Subject", "과목"), placeholder: localized("e.g. NCEA Level 2 Maths", "예: NCEA Level 2 수학") },
+    { key: "learner_level", input: "select", label: localized("Learner level", "학습 수준"), options: [option("primary", "Primary school", "초등"), option("secondary", "Secondary school", "중·고등"), option("ncea", "NCEA", "NCEA"), option("adult", "Adult", "성인")] },
+    { key: "lesson_duration", input: "select", label: localized("Lesson duration", "수업 시간"), options: [option("30", "30 minutes", "30분"), option("45", "45 minutes", "45분"), option("60", "60 minutes", "60분"), option("90", "90 minutes", "90분")] },
+    ...priceFields([option("hour", "Per hour", "시간당")]),
+  ],
+  beauty: [
+    { key: "service_type", input: "select", label: localized("Beauty service", "뷰티 서비스"), options: [option("hair", "Hair", "헤어"), option("nails", "Nails", "네일"), option("makeup", "Makeup", "메이크업"), option("massage", "Massage", "마사지") ] },
+    { key: "appointment_duration", input: "select", label: localized("Appointment length", "시술 시간"), options: [option("30", "30 minutes", "30분"), option("60", "60 minutes", "60분"), option("90", "90 minutes", "90분"), option("120", "120 minutes", "120분")] },
+    ...priceFields([option("session", "Per session", "회당"), option("hour", "Per hour", "시간당")]),
+  ],
+  petCare: [
+    { key: "service_type", input: "select", label: localized("Pet care service", "펫 케어 서비스"), options: [option("sitting", "Pet sitting", "펫시팅"), option("walking", "Dog walking", "산책"), option("grooming", "Grooming", "미용"), option("boarding", "Boarding", "호텔·위탁") ] },
+    { key: "pet_types", input: "text", label: localized("Pets cared for", "돌봄 가능 반려동물"), placeholder: localized("e.g. Dogs, cats", "예: 강아지, 고양이") },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("day", "Per day", "하루당"), option("visit", "Per visit", "방문당")]),
+  ],
+};
+
+export function serviceDetailFields(category: ServiceCategoryId, locale: string): ServiceDetailField[] {
+  const language: ServiceDetailLocale = locale === "ko" ? "ko" : "en";
+  return serviceDetailDefinitions[category].map((field) => ({
+    ...field,
+    label: field.label[language],
+    placeholder: field.placeholder?.[language],
+    options: field.options?.map((item) => ({ value: item.value, label: item.label[language] })),
+  }));
+}
+
+export function serviceDetailsSummary(category: ServiceCategoryId, details: Record<string, unknown>, locale: string): Array<{ label: string; value: string }> {
+  return serviceDetailFields(category, locale).flatMap((field) => {
+    const rawValue = details[field.key];
+    if (typeof rawValue !== "string" || !rawValue) return [];
+    if (field.key === "price_from") return [];
+    if (field.key === "price_unit") {
+      const amount = details.price_from;
+      if (typeof amount !== "string" || !amount) return [];
+      const unit = field.options?.find((option) => option.value === rawValue)?.label ?? rawValue;
+      return [{ label: locale === "ko" ? "가격" : "Price", value: `$${Number(amount).toLocaleString()} · ${unit}` }];
+    }
+    return [{ label: field.label, value: field.options?.find((option) => option.value === rawValue)?.label ?? rawValue }];
+  });
+}
