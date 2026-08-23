@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
@@ -27,6 +28,17 @@ export const communityCategories: Array<{ value: CommunityCategory; labelKey: Tr
   { value: "immigration", labelKey: "communityCategoryImmigration", icon: "fa-plane-departure" },
 ];
 
+export const communityCategoryIllustrations: Record<CommunityCategory, string> = {
+  all: "/images/community/categories/all.png",
+  qna: "/images/community/categories/qna.png",
+  "free-board": "/images/community/categories/free-board.png",
+  "local-noticeboard": "/images/community/categories/local-noticeboard.png",
+  events: "/images/community/categories/events.png",
+  recommendations: "/images/community/categories/recommendations.png",
+  together: "/images/community/categories/together.png",
+  immigration: "/images/community/categories/immigration.png",
+};
+
 // This is the single category catalogue used by both community browsing and
 // publishing.  The database migration seeds the same stable slugs, while the
 // labels remain localisable at the UI boundary.
@@ -52,9 +64,9 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
     <section className="filter-block community-category-filter">
       <h2>{t("categories")}</h2>
       <div className="filter-list community-category-list">
-        {communityCategories.map(({ value, labelKey, icon }) => {
+        {communityCategories.map(({ value, labelKey }) => {
           return <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" />
+            <span className="community-category-illustration"><Image src={communityCategoryIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </button>;
         })}

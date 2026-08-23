@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
-import { CommunityFilterSidebar, communityCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { CommunityBrowseIntro } from "@/components/community/CommunityBrowseIntro";
+import { CommunityFilterSidebar, communityCategories, communityCategoryIllustrations, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
@@ -136,23 +136,14 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       </BrowseFilterDrawer>
 
       <section className="market-results community-results" aria-label="Community posts">
-        <div className="browse-intro browse-intro--with-create">
-          <div className="browse-intro-copy">
-            <h1>{t("communityIntroTitle")}</h1>
-            <p>{t("communityIntroDescription")}</p>
-          </div>
-          <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
-            <i className="fa-solid fa-plus" aria-hidden="true" />
-            <span>{t("createPostAction")}</span>
-          </Link>
-        </div>
+        <CommunityBrowseIntro category={activeCategory} />
 
         <MobileBrowseCategoryRail
           ariaLabel={t("categories")}
           className="community-mobile-category-rail"
           activeValue={activeCategory}
           onSelect={(value) => setActiveCategory(value as CommunityCategory)}
-          items={communityCategories.map(({ value, labelKey, icon }) => ({ value, label: t(labelKey), icon, tone: `community-category-${value}` }))}
+          items={communityCategories.map(({ value, labelKey }) => ({ value, label: t(labelKey), image: communityCategoryIllustrations[value], tone: `community-category-${value}` }))}
         />
 
         <BrowseResultsToolbar
