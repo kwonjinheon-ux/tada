@@ -2,7 +2,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { marketShopTypeIllustrations, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 
-const shopTypeTones: Record<Exclude<ShopType, "all">, string> = {
+const shopTypeTones: Record<ShopType, string> = {
+  all: "is-all",
   secondhand: "is-trade",
   "garage-sale": "is-garage",
   "moving-sale": "is-moving",
@@ -17,11 +18,11 @@ export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activ
     ariaLabel={t("marketType")}
     activeValue={activeShopType}
     onSelect={(value) => onShopTypeSelect(value as ShopType)}
-    items={marketShopTypes.filter(({ value }) => value !== "all").map(({ labelKey, value }) => ({
+    items={marketShopTypes.map(({ labelKey, value }) => ({
       value,
       label: t(labelKey),
-      image: marketShopTypeIllustrations[value as Exclude<ShopType, "all">],
-      tone: shopTypeTones[value as Exclude<ShopType, "all">],
+      image: marketShopTypeIllustrations[value],
+      tone: shopTypeTones[value],
     }))}
   />;
 }

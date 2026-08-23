@@ -8748,7 +8748,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .mobile-browse-category { min-height: calc(var(--control-h-xl) + var(--control-h-md)); display: grid; flex: 0 0 108px; place-items: center; gap: var(--space-1); padding: var(--space-1); border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-ink); font: inherit; cursor: pointer; scroll-snap-align: start; transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast); }
   .mobile-browse-category:hover, .mobile-browse-category.is-active { border-color: var(--color-brand); background: var(--color-primary-soft); transform: translateY(calc(var(--space-1) * -0.5)); }
   .mobile-browse-category:focus-visible { outline: none; box-shadow: var(--ring-focus); }
-  .mobile-browse-category-icon { width: calc(var(--control-h-xl) * 0.84); height: calc(var(--control-h-xl) * 0.84); display: grid; place-items: center; }
+  .mobile-browse-category-icon { width: var(--control-h-xl); height: var(--control-h-xl); display: grid; place-items: center; }
   .mobile-browse-category-icon img { width: 100%; height: 100%; object-fit: contain; }
   .mobile-browse-category-icon i { font-size: var(--text-xl); }
   .mobile-browse-category strong { color: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.25; white-space: nowrap; }
