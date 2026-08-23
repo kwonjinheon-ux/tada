@@ -1584,7 +1584,6 @@ a {
 .community-category-illustration img { width: 100%; height: 100%; object-fit: contain; }
 .community-category-list .community-category-free-board .community-category-illustration,
 .community-category-list .community-category-local-noticeboard .community-category-illustration { overflow: hidden; }
-.community-category-list .community-category-free-board .community-category-illustration img { transform: scale(1.2); }
 .community-category-list .community-category-local-noticeboard .community-category-illustration img { transform: scale(1.35); }
 /* Services carries the same per-category icon colours the other rails use, at
    full saturation so each row is identifiable at a glance. */
@@ -8774,7 +8773,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .community-mobile-category-rail .mobile-browse-category-icon { color: var(--color-brand); }
   .community-mobile-category-rail .community-category-free-board .mobile-browse-category-icon,
   .community-mobile-category-rail .community-category-local-noticeboard .mobile-browse-category-icon { overflow: hidden; }
-  .community-mobile-category-rail .community-category-free-board .mobile-browse-category-icon img { transform: scale(1.2); }
   .community-mobile-category-rail .community-category-local-noticeboard .mobile-browse-category-icon img { transform: scale(1.35); }
 
   .market-toolbar { min-width: 0; overflow: hidden; }
