@@ -7,9 +7,11 @@ import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
+import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId } from "@/data/services";
+import { serviceBadgeLabel, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
@@ -26,7 +28,50 @@ export function ServicesPageClient() {
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
   const [notice, setNotice] = useState("");
+  const [databaseServices, setDatabaseServices] = useState<ServiceListing[] | null>(null);
   const resultsRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+    void (async () => {
+      const supabase = createBrowserSupabaseClient();
+      if (!supabase) return;
+
+      const { data, error } = await supabase
+        .from("service_listings")
+        .select("id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,created_at,service_listing_photos(storage_path,display_order)")
+        .order("created_at", { ascending: false });
+      if (error || !data || !isCurrent) return;
+
+      const photoPaths = data.flatMap((listing) => (listing.service_listing_photos ?? []).map((photo) => photo.storage_path));
+      const { data: signedPhotos } = photoPaths.length
+        ? await supabase.storage.from("service-listing-images").createSignedUrls(photoPaths, 60 * 60)
+        : { data: [] };
+      if (!isCurrent) return;
+
+      const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
+      setDatabaseServices(data.map((listing) => {
+        const photos = [...(listing.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
+        const image = photos[0]?.storage_path ? signedByPath.get(photos[0].storage_path) : undefined;
+        return {
+          id: listing.id,
+          category: listing.category_slug as ServiceCategoryId,
+          badges: listing.rating >= 4.5 ? ["highlyRated"] : ["new"],
+          provider: listing.provider_name,
+          phone: listing.phone,
+          providerType: listing.provider_type === "business" ? "businesses" : "individuals",
+          availability: "this-week",
+          rating: Number(listing.rating),
+          reviewCount: listing.review_count,
+          image: image ?? "/images/home/journey-services.png",
+          location: listing.service_areas[0] ?? "New Zealand",
+          price: locale === "ko" ? "가격 문의" : "Contact for pricing",
+          imageAlt: listing.provider_name,
+        } satisfies ServiceListing;
+      }));
+    })();
+    return () => { isCurrent = false; };
+  }, [locale]);
 
   // The header's category trigger drives every browse surface's drawer.
   useEffect(() => {
@@ -45,14 +90,15 @@ export function ServicesPageClient() {
   // Services is still a preview, so the rail only filters by category. The rest
   // of the controls carry the shared design without a query behind them yet.
   const visibleServices = useMemo(() => {
-    const matches = services.filter((service) => (activeCategory === "all" || service.category === activeCategory)
+    const sourceServices = databaseServices?.length ? databaseServices : services;
+    const matches = sourceServices.filter((service) => (activeCategory === "all" || service.category === activeCategory)
       && (filters.providerType === "all" || service.providerType === filters.providerType)
       && (filters.availability === "all" || service.availability === filters.availability)
       && (!filters.verified || service.badges.includes("verified"))
       && (!filters.highlyRated || service.badges.includes("highlyRated"))
       && (!filters.fastResponder || service.badges.includes("fastResponder")));
     return [...matches].sort((a, b) => sort === "highest-rated" ? b.rating - a.rating || b.reviewCount - a.reviewCount : sort === "most-reviewed" ? b.reviewCount - a.reviewCount : sort === "newest" ? Number(b.badges.includes("new")) - Number(a.badges.includes("new")) : b.rating * b.reviewCount - a.rating * a.reviewCount);
-  }, [activeCategory, filters, sort]);
+  }, [activeCategory, databaseServices, filters, sort]);
 
   // Picking a category closes the rail and takes the reader straight to the
   // filtered list, which on a phone is otherwise hidden behind the drawer.
@@ -90,6 +136,14 @@ export function ServicesPageClient() {
           </Link>
         </div>
 
+        <MobileBrowseCategoryRail
+          ariaLabel={text.serviceType}
+          className="services-mobile-category-rail"
+          activeValue={activeCategory}
+          onSelect={(value) => chooseCategory(value as ServiceCategoryId | "all")}
+          items={[{ value: "all", label: t("all"), icon: "fa-border-all", tone: "services-category-all" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon, tone: `services-category-${id}` }))]}
+        />
+
         <div className="services-category-grid" role="group" aria-label={text.serviceType}>
           {serviceCategories.map(({ id, icon }) => (
             <button key={id} className={activeCategory === id ? "services-category is-active" : "services-category"} type="button" aria-pressed={activeCategory === id} onClick={() => chooseCategory(activeCategory === id ? "all" : id)}>
@@ -109,9 +163,11 @@ export function ServicesPageClient() {
           ]}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
+          chipStyle="sort"
           sortValue={sort}
           sortOptions={locale === "ko" ? [{ value: "recommended", label: "추천순" }, { value: "highest-rated", label: "평점 높은순" }, { value: "most-reviewed", label: "후기 많은순" }, { value: "newest", label: "최신순" }] : [{ value: "recommended", label: "Recommended" }, { value: "highest-rated", label: "Highest rated" }, { value: "most-reviewed", label: "Most reviewed" }, { value: "newest", label: "Newest" }]}
           onSortChange={setSort}
+          sortDisplay="chips"
           resultsLabel={text.serviceCount(visibleServices.length)}
         />
 
@@ -124,10 +180,13 @@ export function ServicesPageClient() {
 
         <div className="services-card-grid">
           {visibleServices.map((service) => {
-            const listing = text.listings[service.id];
+            const listing = text.listings[service.id as keyof typeof text.listings];
+            const location = service.location ?? listing?.location ?? "New Zealand";
+            const price = service.price ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
+            const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
             return <article className="services-listing ui-card" key={service.id}>
               <div className="services-listing-top">
-                <div className="services-listing-image"><Image src={service.image} alt={listing.imageAlt} fill sizes="64px" /></div>
+                <div className="services-listing-image"><Image src={service.image} alt={imageAlt} fill sizes="64px" /></div>
                 <div className="services-listing-copy">
                   <header>
                     <div>
@@ -146,11 +205,11 @@ export function ServicesPageClient() {
               <div className="services-listing-details">
                 <div className="services-listing-contact">
                   <span><i className="fa-solid fa-phone" aria-hidden="true" /> {service.phone}</span>
-                  <span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {listing.location}</span>
+                  <span><i className="fa-solid fa-location-dot" aria-hidden="true" /> {location}</span>
                 </div>
                 <div className="services-listing-meta">
                   <span><i className="fa-solid fa-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span>
-                  <strong>{listing.price}</strong>
+                  <strong>{price}</strong>
                 </div>
                 <footer>
                   <button type="button" onClick={() => setNotice(`${text.viewProfile}: ${service.provider}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>

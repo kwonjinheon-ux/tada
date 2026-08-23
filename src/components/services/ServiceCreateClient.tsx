@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { serviceCategories, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { NZ_MAIN_LOCATIONS, getSubLocations } from "@/data/nzLocations";
+import { isAcceptedMarketListingImage, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type MultiSelectOption = { value: string; label: string };
 
@@ -15,13 +18,16 @@ function MultiSelectDropdown({ label, options, selected, onChange, helper, place
 }
 
 export function ServiceCreateClient() {
+  const router = useRouter();
   const { locale } = useLanguage();
   const isKorean = locale === "ko";
   const categoryLabels = servicesCategoryLabels(locale);
   const [category, setCategory] = useState<ServiceCategoryId | "">("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [photoNames, setPhotoNames] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [notice, setNotice] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [serviceAreas, setServiceAreas] = useState<string[]>(["Hamilton"]);
   const [suburbs, setSuburbs] = useState<string[]>([]);
   const allAreasValue = "__all_nz__";
@@ -38,7 +44,56 @@ export function ServiceCreateClient() {
     back: "Back to services", title: "List your service", description: "Tell local customers about the help you offer.", information: [["fa-solid fa-credit-card", "No payments on Tada", "You deal directly with customers."], ["fa-solid fa-shield-halved", "Listings are reviewed", "We check for safety and quality."], ["fa-solid fa-circle-check", "Verification is through your Profile", "It isn’t automatic when you list a service."]], category: "Service category", details: "Service details", name: "Business or service name", namePlaceholder: "e.g. Hamilton Handy Helpers", descriptionLabel: "About your service", descriptionPlaceholder: "Tell customers what you offer and a little about your experience.", photos: "Add photos", photoHint: "Add up to five photos of your work or logo.", contact: "Contact and service area", serviceArea: "Service area", suburb: "Suburb (optional)", providerType: "Provider type", localBusiness: "Local business", soleTrader: "Sole trader", phone: "Contact phone", email: "Email (optional)", website: "Website or social link (optional)", trustTitle: "Trust & safety requirements", trustDescription: "Help us keep Tada safe and trustworthy for everyone.", trust: [["fa-solid fa-briefcase", "Real business or genuine service only", "List active services you provide."], ["fa-solid fa-address-card", "Accurate contact details required", "Customers need reliable ways to reach you."], ["fa-solid fa-shield-halved", "No prohibited or unsafe services", "Illegal, unsafe, or misleading services are not allowed."], ["fa-solid fa-clipboard-check", "All listings reviewed before going live", "We review every listing to protect our community."]], trustAlert: "Listings that don’t meet Tada guidelines may be declined or removed.", publish: "Submit service listing", note: "Service listings are reviewed before they go live.", terms: "I agree to Tada’s Terms and Community Guidelines.", tipsTitle: "Tips for a great listing", tips: ["Be clear about the help you can provide.", "Add your service area so nearby customers can find you.", "An accurate introduction and contact details build trust."], verifiedTitle: "Verified badge", verifiedIntro: "Verification is managed through your Profile, not during listing.", verifiedSteps: [["1", "Create your listing", "Add your service details and submit."], ["2", "Complete Profile verification", "Add your ID, business information, and documents."], ["3", "Tada reviews and applies the badge", "Once approved, your listing can show as Verified."]], verificationAction: "Go to Profile verification", verificationStatus: "Status: Verification not started", sent: "Your service listing is ready to submit. Full service registration is coming soon.",
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setNotice(copy.sent); };
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!category || !acceptedTerms || isSubmitting) return;
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setNotice(isKorean ? "서비스 등록을 지금 사용할 수 없습니다." : "Service registration is unavailable right now."); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setNotice(isKorean ? "서비스를 등록하려면 로그인해 주세요." : "Please sign in to list your service."); return; }
+
+    const formData = new FormData(event.currentTarget);
+    const providerName = String(formData.get("service-name") ?? "").trim();
+    const description = String(formData.get("service-description") ?? "").trim();
+    const phone = String(formData.get("service-phone") ?? "").trim();
+    const email = String(formData.get("service-email") ?? "").trim();
+    const website = String(formData.get("service-website") ?? "").trim();
+    if (!providerName || !description || !phone) return;
+
+    setIsSubmitting(true);
+    setNotice("");
+    const { data: listing, error: listingError } = await supabase.from("service_listings").insert({
+      owner_id: user.id,
+      category_slug: category,
+      provider_name: providerName,
+      description,
+      provider_type: formData.get("provider-type") === "sole-trader" ? "sole_trader" : "business",
+      service_areas: serviceAreas.includes(allAreasValue) ? ["All New Zealand"] : serviceAreas,
+      suburbs: suburbs.includes(allSuburbsValue) ? [] : suburbs,
+      phone,
+      email: email || null,
+      website: website || null,
+    }).select("id").single();
+    if (listingError || !listing) { setNotice(listingError?.message ?? (isKorean ? "서비스 등록에 실패했습니다." : "Unable to submit your service.")); setIsSubmitting(false); return; }
+
+    const uploadErrors: string[] = [];
+    for (const [index, source] of photos.entries()) {
+      try {
+        const file = await normalizeMarketListingImage(source);
+        const path = `${user.id}/${listing.id}/${crypto.randomUUID()}.webp`;
+        const { error: uploadError } = await supabase.storage.from("service-listing-images").upload(path, file, { contentType: file.type, upsert: false });
+        if (uploadError) throw uploadError;
+        const { error: photoError } = await supabase.from("service_listing_photos").insert({ listing_id: listing.id, owner_id: user.id, storage_path: path, original_name: source.name, mime_type: file.type, size_bytes: file.size, display_order: index });
+        if (photoError) throw photoError;
+      } catch (error) {
+        uploadErrors.push(error instanceof Error ? error.message : "upload failed");
+      }
+    }
+    setIsSubmitting(false);
+    if (uploadErrors.length) { setNotice(isKorean ? "서비스 등록은 접수됐지만 일부 사진을 저장하지 못했습니다." : "Your service was submitted, but some photos could not be saved."); return; }
+    router.push("/services");
+    router.refresh();
+  };
 
   return <main className="post-ad-page service-create-page">
     <div className="post-ad-create-bar"><Link href="/services"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {copy.back}</Link></div>
@@ -48,12 +103,12 @@ export function ServiceCreateClient() {
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["fa-solid fa-credit-card", "fa-solid fa-shield-halved", "fa-solid fa-circle-check"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
         <form className="post-ad-form" onSubmit={submit}>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => setCategory(id)}><i className={`fa-solid ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>
-          <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{copy.name}</label><input id="service-name" required minLength={2} maxLength={100} placeholder={copy.namePlaceholder} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div></section>
-          <section className="post-photo-field service-create-photo"><div className="post-section-heading"><span>3</span><h2>{copy.photos}</h2></div><label className="service-photo-picker" htmlFor="service-photos"><i className="fa-regular fa-images" aria-hidden="true" /><span>{copy.photoHint}</span><input id="service-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => setPhotoNames(Array.from(event.target.files ?? []).slice(0, 5).map((file) => file.name))} /></label>{photoNames.length ? <p className="service-photo-names">{photoNames.join(" · ")}</p> : null}</section>
-          <section className="post-location-grid service-create-contact"><div className="post-section-heading"><span>4</span><h2>{copy.contact}</h2></div><MultiSelectDropdown label={copy.serviceArea} options={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} selected={serviceAreas} onChange={selectAreas} helper={isKorean ? "여러 지역을 선택할 수 있습니다." : "You can select more than one area."} placeholder={isKorean ? "지역 선택" : "Select service area"} /><MultiSelectDropdown label={copy.suburb} options={[{ value: allSuburbsValue, label: isKorean ? "전체 세부 지역" : "All suburbs" }, ...availableSuburbs.map((suburb) => ({ value: suburb, label: suburb }))]} selected={suburbs} onChange={selectSuburbs} helper={isKorean ? "여러 세부 지역을 선택할 수 있습니다." : "You can select more than one suburb."} placeholder={isKorean ? "세부 지역 선택" : "Select suburb"} /><div className="post-field service-provider-type-field"><label>{copy.providerType}</label><div className="service-provider-type"><label><input type="radio" name="provider-type" value="business" defaultChecked />{copy.localBusiness}</label><label><input type="radio" name="provider-type" value="sole-trader" />{copy.soleTrader}</label></div></div><div className="post-field"><label htmlFor="service-phone">{copy.phone}</label><input id="service-phone" type="tel" required placeholder="021 123 4567" /></div><div className="post-field"><label htmlFor="service-email">{copy.email}</label><input id="service-email" type="email" placeholder="you@example.co.nz" /></div><div className="post-field"><label htmlFor="service-website">{copy.website}</label><input id="service-website" type="url" placeholder="https://yourwebsite.co.nz" /></div></section>
+          <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{copy.name}</label><input id="service-name" name="service-name" required minLength={2} maxLength={100} placeholder={copy.namePlaceholder} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" name="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div></section>
+          <section className="post-photo-field service-create-photo"><div className="post-section-heading"><span>3</span><h2>{copy.photos}</h2></div><label className="service-photo-picker" htmlFor="service-photos"><i className="fa-regular fa-images" aria-hidden="true" /><span>{copy.photoHint}</span><input id="service-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => { const next = Array.from(event.target.files ?? []).filter(isAcceptedMarketListingImage).slice(0, 5); setPhotos(next); setPhotoNames(next.map((file) => file.name)); }} /></label>{photoNames.length ? <p className="service-photo-names">{photoNames.join(" · ")}</p> : null}</section>
+          <section className="post-location-grid service-create-contact"><div className="post-section-heading"><span>4</span><h2>{copy.contact}</h2></div><MultiSelectDropdown label={copy.serviceArea} options={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} selected={serviceAreas} onChange={selectAreas} helper={isKorean ? "여러 지역을 선택할 수 있습니다." : "You can select more than one area."} placeholder={isKorean ? "지역 선택" : "Select service area"} /><MultiSelectDropdown label={copy.suburb} options={[{ value: allSuburbsValue, label: isKorean ? "전체 세부 지역" : "All suburbs" }, ...availableSuburbs.map((suburb) => ({ value: suburb, label: suburb }))]} selected={suburbs} onChange={selectSuburbs} helper={isKorean ? "여러 세부 지역을 선택할 수 있습니다." : "You can select more than one suburb."} placeholder={isKorean ? "세부 지역 선택" : "Select suburb"} /><div className="post-field service-provider-type-field"><label>{copy.providerType}</label><div className="service-provider-type"><label><input type="radio" name="provider-type" value="business" defaultChecked />{copy.localBusiness}</label><label><input type="radio" name="provider-type" value="sole-trader" />{copy.soleTrader}</label></div></div><div className="post-field"><label htmlFor="service-phone">{copy.phone}</label><input id="service-phone" name="service-phone" type="tel" required placeholder="021 123 4567" /></div><div className="post-field"><label htmlFor="service-email">{copy.email}</label><input id="service-email" name="service-email" type="email" placeholder="you@example.co.nz" /></div><div className="post-field"><label htmlFor="service-website">{copy.website}</label><input id="service-website" name="service-website" type="url" placeholder="https://yourwebsite.co.nz" /></div></section>
           <section className="service-trust-requirements"><div className="post-section-heading"><span>5</span><h2>{copy.trustTitle}</h2></div><p>{copy.trustDescription}</p><div>{copy.trust.map(([, title, body], index) => <article key={title}><i className={["fa-solid fa-briefcase", "fa-solid fa-address-card", "fa-solid fa-shield-halved", "fa-solid fa-clipboard-check"][index]} aria-hidden="true" /><span><strong>{title}</strong><small>{body}</small></span></article>)}</div><aside><i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {copy.trustAlert}</aside></section>
           {notice ? <p className="post-create-status" role="status">{notice}</p> : null}
-          <div className="post-submit-row service-create-submit"><label className="terms-row"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /><span>{isKorean ? <><Link href="/terms">이용약관</Link> 및 <Link href="/community">커뮤니티 가이드라인</Link>에 동의합니다.</> : <>I agree to Tada’s <Link href="/terms">Terms</Link> and <Link href="/community">Community Guidelines</Link>.</>}</span></label><button className="post-submit-button" type="submit" disabled={!category || !acceptedTerms}><span>{copy.publish}</span></button></div>
+          <div className="post-submit-row service-create-submit"><label className="terms-row"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /><span>{isKorean ? <><Link href="/terms">이용약관</Link> 및 <Link href="/community">커뮤니티 가이드라인</Link>에 동의합니다.</> : <>I agree to Tada’s <Link href="/terms">Terms</Link> and <Link href="/community">Community Guidelines</Link>.</>}</span></label><button className="post-submit-button" type="submit" disabled={!category || !acceptedTerms || isSubmitting}><span>{isSubmitting ? (isKorean ? "등록 중..." : "Submitting...") : copy.publish}</span></button></div>
         </form>
       </section>
       <aside className="post-ad-sidebar service-create-sidebar"><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["fa-solid fa-list-check", "fa-solid fa-location-dot", "fa-solid fa-shield-halved"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="fa-solid fa-shield-halved" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["fa-solid fa-file-lines", "fa-solid fa-id-card", "fa-solid fa-circle-check"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="fa-solid fa-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>

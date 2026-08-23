@@ -10514,6 +10514,17 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .services-category:nth-child(7) span { background: var(--rose-soft-100); color: var(--rose-800); }
 .services-category:nth-child(8) span { background: var(--amber-50); color: var(--amber-700); }
 
+.services-mobile-category-rail .mobile-browse-category-icon { color: var(--color-brand); }
+.services-mobile-category-rail .services-category-all .mobile-browse-category-icon { color: var(--teal-soft-900); }
+.services-mobile-category-rail .services-category-cleaning .mobile-browse-category-icon { color: var(--amber-700); }
+.services-mobile-category-rail .services-category-handyman .mobile-browse-category-icon { color: var(--blue-650); }
+.services-mobile-category-rail .services-category-moving .mobile-browse-category-icon { color: var(--green-700); }
+.services-mobile-category-rail .services-category-auto .mobile-browse-category-icon { color: var(--rose-800); }
+.services-mobile-category-rail .services-category-gardening .mobile-browse-category-icon { color: var(--green-700); }
+.services-mobile-category-rail .services-category-tutoring .mobile-browse-category-icon { color: var(--violet-750); }
+.services-mobile-category-rail .services-category-beauty .mobile-browse-category-icon { color: var(--rose-800); }
+.services-mobile-category-rail .services-category-petCare .mobile-browse-category-icon { color: var(--amber-700); }
+
 .services-listing-copy h3,
 .services-listing-copy p,
 .services-provider-promo h2,
@@ -10735,6 +10746,10 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .service-create-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .service-create-contact .post-section-heading { grid-column: 1 / -1; }
   .service-trust-requirements > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767.98px) {
+  .services-category-grid { display: none; }
 }
 
 .services-sponsor-banner {

@@ -7,7 +7,7 @@ export type TrustPointId = "verified" | "payments" | "support";
 export type ServiceBadge = "verified" | "highlyRated" | "topRated" | "fastResponder" | "new" | "sponsored" | "popular";
 
 export type ServiceListing = {
-  id: ServiceId;
+  id: string;
   category: ServiceCategoryId;
   badges: ServiceBadge[];
   provider: string;
@@ -17,6 +17,9 @@ export type ServiceListing = {
   rating: number;
   reviewCount: number;
   image: string;
+  location?: string;
+  price?: string;
+  imageAlt?: string;
 };
 
 export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> = [
