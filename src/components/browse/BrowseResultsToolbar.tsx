@@ -25,6 +25,7 @@ export type BrowseResultsToolbarProps = {
   sortOptions?: BrowseSortOption[];
   onSortChange?: (value: string) => void;
   sortDisplay?: "select" | "chips";
+  chipStyle?: "category" | "sort";
   resultsLabel?: string;
   hideChipsOnMobile?: boolean;
 };
@@ -46,17 +47,25 @@ export function BrowseResultsToolbar({
   sortOptions,
   onSortChange,
   sortDisplay = "select",
+  chipStyle = "category",
   resultsLabel,
   hideChipsOnMobile = false,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
   const [clickedSort, setClickedSort] = useState<string | null>(null);
+  const [clickedChip, setClickedChip] = useState<string | null>(null);
   const showSort = Boolean(sortOptions?.length && onSortChange);
 
   const chooseSort = (value: string) => {
     setClickedSort(value);
     window.setTimeout(() => setClickedSort(null), 420);
     onSortChange?.(value);
+  };
+
+  const chooseChip = (value: string) => {
+    setClickedChip(value);
+    window.setTimeout(() => setClickedChip(null), 420);
+    onChipSelect?.(value);
   };
 
   return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}`}>
@@ -70,15 +79,15 @@ export function BrowseResultsToolbar({
         </button>
       </div> : null}
 
-      {chips.length ? <div className="market-chip-row" aria-label={t("quickCategories")}>
+      {chips.length ? <div className={`market-chip-row${chipStyle === "sort" ? " market-chip-row--sort" : ""}`} aria-label={t("quickCategories")}>
         {chips.map((chip) => {
           const isSelected = chip.value === activeChipValue;
           return <button
             key={chip.value}
-            className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : ""].filter(Boolean).join(" ")}
+            className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : "", clickedChip === chip.value ? "is-clicking" : ""].filter(Boolean).join(" ")}
             type="button"
             aria-pressed={isSelected}
-            onClick={() => onChipSelect?.(chip.value)}
+            onClick={() => chooseChip(chip.value)}
           >
             {chip.label}
           </button>;

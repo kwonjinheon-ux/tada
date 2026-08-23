@@ -1868,11 +1868,16 @@ a {
   color: var(--neutral-50);
 }
 
-.market-sort-chip-row button { background: var(--neutral-200); color: var(--color-ink-soft); transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast); }
-.market-sort-chip-row button:hover { animation: market-sort-chip-bounce 420ms ease-out; background: var(--neutral-150); }
-.market-sort-chip-row button.is-selected { background: var(--color-brand); color: var(--color-on-primary); box-shadow: inset 0 0 0 1px var(--color-brand); font-weight: var(--weight-semibold); }
-.market-sort-chip-row button.is-clicking { animation: market-sort-chip-press 420ms cubic-bezier(.2, .8, .2, 1); }
-.market-sort-chip-row button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.market-sort-chip-row button,
+.market-chip-row--sort button { background: var(--neutral-200); color: var(--color-ink-soft); transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast); }
+.market-sort-chip-row button:hover,
+.market-chip-row--sort button:hover { animation: market-sort-chip-bounce 420ms ease-out; background: var(--neutral-150); }
+.market-sort-chip-row button.is-selected,
+.market-chip-row--sort button.is-selected { background: var(--color-brand); color: var(--color-on-primary); box-shadow: inset 0 0 0 1px var(--color-brand); font-weight: var(--weight-semibold); }
+.market-sort-chip-row button.is-clicking,
+.market-chip-row--sort button.is-clicking { animation: market-sort-chip-press 420ms cubic-bezier(.2, .8, .2, 1); }
+.market-sort-chip-row button:focus-visible,
+.market-chip-row--sort button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 
 @keyframes market-sort-chip-bounce {
   0%, 100% { transform: translateY(0) scale(1); }
@@ -1888,20 +1893,20 @@ a {
 
 /* Chips and the view toggle lift on hover and press back in, so every browse
    surface answers a pointer the same way. */
-.market-chip-row button,
+.market-chip-row:not(.market-chip-row--sort) button,
 .view-toggle button {
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
-.market-chip-row button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.market-chip-row button:active { transform: translateY(0) scale(0.97); box-shadow: none; }
-.market-chip-row button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.market-chip-row:not(.market-chip-row--sort) button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.market-chip-row:not(.market-chip-row--sort) button:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+.market-chip-row:not(.market-chip-row--sort) button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 
 .view-toggle button:hover { transform: translateY(-1px); }
 .view-toggle button:active { transform: translateY(0) scale(0.92); }
 
 /* The chip is waiting on a route change; keep it visibly busy. */
-.market-chip-row button.is-applying { opacity: 0.72; transform: scale(0.97); }
+.market-chip-row:not(.market-chip-row--sort) button.is-applying { opacity: 0.72; transform: scale(0.97); }
 
 /* Market-type chips retain a subtle cue from their matching sidebar icon. */
 .market-chip-row button.market-type-all { background: var(--green-soft-50); color: var(--teal-soft-900); }
@@ -1921,7 +1926,12 @@ a {
   font-weight: var(--weight-bold);
 }
 
-.market-chip-row button.is-applying {
+.market-chip-row--sort button.is-selected {
+  box-shadow: inset 0 0 0 1px var(--color-brand);
+  font-weight: var(--weight-semibold);
+}
+
+.market-chip-row:not(.market-chip-row--sort) button.is-applying {
   animation: market-chip-apply 420ms ease-out;
 }
 
@@ -1933,31 +1943,36 @@ a {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .market-chip-row button:not(.is-selected):hover {
+  .market-chip-row:not(.market-chip-row--sort) button:not(.is-selected):hover {
     background: var(--blue-150);
     color: var(--blue-800);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .market-chip-row button,
+  .market-chip-row:not(.market-chip-row--sort) button,
   .market-sort-chip-row button,
+  .market-chip-row--sort button,
   .view-toggle button {
     transition: none;
   }
 
-  .market-chip-row button:hover,
-  .market-chip-row button:active,
+  .market-chip-row:not(.market-chip-row--sort) button:hover,
+  .market-chip-row:not(.market-chip-row--sort) button:active,
   .market-sort-chip-row button:hover,
   .market-sort-chip-row button.is-clicking,
+  .market-chip-row--sort button:hover,
+  .market-chip-row--sort button.is-clicking,
   .view-toggle button:hover,
   .view-toggle button:active {
     transform: none;
   }
 
-  .market-chip-row button.is-applying,
+  .market-chip-row:not(.market-chip-row--sort) button.is-applying,
   .market-sort-chip-row button:hover,
-  .market-sort-chip-row button.is-clicking {
+  .market-sort-chip-row button.is-clicking,
+  .market-chip-row--sort button:hover,
+  .market-chip-row--sort button.is-clicking {
     animation: none;
   }
 }

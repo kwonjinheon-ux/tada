@@ -152,6 +152,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           chips={communityChips.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           activeChipValue={activeChip}
           onChipSelect={setActiveChip}
+          chipStyle="sort"
           resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
         />
 
