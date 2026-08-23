@@ -10798,8 +10798,12 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 @media (min-width: 1024px) {
-  .service-create-workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
-  .service-create-filter-rail { display: block; position: sticky; top: calc(var(--space-6) + var(--control-h-xl)); }
+  /* Keep the service creation rail in the same viewport-anchored position as
+     the Market and Community rails. The rail owns its scroll so it remains
+     usable beside a long form instead of travelling with the form content. */
+  .service-create-workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: calc(100dvh - var(--desktop-header-height)); gap: 0; align-items: start; }
+  .service-create-filter-rail { display: block; position: sticky; top: var(--desktop-header-height); align-self: stretch; height: calc(100dvh - var(--desktop-header-height)); max-height: none; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-4) var(--space-3) var(--space-6); border-right: 1px solid var(--neutral-250); background: var(--neutral-50); }
+  .service-create-main { padding-left: var(--space-5); }
   .service-create-main .post-ad-create-bar, .service-create-main .post-ad-layout { width: 100%; margin-inline: 0; }
   .service-create-main .post-ad-layout { grid-template-columns: minmax(0, 1fr); }
   .service-create-main .post-ad-sidebar { display: none; }
