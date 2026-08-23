@@ -14,6 +14,15 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type PhotoPreview = { id: string; file: File; url: string };
 
+// Store a single, portable phone representation. The field still accepts the
+// usual spaces, dashes and parentheses people use while entering NZ numbers.
+function normalizeServicePhone(value: string) {
+  const trimmed = value.trim();
+  const hasInternationalPrefix = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+  return `${hasInternationalPrefix ? "+" : ""}${digits}`;
+}
+
 function submissionErrorMessage(error: unknown, isKorean: boolean) {
   const details = typeof error === "object" && error ? error as { code?: string; message?: string } : undefined;
   if (details?.code === "23503") return isKorean ? "서비스 등록 전 프로필을 먼저 완료해 주세요." : "Complete your profile before submitting a service listing.";
@@ -113,7 +122,7 @@ export function ServiceCreateClient() {
       const formData = new FormData(form);
       const providerName = String(formData.get("service-name") ?? "").trim();
       const description = String(formData.get("service-description") ?? "").trim();
-      const phone = String(formData.get("service-phone") ?? "").trim();
+      const phone = normalizeServicePhone(String(formData.get("service-phone") ?? ""));
       const email = String(formData.get("service-email") ?? "").trim();
       const website = String(formData.get("service-website") ?? "").trim();
       const address = String(formData.get("service-address") ?? "").trim();
@@ -126,7 +135,11 @@ export function ServiceCreateClient() {
       const detailValues = Object.fromEntries(detailFields.map((field) => [field.key, String(formData.get(`service-detail-${field.key}`) ?? "").trim()]));
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
-      if (!providerName || !description || !phone || !address || !weekdayHours || detailFields.some((field) => !detailValues[field.key]) || !Number.isFinite(priceFrom) || priceFrom < 0 || !priceUnit || (foundedYear !== null && (!Number.isInteger(foundedYear) || foundedYear < 1800 || foundedYear > new Date().getFullYear()))) {
+      if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
+        setNotice(isKorean ? "전화번호를 7자리 이상 입력해 주세요." : "Enter a phone number with at least 7 digits.");
+        return;
+      }
+      if (!providerName || !description || !address || !weekdayHours || detailFields.some((field) => !detailValues[field.key]) || !Number.isFinite(priceFrom) || priceFrom < 0 || !priceUnit || (foundedYear !== null && (!Number.isInteger(foundedYear) || foundedYear < 1800 || foundedYear > new Date().getFullYear()))) {
         setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.");
         return;
       }
