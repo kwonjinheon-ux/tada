@@ -10873,7 +10873,6 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 @media (min-width: 1280px) {
   .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr) 300px; }
   .service-create-support-rail { display: grid; grid-column: 3; align-self: start; margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); padding: var(--space-2); }
-  .service-profile-support-rail { grid-column: 3; align-self: start; position: sticky; top: calc(var(--desktop-header-height) + var(--space-3)); margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); }
 }
 
 @media (max-width: 767.98px) {
@@ -11023,6 +11022,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
    the same so the promo and trust panels leave the results column alone. */
 @media (min-width: 1200px) {
   .marketplace-page.services-page { grid-template-columns: 272px minmax(0, 1fr) 300px; gap: 0; }
+  /* A service profile uses the same persistent three-column browse shell as
+     the listing and service-create views: filters left, detail centre, and
+     contact actions right. Keep these placements explicit so profile routes
+     do not depend on auto-placement when the page evolves. */
+  .marketplace-page.services-page.service-profile-page { grid-template-columns: 272px minmax(0, 1fr) 300px; gap: 0; }
+  .service-profile-filter-rail { display: grid; grid-column: 1; }
+  .service-profile-main { grid-column: 2; }
+  .service-profile-support-rail { display: grid; grid-column: 3; align-self: start; position: sticky; top: calc(var(--desktop-header-height) + var(--space-3)); margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); }
   .services-side-rail { grid-template-columns: minmax(0, 1fr); align-self: start; margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2); padding: var(--space-2); }
   .services-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 }
