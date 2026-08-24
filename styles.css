@@ -9133,6 +9133,14 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .manage-listings-heading h1 { margin: 0; color: var(--blue-900); font-size: var(--text-4xl); font-weight: var(--weight-medium); }
 .manage-listings-heading span { display: block; margin-top: 5px; color: var(--blue-soft-650); font-size: var(--text-md); }
 .manage-listings-heading > a, .manage-listings-empty > a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--control-h-lg); padding: 0 15px; border-radius: var(--radius-sm); background: var(--green-700); color: var(--neutral-50); font-size: var(--text-md); font-weight: var(--weight-semibold); text-decoration: none; }
+.manage-listings-category-tabs { display: flex; gap: var(--space-2); overflow-x: auto; margin: 0 0 var(--space-5); padding-bottom: var(--space-1); scrollbar-width: none; }
+.manage-listings-category-tabs::-webkit-scrollbar { display: none; }
+.manage-listings-category-tab { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 1px solid var(--blue-soft-250); border-radius: var(--radius-pill); background: var(--neutral-100); color: var(--blue-700); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease; }
+.manage-listings-category-tab:hover { transform: translateY(-1px); border-color: var(--green-450); background: var(--green-soft-50); }
+.manage-listings-category-tab:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }
+.manage-listings-category-tab.is-active { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
+.manage-listings-category-tab b { display: inline-grid; min-width: 20px; min-height: 20px; place-items: center; border-radius: var(--radius-pill); background: var(--blue-soft-150); color: var(--blue-750); font-size: var(--text-xs); }
+.manage-listings-category-tab.is-active b { background: color-mix(in srgb, var(--color-on-primary) 20%, transparent); color: inherit; }
 .manage-listings-grid { border-top: 1px solid var(--neutral-250); }
 
 /* Shared listing row. Wishlist and Manage Listings present the same object, so

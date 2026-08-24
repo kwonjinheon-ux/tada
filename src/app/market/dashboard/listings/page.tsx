@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { ManageListingsCategoryTabs, type ManageListingsCategory } from "@/components/dashboard/ManageListingsCategoryTabs";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { formatMarketPrice } from "@/lib/market/format-price";
@@ -23,7 +24,9 @@ function statusLabel(status: ListingRow["status"]) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
-export default async function ManageListingsPage() {
+export default async function ManageListingsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+  const requestedCategory = (await searchParams).category;
+  const activeCategory: ManageListingsCategory = requestedCategory === "market" || requestedCategory === "bargain" || requestedCategory === "services" ? requestedCategory : "all";
   const user = await getServerUser();
   if (!user) redirect("/login?redirectTo=%2Fmarket%2Fdashboard%2Flistings");
   const supabase = await createServerSupabaseClient();
@@ -58,12 +61,15 @@ export default async function ManageListingsPage() {
   for (const photo of (servicePhotoRows ?? []) as ServicePhotoRow[]) if (photo.photo_kind !== "logo" && !servicePrimaryPhotoByListing.has(photo.listing_id)) servicePrimaryPhotoByListing.set(photo.listing_id, photo.storage_path);
   const serviceSignedPhotos = await getSignedStorageImages("service-listing-images", [...new Set(servicePrimaryPhotoByListing.values())], "thumbnail");
   const totalListings = listings.length + bargainListings.length + serviceListings.length;
+  const visibleTotal = activeCategory === "market" ? listings.length : activeCategory === "bargain" ? bargainListings.length : activeCategory === "services" ? serviceListings.length : totalListings;
+  const createHref = activeCategory === "services" ? "/services/create" : activeCategory === "bargain" ? "/market/create/bargain" : "/market/create";
 
   return <main className="marketplace-page dashboard-page dashboard-layout manage-listings-page">
     <DashboardSidebar context="market" active="Manage Listings" />
     <section className="dashboard-content manage-listings-content">
-      <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{totalListings} <TranslatedText translationKey="totalListings" /></span></div><Link href="/market/create"><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
-      {totalListings ? <div className="manage-listings-grid">{serviceListings.map((listing) => {
+      <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span></div><Link href={createHref}><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
+      <ManageListingsCategoryTabs activeCategory={activeCategory} counts={{ all: totalListings, market: listings.length, bargain: bargainListings.length, services: serviceListings.length }} />
+      {visibleTotal ? <div className="manage-listings-grid">{(activeCategory === "all" || activeCategory === "services") && serviceListings.map((listing) => {
         const imageUrl = serviceSignedPhotos.get(servicePrimaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
         return <article className="listing-row" key={`service-${listing.id}`}>
           <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
@@ -74,7 +80,7 @@ export default async function ManageListingsPage() {
           </div>
           <ServiceOwnerActions serviceId={listing.id} providerName={listing.provider_name} compact />
         </article>;
-      })}{listings.map((listing) => {
+      })}{(activeCategory === "all" || activeCategory === "market") && listings.map((listing) => {
         const imageUrl = signedPhotos.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
         return <article className="listing-row" key={listing.id}>
           <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
@@ -85,7 +91,7 @@ export default async function ManageListingsPage() {
           </div>
           <ManageListingActions id={listing.id} title={listing.title} status={listing.status} />
         </article>;
-      })}{bargainListings.map((listing) => {
+      })}{(activeCategory === "all" || activeCategory === "bargain") && bargainListings.map((listing) => {
         const imageUrl = bargainSignedPhotos.get(bargainPrimaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
         const manageHref = isMultiItemBargain(listing.bargain_type) ? `/market/${listing.id}` : `/market/${listing.id}/edit`;
         return <article className="listing-row" key={`bargain-${listing.id}`}>

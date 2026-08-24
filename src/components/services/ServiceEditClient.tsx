@@ -7,7 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { serviceCategories, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type EditableService = { id: string; category: ServiceCategoryId; providerName: string; description: string; providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[]; phone: string; email: string; website: string; streetAddress: string; weekdayHours: string; saturdayHours: string; sundayHours: string; foundedYear: string };
+type EditableService = { id: string; category: ServiceCategoryId; providerName: string; businessName: string; description: string; providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[]; phone: string; email: string; website: string; streetAddress: string; weekdayHours: string; saturdayHours: string; sundayHours: string; foundedYear: string };
 
 export function ServiceEditClient({ serviceId }: { serviceId: string }) {
   const router = useRouter();
@@ -25,10 +25,10 @@ export function ServiceEditClient({ serviceId }: { serviceId: string }) {
       if (!supabase) { if (active) setNotice(isKorean ? "서비스 관리를 사용할 수 없습니다." : "Service management is unavailable."); return; }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace(`/login?redirectTo=${encodeURIComponent(`/services/${serviceId}/edit`)}`); return; }
-      const { data, error } = await supabase.from("service_listings").select("id,category_slug,provider_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year").eq("id", serviceId).eq("owner_id", user.id).maybeSingle();
+      const { data, error } = await supabase.from("service_listings").select("id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year").eq("id", serviceId).eq("owner_id", user.id).maybeSingle();
       if (!active) return;
       if (error || !data) { setNotice(isKorean ? "내 서비스만 수정할 수 있습니다." : "Only your own services can be edited."); return; }
-      setService({ id: data.id, category: data.category_slug as ServiceCategoryId, providerName: data.provider_name, description: data.description, providerType: data.provider_type, serviceAreas: data.service_areas ?? [], suburbs: data.suburbs ?? [], phone: data.phone, email: data.email ?? "", website: data.website ?? "", streetAddress: data.street_address ?? "", weekdayHours: data.weekday_hours ?? "", saturdayHours: data.saturday_hours ?? "", sundayHours: data.sunday_hours ?? "", foundedYear: data.founded_year ? String(data.founded_year) : "" });
+      setService({ id: data.id, category: data.category_slug as ServiceCategoryId, providerName: data.provider_name, businessName: data.business_name ?? data.provider_name, description: data.description, providerType: data.provider_type, serviceAreas: data.service_areas ?? [], suburbs: data.suburbs ?? [], phone: data.phone, email: data.email ?? "", website: data.website ?? "", streetAddress: data.street_address ?? "", weekdayHours: data.weekday_hours ?? "", saturdayHours: data.saturday_hours ?? "", sundayHours: data.sunday_hours ?? "", foundedYear: data.founded_year ? String(data.founded_year) : "" });
     })();
     return () => { active = false; };
   }, [isKorean, router, serviceId]);

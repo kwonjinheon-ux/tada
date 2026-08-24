@@ -11,7 +11,7 @@ import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type ServiceProfile = {
-  id: string; ownerId: string | null; provider: string; category: ServiceCategoryId; description: string;
+  id: string; ownerId: string | null; provider: string; businessName: string; category: ServiceCategoryId; description: string;
   providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[];
   phone: string; email: string | null; website: string | null; streetAddress: string | null;
   weekdayHours: string | null; saturdayHours: string | null; sundayHours: string | null;
@@ -24,7 +24,7 @@ function previewProfile(serviceId: string, isKorean: boolean): ServiceProfile | 
   const service = services.find((item) => item.id === serviceId);
   if (!service) return null;
   return {
-    id: service.id, ownerId: null, provider: service.provider, category: service.category,
+    id: service.id, ownerId: null, provider: service.provider, businessName: service.provider, category: service.category,
     description: isKorean ? "지역 고객에게 믿을 수 있는 서비스를 제공하는 Tada 서비스 제공자입니다. 필요한 내용을 편하게 문의해 주세요." : "A trusted local Tada provider ready to help with your next job. Get in touch to discuss what you need.",
     providerType: service.providerType === "businesses" ? "business" : "sole_trader",
     serviceAreas: ["Hamilton"], suburbs: [], phone: service.phone, email: null, website: null,
@@ -43,12 +43,12 @@ function ServiceProfileContactCard({
   return (
     <section className="service-profile-contact ui-card">
       <header className="service-profile-contact-header">
-        {profile.logo ? <img className="service-profile-contact-logo" src={profile.logo} alt={`${profile.provider} logo`} /> : (
+        {profile.logo ? <img className="service-profile-contact-logo" src={profile.logo} alt={`${profile.businessName} logo`} /> : (
           <span className="service-profile-contact-logo service-profile-contact-logo--fallback" aria-hidden="true"><i className="fa-solid fa-briefcase" /></span>
         )}
         <div>
           <p className="service-profile-eyebrow">{isKorean ? "연락처 및 위치" : "Contact & location"}</p>
-          <h2>{profile.provider}</h2>
+          <h2>{profile.businessName}</h2>
           <span>{categoryLabel}</span>
         </div>
       </header>
@@ -82,7 +82,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       if (!supabase) { if (isCurrent) setIsLoading(false); return; }
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
         .eq("id", serviceId).maybeSingle();
       if (error || !data || !isCurrent) { if (isCurrent) setIsLoading(false); return; }
       const photos = [...(data.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
@@ -95,7 +95,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       const { data: { user } } = await supabase.auth.getUser();
       setViewerId(user?.id ?? null);
       setProfile({
-        id: data.id, ownerId: data.owner_id, provider: data.provider_name, category: data.category_slug as ServiceCategoryId,
+        id: data.id, ownerId: data.owner_id, provider: data.provider_name, businessName: data.business_name ?? data.provider_name, category: data.category_slug as ServiceCategoryId,
         description: data.description, providerType: data.provider_type, serviceAreas: data.service_areas ?? [],
         suburbs: data.suburbs ?? [], phone: data.phone, email: data.email, website: data.website,
         streetAddress: data.street_address, weekdayHours: data.weekday_hours, saturdayHours: data.saturday_hours,

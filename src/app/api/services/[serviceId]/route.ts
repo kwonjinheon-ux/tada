@@ -48,6 +48,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
   const payload = await request.json().catch(() => null) as Record<string, unknown> | null;
   if (!payload) return NextResponse.json({ error: "Enter valid service details." }, { status: 400 });
   const providerName = optionalText(payload.providerName, 100);
+  const businessName = optionalText(payload.businessName, 100);
   const description = optionalText(payload.description, 2000);
   const phone = normalizePhone(payload.phone);
   const category = typeof payload.category === "string" && serviceCategories.has(payload.category) ? payload.category : null;
@@ -62,13 +63,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
   const website = optionalText(payload.website, 500);
   const foundedYear = typeof payload.foundedYear === "number" && Number.isInteger(payload.foundedYear) && payload.foundedYear >= 1800 && payload.foundedYear <= 2100 ? payload.foundedYear : null;
 
-  if (!providerName || !description || !phone || !category || !providerType || !serviceAreas.length || !streetAddress || !weekdayHours) {
+  if (!providerName || !businessName || !description || !phone || !category || !providerType || !serviceAreas.length || !streetAddress || !weekdayHours) {
     return NextResponse.json({ error: "Complete the required service details before saving." }, { status: 400 });
   }
 
   const { serviceId } = await params;
   const { data: listing, error } = await supabase.from("service_listings").update({
-    category_slug: category, provider_name: providerName, description, provider_type: providerType,
+    category_slug: category, provider_name: providerName, business_name: businessName, description, provider_type: providerType,
     service_areas: serviceAreas, suburbs, phone, email, website, street_address: streetAddress,
     weekday_hours: weekdayHours, saturday_hours: saturdayHours, sunday_hours: sundayHours, founded_year: foundedYear,
   }).eq("id", serviceId).eq("owner_id", user.id).select("id").maybeSingle();
