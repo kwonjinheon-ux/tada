@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
+import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { getServerUser } from "@/lib/auth-server";
@@ -15,6 +16,8 @@ export const metadata = { title: "Manage Listings" };
 type ListingRow = { id: string; title: string; price_cents: number; status: "published" | "pending" | "sold" | "archived"; created_at: string };
 type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
 type BargainListingRow = ListingRow & { bargain_type: BargainListingType };
+type ServiceListingRow = { id: string; provider_name: string; category_slug: string; status: "pending" | "published" | "hidden" | "archived"; created_at: string };
+type ServicePhotoRow = { listing_id: string; storage_path: string; display_order: number; photo_kind: string };
 
 function statusLabel(status: ListingRow["status"]) {
   return status.charAt(0).toUpperCase() + status.slice(1);
@@ -32,6 +35,10 @@ export default async function ManageListingsPage() {
     ? await supabase.from("bargain_listings").select("id,title,price_cents,status,created_at,bargain_type").eq("owner_id", user.id).order("created_at", { ascending: false })
     : { data: [] };
   const bargainListings = (bargainListingRows ?? []) as BargainListingRow[];
+  const { data: serviceListingRows } = supabase
+    ? await supabase.from("service_listings").select("id,provider_name,category_slug,status,created_at").eq("owner_id", user.id).order("created_at", { ascending: false })
+    : { data: [] };
+  const serviceListings = (serviceListingRows ?? []) as ServiceListingRow[];
   const { data: photoRows } = supabase && listings.length
     ? await supabase.from("market_listing_photos").select("listing_id,storage_path,display_order").in("listing_id", listings.map((listing) => listing.id)).order("display_order", { ascending: true })
     : { data: [] };
@@ -44,13 +51,30 @@ export default async function ManageListingsPage() {
   const bargainPrimaryPhotoByListing = new Map<string, string>();
   for (const photo of (bargainPhotoRows ?? []) as PhotoRow[]) if (!bargainPrimaryPhotoByListing.has(photo.listing_id)) bargainPrimaryPhotoByListing.set(photo.listing_id, photo.storage_path);
   const bargainSignedPhotos = await getSignedStorageImages("bargain-listing-images", [...new Set(bargainPrimaryPhotoByListing.values())], "thumbnail");
-  const totalListings = listings.length + bargainListings.length;
+  const { data: servicePhotoRows } = supabase && serviceListings.length
+    ? await supabase.from("service_listing_photos").select("listing_id,storage_path,display_order,photo_kind").in("listing_id", serviceListings.map((listing) => listing.id)).order("display_order", { ascending: true })
+    : { data: [] };
+  const servicePrimaryPhotoByListing = new Map<string, string>();
+  for (const photo of (servicePhotoRows ?? []) as ServicePhotoRow[]) if (photo.photo_kind !== "logo" && !servicePrimaryPhotoByListing.has(photo.listing_id)) servicePrimaryPhotoByListing.set(photo.listing_id, photo.storage_path);
+  const serviceSignedPhotos = await getSignedStorageImages("service-listing-images", [...new Set(servicePrimaryPhotoByListing.values())], "thumbnail");
+  const totalListings = listings.length + bargainListings.length + serviceListings.length;
 
   return <main className="marketplace-page dashboard-page dashboard-layout manage-listings-page">
     <DashboardSidebar context="market" active="Manage Listings" />
     <section className="dashboard-content manage-listings-content">
       <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{totalListings} <TranslatedText translationKey="totalListings" /></span></div><Link href="/market/create"><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
-      {totalListings ? <div className="manage-listings-grid">{listings.map((listing) => {
+      {totalListings ? <div className="manage-listings-grid">{serviceListings.map((listing) => {
+        const imageUrl = serviceSignedPhotos.get(servicePrimaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
+        return <article className="listing-row" key={`service-${listing.id}`}>
+          <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
+          <div className="listing-row-body">
+            <div className="listing-row-title"><h2>{listing.provider_name}</h2><span className={`is-${listing.status}`}>{listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}</span></div>
+            <strong className="listing-row-price">Service · {listing.category_slug}</strong>
+            <small className="listing-row-meta">Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small>
+          </div>
+          <ServiceOwnerActions serviceId={listing.id} providerName={listing.provider_name} compact />
+        </article>;
+      })}{listings.map((listing) => {
         const imageUrl = signedPhotos.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
         return <article className="listing-row" key={listing.id}>
           <div className="listing-row-media"><img src={imageUrl} alt="" /></div>

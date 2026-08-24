@@ -11,7 +11,7 @@ import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
-import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, services, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
+import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
@@ -97,13 +97,8 @@ export function ServicesPageClient() {
       window.removeEventListener("mobile-category-menu-close", closeFilters);
     };
   }, []);
-  // Services is still a preview, so the rail only filters by category. The rest
-  // of the controls carry the shared design without a query behind them yet.
   const visibleServices = useMemo(() => {
-    // Published services complement the preview catalogue; they must not replace
-    // it when the first real provider registers.
-    const databaseServiceIds = new Set(databaseServices?.map((service) => service.id) ?? []);
-    const sourceServices = databaseServices ? [...databaseServices, ...services.filter((service) => !databaseServiceIds.has(service.id))] : services;
+    const sourceServices = databaseServices ?? [];
     const matches = sourceServices.filter((service) => (activeCategory === "all" || service.category === activeCategory)
       && (filters.providerType === "all" || service.providerType === filters.providerType)
       && (filters.availability === "all" || service.availability === filters.availability)
@@ -187,7 +182,7 @@ export function ServicesPageClient() {
         <section className="services-sponsor-banner" aria-label={text.sponsored}>
           <div className="services-sponsor-copy"><span>{text.sponsored}</span><strong>{text.sponsorTitle}</strong><p>{text.sponsorDescription}</p></div>
           <ul>{text.benefits.map((benefit) => <li key={benefit}><i className="fa-solid fa-circle-check" aria-hidden="true" /> {benefit}</li>)}</ul>
-          <Image src={services[0].image} alt="" width={180} height={108} />
+          <Image src={visibleServices[0]?.image ?? "/images/logo.png"} alt="" width={180} height={108} />
           <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.learnMore}</button>
         </section>
 
