@@ -316,6 +316,9 @@
   --text-3xl: 24px;
   --text-4xl: 28px;
   --text-5xl: 32px;
+  /* Added for the mobile category rails, where the glyph is the tap target
+     rather than an ornament beside a label. */
+  --text-6xl: 36px;
 
   --weight-regular: 400;
   --weight-medium: 500;

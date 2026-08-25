@@ -70,8 +70,8 @@ export const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
 
 const serviceCopy = {
   en: {
-    heroTitle: "Find trusted local services near you.",
-    heroDescription: "Browse local providers, compare reviews, and contact them directly.",
+    heroTitle: "Hire a local pro.",
+    heroDescription: "Compare reviews, then contact them direct.",
     filters: "Filters",
     serviceType: "Service type",
     allCategories: "All categories",
@@ -144,8 +144,8 @@ const serviceCopy = {
     closeFilters: "Close service filters",
   },
   ko: {
-    heroTitle: "가까운 곳에서 찾는 믿을 수 있는 도움.",
-    heroDescription: "지역 전문가를 찾아보고 후기를 비교한 뒤 바로 연락해 보세요.",
+    heroTitle: "동네 전문가를 부르세요.",
+    heroDescription: "후기를 비교하고 바로 연락하세요.",
     filters: "필터",
     serviceType: "서비스 종류",
     allCategories: "전체 카테고리",
