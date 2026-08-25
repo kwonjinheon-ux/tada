@@ -510,8 +510,8 @@ export function Navbar() {
     { id: "home", label: isCommunity ? "Community home" : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
     { id: "create", label: createLabel, icon: "create", href: createPath, active: isPostAd, variant: "create" },
-    { id: "categories", label: isCommunity ? "Browse community categories" : "Browse categories", icon: "categories", onClick: openMobileCategories },
-    { id: "profile", label: "Open dashboard menu", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
+    { id: "categories", label: t("categories"), icon: "categories", onClick: openMobileCategories },
+    { id: "profile", label: locale === "ko" ? "마이 페이지" : "My page", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
   ];
 
   const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
