@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -55,5 +54,5 @@ export default async function BargainReservationsPage() {
     </article>;
   });
 
-  return <main className="marketplace-page dashboard-page dashboard-layout manage-listings-page"><DashboardSidebar context="market" active="Reservations" /><section className="dashboard-content manage-listings-content"><header className="manage-listings-heading"><div><p>Bargain</p><h1>Reservations</h1><span>{reservations.length} purchase and sale {reservations.length === 1 ? "reservation" : "reservations"}</span></div><Link href="/market"><i className="ti ti-search" /> Browse Bargain</Link></header>{reservations.length ? <><section className="manage-listings-grid" aria-labelledby="buying-reservations"><h2 id="buying-reservations">Purchases</h2>{buying.length ? renderRows(buying, "buying") : <p>No purchase reservations yet.</p>}</section><section className="manage-listings-grid" aria-labelledby="selling-reservations"><h2 id="selling-reservations">Sales</h2>{selling.length ? renderRows(selling, "selling") : <p>No sale reservations yet.</p>}</section></> : <div className="manage-listings-empty"><i className="ti ti-calendar-check" /><h2>No reservations yet</h2><p>Your Bargain purchase and sale reservations will appear here.</p><Link href="/market">Browse Bargain</Link></div>}</section></main>;
+  return <section className="dashboard-content manage-listings-content"><header className="manage-listings-heading"><div><p>Bargain</p><h1>Reservations</h1><span>{reservations.length} purchase and sale {reservations.length === 1 ? "reservation" : "reservations"}</span></div><Link href="/market"><i className="ti ti-search" /> Browse Bargain</Link></header>{reservations.length ? <><section className="manage-listings-grid" aria-labelledby="buying-reservations"><h2 id="buying-reservations">Purchases</h2>{buying.length ? renderRows(buying, "buying") : <p>No purchase reservations yet.</p>}</section><section className="manage-listings-grid" aria-labelledby="selling-reservations"><h2 id="selling-reservations">Sales</h2>{selling.length ? renderRows(selling, "selling") : <p>No sale reservations yet.</p>}</section></> : <div className="manage-listings-empty"><i className="ti ti-calendar-check" /><h2>No reservations yet</h2><p>Your Bargain purchase and sale reservations will appear here.</p><Link href="/market">Browse Bargain</Link></div>}</section>;
 }

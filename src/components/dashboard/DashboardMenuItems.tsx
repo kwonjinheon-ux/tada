@@ -1,21 +1,10 @@
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
-
-const dashboardMenuItems = [
-  ["ti-layout-grid", "dashboard", ""],
-  ["ti-user-circle", "profileSettings", "/profile"],
-  ["ti-bell", "notifications", "/notifications"],
-  ["ti-message", "messages", "/messages"],
-  ["ti-heart", "wishlist", "/wishlist"],
-  ["ti-key", "keywords", "/keywords"],
-  ["ti-list-details", "manageListings", "/listings"],
-  ["ti-calendar-check", "reservations", "/reservations"],
-] as const;
+import { dashboardNavHref, dashboardNavItemsFor } from "@/components/dashboard/dashboard-nav-items";
 
 type DashboardMenuItemsProps = {
   variant: "mobile" | "desktop";
   pathname: string;
-  dashboardBase: string;
   isJobs: boolean;
   unreadMessageCount: number;
   unreadNotificationCount: number;
@@ -29,7 +18,6 @@ const badgeLabel = (count: number) => (count > 99 ? "99+" : String(count));
 export function DashboardMenuItems({
   variant,
   pathname,
-  dashboardBase,
   isJobs,
   unreadMessageCount,
   unreadNotificationCount,
@@ -43,25 +31,24 @@ export function DashboardMenuItems({
   const labelClassName = isMobile ? undefined : "desktop-dashboard-menu-label";
   const logoutClassName = isMobile ? "mobile-profile-popover-logout" : "desktop-dashboard-logout";
 
-  const getHref = (translationKey: string, suffix: string) => (
-    translationKey === "wishlist" && !isJobs ? "/market/wishlist" : `${dashboardBase}${suffix}`
-  );
+  const context = isJobs ? "jobs" : "market";
 
   return (
     <>
-      {dashboardMenuItems.filter(([, translationKey]) => !isJobs || translationKey !== "reservations").map(([icon, translationKey, suffix]) => {
-        const href = getHref(translationKey, suffix);
-        const unreadCount = translationKey === "messages" ? unreadMessageCount : translationKey === "notifications" ? unreadNotificationCount : 0;
+      {dashboardNavItemsFor(context).map((item) => {
+        const { icon, translationKey, label } = item;
+        const href = dashboardNavHref(item, context);
+        const unreadCount = label === "Messages" ? unreadMessageCount : label === "Notifications" ? unreadNotificationCount : 0;
 
         return (
           <Link
             className={`${itemClassName} ${pathname === href ? "is-active" : ""}`}
             href={href}
-            key={translationKey}
+            key={label}
             onClick={onNavigate}
           >
             <i className={`ti ${icon}`} aria-hidden="true" />
-            <span className={labelClassName}>{translationKey === "reservations" ? "Reservations" : t(translationKey)}</span>
+            <span className={labelClassName}>{translationKey ? t(translationKey) : label}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
             ) : !isMobile ? (

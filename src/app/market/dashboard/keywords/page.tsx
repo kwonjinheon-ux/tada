@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { KeywordAlertsClient, type KeywordAlert } from "@/components/market/KeywordAlertsClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -16,9 +15,6 @@ export default async function KeywordAlertsPage() {
   const initialAlerts: KeywordAlert[] = (alertRows ?? []).map((alert) => ({ id: alert.id, keyword: alert.keyword, categorySlug: alert.category_slug }));
 
   return (
-    <main className="marketplace-page dashboard-page dashboard-layout keywords-page">
-      <DashboardSidebar context="market" active="Keywords" />
       <KeywordAlertsClient initialAlerts={initialAlerts} />
-    </main>
   );
 }

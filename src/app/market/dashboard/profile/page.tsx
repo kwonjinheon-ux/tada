@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -20,9 +19,7 @@ export default async function ProfileSettingsPage() {
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
 
   return (
-    <main className="marketplace-page dashboard-page dashboard-layout profile-settings-page">
-      <DashboardSidebar context="market" active="Profile Settings" />
-      <div className="dashboard-content profile-settings-content">
+      <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
           email={user.email ?? ""}
           avatarPath={user.user_metadata?.avatar_path}
@@ -45,6 +42,5 @@ export default async function ProfileSettingsPage() {
           }}
         />
       </div>
-    </main>
   );
 }

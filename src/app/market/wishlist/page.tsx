@@ -25,7 +25,7 @@ export default async function MarketWishlistPage() {
   const user = await getServerUser();
   if (!user) redirect("/login?redirectTo=%2Fmarket%2Fwishlist");
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return <main className="marketplace-page dashboard-page dashboard-layout wishlist-page"><DashboardSidebar context="market" active="Wishlist" /><WishlistClient initialItems={[]} recentlyViewed={[]} /></main>;
+  if (!supabase) return <main className="marketplace-page dashboard-page dashboard-layout wishlist-page"><DashboardSidebar context="market" /><WishlistClient initialItems={[]} recentlyViewed={[]} /></main>;
 
   const [{ data: savedRows }, { data: bargainSavedRows }, { data: communitySavedRows }, { data: viewedRows }] = await Promise.all([
     supabase.from("market_wishlist").select("listing_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
@@ -87,5 +87,5 @@ export default async function MarketWishlistPage() {
   const wishlist = orderedWishlist.map(({ row, space }) => space === "market" ? toItem(row.listing_id) : space === "bargain" ? toBargainItem(row.listing_id) : toCommunityItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
   const recent = viewed.filter((row) => !saved.some((savedRow) => savedRow.listing_id === row.listing_id)).map((row) => toItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
 
-  return <main className="marketplace-page dashboard-page dashboard-layout wishlist-page"><DashboardSidebar context="market" active="Wishlist" /><WishlistClient initialItems={wishlist} recentlyViewed={recent} /></main>;
+  return <main className="marketplace-page dashboard-page dashboard-layout wishlist-page"><DashboardSidebar context="market" /><WishlistClient initialItems={wishlist} recentlyViewed={recent} /></main>;
 }

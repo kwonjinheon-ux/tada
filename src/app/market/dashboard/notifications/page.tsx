@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MarketNotificationsClient, type MarketNotification } from "@/components/notifications/MarketNotificationsClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -56,9 +55,6 @@ export default async function MarketNotificationsPage() {
   });
 
   return (
-    <main className="marketplace-page dashboard-page dashboard-layout notifications-page">
-      <DashboardSidebar context="market" active="Notifications" />
       <MarketNotificationsClient initialNotifications={notifications} userId={user.id} />
-    </main>
   );
 }

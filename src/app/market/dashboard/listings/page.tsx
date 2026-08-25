@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ManageListingsCategoryTabs, type ManageListingsCategory } from "@/components/dashboard/ManageListingsCategoryTabs";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
@@ -64,9 +63,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   const visibleTotal = activeCategory === "market" ? listings.length : activeCategory === "bargain" ? bargainListings.length : activeCategory === "services" ? serviceListings.length : totalListings;
   const createHref = activeCategory === "services" ? "/services/create" : activeCategory === "bargain" ? "/market/create/bargain" : "/market/create";
 
-  return <main className="marketplace-page dashboard-page dashboard-layout manage-listings-page">
-    <DashboardSidebar context="market" active="Manage Listings" />
-    <section className="dashboard-content manage-listings-content">
+  return     <section className="dashboard-content manage-listings-content">
       <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span></div><Link href={createHref}><i className="ti ti-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
       <ManageListingsCategoryTabs activeCategory={activeCategory} counts={{ all: totalListings, market: listings.length, bargain: bargainListings.length, services: serviceListings.length }} />
       {visibleTotal ? <div className="manage-listings-grid">{(activeCategory === "all" || activeCategory === "services") && serviceListings.map((listing) => {
@@ -104,6 +101,5 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
           <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ti ti-pencil" /> Manage</Link><Link href={`/market/${listing.id}`}>View sale</Link></div>
         </article>;
       })}</div> : <div className="manage-listings-empty"><i className="ti ti-list-details" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
-    </section>
-  </main>;
+    </section>;
 }

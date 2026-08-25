@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MarketMessagesClient, type ConversationSummary, type MarketMessage, type TradeOffer } from "@/components/messages/MarketMessagesClient";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -28,7 +27,7 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   }
 
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return <main className="messages-unavailable">Messaging is unavailable right now.</main>;
+  if (!supabase) return <div className="dashboard-content messages-unavailable">Messaging is unavailable right now.</div>;
 
   const [{ data: rawConversations }, { data: rawStates }] = await Promise.all([
     supabase
@@ -99,5 +98,5 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const reviewedAtByOfferId = new Map(((rawReviews ?? []) as ReviewRow[]).map((review) => [review.offer_id, review.created_at]));
   const initialOffers: TradeOffer[] = ((rawOffers ?? []) as OfferRow[]).map((offer) => ({ id: offer.id, conversationId: offer.conversation_id, listingId: offer.listing_id, buyerId: offer.buyer_id, sellerId: offer.seller_id, amountCents: offer.amount_cents, note: offer.note, status: offer.status, createdAt: offer.created_at, respondedAt: offer.responded_at, completedAt: offer.completed_at, reviewedAt: reviewedAtByOfferId.get(offer.id) ?? null }));
 
-  return <main className="marketplace-page dashboard-page dashboard-layout messages-dashboard-page"><DashboardSidebar context="market" active="Messages" /><MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} /></main>;
+  return <MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} />;
 }

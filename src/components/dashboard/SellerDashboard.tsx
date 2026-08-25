@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ActiveJourneyCarousel } from "@/components/dashboard/ActiveJourneyCarousel";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatMarketPrice } from "@/lib/market/format-price";
@@ -95,8 +94,6 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   ] as const;
 
   return (
-    <main className="marketplace-page dashboard-page dashboard-layout seller-dashboard-page">
-      <DashboardSidebar context={context} active="Dashboard" />
       <div className="dashboard-content seller-dashboard-content">
         <section className="seller-dashboard-top">
           <article className="seller-summary-card">
@@ -126,6 +123,5 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
           <aside className="seller-activity"><header><h2><TranslatedText translationKey="activity" /></h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="ti ti-dots" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty"><TranslatedText translationKey="recentActivityEmpty" /></p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications"><TranslatedText translationKey="showAllActivity" /></Link><article className="seller-boost-card"><strong><TranslatedText translationKey="boostSales" /></strong><p><TranslatedText translationKey="boostSalesCopy" /></p><button type="button"><TranslatedText translationKey="tryTadaLens" /></button></article></aside>
         </div>
       </div>
-    </main>
   );
 }

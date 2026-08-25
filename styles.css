@@ -7294,8 +7294,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .profile-settings-content { padding-bottom: 44px; }
 .keywords-content { width: min(100%, 940px); padding: 40px 30px 54px; }
-.marketplace-page.dashboard-page.dashboard-layout.keywords-page { background: var(--neutral-50); }
-.keywords-page .keywords-content { background: var(--neutral-50); }
+.dashboard-layout:has(> .keywords-content) { background: var(--neutral-50); }
+.keywords-content { background: var(--neutral-50); }
 .keywords-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
 .keywords-heading-icon { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; border-radius: var(--radius-md); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-2xl); }
 .keywords-heading h1, .keywords-heading p { margin: 0; }
@@ -7765,7 +7765,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 .dashboard-page { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 230px minmax(0, 1fr); background: var(--neutral-150); color: var(--blue-950); }
-.marketplace-page.dashboard-page.dashboard-layout.profile-settings-page {
+.dashboard-layout:has(> .profile-settings-content) {
   background: var(--neutral-50);
 }
 
@@ -7982,7 +7982,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   padding: 24px max(var(--page-padding-inline), env(safe-area-inset-right)) 44px max(var(--page-padding-inline), env(safe-area-inset-left));
 }
 
-.dashboard-layout.messages-dashboard-page > .messages-page {
+.dashboard-layout:has(> .messages-page) > .messages-page {
   max-width: none;
   margin-inline: 0;
   padding: 0;
@@ -8067,7 +8067,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 }
 
 /* Marketplace notifications */
-.marketplace-page.dashboard-page.dashboard-layout.notifications-page {
+.dashboard-layout:has(> .notifications-content) {
   background: var(--neutral-50);
 }
 
@@ -8589,11 +8589,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 @keyframes listing-loading-shimmer { to { background-position: -200% 0; } }
 
 /* Marketplace messages: a compact conversation rail paired with a focused thread. */
-body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
-.marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); transform: translateY(var(--messages-viewport-offset-top, 0px)); }
+body:has(.messages-page) { height: 100dvh; overflow: hidden; }
+.dashboard-layout:has(> .messages-page) { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); transform: translateY(var(--messages-viewport-offset-top, 0px)); }
 /* The messages shell is a fixed-height surface, so the rail tracks it rather than
    the page scroll. Only the reference variables change; the rail itself does not. */
-.marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { --dashboard-rail-top: 0px; --dashboard-rail-height: 100%; --dashboard-rail-min-height: 0; }
+.dashboard-layout:has(> .messages-page) { --dashboard-rail-top: 0px; --dashboard-rail-height: 100%; --dashboard-rail-min-height: 0; }
 .messages-page { min-width: 0; height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); overflow: hidden; background: var(--neutral-50); color: var(--blue-900); }
 .messages-list-panel { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--neutral-250); background: var(--neutral-50); }
 .messages-list-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 25px 22px 14px; }
@@ -8716,8 +8716,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .messages-loading section:last-child span:first-child { height: 76px; }.messages-loading section:last-child span:nth-child(2) { width: 58%; height: 74px; margin-top: 72px; }.messages-loading section:last-child span:last-child { width: 42%; height: 54px; margin-left: auto; }
 
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { grid-template-columns: minmax(0, 1fr); }
-  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page > .market-filter-panel.dashboard-sidebar { display: none; }
+  .dashboard-layout:has(> .messages-page) { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-layout:has(> .messages-page) > .market-filter-panel.dashboard-sidebar { display: none; }
   .messages-page { grid-template-columns: 290px minmax(0, 1fr); }
   .messages-thread-header { padding-inline: 14px; }
   .messages-listing-context { max-width: none; }
@@ -8767,9 +8767,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
-  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }
+  .dashboard-layout:has(> .messages-page) { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
-  .messages-dashboard-page .dashboard-sidebar { display: none; }
+  .dashboard-layout:has(> .messages-page) .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }
   .messages-list-panel, .messages-thread-panel { height: 100%; min-height: 100%; }
   .messages-list-header { padding: 18px 18px 12px; }
@@ -8795,8 +8795,8 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   /* Do not rely solely on :has() here. A transformed ancestor turns the fixed
      thread into a document-relative element, which double-applies the iOS
      visual viewport offset while the keyboard is opening. */
-  .messages-thread-active .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page,
-  .marketplace-page.dashboard-page.dashboard-layout.messages-dashboard-page:has(.messages-page.has-selected-conversation) { transform: none; }
+  .messages-thread-active .dashboard-layout:has(> .messages-page),
+  .dashboard-layout:has(> .messages-page):has(.messages-page.has-selected-conversation) { transform: none; }
   .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* With the keyboard up the thread takes the whole visual viewport. Browsers that shrink the
      visual viewport without panning (Android Chrome) leave the sticky header sitting at layout
@@ -8994,7 +8994,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 }
 
 /* Seller dashboard overview. */
-.seller-dashboard-page { background: var(--neutral-150); }
+.dashboard-layout:has(> .seller-dashboard-content) { background: var(--neutral-150); }
 .seller-dashboard-content { width: min(100%, 1180px); min-height: 100%; padding: 30px 34px 56px; background: var(--neutral-50); }
 .seller-dashboard-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .72fr); gap: 18px; }
 .seller-summary-card, .seller-trust-card, .seller-dashboard-insights article, .seller-active-listings > div > article, .seller-activity, .seller-new-listing, .journey-card { border: 1px solid var(--blue-soft-150); border-radius: var(--radius-md); background: var(--neutral-50); box-shadow: 0 3px 10px rgba(0, 0, 0,.04); }

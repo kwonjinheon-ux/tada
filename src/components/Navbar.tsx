@@ -669,7 +669,6 @@ export function Navbar() {
               <DashboardMenuItems
                 variant="mobile"
                 pathname={pathname}
-                dashboardBase={dashboardBase}
                 isJobs={isJobs}
                 unreadMessageCount={unreadMessageCount}
                 unreadNotificationCount={unreadNotificationCount}
@@ -728,7 +727,6 @@ export function Navbar() {
             <DashboardMenuItems
               variant="mobile"
               pathname={pathname}
-              dashboardBase={dashboardBase}
               isJobs={isJobs}
               unreadMessageCount={unreadMessageCount}
               unreadNotificationCount={unreadNotificationCount}
