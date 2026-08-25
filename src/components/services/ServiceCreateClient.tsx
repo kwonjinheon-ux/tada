@@ -170,6 +170,12 @@ export function ServiceCreateClient() {
       price_from: priceFrom,
       price_unit: priceUnit,
       service_details: detailValues,
+      // The column defaults to 'pending', and nothing in the product moves a
+      // service off that state — there is no moderation queue for services the
+      // way there is for market listings. Left to the default, a service is
+      // invisible to everyone but its owner, for good. Market listings publish
+      // on create; services now match.
+      status: "published",
       }).select("id").single();
       if (listingError || !listing) throw listingError ?? new Error(isKorean ? "서비스 등록에 실패했습니다." : "Unable to submit your service.");
 
