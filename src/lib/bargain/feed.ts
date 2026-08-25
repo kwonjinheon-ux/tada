@@ -9,6 +9,7 @@ import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatBargainEventDateRange } from "@/lib/bargain/format-event-date";
 import { encodeCursor, decodeCursor } from "@/lib/pagination/cursor";
 import { containsProhibitedMarketplaceContent } from "@/lib/market/prohibited-items";
+import { newlyListedBadge } from "../market/newly-listed";
 
 type BargainQuery = z.infer<typeof bargainFeedQuerySchema>;
 type BargainRow = { id: string; owner_id: string; title: string; price_cents: number; bargain_type: string; main_location: string | null; sub_location: string | null; region_city: string | null; region_suburb: string | null; category_slug: string | null; subcategory_slug: string | null; event_start_date: string | null; event_end_date: string | null; status: "published" | "pending" | "sold"; created_at: string };
@@ -101,7 +102,7 @@ export async function getBargainFeed(
         subcategorySlug: row.subcategory_slug,
         bargainType: row.bargain_type,
         eventDateRange: row.bargain_type === "moving-sale" || row.bargain_type === "garage-sale" ? formatBargainEventDateRange(row.event_start_date, row.event_end_date) : null,
-        badge: row.status === "published" ? "Newly Listed" : undefined,
+        badge: newlyListedBadge(row.status, row.created_at),
         status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
         isOwner: row.owner_id === userId,
         commentCount: commentCounts.get(row.id) ?? 0,
