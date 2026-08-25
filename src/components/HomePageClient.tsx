@@ -30,7 +30,7 @@ const marketShortcuts = [
   { label: "Second Hands", href: "/market/secondhands", icon: "ms-storefront" },
   { label: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
   { label: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-attach-money" },
+  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-savings" },
   { label: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
@@ -38,7 +38,7 @@ const koreanMarketShortcuts = [
   { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ms-storefront" },
   { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
   { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-attach-money" },
+  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-savings" },
   { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
@@ -46,7 +46,7 @@ const marketShortcutIcons: Record<string, string> = {
   "/market/secondhands": "ms-storefront",
   "/market/garage-sales": "ms-warehouse",
   "/market/moving-sales": "ms-local-shipping",
-  "/market/2dollarshop": "ms-attach-money",
+  "/market/2dollarshop": "ms-savings",
   "/market/groupbuy": "ms-groups",
 };
 
@@ -312,8 +312,7 @@ export function HomePageClient({
               {visibleMarketShortcuts.map((shortcut) => {
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
                 const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
-                const isTwoDollarShop = shortcut.href === "/market/2dollarshop";
-                return <Link className={`home-reference-market-shortcut home-reference-market-shortcut--${shortcut.href.split("/").pop()} ui-card`} href={shortcut.href} key={shortcut.href}>{isTwoDollarShop ? <Image className="home-reference-market-shortcut-image" src="/images/home/2-dollar-deals-icon.png" alt="" width={48} height={48} /> : <i className={`ms ${icon}`} aria-hidden="true" />}<span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
+                return <Link className={`home-reference-market-shortcut home-reference-market-shortcut--${shortcut.href.split("/").pop()} ui-card`} href={shortcut.href} key={shortcut.href}><i className={`ms ${icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>
