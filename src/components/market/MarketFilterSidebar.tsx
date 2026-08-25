@@ -15,7 +15,7 @@ export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey;
   { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "ms-storefront", href: "/market/secondhands" },
   { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "ms-warehouse", href: "/market/garage-sales" },
   { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "ms-local-shipping", href: "/market/moving-sales" },
-  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ms-savings", href: "/market/2dollarshop" },
+  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ms-local-offer", href: "/market/2dollarshop" },
   { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "ms-groups", href: "/market/groupbuy" },
 ];
 

@@ -27,10 +27,10 @@ const koreanDestinations = [
 ];
 
 const marketShortcuts = [
-  { label: "Second Hands", href: "/market/secondhands", icon: "ms-sell" },
+  { label: "Second Hands", href: "/market/secondhands", icon: "ms-storefront" },
   { label: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
   { label: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-attach-money" },
+  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-local-offer" },
   { label: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
@@ -38,15 +38,15 @@ const koreanMarketShortcuts = [
   { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ms-storefront" },
   { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
   { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-savings" },
+  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-local-offer" },
   { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
 const marketShortcutIcons: Record<string, string> = {
-  "/market/secondhands": "ms-sell",
+  "/market/secondhands": "ms-storefront",
   "/market/garage-sales": "ms-warehouse",
   "/market/moving-sales": "ms-local-shipping",
-  "/market/2dollarshop": "ms-attach-money",
+  "/market/2dollarshop": "ms-local-offer",
   "/market/groupbuy": "ms-groups",
 };
 
@@ -244,10 +244,9 @@ export function HomePageClient({
     : { src: "/images/logo.png", width: 1536, height: 1024 };
   const visibleDestinations = isKorean ? koreanDestinations : destinations;
   const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
-  const destinationHeading = isKorean ? "바로 시작하기" : "What do you want to do?";
-  const destinationIntro = isKorean ? null : "Start with the action that fits you best.";
+  const destinationHeading = isKorean ? "우리동네 둘러보기" : "Explore your neighbourhood";
+  const destinationIntro = null;
   const marketHeading = isKorean ? "타다 마켓 둘러보기" : "Browse market your way";
-  const marketDescription = isKorean ? "Tada 마켓을 빠르게 둘러보세요." : "Quick ways to explore Tada Market.";
   const heroNearbyAction = isKorean ? "내 주변 보기" : "See what's nearby";
   const heroPostAction = isKorean ? "글 올리기" : "Post something";
   const heroTrust = isKorean ? "무료 등록  ·  1분이면 충분해요  ·  가까운 이웃과 연결" : "Free to post  ·  Takes about a minute  ·  Local first";
@@ -308,13 +307,12 @@ export function HomePageClient({
           </section>
 
           <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
-            <header><p>{marketHeading}</p><h2 id="market-shortcuts-title">{marketDescription}</h2></header>
+            <header><h2 id="market-shortcuts-title">{marketHeading}</h2></header>
             <div>
               {visibleMarketShortcuts.map((shortcut) => {
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
                 const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
-                const isTwoDollarDeals = shortcut.href === "/market/2dollarshop";
-                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}>{isTwoDollarDeals ? <Image className="home-reference-market-shortcut-image" src="/images/home/2-dollar-deals-icon.png" alt="" width={48} height={48} /> : <i className={`ms ${icon}`} aria-hidden="true" />}<span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
+                return <Link className={`home-reference-market-shortcut home-reference-market-shortcut--${shortcut.href.split("/").pop()} ui-card`} href={shortcut.href} key={shortcut.href}><i className={`ms ${icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>
