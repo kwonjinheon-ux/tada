@@ -6647,35 +6647,29 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock {
-    --mobile-dock-horizontal-inset: clamp(16px, 8vw, 38px);
-    /* Sit as low as the device allows: on a notched phone the home-indicator
-       inset is the whole offset, and on a flat-bottomed one a small pad stands
-       in for it. Chrome's collapsing bottom toolbar is handled separately by
-       --mobile-viewport-bottom-inset, which reaches 0 once the toolbar hides,
-       so scrolling up drops the dock all the way to the bottom edge. */
-    --mobile-dock-bottom-offset: max(6px, env(safe-area-inset-bottom));
-    --mobile-dock-height: 64px;
-    --mobile-dock-control-size: 52px;
+    --mobile-dock-height: calc(64px + env(safe-area-inset-bottom));
+    --mobile-dock-control-size: 56px;
     position: fixed !important;
-    right: var(--mobile-dock-horizontal-inset);
-    bottom: calc(var(--mobile-dock-bottom-offset) + var(--mobile-viewport-bottom-inset, 0px));
-    left: var(--mobile-dock-horizontal-inset);
+    right: 0;
+    bottom: var(--mobile-viewport-bottom-inset, 0px);
+    left: 0;
     z-index: 1000;
-    width: auto;
-    max-width: 390px;
+    width: 100%;
+    max-width: none;
     height: var(--mobile-dock-height);
     min-height: var(--mobile-dock-height);
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
-    margin: 0 auto;
-    padding: 5px;
+    margin: 0;
+    padding: 4px 0 max(4px, env(safe-area-inset-bottom));
     box-sizing: border-box;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, .46);
-    -webkit-backdrop-filter: blur(24px) saturate(165%);
-    backdrop-filter: blur(24px) saturate(165%);
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow: none;
     transition: transform 260ms cubic-bezier(.22, .61, .36, 1), opacity 180ms ease;
     will-change: transform;
@@ -6749,7 +6743,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-bottom-dock > a > span:not(.mobile-dock-action-label),
-  .mobile-bottom-dock > button > span:not(.mobile-dock-action-label) { display: none; }
+  .mobile-bottom-dock > button > span:not(.mobile-dock-action-label) { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
@@ -6764,27 +6758,19 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock button:hover > i,
   .mobile-bottom-dock button:focus-visible > svg,
   .mobile-bottom-dock button:focus-visible > i {
-    box-sizing: border-box;
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    padding: 10px;
-    border: 1px solid rgba(0, 0, 0, .4);
-    border-radius: var(--radius-circle);
-    background: rgba(0, 0, 0, .1);
+    box-sizing: content-box;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > i,
   .mobile-bottom-dock button:active > i {
-    box-sizing: border-box;
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    padding: 10px;
-    border-radius: var(--radius-lg);
+    box-sizing: content-box;
+    padding: 0;
+    border-radius: 0;
     background: transparent;
   }
 
@@ -6798,7 +6784,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock button.is-active {
     width: 100%;
     background: transparent;
-    color: var(--ink);
+    color: var(--color-primary);
     box-shadow: none;
   }
 
@@ -6808,67 +6794,58 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock a.is-active:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a.is-active:not(.mobile-dock-create) > i,
   .mobile-bottom-dock button.is-active > i {
-    box-sizing: border-box;
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    padding: 10px;
-    border-radius: var(--radius-circle);
-    background: rgba(0, 0, 0, .1);
+    box-sizing: content-box;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .mobile-bottom-dock .mobile-dock-create {
     width: 100%;
     min-height: 52px;
-    color: var(--green-700);
+    color: var(--blue-400);
     font-size: var(--text-xl);
   }
 
   .mobile-bottom-dock .mobile-dock-create:hover,
   .mobile-bottom-dock .mobile-dock-create:focus-visible {
     background: transparent;
-    color: var(--green-700);
+    color: var(--blue-400);
   }
 
   .mobile-bottom-dock .mobile-dock-create:hover i,
   .mobile-bottom-dock .mobile-dock-create:focus-visible i {
-    background: var(--blue-550);
-    transform: translateY(-2px) scale(1.04);
+    background: transparent;
+    transform: none;
   }
 
-  .mobile-bottom-dock .mobile-dock-create:active i {
-    animation: mobile-dock-create-press 220ms ease-out;
-  }
+  .mobile-bottom-dock .mobile-dock-create:active i { animation: none; }
 
   .mobile-bottom-dock .mobile-dock-create i,
   .mobile-bottom-dock .mobile-dock-offer i {
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius-circle);
-    background: var(--green-550);
-    color: var(--neutral-50);
-    font-size: var(--text-lg);
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    background: transparent;
+    color: currentColor;
+    font-size: var(--text-3xl);
     box-shadow: none;
   }
 
-  /* Create is blue; the listing offer button above keeps the green. */
-  .mobile-bottom-dock .mobile-dock-create i { background: var(--blue-400); }
+  .mobile-bottom-dock .mobile-dock-create i { background: transparent; }
 
   /* The plus sits inside a filled circle, so it scales with the rest of the
      dock but stays smaller than the standalone glyphs. */
-  .mobile-bottom-dock .mobile-dock-create .ms { font-size: var(--text-2xl); }
+  .mobile-bottom-dock .mobile-dock-create .ms { font-size: var(--text-3xl); }
 
   .mobile-bottom-dock .mobile-dock-action-label {
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius-circle);
-    background: var(--green-450);
-    color: var(--neutral-50);
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    background: transparent;
+    color: currentColor;
     font-size: var(--text-2xs);
     font-weight: var(--weight-extrabold);
     line-height: 1;
@@ -6879,9 +6856,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     box-shadow: none;
   }
 
-  .mobile-bottom-dock .mobile-dock-offer i {
-    box-shadow: 0 5px 12px rgba(0, 88, 176, .34);
-  }
+  .mobile-bottom-dock .mobile-dock-offer i { box-shadow: none; }
 
   @keyframes mobile-dock-create-press {
     0% { transform: translateY(0) scale(1); }
