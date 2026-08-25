@@ -1577,7 +1577,13 @@ a {
 /* The category glyph now comes from the icon font, so the per-category image
    crops that used to correct the illustrations are gone with them. */
 .community-category-illustration { width: calc(var(--control-h-md) * 0.7); height: calc(var(--control-h-md) * 0.7); display: grid; place-items: center; color: var(--color-ink); font-size: var(--text-lg); }
-.community-category-list .is-selected .community-category-illustration { color: var(--color-primary); }
+.community-category-qna .community-category-illustration, .community-category-qna .mobile-browse-category-icon { color: var(--color-category-ask); }
+.community-category-free-board .community-category-illustration, .community-category-free-board .mobile-browse-category-icon { color: var(--color-category-talk); }
+.community-category-local-noticeboard .community-category-illustration, .community-category-local-noticeboard .mobile-browse-category-icon { color: var(--color-category-notice); }
+.community-category-events .community-category-illustration, .community-category-events .mobile-browse-category-icon { color: var(--color-category-events); }
+.community-category-recommendations .community-category-illustration, .community-category-recommendations .mobile-browse-category-icon { color: var(--color-category-tips); }
+.community-category-together .community-category-illustration, .community-category-together .mobile-browse-category-icon { color: var(--color-category-together); }
+.community-category-immigration .community-category-illustration, .community-category-immigration .mobile-browse-category-icon { color: var(--color-category-newcomer); }
 /* Services filter rows share the single icon colour; selection is the signal. */
 .services-type-filter .filter-list > button > i { color: var(--color-ink); }
 .services-type-filter .filter-list button.is-selected > i { color: currentColor; }
@@ -8243,7 +8249,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Notification type is already stated in the title and body; a fifth tint per
    row only made the list noisy. Unread is what deserves the accent. */
-.notification-row.is-unread .notification-icon { background: var(--color-primary-soft); color: var(--color-primary); }
+.notification-icon.is-message { color: var(--color-category-ask); }
+.notification-icon.is-offer { color: var(--color-category-notice); }
+.notification-icon.is-trade { color: var(--color-category-tips); }
+.notification-icon.is-keyword { color: var(--color-category-events); }
+.notification-icon.is-wishlist { color: var(--color-category-together); }
+.notification-row.is-unread .notification-icon { background: var(--color-primary-soft); }
 
 .notification-copy {
   min-width: 0;
@@ -8751,8 +8762,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
      into six competing accents and made none of them mean anything; the
      selected tab is the only thing worth colouring. */
   .market-page-with-bottom-dock .mobile-browse-category-icon { border-radius: var(--radius-md); }
+  /* Category hue is identity, not selection state — the tile's border and fill
+     already say which one is active, so the glyph keeps its colour throughout. */
   .mobile-browse-category-icon { color: var(--color-ink); }
-  .mobile-browse-category.is-active .mobile-browse-category-icon { color: var(--color-primary); }
+  .mobile-browse-category.is-trade .mobile-browse-category-icon { color: var(--color-category-market); }
+  .mobile-browse-category.is-garage .mobile-browse-category-icon { color: var(--color-category-garage); }
+  .mobile-browse-category.is-moving .mobile-browse-category-icon { color: var(--color-category-moving); }
+  .mobile-browse-category.is-dollar .mobile-browse-category-icon { color: var(--color-category-dollar); }
+  .mobile-browse-category.is-group .mobile-browse-category-icon { color: var(--color-category-group); }
 
   .market-toolbar { min-width: 0; overflow: hidden; }
   .market-toolbar-top { min-width: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
@@ -10519,11 +10536,26 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .services-category strong { font-size: var(--text-sm); }
 
 /* One neutral chip for every tile; only the selected one takes the accent. */
-.services-category:not(.is-active) span { background: var(--color-surface-soft); color: var(--color-ink); }
+.services-category:not(.is-active) span { background: var(--color-surface-soft); }
+.services-category:nth-child(1) span { color: var(--color-category-food); }
+.services-category:nth-child(2) span { color: var(--color-category-trades); }
+.services-category:nth-child(3) span { color: var(--color-category-transport); }
+.services-category:nth-child(4) span { color: var(--color-category-auto); }
+.services-category:nth-child(5) span { color: var(--color-category-garden); }
+.services-category:nth-child(6) span { color: var(--color-category-learn); }
+.services-category:nth-child(7) span { color: var(--color-category-beauty); }
+.services-category:nth-child(8) span { color: var(--color-category-pets); }
 
 /* Services categories follow the same single-colour rule as the market rail. */
 .services-mobile-category-rail .mobile-browse-category-icon { color: var(--color-ink); }
-.services-mobile-category-rail .mobile-browse-category.is-active .mobile-browse-category-icon { color: var(--color-primary); }
+.services-mobile-category-rail .services-category-cleaning .mobile-browse-category-icon { color: var(--color-category-food); }
+.services-mobile-category-rail .services-category-handyman .mobile-browse-category-icon { color: var(--color-category-trades); }
+.services-mobile-category-rail .services-category-moving .mobile-browse-category-icon { color: var(--color-category-transport); }
+.services-mobile-category-rail .services-category-auto .mobile-browse-category-icon { color: var(--color-category-auto); }
+.services-mobile-category-rail .services-category-gardening .mobile-browse-category-icon { color: var(--color-category-garden); }
+.services-mobile-category-rail .services-category-tutoring .mobile-browse-category-icon { color: var(--color-category-learn); }
+.services-mobile-category-rail .services-category-beauty .mobile-browse-category-icon { color: var(--color-category-beauty); }
+.services-mobile-category-rail .services-category-petCare .mobile-browse-category-icon { color: var(--color-category-pets); }
 
 .services-listing-copy h3,
 .services-listing-copy p,

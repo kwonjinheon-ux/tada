@@ -229,6 +229,19 @@
   --violet-850: #653597;
   /* violet-soft */
   --violet-soft-100: #f1ebff;
+  /* vivid — the categorical ramp. One family, saturated rather than washed,
+     every step at 4:1 or better on white so a filled glyph holds its edge.
+     A category keeps the same step on every surface it appears on; that is
+     what the old per-screen tints failed to do. */
+  --vivid-blue: #0071e3;
+  --vivid-indigo: #5856d6;
+  --vivid-purple: #9333ea;
+  --vivid-pink: #e11d63;
+  --vivid-red: #e5342a;
+  --vivid-orange: #ea580c;
+  --vivid-amber: #c2600a;
+  --vivid-green: #16a34a;
+  --vivid-teal: #0d9488;
 }
 
 /* ==========================================================================
@@ -284,6 +297,31 @@
   --color-footer-ink: var(--teal-soft-050);
   --color-footer-ink-soft: var(--teal-soft-100);
   --color-footer-ink-muted: var(--teal-soft-350);
+
+  /* Category identity. A browse category carries its hue everywhere it is
+     drawn — rail, tile grid, filter row — so the colour is worth learning.
+     Chrome (chevrons, close, search, the dock) stays ink: colouring a control
+     that means the same thing on every screen only adds noise. */
+  --color-category-market: var(--vivid-blue);
+  --color-category-garage: var(--vivid-orange);
+  --color-category-moving: var(--vivid-indigo);
+  --color-category-dollar: var(--vivid-pink);
+  --color-category-group: var(--vivid-green);
+  --color-category-food: var(--vivid-orange);
+  --color-category-trades: var(--vivid-indigo);
+  --color-category-transport: var(--vivid-blue);
+  --color-category-auto: var(--vivid-red);
+  --color-category-garden: var(--vivid-green);
+  --color-category-learn: var(--vivid-purple);
+  --color-category-beauty: var(--vivid-pink);
+  --color-category-pets: var(--vivid-teal);
+  --color-category-ask: var(--vivid-blue);
+  --color-category-talk: var(--vivid-indigo);
+  --color-category-notice: var(--vivid-orange);
+  --color-category-events: var(--vivid-purple);
+  --color-category-tips: var(--vivid-green);
+  --color-category-together: var(--vivid-pink);
+  --color-category-newcomer: var(--vivid-teal);
 }
 
 /* ==========================================================================

@@ -33,6 +33,8 @@ had accumulated, which meant its hues never resolved into one system. It has
 since been retuned onto a neutral, Apple-style base:
 
 - `--accent-*` is the primary action ramp, built on `#0071e3`.
+- `--vivid-*` is the categorical ramp: nine saturated steps used only for
+  browse-category and notification-type icons. See the icon section.
 - `--success-*` holds a real green, kept apart from the accent ramp so a
   positive state still reads as positive.
 - `--neutral-*` is pure cool grey with no hue cast. A grey that leans green or
@@ -129,11 +131,17 @@ modifier rather than two glyphs that have to stay in step.
 - Stroke weight is instanced into the font at build time, so it cannot be
   changed from CSS. Change `ICON_WEIGHT` in `scripts/build-icon-font.mjs` and
   rebuild. Pinning it is what keeps the subset under 20KB instead of 135KB.
-- Colour comes from `--color-ink`. The active or selected row takes
-  `--color-primary`. Nothing else gets a hue.
-- Do not tint icons per category, per type, or per row. That is what turned
-  the browse lists into six competing accents, and none of them meant
-  anything — the reader cannot learn nine colours that are never explained.
+- Chrome stays ink. A chevron, a close, a search, the dock — a control that
+  means the same thing on every screen gains nothing from a hue.
+- A browse category carries one `--color-category-*` hue, and carries it on
+  every surface it is drawn on: rail, tile grid, filter row. That is the part
+  the old per-screen tints got wrong. They were not wrong for using colour,
+  they were wrong because the same category was a different colour on each
+  screen and the hues came from unrelated families, so there was nothing to
+  learn. Adjacent categories must not share a step.
+- The `--vivid-*` ramp is the only source for those hues. It is saturated on
+  purpose — a washed tint under a filled glyph reads as a mistake — and every
+  step clears 3:1 on white.
 - Semantic colour still applies where the colour *is* the message: danger,
   warning, a rating star, a saved heart.
 - `.ms-spin` is ours, not Google's; it lives in `globals.css`.
