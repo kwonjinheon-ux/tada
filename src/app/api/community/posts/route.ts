@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   const category = communityPostCategorySchema.safeParse(url.searchParams.get("category"));
   if (url.searchParams.has("category") && !category.success) return apiFailure("BAD_REQUEST", "Invalid community category.", 400);
   const sort = url.searchParams.get("sort");
-  if (sort && sort !== "recent") return apiFailure("BAD_REQUEST", "Invalid community post sort.", 400);
+  if (sort && sort !== "recent" && sort !== "trending") return apiFailure("BAD_REQUEST", "Invalid community post sort.", 400);
 
   try {
     const posts = await loadCommunityPostFeed(supabase, {
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       mainLocation: url.searchParams.get("mainLocation")?.trim() || null,
       subLocation: url.searchParams.get("subLocation")?.trim() || null,
       search: url.searchParams.get("q") ?? "",
-      isRecentFeed: sort === "recent",
+      sort: sort === "recent" || sort === "trending" ? sort : undefined,
     });
     return apiSuccess({ posts });
   } catch {

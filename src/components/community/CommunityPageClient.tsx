@@ -28,12 +28,13 @@ const communityChips: Array<{ value: string; labelKey: TranslationKey }> = [
   { value: "recommendations", labelKey: "communityCategoryRecommendations" },
 ];
 
-const buildFeedCacheKey = ({ category, search, mainLocation, subLocation }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string }) => {
+const buildFeedCacheKey = ({ category, search, mainLocation, subLocation, sort }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string; sort?: "recent" | "trending" }) => {
   const params = new URLSearchParams();
   if (category !== "all") params.set("category", category);
   if (search) params.set("q", search);
   if (mainLocation) params.set("mainLocation", mainLocation);
   if (subLocation) params.set("subLocation", subLocation);
+  if (sort) params.set("sort", sort);
   return params.toString();
 };
 
@@ -44,7 +45,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>(initialCategory);
-  const [activeChip, setActiveChip] = useState("all");
+  const [activeChip, setActiveChip] = useState(initialCategory === "recommendations" ? "recommendations" : "all");
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>(initialPosts ?? []);
@@ -63,6 +64,14 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
   };
+  const chooseCategory = (category: CommunityCategory) => {
+    setActiveCategory(category);
+    setActiveChip(category === "recommendations" ? "recommendations" : "all");
+  };
+  const chooseChip = (chip: string) => {
+    setActiveChip(chip);
+    setActiveCategory(chip === "recommendations" ? "recommendations" : "all");
+  };
 
   useEffect(() => {
     const stored = readListingViewPreference("community");
@@ -76,11 +85,13 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
   useEffect(() => {
     if (initialPosts) postFeedCache.current.set(buildFeedCacheKey({ category: initialCategory, search: searchQuery, mainLocation: "", subLocation: "" }), { posts: initialPosts, cachedAt: Date.now() });
     setActiveCategory(initialCategory);
+    setActiveChip(initialCategory === "recommendations" ? "recommendations" : "all");
   }, [initialCategory, initialPosts, searchQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
-    const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, mainLocation, subLocation });
+    const sort = activeChip === "recent" || activeChip === "trending" ? activeChip : undefined;
+    const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, mainLocation, subLocation, sort });
     const cachedFeed = postFeedCache.current.get(cacheKey);
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
       setPublishedPosts(cachedFeed.posts);
@@ -101,7 +112,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); })
       .finally(() => { if (!controller.signal.aborted) setIsLoadingPosts(false); });
     return () => controller.abort();
-  }, [activeCategory, mainLocation, searchQuery, subLocation]);
+  }, [activeCategory, activeChip, mainLocation, searchQuery, subLocation]);
 
   const visiblePosts = publishedPosts;
 
@@ -124,7 +135,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open community filters" closeLabel="Close community filters">
         <CommunityFilterSidebar
           activeCategory={activeCategory}
-          onCategorySelect={(category) => { setActiveCategory(category); setIsFilterOpen(false); }}
+          onCategorySelect={(category) => { chooseCategory(category); setIsFilterOpen(false); }}
           mainLocation={mainLocation}
           subLocation={subLocation}
           onLocationChange={chooseLocation}
@@ -138,7 +149,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           ariaLabel={t("categories")}
           className="community-mobile-category-rail"
           activeValue={activeCategory}
-          onSelect={(value) => setActiveCategory(value as CommunityCategory)}
+          onSelect={(value) => chooseCategory(value as CommunityCategory)}
           items={communityCategories.map(({ value, labelKey, icon }) => ({ value, label: t(labelKey), icon, tone: `community-category-${value}` }))}
         />
 
@@ -147,7 +158,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           onViewModeChange={chooseView}
           chips={communityChips.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           activeChipValue={activeChip}
-          onChipSelect={setActiveChip}
+          onChipSelect={chooseChip}
           chipStyle="sort"
           resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
         />

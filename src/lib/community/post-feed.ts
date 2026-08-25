@@ -28,7 +28,7 @@ export type CommunityFeedQuery = {
   mainLocation?: string | null;
   subLocation?: string | null;
   search?: string;
-  isRecentFeed?: boolean;
+  sort?: "recent" | "trending";
 };
 
 export type CommunityFeedPost = {
@@ -63,9 +63,10 @@ const relativeTime = (createdAt: string) => {
 // The desktop rail only prints a type, a title and a response count, so the
 // recent feed skips every lookup that exists purely for the main post cards.
 export async function loadCommunityPostFeed(supabase: SupabaseServerClient, query: CommunityFeedQuery): Promise<CommunityFeedPost[]> {
-  const { category = null, mainLocation = null, subLocation = null, isRecentFeed = false } = query;
+  const { category = null, mainLocation = null, subLocation = null, sort } = query;
   const search = (query.search ?? "").replace(/[,%()]/g, " ").trim().slice(0, 60);
-  const isDirectQuery = Boolean(search) || isRecentFeed;
+  const isRecentFeed = sort === "recent";
+  const isDirectQuery = Boolean(search) || Boolean(sort);
 
   const rankedPostIdsRequest = isDirectQuery ? null : supabase.rpc("get_ranked_community_post_ids", {
     p_category_slug: category,
@@ -81,7 +82,11 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   if (rankedPostIdsError) throw rankedPostIdsError;
   const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
 
-  let directRequest = supabase.from("community_posts").select(POST_COLUMNS).eq("status", "published").order("created_at", { ascending: false }).limit(search ? 100 : isRecentFeed ? 10 : 40);
+  let directRequest = supabase.from("community_posts").select(POST_COLUMNS).eq("status", "published");
+  directRequest = sort === "trending"
+    ? directRequest.order("score", { ascending: false }).order("created_at", { ascending: false })
+    : directRequest.order("created_at", { ascending: false });
+  directRequest = directRequest.limit(search ? 100 : isRecentFeed ? 10 : 40);
   if (category) directRequest = directRequest.eq("category_slug", category);
   if (mainLocation) directRequest = directRequest.eq("region_city", mainLocation);
   if (subLocation) directRequest = directRequest.eq("region_suburb", subLocation);
