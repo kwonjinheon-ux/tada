@@ -24,7 +24,7 @@ const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
 
 export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], nextCursor = null }: { shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchQuery = searchParams.get("q") ?? "";
@@ -264,6 +264,8 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           sortOptions={marketSortOptions(t)}
           onSortChange={changeSort}
           sortDisplay="chips"
+          resultsLabel={locale === "ko" ? `${listings.length}개 매물` : `${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
+          resultsLabelPlacement="after-sort"
         />
 
         <AdSlot placement="market_top" />

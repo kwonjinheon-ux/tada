@@ -8845,6 +8845,28 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     overflow-x: auto;
   }
 
+  /* Market keeps its result count in view while the sort options retain their
+     own horizontal rail. The optional category rail is hidden on this screen. */
+  .market-toolbar--results-after-sort .market-toolbar-top {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    overflow: visible;
+  }
+  .market-toolbar--results-after-sort .view-toggle { grid-column: 1; }
+  .market-toolbar--results-after-sort .market-sort-chip-row {
+    grid-column: 2;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .market-toolbar--results-after-sort .market-tools {
+    grid-column: 3;
+    justify-self: end;
+  }
+  .market-toolbar--results-after-sort .market-tools p {
+    margin: 0;
+    white-space: nowrap;
+  }
+
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .dashboard-layout:has(> .messages-page) { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }

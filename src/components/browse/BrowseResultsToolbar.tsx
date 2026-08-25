@@ -27,6 +27,7 @@ export type BrowseResultsToolbarProps = {
   sortDisplay?: "select" | "chips";
   chipStyle?: "category" | "sort";
   resultsLabel?: string;
+  resultsLabelPlacement?: "before-sort" | "after-sort";
   hideChipsOnMobile?: boolean;
 };
 
@@ -49,6 +50,7 @@ export function BrowseResultsToolbar({
   sortDisplay = "select",
   chipStyle = "category",
   resultsLabel,
+  resultsLabelPlacement = "before-sort",
   hideChipsOnMobile = false,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
@@ -68,7 +70,16 @@ export function BrowseResultsToolbar({
     onChipSelect?.(value);
   };
 
-  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}`}>
+  const resultsTools = resultsLabel || (showSort && sortDisplay === "select") ? <div className="market-tools">
+    {resultsLabel ? <p>{resultsLabel}</p> : null}
+    {showSort && sortDisplay === "select" ? <label className="sort-control" aria-label={t("sortListings")}>
+      <select value={sortValue} onChange={(event) => onSortChange?.(event.target.value)}>
+        {sortOptions?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label> : null}
+  </div> : null;
+
+  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}${resultsLabelPlacement === "after-sort" ? " market-toolbar--results-after-sort" : ""}`}>
     <div className="market-toolbar-top">
       {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
@@ -94,14 +105,7 @@ export function BrowseResultsToolbar({
         })}
       </div> : null}
 
-      {resultsLabel || (showSort && sortDisplay === "select") ? <div className="market-tools">
-        {resultsLabel ? <p>{resultsLabel}</p> : null}
-        {showSort && sortDisplay === "select" ? <label className="sort-control" aria-label={t("sortListings")}>
-          <select value={sortValue} onChange={(event) => onSortChange?.(event.target.value)}>
-            {sortOptions?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-        </label> : null}
-      </div> : null}
+      {resultsLabelPlacement === "before-sort" ? resultsTools : null}
 
       {showSort && sortDisplay === "chips" ? <div className="market-sort-chip-row" role="tablist" aria-label={t("sortListings")}>
         {sortOptions?.map((option) => {
@@ -109,6 +113,8 @@ export function BrowseResultsToolbar({
           return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}${clickedSort === option.value ? " is-clicking" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => chooseSort(option.value)}>{option.label}</button>;
         })}
       </div> : null}
+
+      {resultsLabelPlacement === "after-sort" ? resultsTools : null}
     </div>
   </div>;
 }
