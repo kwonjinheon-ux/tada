@@ -28,6 +28,7 @@ export type BrowseResultsToolbarProps = {
   chipStyle?: "category" | "sort";
   resultsLabel?: string;
   resultsLabelPlacement?: "before-sort" | "after-sort";
+  combineChipsAndSort?: boolean;
   hideChipsOnMobile?: boolean;
 };
 
@@ -51,6 +52,7 @@ export function BrowseResultsToolbar({
   chipStyle = "category",
   resultsLabel,
   resultsLabelPlacement = "before-sort",
+  combineChipsAndSort = false,
   hideChipsOnMobile = false,
 }: BrowseResultsToolbarProps) {
   const { t } = useLanguage();
@@ -79,7 +81,29 @@ export function BrowseResultsToolbar({
     </label> : null}
   </div> : null;
 
-  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}${resultsLabelPlacement === "after-sort" ? " market-toolbar--results-after-sort" : ""}`}>
+  const chipRow = chips.length ? <div className={`market-chip-row${chipStyle === "sort" ? " market-chip-row--sort" : ""}`} aria-label={t("quickCategories")}>
+    {chips.map((chip) => {
+      const isSelected = chip.value === activeChipValue;
+      return <button
+        key={chip.value}
+        className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : "", clickedChip === chip.value ? "is-clicking" : ""].filter(Boolean).join(" ")}
+        type="button"
+        aria-pressed={isSelected}
+        onClick={() => chooseChip(chip.value)}
+      >
+        {chip.label}
+      </button>;
+    })}
+  </div> : null;
+
+  const sortRow = showSort && sortDisplay === "chips" ? <div className="market-sort-chip-row" role="tablist" aria-label={t("sortListings")}>
+    {sortOptions?.map((option) => {
+      const isSelected = option.value === sortValue;
+      return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}${clickedSort === option.value ? " is-clicking" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => chooseSort(option.value)}>{option.label}</button>;
+    })}
+  </div> : null;
+
+  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}${resultsLabelPlacement === "after-sort" ? " market-toolbar--results-after-sort" : ""}${combineChipsAndSort ? " market-toolbar--combined-chips" : ""}`}>
     <div className="market-toolbar-top">
       {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
@@ -90,29 +114,11 @@ export function BrowseResultsToolbar({
         </button>
       </div> : null}
 
-      {chips.length ? <div className={`market-chip-row${chipStyle === "sort" ? " market-chip-row--sort" : ""}`} aria-label={t("quickCategories")}>
-        {chips.map((chip) => {
-          const isSelected = chip.value === activeChipValue;
-          return <button
-            key={chip.value}
-            className={[chip.className, isSelected ? "is-selected" : "", applyingChip === chip.value ? "is-applying" : "", clickedChip === chip.value ? "is-clicking" : ""].filter(Boolean).join(" ")}
-            type="button"
-            aria-pressed={isSelected}
-            onClick={() => chooseChip(chip.value)}
-          >
-            {chip.label}
-          </button>;
-        })}
-      </div> : null}
+      {combineChipsAndSort ? <div className="market-toolbar-chip-rail">{chipRow}{sortRow}</div> : chipRow}
 
       {resultsLabelPlacement === "before-sort" ? resultsTools : null}
 
-      {showSort && sortDisplay === "chips" ? <div className="market-sort-chip-row" role="tablist" aria-label={t("sortListings")}>
-        {sortOptions?.map((option) => {
-          const isSelected = option.value === sortValue;
-          return <button key={option.value} className={`sort-${option.value}${isSelected ? " is-selected" : ""}${clickedSort === option.value ? " is-clicking" : ""}`} type="button" role="tab" aria-selected={isSelected} onClick={() => chooseSort(option.value)}>{option.label}</button>;
-        })}
-      </div> : null}
+      {combineChipsAndSort ? null : sortRow}
 
       {resultsLabelPlacement === "after-sort" ? resultsTools : null}
     </div>

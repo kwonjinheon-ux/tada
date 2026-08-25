@@ -507,7 +507,7 @@ export function Navbar() {
   };
 
   const standardDockItems: MobileDockItem[] = [
-    { id: "home", label: isCommunity ? "Community home" : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
+    { id: "home", label: isCommunity ? (locale === "ko" ? t("home") : "Community home") : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
     { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
     { id: "create", label: createLabel, icon: "create", href: createPath, active: isPostAd, variant: "create" },
     { id: "categories", label: t("categories"), icon: "categories", onClick: openMobileCategories },

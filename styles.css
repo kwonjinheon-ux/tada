@@ -1754,6 +1754,18 @@ a {
   flex: 0 0 auto;
 }
 
+.market-toolbar-chip-rail {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.market-toolbar-chip-rail::-webkit-scrollbar { display: none; }
+
 .market-toolbar h1 {
   margin: 0;
   color: var(--ink);
@@ -6078,13 +6090,25 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: inline-grid;
     border: 0;
     background: transparent;
-    color: var(--amber-450);
-    font-size: var(--text-xl);
+    color: var(--color-ink-soft);
+    font-size: calc(var(--text-xl) * 1.25);
   }
 
   .nav-notifications.mobile-notifications:hover,
   .nav-notifications.mobile-notifications:focus-visible {
     background: var(--neutral-200);
+    color: var(--color-ink);
+  }
+
+  .nav-notifications.mobile-notifications > i,
+  .nav-notifications.mobile-notifications:hover > i,
+  .nav-notifications.mobile-notifications:focus-visible > i {
+    color: currentColor;
+  }
+
+  .nav-notifications.mobile-notifications.has-unread,
+  .nav-notifications.mobile-notifications.has-unread:hover,
+  .nav-notifications.mobile-notifications.has-unread:focus-visible {
     color: var(--amber-550);
   }
 
@@ -8843,6 +8867,36 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     grid-column: 1 / -1;
     min-width: 0;
     overflow-x: auto;
+  }
+
+  /* Services presents its scope filters and sort choices as one continuous
+     rail; the result count remains visible at the end of the toolbar. */
+  .services-results .market-toolbar--combined-chips .market-toolbar-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .services-results .market-toolbar--combined-chips .market-toolbar-chip-rail {
+    grid-column: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+  .services-results .market-toolbar--combined-chips .market-toolbar-chip-rail::-webkit-scrollbar { display: none; }
+  .services-results .market-toolbar--combined-chips .market-chip-row,
+  .services-results .market-toolbar--combined-chips .market-sort-chip-row {
+    flex: 0 0 auto;
+    margin: 0;
+    overflow: visible;
+  }
+  .services-results .market-toolbar--combined-chips .market-tools {
+    grid-column: 2;
+    justify-self: end;
   }
 
   /* Market keeps its result count in view while the sort options retain their

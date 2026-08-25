@@ -177,6 +177,7 @@ export function ServicesPageClient() {
           onSortChange={setSort}
           sortDisplay="chips"
           resultsLabel={text.serviceCount(visibleServices.length)}
+          combineChipsAndSort
         />
 
         <section className="services-sponsor-banner" aria-label={text.sponsored}>
