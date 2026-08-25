@@ -611,6 +611,20 @@ button { cursor: pointer; }
 .ms-pets, .ms-flight-takeoff, .ms-map, .ms-location-on, .ms-explore,
 .ms-directions { color: var(--vivid-teal); }
 
+/* Metadata reads as one quiet line — views, place, time — so the glyphs in it
+   follow the text rather than puncturing it with a colour each. A teal pin and
+   a purple clock either side of grey text draw the eye to the least important
+   thing on the card. */
+.community-post-meta .ms,
+.community-detail-post-meta .ms,
+.community-recent-post-meta .ms,
+.listing-row-meta .ms,
+.services-listing-meta .ms,
+.bargain-sale-item-meta .ms,
+.moderation-report-meta .ms,
+.product-body > p > .ms,
+.product-event-date > .ms { color: inherit; }
+
 /* A toggle glyph earns its hue only in the on state. A hollow-but-pink heart
    reads as already saved, which is the opposite of what it means. */
 .ms--outline { color: inherit; }
