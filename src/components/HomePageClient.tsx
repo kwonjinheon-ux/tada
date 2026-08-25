@@ -58,9 +58,9 @@ const destinationActions = {
 } as const;
 
 const koreanDestinationActions = {
-  market: { primary: "상품 둘러보기", secondary: "판매 등록" },
-  community: { primary: "동네 글 보기", secondary: "글쓰기" },
-  services: { primary: "서비스 보기", secondary: "서비스 등록" },
+  market: { primary: "판매 등록", secondary: null },
+  community: { primary: "글쓰기", secondary: null },
+  services: { primary: "서비스 등록", secondary: null },
   jobs: { primary: "준비중", secondary: null },
 } as const;
 
@@ -290,17 +290,26 @@ export function HomePageClient({
             <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
 
-          <section className="home-reference-destinations" aria-label="Explore Tada">
-            <h2>{destinationHeading}</h2>
+          <section className={`home-reference-destinations${isKorean ? " home-reference-destinations--korean" : ""}`} aria-label={destinationHeading}>
+            {!isKorean ? <h2>{destinationHeading}</h2> : null}
             {destinationIntro ? <p>{destinationIntro}</p> : null}
             <div className="home-reference-destination-grid">
               {visibleDestinations.map((destination) => {
                 const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
                 const action = (isKorean ? koreanDestinationActions : destinationActions)[destination.tone as keyof typeof destinationActions];
-                return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
+                const href = isKorean
+                  ? destination.tone === "market"
+                    ? "/market/create"
+                    : destination.tone === "community"
+                      ? "/community/create"
+                      : destination.tone === "services"
+                        ? "/services/create"
+                        : destination.href
+                  : destination.href;
+                return <Link className={`home-reference-destination home-reference-destination--${destination.tone}${isKorean ? " is-korean" : ""} ui-card`} href={href} key={destination.title}>
                   <div className="home-reference-destination-heading"><i className={`ms ${destination.icon}`} aria-hidden="true" /><strong>{destination.title}</strong></div>
-                  <span>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
-                  <footer className={isKorean ? "is-korean" : undefined}><strong>{destination.comingSoon ? action.primary : action.primary} {!destination.comingSoon ? <i className="ms ms-arrow-forward" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="ms ms-add" aria-hidden="true" /> {action.secondary}</small> : <em>{text.soon}</em>}</footer>
+                  <span>{!isKorean && subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
+                  <footer className={isKorean ? "is-korean" : undefined}><strong>{action.primary} {!destination.comingSoon ? <i className="ms ms-arrow-forward" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="ms ms-add" aria-hidden="true" /> {action.secondary}</small> : destination.comingSoon ? <em>{text.soon}</em> : null}</footer>
                 </Link>
               })}
             </div>
