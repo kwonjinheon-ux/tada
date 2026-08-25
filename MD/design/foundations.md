@@ -8,7 +8,7 @@ Styling flows in one direction. A layer may only use the layer above it.
 1. Palette      src/app/globals.css  — the only raw colour values in the repo
 2. Semantic     src/app/globals.css  — --color-*, what a colour means
 3. Scales       src/app/globals.css  — radius, type, weight, shadow, height, space
-4. Primitives   src/app/globals.css  — .ui-button, .ui-card, .ui-field, .ui-pill …
+4. Primitives   src/app/globals.css  — .ui-button, .ui-card, .ui-field, .ui-pill, .ti …
 5. Components   src/components/ui/   — Button, PageContainer, DialogOverlay
 6. Feature CSS  styles.css           — per-screen classes, layered on primitives
 ```
@@ -108,6 +108,31 @@ Reach for the component before the class:
 | `PageContainer` | Page-level `max-width` + `margin auto` + safe-area padding |
 | `DialogOverlay` | Any `position: fixed; inset: 0` backdrop |
 | `IconButton` | Icon-only controls |
+
+## 6. Icons
+
+One set, one weight, one colour.
+
+`<i className="ti ti-name" aria-hidden="true" />` — Tabler Icons, loaded as a
+webfont in `src/app/layout.tsx`. Look names up at tabler.io/icons; a class that
+is not a real glyph renders as blank space, so check before you ship it.
+
+- Colour comes from `--color-ink`. The active or selected row takes
+  `--color-primary`. Nothing else gets a hue.
+- Do not tint icons per category, per type, or per row. That is what turned
+  the browse lists into six competing accents, and none of them meant
+  anything — the reader cannot learn nine colours that are never explained.
+- Semantic colour still applies where the colour *is* the message: danger,
+  warning, a rating star, a saved heart.
+- `-filled` variants are for state the glyph itself must carry —
+  `ti-heart-filled` when saved, `ti-square-check-filled` when checked. Never
+  reach for one just to make an icon look heavier.
+- `.ti-spin` is ours, not Tabler's; it lives in `globals.css`.
+- Do not add an image file as an icon. Fourteen PNG illustrations used to
+  stand in for glyphs on the rails and cost 7.4MB.
+
+Brand marks (`ti-brand-facebook`, `ti-brand-instagram`) are the one place a
+glyph is allowed to sit outside this system.
 
 ## Responsive standard
 
