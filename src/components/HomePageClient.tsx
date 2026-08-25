@@ -285,7 +285,7 @@ export function HomePageClient({
               <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
               <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="ms ms-location-on" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="ms ms-add" aria-hidden="true" />{heroPostAction}</Link></div>
-              <small className="home-reference-hero-trust"><i className="ms ms-favorite" aria-hidden="true" />{heroTrust}</small>
+              <small className="home-reference-hero-trust">{heroTrust}</small>
             </div>
             <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
