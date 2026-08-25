@@ -580,10 +580,10 @@ button { cursor: pointer; }
    the part the old per-screen tints got wrong.
    Glyphs that depict a subject get a hue. Controls — anything that means the
    same thing on every screen — are absent from this list and stay ink. */
-.ms-storefront, .ms-local-shipping, .ms-help, .ms-chat, .ms-chat-bubble,
+.ms-local-shipping, .ms-help, .ms-chat, .ms-chat-bubble,
 .ms-sms, .ms-mail, .ms-drafts, .ms-inbox, .ms-call, .ms-headset-mic { color: var(--vivid-blue); }
 
-.ms-moving, .ms-handyman, .ms-forum, .ms-home, .ms-apartment, .ms-weekend,
+.ms-storefront, .ms-handyman, .ms-forum, .ms-home, .ms-apartment, .ms-weekend,
 .ms-build, .ms-work, .ms-handshake, .ms-person, .ms-person-add,
 .ms-account-circle, .ms-badge, .ms-shield, .ms-policy, .ms-lock,
 .ms-security { color: var(--vivid-indigo); }

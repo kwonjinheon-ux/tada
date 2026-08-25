@@ -107,7 +107,7 @@ type ShopTypeValue = "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop
 const postShopTypeOptions: Array<{ value: ShopTypeValue; label: string; icon: string }> = [
   { value: "secondhand", label: "Second Hands", icon: "ms-storefront" },
   { value: "garage-sale", label: "Garage Sale", icon: "ms-warehouse" },
-  { value: "moving-sale", label: "Moving Sale", icon: "ms-moving" },
+  { value: "moving-sale", label: "Moving Sale", icon: "ms-local-shipping" },
   { value: "2dollarshop", label: "2 Dollar Shop", icon: "ms-savings" },
   { value: "groupbuy", label: "Group Buy", icon: "ms-groups" },
 ];

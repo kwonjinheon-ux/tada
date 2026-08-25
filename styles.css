@@ -1994,12 +1994,28 @@ a {
     border-top: 1px solid var(--color-line-soft);
   }
 
+  /* Category rows read at the same size as the market-type rows above them.
+     The selected-row bar is what separates the two lists, not a smaller type. */
   .market-filter-panel:not(.is-open) .category-filter .filter-list button {
-    min-height: var(--control-h-sm);
-    padding-left: calc(var(--space-3) + 3px);
+    min-height: var(--control-h-lg);
+    grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto;
+    padding-left: var(--space-2);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-md);
+  }
+
+  /* Category is a long secondary list under the market-type rail. Giving its
+     twenty-odd glyphs a hue each would out-shout the five rows above, so this
+     one list stays monotone and the rail keeps the colour. */
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button:not(.is-selected) > i {
+    font-size: var(--text-lg);
     color: var(--color-muted);
-    font-size: var(--text-xs);
+  }
+
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected > i {
+    font-size: var(--text-lg);
+    color: var(--color-ink);
   }
 
   .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected {
@@ -11087,6 +11103,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .market-filter-panel.is-open .category-filter .filter-list {
     gap: var(--space-1);
   }
+
+  /* Same monotone treatment inside the drawer, so the list does not change
+     character between the rail and the mobile sheet. */
+  .market-filter-panel.is-open .category-filter .filter-list button:not(.is-selected) > i { color: var(--color-muted); }
+  .market-filter-panel.is-open .category-filter .filter-list button.is-selected > i { color: var(--color-ink); }
 
   .market-filter-panel.is-open .category-filter .filter-list button {
     min-height: var(--control-h-sm);

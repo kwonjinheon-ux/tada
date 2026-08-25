@@ -37,7 +37,7 @@ const marketShortcuts = [
 const koreanMarketShortcuts = [
   { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ms-storefront" },
   { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
-  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-moving" },
+  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
   { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-savings" },
   { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
