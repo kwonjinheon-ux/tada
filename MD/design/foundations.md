@@ -166,6 +166,15 @@ a variable cannot reach.
 
 ## Fonts
 
-Before production launch, place the licensed Inter WOFF2 files in
-`public/fonts/` and define a local `@font-face` for `--font-app`, so the
-production build does not depend on Google Fonts.
+Inter and Tabler are self-hosted from `public/fonts`, so no page render waits
+on a third party. Inter is one variable file covering 100–900, replacing the
+five static weights the old Google Fonts link pulled.
+
+The icon font is a subset: `npm run build:icons` reads every `ti-` class the
+source actually uses and emits `public/fonts/tabler-icons-subset.woff2` plus
+the generated `src/app/icon-font.css`. 151 of 5,936 glyphs, 29KB instead of
+801KB. Re-run it after adding or removing an icon; `npm run check:icons`
+fails when the two drift apart.
+
+Licences ship alongside the files as `inter-LICENSE.txt` and
+`tabler-icons-LICENSE.txt`.
