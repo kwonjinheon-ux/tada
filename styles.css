@@ -6235,6 +6235,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-profile-popover-item > i:first-child { width: 20px; font-size: var(--text-lg); text-align: center; }
+  /* Keep the mobile account menu visually quiet; notification state stays on its badge. */
+  #mobile-dashboard-menu .mobile-profile-popover-item > i:first-child { color: var(--neutral-700); }
   .mobile-profile-popover-item > i:last-child { color: var(--muted); font-size: var(--text-xs); }
   .mobile-profile-popover-item:hover,
   .mobile-profile-popover-item.is-active { background: var(--neutral-200); color: var(--neutral-950); }
@@ -6778,6 +6780,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     background: transparent;
   }
 
+  /* Shared dock feedback: hover lifts a destination, while touch/click gives
+     the same compact press response without changing its semantic colour. */
+  @media (hover: hover) and (pointer: fine) {
+    .mobile-bottom-dock a:not(.mobile-dock-create):hover,
+    .mobile-bottom-dock button:not(.mobile-dock-create):hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+  }
+
+  .mobile-bottom-dock a:not(.mobile-dock-create):active,
+  .mobile-bottom-dock button:not(.mobile-dock-create):active {
+    animation: mobile-dock-item-press 220ms ease-out;
+  }
+
   .mobile-bottom-dock a:focus-visible,
   .mobile-bottom-dock button:focus-visible {
     outline: 3px solid rgba(0, 113, 227, .34);
@@ -6879,6 +6895,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     100% { transform: translateY(0) scale(1); }
   }
 
+  @keyframes mobile-dock-item-press {
+    0% { transform: translateY(0) scale(1); }
+    45% { transform: translateY(1px) scale(.94); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
   .mobile-bottom-dock .mobile-dock-create.is-active {
     background: transparent;
     color: var(--blue-400);
@@ -6899,7 +6921,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     .mobile-bottom-dock a,
     .mobile-bottom-dock button { transition: none; }
 
-    .mobile-bottom-dock .mobile-dock-create:active i { animation: none; }
+    .mobile-bottom-dock .mobile-dock-create:active i,
+    .mobile-bottom-dock a:not(.mobile-dock-create):active,
+    .mobile-bottom-dock button:not(.mobile-dock-create):active { animation: none; }
   }
 
   .marketplace-page {
@@ -8798,6 +8822,28 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .market-toolbar-top > .market-chip-row { margin-left: 0; overflow: visible; }
   .market-toolbar-top > .market-sort-chip-row { overflow: visible; }
   .market-toolbar--hide-chips-mobile .market-chip-row { display: none; }
+
+  /* Services keeps the result count anchored on the trailing edge while its
+     filter and sort rails remain independently scrollable. */
+  .services-results .market-toolbar-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    overflow: visible;
+  }
+  .services-results .market-toolbar-top > .market-chip-row {
+    grid-column: 1;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .services-results .market-toolbar-top > .market-tools {
+    grid-column: 2;
+    justify-self: end;
+  }
+  .services-results .market-toolbar-top > .market-sort-chip-row {
+    grid-column: 1 / -1;
+    min-width: 0;
+    overflow-x: auto;
+  }
 
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
