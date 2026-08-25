@@ -9,161 +9,199 @@
    step below is a real shade from the existing design rather than a guess.
    ========================================================================== */
 :root {
-  /* neutral */
+  /* neutral — pure cool grey, no hue cast. A grey that leans green or teal
+     makes every white surface above it read as slightly dirty. */
   --neutral-50: #ffffff;
-  --neutral-100: #f9fefd;
-  --neutral-150: #f7f9ff;
-  --neutral-200: #f1f2f7;
-  --neutral-250: #dde5e7;
-  --neutral-300: #ccd7d9;
-  --neutral-400: #b2bfbd;
-  --neutral-500: #9caaa9;
-  --neutral-650: #748182;
-  --neutral-700: #697879;
-  --neutral-950: #2f3438;
-  --neutral-975: #0f0f0f;
-  /* green */
-  --green-150: #c8f4e5;
-  --green-200: #d8e9b7;
-  --green-250: #b6e7d5;
-  --green-300: #9ddbc6;
-  --green-350: #25c98b;
-  --green-400: #14b8a6;
-  --green-450: #10b981;
-  --green-500: #75a20c;
-  --green-550: #0da876;
-  --green-600: #16a34a;
-  --green-650: #08986a;
-  --green-700: #038660;
-  --green-750: #027b57;
-  --green-800: #0c7869;
-  --green-850: #4d6815;
-  --green-900: #086c46;
-  --green-950: #045d42;
-  --green-975: #063e2c;
-  /* green-soft */
-  --green-soft-50: #e3f9f0;
-  --green-soft-200: #ccead5;
-  --green-soft-250: #badcd0;
-  --green-soft-350: #bacbc2;
-  --green-soft-400: #aebfb7;
-  --green-soft-650: #6d7d78;
-  --green-soft-800: #4a5c52;
-  --green-soft-900: #3e4d44;
-  /* blue */
-  --blue-50: #d5d8ff;
-  --blue-100: #c3deff;
-  --blue-150: #b9d1ff;
-  --blue-200: #8bb9ff;
-  --blue-250: #2fa8ff;
-  --blue-300: #5893d3;
-  --blue-350: #5967f2;
-  --blue-400: #2164e6;
-  --blue-450: #4f46e5;
-  --blue-500: #46688d;
-  --blue-550: #2546c7;
-  --blue-600: #3b536f;
-  --blue-650: #134f97;
-  --blue-700: #35349a;
-  --blue-750: #2b4461;
-  --blue-800: #233853;
-  --blue-850: #1c2f48;
-  --blue-900: #12243c;
-  --blue-950: #0b1c30;
-  --blue-975: #07172d;
-  /* blue-soft */
-  --blue-soft-100: #e4eefe;
-  --blue-soft-150: #d9e4f2;
-  --blue-soft-250: #c9d7e6;
-  --blue-soft-350: #b8cada;
-  --blue-soft-450: #9dadbd;
-  --blue-soft-550: #8594a5;
-  --blue-soft-600: #728297;
-  --blue-soft-650: #637388;
-  --blue-soft-700: #536478;
-  --blue-soft-750: #49596d;
-  --blue-soft-800: #3f5065;
-  --blue-soft-850: #324255;
-  --blue-soft-900: #243548;
-  --blue-soft-950: #18283d;
-  --blue-soft-975: #0f1a2b;
-  /* teal */
-  --teal-550: #6c9caf;
-  --teal-650: #0891b2;
-  --teal-800: #00656b;
-  --teal-900: #294d60;
-  --teal-950: #17384b;
-  --teal-955: #17384a;
-  --teal-965: #0a202a;
-  --teal-985: #071820;
+  --neutral-100: #fbfbfd;
+  --neutral-150: #f5f5f7;
+  --neutral-200: #efeff2;
+  --neutral-250: #e8e8ed;
+  --neutral-300: #dcdce1;
+  --neutral-400: #d2d2d7;
+  --neutral-500: #aeaeb2;
+  --neutral-650: #86868b;
+  --neutral-700: #6e6e73;
+  --neutral-950: #2c2c2e;
+  --neutral-975: #1d1d1f;
+  /* accent — the primary action ramp. */
+  --accent-150: #cfe4fb;
+  --accent-200: #bfdbfe;
+  --accent-250: #a8ccf7;
+  --accent-300: #93c5fd;
+  --accent-350: #60a5fa;
+  --accent-400: #3b9eff;
+  --accent-450: #0071e3;
+  --accent-500: #0068d6;
+  --accent-550: #0077ed;
+  --accent-600: #0064cc;
+  --accent-650: #005bbd;
+  --accent-700: #0058b0;
+  --accent-750: #004f9e;
+  --accent-800: #00478d;
+  --accent-850: #003f7e;
+  --accent-900: #003870;
+  --accent-950: #002f5e;
+  --accent-975: #00234a;
+  /* accent-soft — desaturated tints for fills, borders and hover states. */
+  --accent-soft-50: #eef4fd;
+  --accent-soft-200: #dbe6f6;
+  --accent-soft-250: #c9d9ef;
+  --accent-soft-350: #c2ccd9;
+  --accent-soft-400: #b4c0d0;
+  --accent-soft-650: #6e7a8b;
+  --accent-soft-800: #4a5566;
+  --accent-soft-900: #3d4757;
+  /* success — a real green, kept apart from the accent ramp so a positive
+     state still reads as positive after the accent moved to blue. */
+  --success-100: #eaf7ee;
+  --success-500: #248a3d;
+  --success-700: #1c6e31;
+  /* Legacy hue-named aliases. `styles.css` still reaches for these palette
+     steps directly; they resolve onto the accent ramp above so the whole
+     surface moves together. Point new work at `--accent-*` instead. */
+  --green-150: var(--accent-150);
+  --green-200: var(--accent-200);
+  --green-250: var(--accent-250);
+  --green-300: var(--accent-300);
+  --green-350: var(--accent-350);
+  --green-400: var(--accent-400);
+  --green-450: var(--accent-450);
+  --green-500: var(--accent-500);
+  --green-550: var(--accent-550);
+  --green-600: var(--accent-600);
+  --green-650: var(--accent-650);
+  --green-700: var(--accent-700);
+  --green-750: var(--accent-750);
+  --green-800: var(--accent-800);
+  --green-850: var(--accent-850);
+  --green-900: var(--accent-900);
+  --green-950: var(--accent-950);
+  --green-975: var(--accent-975);
+  --green-soft-50: var(--accent-soft-50);
+  --green-soft-200: var(--accent-soft-200);
+  --green-soft-250: var(--accent-soft-250);
+  --green-soft-350: var(--accent-soft-350);
+  --green-soft-400: var(--accent-soft-400);
+  --green-soft-650: var(--accent-soft-650);
+  --green-soft-800: var(--accent-soft-800);
+  --green-soft-900: var(--accent-soft-900);
+  /* blue — split family. Steps 50–700 are true blue and carry link and
+     accent work; steps 750–975 are the ink ramp and are deliberately near
+     neutral, because text tinted navy never settles against a grey page. */
+  --blue-50: #e6eefb;
+  --blue-100: #dbe9fb;
+  --blue-150: #cfe0f8;
+  --blue-200: #a8c8ee;
+  --blue-250: #3b9eff;
+  --blue-300: #5b93d6;
+  --blue-350: #4a7fe0;
+  --blue-400: #0071e3;
+  --blue-450: #3d5ccc;
+  --blue-500: #5c6b7d;
+  --blue-550: #0071e3;
+  --blue-600: #4a5563;
+  --blue-650: #0058b0;
+  --blue-700: #2f4a8f;
+  --blue-750: #3a3a3e;
+  --blue-800: #333338;
+  --blue-850: #2c2c2e;
+  --blue-900: #262628;
+  --blue-950: #212123;
+  --blue-975: #1d1d1f;
+  /* blue-soft — the secondary text and hairline ramp, pure cool grey. */
+  --blue-soft-100: #f0f0f3;
+  --blue-soft-150: #e8e8ed;
+  --blue-soft-250: #dcdce1;
+  --blue-soft-350: #cccdd2;
+  --blue-soft-450: #b8b9be;
+  --blue-soft-550: #a1a1a6;
+  --blue-soft-600: #86868b;
+  --blue-soft-650: #6e6e73;
+  --blue-soft-700: #5c5c61;
+  --blue-soft-750: #515156;
+  --blue-soft-800: #46464b;
+  --blue-soft-850: #3a3a3e;
+  --blue-soft-900: #2e2e32;
+  --blue-soft-950: #252527;
+  --blue-soft-975: #1d1d1f;
+  /* teal — carries the footer, the one dark surface in the app. It was a
+     washed navy-teal that matched nothing else; it is now near-black. */
+  --teal-550: #7d8b96;
+  --teal-650: #0a84a8;
+  --teal-800: #10646b;
+  --teal-900: #3a3a3e;
+  --teal-950: #2c2c2e;
+  --teal-955: #1d1d1f;
+  --teal-965: #161618;
+  --teal-985: #0f0f10;
   /* teal-soft */
-  --teal-soft-150: #d5ebf2;
-  --teal-soft-250: #b9d9eb;
-  --teal-soft-700: #607076;
-  --teal-soft-900: #36454a;
-  --teal-soft-050: #dce7ea;
-  --teal-soft-100: #c4d0d5;
-  --teal-soft-350: #98acb4;
+  --teal-soft-150: #dfeff5;
+  --teal-soft-250: #c3dced;
+  --teal-soft-700: #6e6e73;
+  --teal-soft-900: #3a3a3e;
+  --teal-soft-050: #f5f5f7;
+  --teal-soft-100: #d2d2d7;
+  --teal-soft-350: #a1a1a6;
   /* red */
-  --red-200: #ffd3c5;
-  --red-350: #f3b6b3;
-  --red-450: #ff8a5b;
-  --red-550: #f66217;
-  --red-600: #d67878;
-  --red-650: #ff0033;
-  --red-700: #e14c50;
-  --red-750: #d92b30;
-  --red-800: #b45309;
-  --red-850: #c8202f;
-  --red-900: #b02922;
-  --red-950: #903b25;
+  --red-200: #ffd9d6;
+  --red-350: #f5b8b5;
+  --red-450: #ff8a70;
+  --red-550: #ff6b35;
+  --red-600: #d68080;
+  --red-650: #ff3b30;
+  --red-700: #e5484d;
+  --red-750: #d92d20;
+  --red-800: #b25000;
+  --red-850: #d70015;
+  --red-900: #c00f1f;
+  --red-950: #8a3a2a;
   /* rose */
-  --rose-250: #fecaca;
-  --rose-300: #f6c5d1;
-  --rose-350: #e4b8b8;
-  --rose-400: #dea5a5;
+  --rose-250: #fecdd0;
+  --rose-300: #f8c8d4;
+  --rose-350: #eabcbc;
+  --rose-400: #e5a9a9;
   --rose-500: #ff5d8f;
-  --rose-600: #ed457b;
-  --rose-650: #c66b72;
+  --rose-600: #ee4a7e;
+  --rose-650: #cc7076;
   --rose-700: #db2777;
-  --rose-750: #da2a49;
-  --rose-800: #c02b43;
-  --rose-850: #98224e;
+  --rose-750: #dc2e4d;
+  --rose-800: #c42b46;
+  --rose-850: #9c2452;
   /* rose-soft */
-  --rose-soft-100: #ffe8ee;
-  --rose-soft-200: #f1d4d9;
-  --rose-soft-300: #e6c6cc;
+  --rose-soft-100: #fdeceb;
+  --rose-soft-200: #f5d8da;
+  --rose-soft-300: #ebcace;
   /* amber */
-  --amber-50: #fff3cd;
-  --amber-150: #ffdda5;
-  --amber-350: #faba32;
-  --amber-450: #f29d02;
-  --amber-500: #df9500;
-  --amber-550: #d27804;
-  --amber-700: #a46700;
-  --amber-750: #8f5f00;
-  --amber-800: #865000;
-  --amber-850: #72451f;
-  --amber-900: #5f3900;
-  --amber-950: #4b3100;
+  --amber-50: #fff4d6;
+  --amber-150: #ffe0ad;
+  --amber-350: #fcbe3c;
+  --amber-450: #ff9500;
+  --amber-500: #ed8f00;
+  --amber-550: #d97d06;
+  --amber-700: #a86800;
+  --amber-750: #945f00;
+  --amber-800: #b25000;
+  --amber-850: #7a4a20;
+  --amber-900: #663d00;
+  --amber-950: #503300;
   /* amber-soft */
-  --amber-soft-50: #fff4de;
-  --amber-soft-250: #e8d1b8;
-  --amber-soft-950: #3d2d15;
+  --amber-soft-50: #fff4e5;
+  --amber-soft-250: #ecd6bf;
+  --amber-soft-950: #422f18;
   /* orange */
-  --orange-500: #ff4500;
-  --orange-600: #e23c00;
-  --orange-soft-100: #ffe9e0;
+  --orange-500: #ef5f16;
+  --orange-600: #d24f0c;
+  --orange-soft-100: #fff0e6;
   /* violet */
-  --violet-200: #f7cde5;
-  --violet-250: #e2cffa;
+  --violet-200: #f7d0e6;
+  --violet-250: #e4d3fa;
   --violet-600: #a855f7;
   --violet-650: #c026d3;
-  --violet-700: #8438ec;
-  --violet-750: #6b45b5;
-  --violet-850: #633294;
+  --violet-700: #7c3aed;
+  --violet-750: #6d47b8;
+  --violet-850: #653597;
   /* violet-soft */
-  --violet-soft-100: #f0eaff;
+  --violet-soft-100: #f1ebff;
 }
 
 /* ==========================================================================
@@ -177,8 +215,8 @@
   --color-surface-sunken: var(--neutral-150);
   --color-background: var(--neutral-150);
 
-  --color-ink: var(--blue-975);
-  --color-ink-soft: var(--blue-850);
+  --color-ink: var(--neutral-975);
+  --color-ink-soft: var(--neutral-950);
   --color-muted: var(--blue-soft-650);
   --color-vote-idle: var(--blue-soft-650);
   --color-vote-up: var(--orange-500);
@@ -191,15 +229,15 @@
   --color-line: var(--neutral-400);
   --color-line-soft: var(--neutral-200);
 
-  --color-primary: var(--green-450);
-  --color-primary-hover: var(--green-550);
-  --color-primary-dark: var(--green-700);
-  --color-primary-strong: var(--green-750);
-  --color-primary-deep: var(--green-900);
-  --color-primary-soft: var(--green-soft-50);
+  --color-primary: var(--accent-450);
+  --color-primary-hover: var(--accent-550);
+  --color-primary-dark: var(--accent-700);
+  --color-primary-strong: var(--accent-750);
+  --color-primary-deep: var(--accent-900);
+  --color-primary-soft: var(--accent-soft-50);
   --color-on-primary: var(--neutral-50);
 
-  --color-brand: var(--blue-550);
+  --color-brand: var(--accent-450);
 
   --color-danger: var(--red-900);
   --color-danger-hover: var(--red-850);
@@ -209,8 +247,8 @@
   --color-warning: var(--amber-800);
   --color-warning-soft: var(--amber-soft-50);
 
-  --color-success: var(--green-700);
-  --color-success-soft: var(--green-soft-50);
+  --color-success: var(--success-500);
+  --color-success-soft: var(--success-100);
 
   /* The footer is the one dark surface in the app and needs its own ink. */
   --color-footer-surface: var(--teal-955);
@@ -225,11 +263,11 @@
    3. Shape, type and elevation scales
    ========================================================================== */
 :root {
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-xs: 5px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-2xl: 24px;
   --radius-pill: 999px;
   --radius-circle: 50%;
@@ -258,15 +296,17 @@
   --weight-bold: 700;
   --weight-extrabold: 800;
 
-  --shadow-xs: 0 1px 2px rgb(11 28 48 / 6%);
-  --shadow-sm: 0 4px 12px rgb(20 44 68 / 5%);
-  --shadow-md: 0 8px 20px rgb(16 33 62 / 8%);
-  --shadow-lg: 0 14px 30px rgb(16 33 62 / 12%);
-  --shadow-xl: 0 20px 50px rgb(7 22 42 / 25%);
-  --shadow-card: 0 18px 40px rgb(16 33 62 / 11%), 0 2px 8px rgb(16 33 62 / 8%);
-  --shadow-primary: 0 12px 26px rgb(16 185 129 / 24%);
-  --ring-focus: 0 0 0 3px rgb(16 185 129 / 13%);
-  --ring-focus-strong: 0 0 0 4px rgb(16 185 129 / 16%);
+  /* Neutral and shallow. The old shadows were navy-tinted and cast 40px, so
+     every card hovered above the page instead of resting on it. */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 7%);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 9%);
+  --shadow-xl: 0 20px 50px rgb(0 0 0 / 18%);
+  --shadow-card: 0 2px 8px rgb(0 0 0 / 5%), 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-primary: 0 6px 16px rgb(0 113 227 / 24%);
+  --ring-focus: 0 0 0 3px rgb(0 113 227 / 20%);
+  --ring-focus-strong: 0 0 0 4px rgb(0 113 227 / 28%);
 
   --control-h-xs: 28px;
   --control-h-compact: 30px;
@@ -479,6 +519,6 @@ button { cursor: pointer; }
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: var(--popup-backdrop-color, rgb(7 22 42 / 45%));
+  background: var(--popup-backdrop-color, rgb(0 0 0 / 40%));
   backdrop-filter: blur(var(--popup-backdrop-blur, 2px));
 }
