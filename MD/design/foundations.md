@@ -133,12 +133,20 @@ modifier rather than two glyphs that have to stay in step.
   rebuild. Pinning it is what keeps the subset under 20KB instead of 135KB.
 - Chrome stays ink. A chevron, a close, a search, the dock — a control that
   means the same thing on every screen gains nothing from a hue.
-- A browse category carries one `--color-category-*` hue, and carries it on
-  every surface it is drawn on: rail, tile grid, filter row. That is the part
-  the old per-screen tints got wrong. They were not wrong for using colour,
-  they were wrong because the same category was a different colour on each
-  screen and the hues came from unrelated families, so there was nothing to
-  learn. Adjacent categories must not share a step.
+- Colour is attached to the glyph, in one block in `globals.css`, not to the
+  screen. A car is the same red in the services rail, on a listing card and in
+  a filter row. That is the part the old per-screen tints got wrong: they were
+  not wrong for using colour, they were wrong because the same subject came out
+  a different colour on every screen, so there was nothing to learn.
+- A glyph that is missing from that block stays ink. That is how a control is
+  declared to be a control — there is no separate opt-out list to maintain.
+- Inside something that owns its foreground — a filled button, a status pill,
+  the dark footer, the dock, a selected row — the glyph inherits instead.
+  Keep those guards on real container classes: `[class*=dock]` also matches
+  `<body class=has-mobile-bottom-dock>` and silently greys the whole site.
+- A toggle glyph takes its hue only when it is on. `.ms--outline` stays
+  neutral; a hollow pink heart reads as already saved.
+- Adjacent categories in a rail must not share a step. Check after adding one.
 - The `--vivid-*` ramp is the only source for those hues. It is saturated on
   purpose — a washed tint under a filled glyph reads as a mistake — and every
   step clears 3:1 on white.

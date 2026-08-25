@@ -298,30 +298,6 @@
   --color-footer-ink-soft: var(--teal-soft-100);
   --color-footer-ink-muted: var(--teal-soft-350);
 
-  /* Category identity. A browse category carries its hue everywhere it is
-     drawn — rail, tile grid, filter row — so the colour is worth learning.
-     Chrome (chevrons, close, search, the dock) stays ink: colouring a control
-     that means the same thing on every screen only adds noise. */
-  --color-category-market: var(--vivid-blue);
-  --color-category-garage: var(--vivid-orange);
-  --color-category-moving: var(--vivid-indigo);
-  --color-category-dollar: var(--vivid-pink);
-  --color-category-group: var(--vivid-green);
-  --color-category-food: var(--vivid-orange);
-  --color-category-trades: var(--vivid-indigo);
-  --color-category-transport: var(--vivid-blue);
-  --color-category-auto: var(--vivid-red);
-  --color-category-garden: var(--vivid-green);
-  --color-category-learn: var(--vivid-purple);
-  --color-category-beauty: var(--vivid-pink);
-  --color-category-pets: var(--vivid-teal);
-  --color-category-ask: var(--vivid-blue);
-  --color-category-talk: var(--vivid-indigo);
-  --color-category-notice: var(--vivid-orange);
-  --color-category-events: var(--vivid-purple);
-  --color-category-tips: var(--vivid-green);
-  --color-category-together: var(--vivid-pink);
-  --color-category-newcomer: var(--vivid-teal);
 }
 
 /* ==========================================================================
@@ -597,6 +573,65 @@ button { cursor: pointer; }
 
 /* For the hollow half of a toggle — an unsaved heart, an empty checkbox. */
 .ms--outline { --icon-fill: 0; }
+
+/* --- Icon colour --------------------------------------------------------- */
+/* Colour is attached to the glyph, not to the screen it sits on, so a car is
+   the same red in the services rail, a listing card and a filter row. That is
+   the part the old per-screen tints got wrong.
+   Glyphs that depict a subject get a hue. Controls — anything that means the
+   same thing on every screen — are absent from this list and stay ink. */
+.ms-storefront, .ms-local-shipping, .ms-help, .ms-chat, .ms-chat-bubble,
+.ms-sms, .ms-mail, .ms-drafts, .ms-inbox, .ms-call, .ms-headset-mic { color: var(--vivid-blue); }
+
+.ms-moving, .ms-handyman, .ms-forum, .ms-home, .ms-apartment, .ms-weekend,
+.ms-build, .ms-work, .ms-handshake, .ms-person, .ms-person-add,
+.ms-account-circle, .ms-badge, .ms-shield, .ms-policy, .ms-lock,
+.ms-security { color: var(--vivid-indigo); }
+
+.ms-school, .ms-event, .ms-event-available, .ms-calendar-today,
+.ms-calendar-month, .ms-schedule, .ms-menu-book, .ms-music-note,
+.ms-sports-esports, .ms-sports-soccer, .ms-tv, .ms-computer, .ms-smartphone,
+.ms-photo-camera, .ms-photo-library, .ms-image { color: var(--vivid-purple); }
+
+.ms-groups, .ms-group, .ms-favorite, .ms-content-cut, .ms-checkroom,
+.ms-stroller { color: var(--vivid-pink); }
+
+.ms-directions-car, .ms-monitor-heart { color: var(--vivid-red); }
+
+.ms-restaurant, .ms-warehouse, .ms-campaign, .ms-sell, .ms-shopping-bag,
+.ms-local-activity, .ms-redeem, .ms-ad, .ms-notifications,
+.ms-notifications-off { color: var(--vivid-orange); }
+
+.ms-star, .ms-star-half, .ms-workspace-premium, .ms-bolt, .ms-lightbulb,
+.ms-diamond, .ms-key { color: var(--vivid-amber); }
+
+.ms-yard, .ms-thumb-up, .ms-savings, .ms-attach-money, .ms-payments,
+.ms-credit-card, .ms-check-circle, .ms-verified-user { color: var(--vivid-green); }
+
+.ms-pets, .ms-flight-takeoff, .ms-map, .ms-location-on, .ms-explore,
+.ms-directions { color: var(--vivid-teal); }
+
+/* A toggle glyph earns its hue only in the on state. A hollow-but-pink heart
+   reads as already saved, which is the opposite of what it means. */
+.ms--outline { color: inherit; }
+
+/* Status keeps the status role rather than a categorical hue. */
+.ms-error { color: var(--color-danger); }
+.ms-warning { color: var(--color-warning); }
+.ms-delete { color: var(--color-danger); }
+
+/* An icon inside something that already has its own foreground colour must
+   follow it — a glyph on a filled button, a status pill, the dark footer or
+   the selected row of a list. Without this the hue above would fight the
+   surface it is printed on. */
+.ui-button .ms,
+.ui-pill .ms,
+.site-footer .ms,
+.mobile-bottom-dock .ms,
+.is-active > .ms,
+.is-selected > .ms,
+.is-active > * > .ms,
+.is-selected > * > .ms { color: inherit; }
 
 .ms-spin { animation: ms-spin 900ms linear infinite; }
 
