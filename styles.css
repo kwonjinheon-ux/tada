@@ -11223,3 +11223,117 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .home-reference-destination > i:first-child,
 .home-reference-community-list > * > i:first-child,
 [class*="home-reference-community-card"] > i:first-child { background: var(--color-surface-soft); color: var(--color-ink); }
+
+/* ==========================================================================
+   Long-list index and search
+   The board layout these dashboard lists follow: rows, then the numbered
+   index, then the search box beneath it. Both are built from the shared
+   primitives so a third list gets the same surface for free.
+   ========================================================================== */
+.list-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-8);
+}
+
+.list-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list-pagination a,
+.list-pagination-gap {
+  min-width: var(--control-h-md);
+  height: var(--control-h-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.list-pagination a:hover { background: var(--color-surface-soft); }
+.list-pagination a:focus-visible { outline: 0; box-shadow: var(--ring-focus-strong); }
+
+.list-pagination a.is-current {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.list-pagination-gap { color: var(--color-muted); }
+
+.list-pagination a[aria-disabled="true"] {
+  color: var(--color-muted-soft);
+  pointer-events: none;
+}
+
+.list-search {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.list-search-field {
+  width: min(100%, 380px);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.list-search-field:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--ring-focus);
+}
+
+.list-search-field input {
+  min-width: 0;
+  flex: 1;
+  height: var(--control-h-lg);
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font-size: var(--text-md);
+}
+
+.list-search-field input:focus { outline: 0; }
+.list-search-field input::-webkit-search-cancel-button { display: none; }
+
+.list-search-clear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-h-xs);
+  height: var(--control-h-xs);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-circle);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+}
+
+.list-search-clear:hover { color: var(--color-ink); }
+
+@media (max-width: 767.98px) {
+  .list-pagination { margin-top: var(--space-6); flex-wrap: wrap; }
+  .list-search { flex-wrap: wrap; }
+  .list-search-field { width: 100%; }
+  .list-search button[type="submit"] { width: 100%; }
+}
