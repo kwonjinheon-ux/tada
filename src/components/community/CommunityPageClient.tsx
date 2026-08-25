@@ -25,11 +25,7 @@ const communityChips: Array<{ value: string; labelKey: TranslationKey }> = [
   { value: "all", labelKey: "all" },
   { value: "trending", labelKey: "communityChipTrending" },
   { value: "recent", labelKey: "communityChipRecent" },
-  { value: "events", labelKey: "communityCategoryEvents" },
-  { value: "questions", labelKey: "communityChipQuestions" },
   { value: "recommendations", labelKey: "communityCategoryRecommendations" },
-  { value: "free", labelKey: "communityChipFree" },
-  { value: "neighbours", labelKey: "communityChipNeighbours" },
 ];
 
 const buildFeedCacheKey = ({ category, search, mainLocation, subLocation }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string }) => {
