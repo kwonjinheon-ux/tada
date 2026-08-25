@@ -46,7 +46,7 @@ Use `MobileDrawer` for the backdrop and panel. It renders either an `aside` or `
   panelClassName="market-filter-panel"
 >
   <button type="button" aria-label="Close categories" onClick={closeDrawer}>
-    <i className="ti ti-x" aria-hidden="true" />
+    <i className="ms ms-close" aria-hidden="true" />
   </button>
   {/* Vertical category rows */}
 </MobileDrawer>

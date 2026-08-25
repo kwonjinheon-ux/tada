@@ -597,39 +597,39 @@ export function Navbar() {
 
         {isAuthReady && (
           <button className={`mobile-profile-link ${!isSignedIn ? "is-guest" : ""} ${isDashboardMenuOpen ? "is-open" : ""}`} type="button" aria-label={isDashboardMenuOpen ? "Close account menu" : isSignedIn ? "Open my dashboard menu" : "Open account menu"} aria-expanded={isDashboardMenuOpen} aria-controls={isSignedIn ? "mobile-dashboard-menu" : "mobile-account-menu"} title={userEmail ?? "Account"} onClick={handleMobileProfileClick}>
-            {isSignedIn ? <Avatar src={avatarUrl} name={displayName} alt="Profile" className="nav-avatar-initial" colored /> : <i className="ti ti-user-circle" aria-hidden="true" />}
+            {isSignedIn ? <Avatar src={avatarUrl} name={displayName} alt="Profile" className="nav-avatar-initial" colored /> : <i className="ms ms-account-circle" aria-hidden="true" />}
           </button>
         )}
         <Link className={`mobile-notifications nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
-          <i className="ti ti-bell" aria-hidden="true" />
+          <i className="ms ms-notifications" aria-hidden="true" />
           {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
         </Link>
         <button className="mobile-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsOpen(false); setIsDashboardMenuOpen(false); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-          {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="ti ti-language" aria-hidden="true" />}
+          {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="ms ms-language" aria-hidden="true" />}
         </button>
 
         <nav className="primary-nav" aria-label="Main navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market">
-            <i className="ti ti-building-store" aria-hidden="true" />
+            <i className="ms ms-storefront" aria-hidden="true" />
             <span>{t("market")}</span>
           </Link>
           <Link className={isCommunity ? "is-active" : ""} href="/community">
-            <i className="ti ti-users" aria-hidden="true" />
+            <i className="ms ms-group" aria-hidden="true" />
             <span>{t("community")}</span>
           </Link>
           <Link className={isServices ? "is-active" : ""} href="/services">
-            <i className="ti ti-tools" aria-hidden="true" />
+            <i className="ms ms-build" aria-hidden="true" />
             <span>{t("services")}</span>
           </Link>
         </nav>
 
         <div className="nav-actions">
           <Link className={`nav-notifications ${unreadNotificationCount ? "has-unread" : ""}`} href="/market/dashboard/notifications" aria-label={`${unreadNotificationCount} unread notifications`}>
-            <i className="ti ti-bell" aria-hidden="true" />
+            <i className="ms ms-notifications" aria-hidden="true" />
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
           </Link>
           <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
-            {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="ti ti-language" aria-hidden="true" />}
+            {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="ms ms-language" aria-hidden="true" />}
           </button>
           {isAuthReady && userEmail ? (
             <button className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => setIsDesktopDashboardOpen(true)}>
@@ -646,15 +646,15 @@ export function Navbar() {
 
         <nav className={`mobile-nav-menu profile-popup-surface ${isOpen ? "is-open" : ""}`} id="mobile-nav-menu" aria-label="Mobile navigation">
           <Link className={isMarket ? "is-active" : ""} href="/market" onClick={() => setIsOpen(false)}>
-            <i className="ti ti-building-store" aria-hidden="true" />
+            <i className="ms ms-storefront" aria-hidden="true" />
             {t("market")}
           </Link>
           <Link className={isCommunity ? "is-active" : ""} href="/community" onClick={() => setIsOpen(false)}>
-            <i className="ti ti-users" aria-hidden="true" />
+            <i className="ms ms-group" aria-hidden="true" />
             {t("community")}
           </Link>
           <Link className={isServices ? "is-active" : ""} href="/services" onClick={() => setIsOpen(false)}>
-            <i className="ti ti-tools" aria-hidden="true" />
+            <i className="ms ms-build" aria-hidden="true" />
             {t("services")}
           </Link>
         </nav>
@@ -684,8 +684,8 @@ export function Navbar() {
             <MobileDrawerBackdrop open={isDashboardMenuOpen} onClose={() => setIsDashboardMenuOpen(false)} ariaLabel="Close account menu" className="mobile-auth-backdrop" />
             <nav className={`mobile-auth-menu ${isDashboardMenuOpen ? "is-open" : ""}`} id="mobile-account-menu" aria-label="Account menu">
               <p>{t("accountMenu")}</p>
-              <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="ti ti-login" aria-hidden="true" /> {t("logIn")}</Link>
-              <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="ti ti-user-plus" aria-hidden="true" /> {t("signUp")}</Link>
+              <Link href="/login" onClick={() => setIsDashboardMenuOpen(false)}><i className="ms ms-login" aria-hidden="true" /> {t("logIn")}</Link>
+              <Link href="/signup" onClick={() => setIsDashboardMenuOpen(false)}><i className="ms ms-person-add" aria-hidden="true" /> {t("signUp")}</Link>
             </nav>
           </>
         )}
@@ -696,15 +696,15 @@ export function Navbar() {
         <DialogOverlay className="language-settings-dialog" onClose={() => setIsLanguageMenuOpen(false)}>
           <section className="language-settings-card profile-popup-surface" id="language-settings-dialog" aria-label="Language settings">
             <header>
-              <div><i className="ti ti-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
-              <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="ti ti-x" aria-hidden="true" /></button>
+              <div><i className="ms ms-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
+              <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
             </header>
             <div className="language-settings-options" role="radiogroup" aria-label={t("displayLanguage")}>
               {languageOptions.map((option) => (
                 <button className={locale === option.code ? "is-selected" : ""} type="button" role="radio" aria-checked={locale === option.code} key={option.code} disabled={isSavingLanguage} onClick={() => void handleLocaleSelection(option.code)}>
                   <span className="language-settings-flag">{option.flag}</span>
                   <span><span className="language-settings-option-label">{option.label}</span><small>{option.nativeLabel}</small></span>
-                  {locale === option.code ? <i className="ti ti-check" aria-hidden="true" /> : null}
+                  {locale === option.code ? <i className="ms ms-check" aria-hidden="true" /> : null}
                 </button>
               ))}
             </div>

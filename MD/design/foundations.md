@@ -8,7 +8,7 @@ Styling flows in one direction. A layer may only use the layer above it.
 1. Palette      src/app/globals.css  — the only raw colour values in the repo
 2. Semantic     src/app/globals.css  — --color-*, what a colour means
 3. Scales       src/app/globals.css  — radius, type, weight, shadow, height, space
-4. Primitives   src/app/globals.css  — .ui-button, .ui-card, .ui-field, .ui-pill, .ti …
+4. Primitives   src/app/globals.css  — .ui-button, .ui-card, .ui-field, .ui-pill, .ms …
 5. Components   src/components/ui/   — Button, PageContainer, DialogOverlay
 6. Feature CSS  styles.css           — per-screen classes, layered on primitives
 ```
@@ -113,10 +113,22 @@ Reach for the component before the class:
 
 One set, one weight, one colour.
 
-`<i className="ti ti-name" aria-hidden="true" />` — Tabler Icons, loaded as a
-webfont in `src/app/layout.tsx`. Look names up at tabler.io/icons; a class that
-is not a real glyph renders as blank space, so check before you ship it.
+`<i className="ms ms-name" aria-hidden="true" />` — Material Symbols Outlined,
+self-hosted as a subset. Names are Google's, underscores turned to dashes:
+`check_box_outline_blank` is `ms-check-box-outline-blank`. Look them up at
+fonts.google.com/icons. A class that is not a real glyph fails the build
+rather than rendering as blank space.
 
+The set is a variable font, which is why it was chosen: `FILL` morphs a glyph
+between hollow and solid at runtime, so an on/off control is one glyph and a
+modifier rather than two glyphs that have to stay in step.
+
+- Icons are filled by default. `.ms--outline` is the hollow half of a toggle —
+  an unsaved heart, an empty checkbox. Never use it to make an icon look
+  lighter; weight is not a per-element decision.
+- Stroke weight is instanced into the font at build time, so it cannot be
+  changed from CSS. Change `ICON_WEIGHT` in `scripts/build-icon-font.mjs` and
+  rebuild. Pinning it is what keeps the subset under 20KB instead of 135KB.
 - Colour comes from `--color-ink`. The active or selected row takes
   `--color-primary`. Nothing else gets a hue.
 - Do not tint icons per category, per type, or per row. That is what turned
@@ -124,15 +136,17 @@ is not a real glyph renders as blank space, so check before you ship it.
   anything — the reader cannot learn nine colours that are never explained.
 - Semantic colour still applies where the colour *is* the message: danger,
   warning, a rating star, a saved heart.
-- `-filled` variants are for state the glyph itself must carry —
-  `ti-heart-filled` when saved, `ti-square-check-filled` when checked. Never
-  reach for one just to make an icon look heavier.
-- `.ti-spin` is ours, not Tabler's; it lives in `globals.css`.
+- `.ms-spin` is ours, not Google's; it lives in `globals.css`.
 - Do not add an image file as an icon. Fourteen PNG illustrations used to
   stand in for glyphs on the rails and cost 7.4MB.
 
-Brand marks (`ti-brand-facebook`, `ti-brand-instagram`) are the one place a
-glyph is allowed to sit outside this system.
+Glyph classes carry the `ms-` prefix rather than `icon-` because `icon-`
+collided with real layout classes (`.icon-button`, `.icon-only`) and with
+fragments of longer names such as `--save-heart-icon-size`.
+
+Material Symbols ships no brand logos. Facebook and Instagram are inline SVG
+in `Footer.tsx` — the one place a mark sits outside this system, which is
+correct anyway, since a brand mark must not be restyled by the icon rules.
 
 ## Responsive standard
 
@@ -166,15 +180,16 @@ a variable cannot reach.
 
 ## Fonts
 
-Inter and Tabler are self-hosted from `public/fonts`, so no page render waits
+Inter and Material Symbols are self-hosted from `public/fonts`, so no page render waits
 on a third party. Inter is one variable file covering 100–900, replacing the
 five static weights the old Google Fonts link pulled.
 
-The icon font is a subset: `npm run build:icons` reads every `ti-` class the
-source actually uses and emits `public/fonts/tabler-icons-subset.woff2` plus
-the generated `src/app/icon-font.css`. 151 of 5,936 glyphs, 29KB instead of
-801KB. Re-run it after adding or removing an icon; `npm run check:icons`
-fails when the two drift apart.
+The icon font is a subset: `npm run build:icons` reads every `ms-` class the
+source actually uses and emits `public/fonts/material-symbols-subset.woff2`
+plus the generated `src/app/icon-font.css`. 142 of 4,271 glyphs, and pinning
+every axis except FILL brings it to 17KB rather than the 3.9MB the full
+variable font ships as. Re-run it after adding or removing an icon;
+`npm run check:icons` fails when the two drift apart.
 
 Licences ship alongside the files as `inter-LICENSE.txt` and
-`tabler-icons-LICENSE.txt`.
+`material-symbols-LICENSE.txt`.

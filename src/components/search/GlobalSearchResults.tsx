@@ -75,19 +75,19 @@ export function GlobalSearchResults({ query }: { query: string }) {
   const pageNumbers = useMemo(() => Array.from({ length: pagedResults.totalPages }, (_, index) => index + 1), [pagedResults.totalPages]);
 
   if (!query) {
-    return <div className="global-search-empty" role="status"><i className="ti ti-search" aria-hidden="true" /><strong>{t("search")}</strong><span>{t("tryDifferentSearch")}</span></div>;
+    return <div className="global-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("search")}</strong><span>{t("tryDifferentSearch")}</span></div>;
   }
 
   return (
     <div className="global-search-results" aria-busy={isLoading}>
       <h1>{t("search")}: “{query}”</h1>
-      {isLoading ? <div className="global-search-loading" role="status"><i className="ti ti-loader-2 ti-spin" aria-hidden="true" />{t("loadingMoreListings")}</div> : null}
+      {isLoading ? <div className="global-search-loading" role="status"><i className="ms ms-progress-activity ms-spin" aria-hidden="true" />{t("loadingMoreListings")}</div> : null}
       {pagedResults.listings.length ? <section className="global-search-section" aria-labelledby="market-search-results">
-        <div className="global-search-section-heading"><i className="ti ti-building-store" aria-hidden="true" /><h2 id="market-search-results">{t("market")}</h2><span>{results.listings.length}</span></div>
+        <div className="global-search-section-heading"><i className="ms ms-storefront" aria-hidden="true" /><h2 id="market-search-results">{t("market")}</h2><span>{results.listings.length}</span></div>
         <div className="product-grid is-list-view global-search-market-list">{pagedResults.listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={results.savedListingIds.includes(listing.id)} />)}</div>
       </section> : null}
       {pagedResults.posts.length ? <section className="global-search-section" aria-labelledby="community-search-results">
-        <div className="global-search-section-heading"><i className="ti ti-users" aria-hidden="true" /><h2 id="community-search-results">{t("community")}</h2><span>{results.posts.length}</span></div>
+        <div className="global-search-section-heading"><i className="ms ms-group" aria-hidden="true" /><h2 id="community-search-results">{t("community")}</h2><span>{results.posts.length}</span></div>
         <div className="community-post-list global-search-community-list">{pagedResults.posts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} />)}</div>
       </section> : null}
       {!isLoading && !results.listings.length && !results.posts.length ? <SearchNoResults /> : null}

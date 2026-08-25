@@ -13,41 +13,41 @@ import type { Listing } from "@/data/listings";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const destinations = [
-  { title: "Market", description: "Buy & sell locally", href: "/market", icon: "ti-building-store", tone: "market" },
-  { title: "Community", description: "Share with neighbours", href: "/community", icon: "ti-messages", tone: "community" },
-  { title: "Services", description: "Find trusted local help", href: "/services", icon: "ti-tools", tone: "services" },
-  { title: "Jobs", description: "Find work near you", href: "/jobs", icon: "ti-briefcase", tone: "jobs", comingSoon: true },
+  { title: "Market", description: "Buy & sell locally", href: "/market", icon: "ms-storefront", tone: "market" },
+  { title: "Community", description: "Share with neighbours", href: "/community", icon: "ms-forum", tone: "community" },
+  { title: "Services", description: "Find trusted local help", href: "/services", icon: "ms-build", tone: "services" },
+  { title: "Jobs", description: "Find work near you", href: "/jobs", icon: "ms-work", tone: "jobs", comingSoon: true },
 ];
 
 const koreanDestinations = [
-  { title: "마켓", subtitle: "Market", description: "사고 팔고 나눠요", href: "/market", icon: "ti-building-store", tone: "market" },
-  { title: "동네이야기", subtitle: "Community", description: "묻고 나누고 연결해요", href: "/community", icon: "ti-messages", tone: "community" },
-  { title: "생활도움", subtitle: "Services", description: "필요한 도움을 가까운 곳에서 찾아보세요.", href: "/services", icon: "ti-tools", tone: "services" },
-  { title: "일자리", subtitle: "Jobs", description: "가까운 일자리 찾기", href: "/jobs", icon: "ti-briefcase", tone: "jobs", comingSoon: true },
+  { title: "마켓", subtitle: "Market", description: "사고 팔고 나눠요", href: "/market", icon: "ms-storefront", tone: "market" },
+  { title: "동네이야기", subtitle: "Community", description: "묻고 나누고 연결해요", href: "/community", icon: "ms-forum", tone: "community" },
+  { title: "생활도움", subtitle: "Services", description: "필요한 도움을 가까운 곳에서 찾아보세요.", href: "/services", icon: "ms-build", tone: "services" },
+  { title: "일자리", subtitle: "Jobs", description: "가까운 일자리 찾기", href: "/jobs", icon: "ms-work", tone: "jobs", comingSoon: true },
 ];
 
 const marketShortcuts = [
-  { label: "Second Hands", href: "/market/secondhands", icon: "ti-tag" },
-  { label: "Garage Sale", href: "/market/garage-sales", icon: "ti-building-warehouse" },
-  { label: "Moving Sale", href: "/market/moving-sales", icon: "ti-truck" },
-  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ti-currency-dollar" },
-  { label: "Group Buy", href: "/market/groupbuy", icon: "ti-users-group" },
+  { label: "Second Hands", href: "/market/secondhands", icon: "ms-sell" },
+  { label: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
+  { label: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
+  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-attach-money" },
+  { label: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
 const koreanMarketShortcuts = [
-  { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ti-building-store" },
-  { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ti-building-warehouse" },
-  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ti-truck-loading" },
-  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ti-coins" },
-  { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ti-users-group" },
+  { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ms-storefront" },
+  { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
+  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-moving" },
+  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-savings" },
+  { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
 ];
 
 const marketShortcutIcons: Record<string, string> = {
-  "/market/secondhands": "ti-tag",
-  "/market/garage-sales": "ti-building-warehouse",
-  "/market/moving-sales": "ti-truck",
-  "/market/2dollarshop": "ti-currency-dollar",
-  "/market/groupbuy": "ti-users-group",
+  "/market/secondhands": "ms-sell",
+  "/market/garage-sales": "ms-warehouse",
+  "/market/moving-sales": "ms-local-shipping",
+  "/market/2dollarshop": "ms-attach-money",
+  "/market/groupbuy": "ms-groups",
 };
 
 const destinationActions = {
@@ -65,29 +65,29 @@ const koreanDestinationActions = {
 } as const;
 
 const helpCategories = [
-  { label: "Food", icon: "ti-tools-kitchen-2" },
-  { label: "Repairs", icon: "ti-tools" },
-  { label: "Moving", icon: "ti-truck" },
-  { label: "Gardening", icon: "ti-seeding" },
-  { label: "Auto", icon: "ti-car" },
-  { label: "Other", icon: "ti-dots" },
+  { label: "Food", icon: "ms-restaurant" },
+  { label: "Repairs", icon: "ms-build" },
+  { label: "Moving", icon: "ms-local-shipping" },
+  { label: "Gardening", icon: "ms-yard" },
+  { label: "Auto", icon: "ms-directions-car" },
+  { label: "Other", icon: "ms-more-horiz" },
 ];
 
 const koreanHelpCategories = ["음식", "수리", "이사", "정원", "자동차", "기타"];
 const recentServicePosts: Array<{ icon: string; title: string; titleKo: string; provider: string; location: string; locationKo: string; price: string; priceKo: string; tone: string }> = [];
 
 const trustItems = [
-  { icon: "ti-tag", title: "Free to list", description: "Share items in minutes" },
-  { icon: "ti-users-group", title: "Local first", description: "Made for nearby life" },
-  { icon: "ti-shield-half", title: "Safer deals", description: "Trust guides every trade" },
-  { icon: "ti-bolt", title: "Quick to use", description: "Find what matters faster" },
+  { icon: "ms-sell", title: "Free to list", description: "Share items in minutes" },
+  { icon: "ms-groups", title: "Local first", description: "Made for nearby life" },
+  { icon: "ms-security", title: "Safer deals", description: "Trust guides every trade" },
+  { icon: "ms-bolt", title: "Quick to use", description: "Find what matters faster" },
 ];
 
 const koreanTrustItems = [
-  { icon: "ti-tag", title: "무료로 등록", description: "무료 나눔과 물품을 등록하세요" },
-  { icon: "ti-users-group", title: "가까운 이웃과 연결", description: "이웃과 묻고 나누고 연결해요" },
-  { icon: "ti-shield-half", title: "안전한 거래", description: "신뢰할 수 있는 거래를 만들어요" },
-  { icon: "ti-bolt", title: "빠르고 간편하게", description: "처음부터 끝까지 쉽게 사용해요" },
+  { icon: "ms-sell", title: "무료로 등록", description: "무료 나눔과 물품을 등록하세요" },
+  { icon: "ms-groups", title: "가까운 이웃과 연결", description: "이웃과 묻고 나누고 연결해요" },
+  { icon: "ms-security", title: "안전한 거래", description: "신뢰할 수 있는 거래를 만들어요" },
+  { icon: "ms-bolt", title: "빠르고 간편하게", description: "처음부터 끝까지 쉽게 사용해요" },
 ];
 
 type HomeCopy = {
@@ -125,12 +125,12 @@ const homeCopy: Record<"en" | "ko", HomeCopy> = {
 };
 
 const communityIcons: Record<string, string> = {
-  event: "ti-calendar-event",
-  question: "ti-help-circle",
-  recommendation: "ti-thumb-up",
-  free: "ti-gift",
-  notice: "ti-speakerphone",
-  housing: "ti-home",
+  event: "ms-event",
+  question: "ms-help",
+  recommendation: "ms-thumb-up",
+  free: "ms-redeem",
+  notice: "ms-campaign",
+  housing: "ms-home",
 };
 
 function communityExcerpt(excerpt: string) {
@@ -150,8 +150,8 @@ function HomeListingRail({ listings, locationLabel, savedListingIds, text }: Hom
   return (
     <section className="home-reference-listing-section" aria-labelledby="nearby-title">
       <header className="home-reference-section-heading">
-        <div><i className="ti ti-map-pin" aria-hidden="true" /><h2 id="nearby-title">{text.nearby}</h2>{locationLabel ? <span>{locationLabel}</span> : null}</div>
-        <Link href="/market">{text.seeAll} <i className="ti ti-arrow-right" aria-hidden="true" /></Link>
+        <div><i className="ms ms-location-on" aria-hidden="true" /><h2 id="nearby-title">{text.nearby}</h2>{locationLabel ? <span>{locationLabel}</span> : null}</div>
+        <Link href="/market">{text.seeAll} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
       </header>
       {listings.length ? (
         <div className="home-reference-listing-grid">
@@ -166,7 +166,7 @@ function HomeListingRail({ listings, locationLabel, savedListingIds, text }: Hom
           ))}
         </div>
       ) : (
-        <div className="home-reference-listing-empty ui-card"><i className="ti ti-building-store" aria-hidden="true" /><p>{text.listingEmpty}</p><Link href="/market">{text.browseMarket}</Link></div>
+        <div className="home-reference-listing-empty ui-card"><i className="ms ms-storefront" aria-hidden="true" /><p>{text.listingEmpty}</p><Link href="/market">{text.browseMarket}</Link></div>
       )}
     </section>
   );
@@ -176,17 +176,17 @@ function HomeCommunityHighlights({ posts, text }: { posts: CommunityPost[]; text
   return (
     <section className="home-reference-community-feed" aria-labelledby="community-highlights-title">
       <header className="home-reference-panel-heading">
-        <div><i className="ti ti-messages" aria-hidden="true" /><h2 id="community-highlights-title">{text.stories}</h2></div>
+        <div><i className="ms ms-forum" aria-hidden="true" /><h2 id="community-highlights-title">{text.stories}</h2></div>
         <Link href="/community">{text.seeAll}</Link>
       </header>
       <div className="home-reference-community-cards">
         {posts.slice(0, 4).map((post) => (
           <Link className={`home-reference-community-card home-reference-community-card--${post.type}`} href={`/community/${post.id}`} key={post.id}>
-            <i className={`ti ${communityIcons[post.type] ?? "ti-messages"}`} aria-hidden="true" />
-            <div><strong>{post.title}</strong><p>{communityExcerpt(post.excerpt)}</p><small><i className="ti ti-map-pin" aria-hidden="true" />{post.location} • {post.timeAgo ?? post.eventDate ?? "New"}</small></div>
-            <footer><span><i className="ti ti-eye" aria-hidden="true" />{post.viewCount ?? 0}</span><span><i className="ti ti-heart" aria-hidden="true" />{post.score ?? 0}</span><span><i className="ti ti-message-circle" aria-hidden="true" />{post.responseCount ?? 0}</span></footer>
+            <i className={`ms ${communityIcons[post.type] ?? "ms-forum"}`} aria-hidden="true" />
+            <div><strong>{post.title}</strong><p>{communityExcerpt(post.excerpt)}</p><small><i className="ms ms-location-on" aria-hidden="true" />{post.location} • {post.timeAgo ?? post.eventDate ?? "New"}</small></div>
+            <footer><span><i className="ms ms-visibility" aria-hidden="true" />{post.viewCount ?? 0}</span><span><i className="ms ms-favorite" aria-hidden="true" />{post.score ?? 0}</span><span><i className="ms ms-chat-bubble" aria-hidden="true" />{post.responseCount ?? 0}</span></footer>
             <span><strong>{post.title}</strong><small>{post.location} · {post.timeAgo ?? post.eventDate ?? "New"}</small></span>
-            <i className="ti ti-chevron-right" aria-hidden="true" />
+            <i className="ms ms-chevron-right" aria-hidden="true" />
           </Link>
         ))}
       </div>
@@ -198,19 +198,19 @@ function HomeHelpPanel({ isKorean, text }: { isKorean: boolean; text: typeof hom
   return (
     <section className="home-reference-help ui-card" aria-labelledby="help-panel-title">
       <header className="home-reference-panel-heading">
-        <div><i className="ti ti-tools" aria-hidden="true" /><h2 id="help-panel-title">{text.help}</h2></div>
+        <div><i className="ms ms-build" aria-hidden="true" /><h2 id="help-panel-title">{text.help}</h2></div>
         <Link href="/services">{text.servicesAction}</Link>
       </header>
       <p>{text.helpDescription}</p>
       <div className="home-reference-help-grid">
         {helpCategories.map((category, index) => (
-          <Link href="/services" key={category.label}><i className={`ti ${category.icon}`} aria-hidden="true" /><span>{isKorean ? koreanHelpCategories[index] : category.label}</span><small>{text.soon}</small></Link>
+          <Link href="/services" key={category.label}><i className={`ms ${category.icon}`} aria-hidden="true" /><span>{isKorean ? koreanHelpCategories[index] : category.label}</span><small>{text.soon}</small></Link>
         ))}
       </div>
       <div className="home-reference-help-posts" aria-label="Recent service posts">
         {recentServicePosts.map((post) => (
           <Link className={`home-reference-help-post home-reference-help-post--${post.tone}`} href="/services" key={post.provider}>
-            <i className={`ti ${post.icon}`} aria-hidden="true" />
+            <i className={`ms ${post.icon}`} aria-hidden="true" />
             <span><strong>{isKorean ? post.titleKo : post.title}</strong><small>{post.provider} · {isKorean ? post.locationKo : post.location}</small></span>
             <em>{isKorean ? post.priceKo : post.price}</em>
           </Link>
@@ -285,8 +285,8 @@ export function HomePageClient({
             <div className="home-reference-hero-copy">
               <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
-              <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="ti ti-map-pin" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="ti ti-plus" aria-hidden="true" />{heroPostAction}</Link></div>
-              <small className="home-reference-hero-trust"><i className="ti ti-heart" aria-hidden="true" />{heroTrust}</small>
+              <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="ms ms-location-on" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="ms ms-add" aria-hidden="true" />{heroPostAction}</Link></div>
+              <small className="home-reference-hero-trust"><i className="ms ms-favorite" aria-hidden="true" />{heroTrust}</small>
             </div>
             <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
@@ -299,9 +299,9 @@ export function HomePageClient({
                 const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
                 const action = (isKorean ? koreanDestinationActions : destinationActions)[destination.tone as keyof typeof destinationActions];
                 return <Link className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} href={destination.href} key={destination.title}>
-                  <i className={`ti ${destination.icon}`} aria-hidden="true" />
+                  <i className={`ms ${destination.icon}`} aria-hidden="true" />
                   <span><strong>{destination.title}</strong>{subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
-                  <footer className={isKorean ? "is-korean" : undefined}><strong>{destination.comingSoon ? action.primary : action.primary} {!destination.comingSoon ? <i className="ti ti-arrow-right" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="ti ti-plus" aria-hidden="true" /> {action.secondary}</small> : <em>{text.soon}</em>}</footer>
+                  <footer className={isKorean ? "is-korean" : undefined}><strong>{destination.comingSoon ? action.primary : action.primary} {!destination.comingSoon ? <i className="ms ms-arrow-forward" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="ms ms-add" aria-hidden="true" /> {action.secondary}</small> : <em>{text.soon}</em>}</footer>
                 </Link>
               })}
             </div>
@@ -314,7 +314,7 @@ export function HomePageClient({
                 const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
                 const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
                 const isTwoDollarDeals = shortcut.href === "/market/2dollarshop";
-                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}>{isTwoDollarDeals ? <Image className="home-reference-market-shortcut-image" src="/images/home/2-dollar-deals-icon.png" alt="" width={48} height={48} /> : <i className={`ti ${icon}`} aria-hidden="true" />}<span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ti ti-chevron-right" aria-hidden="true" /></Link>;
+                return <Link className="home-reference-market-shortcut ui-card" href={shortcut.href} key={shortcut.href}>{isTwoDollarDeals ? <Image className="home-reference-market-shortcut-image" src="/images/home/2-dollar-deals-icon.png" alt="" width={48} height={48} /> : <i className={`ms ${icon}`} aria-hidden="true" />}<span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>
@@ -322,15 +322,15 @@ export function HomePageClient({
           <HomeListingRail listings={discoveryListings} locationLabel={locationLabel} savedListingIds={savedListingIds} text={isKorean ? { ...text, nearby: "우리동네 새상품" } : text} />
 
           <section className="home-reference-sponsor ui-card" aria-labelledby="sponsor-title">
-            <div><p>{text.sponsored}</p><h2 id="sponsor-title">{text.sponsorTitle}</h2><span>{text.sponsorDescription}</span><Link href="/market">{text.sponsorAction} <i className="ti ti-arrow-right" aria-hidden="true" /></Link></div>
-            <div aria-hidden="true"><i className="ti ti-truck-delivery" /><strong>SwiftMove</strong></div>
+            <div><p>{text.sponsored}</p><h2 id="sponsor-title">{text.sponsorTitle}</h2><span>{text.sponsorDescription}</span><Link href="/market">{text.sponsorAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
+            <div aria-hidden="true"><i className="ms ms-local-shipping" /><strong>SwiftMove</strong></div>
           </section>
 
           <HomeCommunityHighlights posts={highlightedCommunityPosts} text={text} />
 
           <div className="home-reference-support-grid">
             <HomeHelpPanel isKorean={isKorean} text={text} />
-            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="ti ti-briefcase" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="ti ti-arrow-right" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.png" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
+            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="ms ms-work" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="ms ms-arrow-forward" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.png" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
           </div>
         </PageContainer>
       </main>

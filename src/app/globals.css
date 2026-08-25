@@ -9,7 +9,7 @@
    five static weights the Google Fonts link used to pull. The latin-ext face
    only downloads when a page actually uses a character in its range; Hangul
    is not in Inter and falls through to the platform's own Korean face.
-   Sources: @fontsource-variable/inter, @tabler/icons-webfont (both devDeps).
+   Sources: @fontsource-variable/inter, material-symbols (both devDeps).
    ========================================================================== */
 @font-face {
   font-family: "Inter Variable";
@@ -542,17 +542,30 @@ button { cursor: pointer; }
 .ui-avatar--lg { width: 64px; height: 64px; font-size: var(--text-2xl); }
 
 /* --- Icon --------------------------------------------------------------- */
-/* Tabler is a single outline weight, so an icon can only say one thing at a
-   time: colour it like the text it sits with, and let the active or selected
-   state take the accent. Filled variants (`ti-heart-filled`) are reserved for
-   controls whose on/off state the glyph itself has to carry. */
-.ti { line-height: 1; vertical-align: -0.05em; }
-.ti-spin { display: inline-block; animation: ti-spin 900ms linear infinite; }
+/* Material Symbols is a variable font: FILL morphs the glyph between hollow
+   and solid, and wght sets the stroke, independently of each other. Both are
+   driven through custom properties so a single element can opt out without
+   restating the whole font-variation-settings list — the shorthand is not
+   additive, so a second declaration would drop GRAD and opsz.
 
-@keyframes ti-spin { to { transform: rotate(360deg); } }
+   The defaults are filled and light. Colour still comes from --color-ink,
+   with the accent reserved for the active or selected row. */
+.ms {
+  display: inline-block;
+  line-height: 1;
+  vertical-align: -0.05em;
+  --icon-fill: 1;
+}
+
+/* For the hollow half of a toggle — an unsaved heart, an empty checkbox. */
+.ms--outline { --icon-fill: 0; }
+
+.ms-spin { animation: ms-spin 900ms linear infinite; }
+
+@keyframes ms-spin { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ti-spin { animation-duration: 2400ms; }
+  .ms-spin { animation-duration: 2400ms; }
 }
 
 /* --- Dialog backdrop ---------------------------------------------------- */

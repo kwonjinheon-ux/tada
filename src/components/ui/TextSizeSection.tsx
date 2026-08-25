@@ -27,10 +27,10 @@ export function TextSizeControls({ value, onChange, label }: TextSizeControlsPro
   return (
     <div className="text-size-controls" aria-label={label}>
       <button type="button" aria-label="Decrease text size" disabled={value === 0} onClick={() => onChange(-1)}>
-        <i className="ti ti-minus" aria-hidden="true" />
+        <i className="ms ms-remove" aria-hidden="true" />
       </button>
       <button type="button" aria-label="Increase text size" disabled={value === MAX_DESCRIPTION_TEXT_SIZE_STEP} onClick={() => onChange(1)}>
-        <i className="ti ti-plus" aria-hidden="true" />
+        <i className="ms ms-add" aria-hidden="true" />
       </button>
     </div>
   );

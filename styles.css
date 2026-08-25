@@ -11140,6 +11140,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .footer-socials { display: flex; gap: 12px; }
 .footer-socials a { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(226, 226, 231, .42); border-radius: var(--radius-circle); color: var(--color-footer-ink); text-decoration: none; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
 .footer-socials a:hover { border-color: var(--color-primary); background: rgba(0, 113, 227, .14); color: var(--neutral-50); }
+/* Brand marks are their own SVG, since the icon font carries no logos. */
+.footer-social-mark { width: 18px; height: 18px; }
 
 .footer-link-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .footer-link-groups-mobile { display: none; }

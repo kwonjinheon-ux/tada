@@ -33,7 +33,7 @@ export function ListSearchField({ placeholder, label = "Search this list" }: { p
       onSubmit={(event) => { event.preventDefault(); submit(term); }}
     >
       <label className="list-search-field">
-        <i className="ti ti-search" aria-hidden="true" />
+        <i className="ms ms-search" aria-hidden="true" />
         <input
           type="search"
           name="q"
@@ -44,7 +44,7 @@ export function ListSearchField({ placeholder, label = "Search this list" }: { p
         />
         {activeTerm ? (
           <button type="button" className="list-search-clear" onClick={() => { setTerm(""); submit(""); }} aria-label="Clear search">
-            <i className="ti ti-x" aria-hidden="true" />
+            <i className="ms ms-close" aria-hidden="true" />
           </button>
         ) : null}
       </label>

@@ -12,15 +12,15 @@ export type DashboardNavItem = {
 };
 
 export const dashboardNavItems: readonly DashboardNavItem[] = [
-  { icon: "ti-layout-grid", translationKey: "dashboard", label: "Dashboard", suffix: "" },
-  { icon: "ti-user-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
-  { icon: "ti-bell", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
-  { icon: "ti-message", translationKey: "messages", label: "Messages", suffix: "/messages" },
-  { icon: "ti-heart", translationKey: "wishlist", label: "Wishlist", suffix: "/wishlist" },
-  { icon: "ti-key", translationKey: "keywords", label: "Keywords", suffix: "/keywords" },
-  { icon: "ti-list-details", translationKey: "manageListings", label: "Manage Listings", suffix: "/listings" },
-  { icon: "ti-calendar-check", translationKey: null, label: "Reservations", suffix: "/reservations" },
-  { icon: "ti-map", translationKey: "nearbyMap", label: "Nearby Map", suffix: "/map", railOnly: true },
+  { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
+  { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
+  { icon: "ms-notifications", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
+  { icon: "ms-chat", translationKey: "messages", label: "Messages", suffix: "/messages" },
+  { icon: "ms-favorite", translationKey: "wishlist", label: "Wishlist", suffix: "/wishlist" },
+  { icon: "ms-key", translationKey: "keywords", label: "Keywords", suffix: "/keywords" },
+  { icon: "ms-list-alt", translationKey: "manageListings", label: "Manage Listings", suffix: "/listings" },
+  { icon: "ms-event-available", translationKey: null, label: "Reservations", suffix: "/reservations" },
+  { icon: "ms-map", translationKey: "nearbyMap", label: "Nearby Map", suffix: "/map", railOnly: true },
 ];
 
 /** Jobs has no reservations or notification feed of its own. */

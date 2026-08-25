@@ -24,7 +24,7 @@ export function MarketBrowseIntro({ shopType }: { shopType: ShopType }) {
       <p>{t(copy.description)}</p>
     </div>
     <Link className="browse-create-button ui-button ui-button--lg" href="/market/create">
-      <i className="ti ti-plus" aria-hidden="true" />
+      <i className="ms ms-add" aria-hidden="true" />
       <span>{t("createListing")}</span>
     </Link>
   </div>;

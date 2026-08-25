@@ -47,12 +47,12 @@ export function DashboardMenuItems({
             key={label}
             onClick={onNavigate}
           >
-            <i className={`ti ${icon}`} aria-hidden="true" />
+            <i className={`ms ${icon}`} aria-hidden="true" />
             <span className={labelClassName}>{translationKey ? t(translationKey) : label}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
             ) : !isMobile ? (
-              <i className={`ti ti-chevron-right ${isMobile ? "" : "desktop-dashboard-chevron"}`} aria-hidden="true" />
+              <i className={`ms ms-chevron-right ${isMobile ? "" : "desktop-dashboard-chevron"}`} aria-hidden="true" />
             ) : null}
           </Link>
         );
@@ -63,13 +63,13 @@ export function DashboardMenuItems({
           href="/admin"
           onClick={onNavigate}
         >
-          <i className="ti ti-shield-half" aria-hidden="true" />
+          <i className="ms ms-security" aria-hidden="true" />
           <span className={labelClassName}>{t("adminCentre")}</span>
-          {!isMobile ? <i className="ti ti-chevron-right desktop-dashboard-chevron" aria-hidden="true" /> : null}
+          {!isMobile ? <i className="ms ms-chevron-right desktop-dashboard-chevron" aria-hidden="true" /> : null}
         </Link>
       ) : null}
       <button className={logoutClassName} type="button" onClick={onSignOut}>
-        <i className="ti ti-logout" aria-hidden="true" /> {t("logOut")}
+        <i className="ms ms-logout" aria-hidden="true" /> {t("logOut")}
       </button>
     </>
   );

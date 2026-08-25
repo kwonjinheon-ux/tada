@@ -8,11 +8,11 @@ export function CommunityEmptyState() {
 
   return (
     <section className="market-search-empty community-empty-posts" role="status">
-      <i className="ti ti-messages" aria-hidden="true" />
+      <i className="ms ms-forum" aria-hidden="true" />
       <strong>{t("communityNoPosts")}</strong>
       <span>{t("communityFirstPostHint")}</span>
       <Link className="ui-button ui-button--primary" href="/community/create">
-        <i className="ti ti-edit" aria-hidden="true" />
+        <i className="ms ms-edit" aria-hidden="true" />
         {t("communityCreateFirstPost")}
       </Link>
     </section>

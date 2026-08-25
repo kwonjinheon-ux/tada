@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* Fonts are self-hosted from public/fonts — see globals.css. Both
             faces are preloaded because text and icons paint on first render. */}
         <link rel="preload" href="/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossOrigin="" />
-        <link rel="preload" href="/fonts/tabler-icons-subset.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/material-symbols-subset.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body>
         <LanguageProvider>

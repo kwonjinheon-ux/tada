@@ -17,14 +17,14 @@ export type CommunityCategory =
   | "free-board";
 
 export const communityCategories: Array<{ value: CommunityCategory; labelKey: TranslationKey; icon: string }> = [
-  { value: "all", labelKey: "all", icon: "ti-layout-grid" },
-  { value: "qna", labelKey: "communityCategoryQnA", icon: "ti-help-circle" },
-  { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "ti-messages" },
-  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "ti-speakerphone" },
-  { value: "events", labelKey: "communityCategoryEvents", icon: "ti-calendar-event" },
-  { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "ti-thumb-up" },
-  { value: "together", labelKey: "communityCategoryTogether", icon: "ti-users-group" },
-  { value: "immigration", labelKey: "communityCategoryImmigration", icon: "ti-plane-departure" },
+  { value: "all", labelKey: "all", icon: "ms-grid-view" },
+  { value: "qna", labelKey: "communityCategoryQnA", icon: "ms-help" },
+  { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "ms-forum" },
+  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "ms-campaign" },
+  { value: "events", labelKey: "communityCategoryEvents", icon: "ms-event" },
+  { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "ms-thumb-up" },
+  { value: "together", labelKey: "communityCategoryTogether", icon: "ms-groups" },
+  { value: "immigration", labelKey: "communityCategoryImmigration", icon: "ms-flight-takeoff" },
 ];
 
 // This is the single category catalogue used by both community browsing and
@@ -54,12 +54,12 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
       <div className="filter-list community-category-list">
         {communityCategories.map(({ value, labelKey, icon }) => {
           return <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
-            <span className="community-category-illustration"><i className={`ti ${icon}`} aria-hidden="true" /></span>
+            <span className="community-category-illustration"><i className={`ms ${icon}`} aria-hidden="true" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </button>;
         })}
         <button type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-parenting`} onClick={() => onCategorySelect("together")}>
-          <i className="ti ti-baby-carriage" aria-hidden="true" />
+          <i className="ms ms-stroller" aria-hidden="true" />
           <span className={mobileDrawerClasses.menuLabel}>{t("communityTogetherParenting")}</span>
         </button>
       </div>

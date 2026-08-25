@@ -80,12 +80,12 @@ export function SaveHeartBurst({ particles }: { particles: HeartParticle[] }) {
           "--heart-color": particle.color,
         } as CSSProperties}
       >
-        <i className="ti ti-heart" />
+        <i className="ms ms-favorite" />
       </span>
     ))}
   </span>;
 }
 
 export function SaveHeartIcon({ isSaved, particles }: { isSaved: boolean; particles: HeartParticle[] }) {
-  return <><i className={`ti ${isSaved ? "ti-heart-filled" : "ti-heart"}`} aria-hidden="true" /><SaveHeartBurst particles={particles} /></>;
+  return <><i className={`ms ms-favorite${isSaved ? "" : " ms--outline"}`} aria-hidden="true" /><SaveHeartBurst particles={particles} /></>;
 }

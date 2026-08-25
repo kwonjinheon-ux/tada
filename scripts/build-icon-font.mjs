@@ -1,12 +1,17 @@
-// Builds a self-hosted Tabler subset holding only the glyphs this product
-// actually draws. The full webfont is 5,936 glyphs / 801KB over a CDN; the app
-// uses about 150 of them.
+// Builds a self-hosted Material Symbols subset holding only the glyphs this
+// product draws. The shipped variable font is ~3,900KB for 4,271 icons; the
+// app uses about 150 of them.
 //
 //   npm run build:icons
 //
-// Writes public/fonts/tabler-icons-subset.woff2 and src/app/icon-font.css.
-// Re-run it after adding or removing a `ti-` class; `npm run check:icons`
+// Writes public/fonts/material-symbols-subset.woff2 and src/app/icon-font.css.
+// Re-run it after adding or removing an `ms-` class; `npm run check:icons`
 // fails if the two drift apart.
+//
+// The subset keeps the font's variable axes rather than instancing them, so
+// FILL and wght stay adjustable in CSS — that is the whole reason this set was
+// chosen over a static outline font. `scripts/material-symbols.codepoints` is
+// Google's own name-to-codepoint list, vendored so the build needs no network.
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -14,11 +19,16 @@ import { fileURLToPath } from "node:url";
 import subsetFont from "subset-font";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PKG = join(root, "node_modules", "@tabler", "icons-webfont", "dist");
-const WOFF2_OUT = join(root, "public", "fonts", "tabler-icons-subset.woff2");
+const SOURCE = join(root, "node_modules", "material-symbols", "material-symbols-outlined.woff2");
+const CODEPOINTS = join(root, "scripts", "material-symbols.codepoints");
+const WOFF2_OUT = join(root, "public", "fonts", "material-symbols-subset.woff2");
 const CSS_OUT = join(root, "src", "app", "icon-font.css");
 
-/** Every `ti-*` class the product references, from source rather than a list. */
+/** Stroke weight, baked into the subset. 100 is hairline, 700 is heavy. */
+const ICON_WEIGHT = 300;
+
+/** Every `ms-*` class the product references, read from source rather than
+ *  from a hand-kept list, so the subset cannot fall behind the markup. */
 export function collectUsedIcons() {
   const files = [join(root, "styles.css")];
   const walk = (dir) => {
@@ -31,33 +41,26 @@ export function collectUsedIcons() {
   walk(join(root, "src"));
 
   const used = new Set();
-  const dynamicPrefixes = new Set();
   for (const file of files) {
     const text = readFileSync(file, "utf8");
-    // `ti-chevron-${open ? "up" : "down"}` names its glyph at runtime, so the
-    // literal in source is only a prefix. Resolve both arms before the plain
-    // scan runs, then drop the bare prefix it would otherwise leave behind.
-    for (const m of text.matchAll(/\b(ti-[a-z0-9-]*?)-\$\{[^}]*?\?\s*"([a-z0-9-]+)"\s*:\s*"([a-z0-9-]+)"[^}]*\}/g)) {
-      used.add(`${m[1]}-${m[2]}`);
-      used.add(`${m[1]}-${m[3]}`);
-      dynamicPrefixes.add(m[1]);
-    }
-    for (const m of text.matchAll(/\bti-[a-z0-9]+(?:-[a-z0-9]+)*\b/g)) used.add(m[0]);
+    // The lookbehind keeps `--save-heart-icon-size` and `filter-toggle-ms-open`
+    // style fragments out; only a class token in its own right counts.
+    for (const m of text.matchAll(/(?<![\w-])ms-[a-z0-9]+(?:-[a-z0-9]+)*/g)) used.add(m[0]);
   }
-  for (const prefix of dynamicPrefixes) used.delete(prefix);
-  // Ours, not Tabler's — it has no glyph.
-  used.delete("ti-spin");
+  // Ours, not Google's — they have no glyph behind them.
+  used.delete("ms-spin");
   return used;
 }
 
-/** name -> codepoint, read from the package rather than hardcoded. */
+/** class name -> codepoint, from Google's vendored list. */
 function readGlyphTable() {
-  const css = readFileSync(join(PKG, "tabler-icons.min.css"), "utf8");
   const table = new Map();
-  for (const m of css.matchAll(/\.(ti-[a-z0-9-]+):before\{content:"\\([0-9a-f]+)"\}/g)) {
-    table.set(m[1], String.fromCodePoint(parseInt(m[2], 16)));
+  for (const line of readFileSync(CODEPOINTS, "utf8").split(/\r?\n/)) {
+    const [name, hex] = line.trim().split(/\s+/);
+    if (!name || !hex) continue;
+    table.set(`ms-${name.replace(/_/g, "-")}`, String.fromCodePoint(parseInt(hex, 16)));
   }
-  if (table.size === 0) throw new Error("no glyphs parsed from tabler-icons.min.css");
+  if (table.size === 0) throw new Error("no glyphs parsed from material-symbols.codepoints");
   return table;
 }
 
@@ -68,12 +71,12 @@ async function main() {
 
   const missing = used.filter((name) => !table.has(name));
   if (missing.length) {
-    console.error(`These classes are not real Tabler glyphs and would render blank:\n  ${missing.join("\n  ")}`);
+    console.error(`These classes are not real Material Symbols and would render blank:\n  ${missing.join("\n  ")}`);
     process.exit(1);
   }
 
   if (check) {
-    const built = new Set([...readFileSync(CSS_OUT, "utf8").matchAll(/^\.(ti-[a-z0-9-]+)::before/gm)].map((m) => m[1]));
+    const built = new Set([...readFileSync(CSS_OUT, "utf8").matchAll(/^\.(ms-[a-z0-9-]+)::before/gm)].map((m) => m[1]));
     const added = used.filter((n) => !built.has(n));
     const stale = [...built].filter((n) => !used.includes(n));
     if (added.length || stale.length) {
@@ -87,11 +90,15 @@ async function main() {
   }
 
   const text = used.map((name) => table.get(name)).join("");
-  // The -200 cut is Tabler's thinnest stroke: measured at 54% of the default
-  // face's ink for the same glyph. Codepoints are identical across the cuts,
-  // so only the font file changes.
-  const source = readFileSync(join(PKG, "fonts", "tabler-icons-200.ttf"));
-  const subset = await subsetFont(source, text, { targetFormat: "woff2" });
+  const source = readFileSync(SOURCE);
+  // FILL keeps its full range because the hollow/solid toggle is a runtime
+  // state. The other three axes are pinned to the single value this product
+  // uses, which takes the subset from 135KB to under 20KB. Changing the icon
+  // weight therefore means editing ICON_WEIGHT and rebuilding, not editing CSS.
+  const subset = await subsetFont(source, text, {
+    targetFormat: "woff2",
+    variationAxes: { FILL: { min: 0, max: 1 }, wght: ICON_WEIGHT, GRAD: 0, opsz: 24 },
+  });
 
   mkdirSync(dirname(WOFF2_OUT), { recursive: true });
   writeFileSync(WOFF2_OUT, subset);
@@ -100,36 +107,44 @@ async function main() {
     .map((name) => `.${name}::before { content: "\\${table.get(name).codePointAt(0).toString(16)}"; }`)
     .join("\n");
 
+  const version = JSON.parse(readFileSync(join(root, "node_modules", "material-symbols", "package.json"), "utf8")).version;
+
   writeFileSync(CSS_OUT, `/* Generated by scripts/build-icon-font.mjs — do not edit by hand.
-   Tabler Icons ${JSON.parse(readFileSync(join(root, "node_modules", "@tabler", "icons-webfont", "package.json"), "utf8")).version}, MIT.
-   ${used.length} of 5,936 glyphs: only what this product draws. */
+   Material Symbols Outlined ${version}, Apache 2.0.
+   ${used.length} of 4,271 glyphs: only what this product draws. */
 
 @font-face {
-  font-family: "tabler-icons";
+  font-family: "Material Symbols";
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 700;
   font-display: block;
-  src: url("/fonts/tabler-icons-subset.woff2") format("woff2");
+  src: url("/fonts/material-symbols-subset.woff2") format("woff2");
 }
 
-.ti {
-  font-family: "tabler-icons" !important;
+.ms {
+  font-family: "Material Symbols" !important;
   font-style: normal;
-  font-weight: 400;
-  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  letter-spacing: normal;
   text-transform: none;
-  speak: never;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* FILL is the only live axis; weight is instanced into the file at build
+     time. See ICON_WEIGHT in scripts/build-icon-font.mjs. */
+  font-variation-settings: "FILL" var(--icon-fill, 1);
 }
 
 ${rules}
 `);
 
   const kb = (n) => `${(n / 1024).toFixed(1)}KB`;
-  console.log(`${used.length} glyphs -> ${WOFF2_OUT.replace(root, ".")} (${kb(subset.length)}, from ${kb(source.length)} of TTF)`);
+  console.log(`${used.length} glyphs -> ${WOFF2_OUT.replace(root, ".")} (${kb(subset.length)}, from ${kb(source.length)})`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`.replace(/\\/g, "/") || process.argv[1]?.endsWith("build-icon-font.mjs")) {
+if (process.argv[1]?.endsWith("build-icon-font.mjs")) {
   await main();
 }

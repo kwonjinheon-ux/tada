@@ -274,7 +274,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
             (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,
           ])}
           {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
-        </div> : <div className="market-search-empty" role="status"><i className="ti ti-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
+        </div> : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
       </section>
     </main>

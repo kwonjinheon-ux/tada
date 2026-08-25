@@ -170,7 +170,7 @@ export function CommunityPostActions({
             onCommentsToggle();
           }}
         >
-          <i className="ti ti-message-circle" aria-hidden="true" />
+          <i className="ms ms-chat-bubble" aria-hidden="true" />
           <span>{commentCount}</span>
         </button>
       ) : (
@@ -181,16 +181,16 @@ export function CommunityPostActions({
           onFocus={onCommentsIntent}
           onTouchStart={onCommentsIntent}
         >
-          <i className="ti ti-message-circle" aria-hidden="true" />
+          <i className="ms ms-chat-bubble" aria-hidden="true" />
           <span>{commentCount}</span>
         </Link>
       ))}
       <span className="community-post-share-count" aria-label={`${currentShareCount} shares`}>
-        <i className="ti ti-repeat" aria-hidden="true" />
+        <i className="ms ms-repeat" aria-hidden="true" />
         <span>{currentShareCount}</span>
       </span>
       <button type="button" aria-label={t("communitySharePost")} onClick={() => void share()}>
-        <i className={`ti ${shared ? "ti-check" : "ti-share"}`} aria-hidden="true" />
+        <i className={`ms ${shared ? "ms-check" : "ms-share"}`} aria-hidden="true" />
         <span>{shared ? t("communityCopied") : t("communityShare")}</span>
       </button>
     </div>

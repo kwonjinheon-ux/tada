@@ -29,7 +29,7 @@ export function MobileBrowseCategoryRail({ ariaLabel, items, activeValue, onSele
           return (
             <button key={value} className={`mobile-browse-category ${tone} ${isActive ? "is-active" : ""}`} type="button" role="tab" aria-selected={isActive} onClick={() => onSelect(value)}>
               <span className="mobile-browse-category-icon">
-                {image ? <Image src={image} alt="" width={53} height={53} sizes="53px" /> : <i className={`ti ${icon ?? "ti-tag"}`} aria-hidden="true" />}
+                {image ? <Image src={image} alt="" width={53} height={53} sizes="53px" /> : <i className={`ms ${icon ?? "ms-sell"}`} aria-hidden="true" />}
               </span>
               <strong>{label}</strong>
             </button>

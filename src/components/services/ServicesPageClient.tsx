@@ -139,7 +139,7 @@ export function ServicesPageClient() {
             <p>{text.heroDescription}</p>
           </div>
           <Link className="browse-create-button ui-button ui-button--lg" href="/services/create">
-            <i className="ti ti-plus" aria-hidden="true" />
+            <i className="ms ms-add" aria-hidden="true" />
             <span>{t("createServiceAction")}</span>
           </Link>
         </div>
@@ -149,13 +149,13 @@ export function ServicesPageClient() {
           className="services-mobile-category-rail"
           activeValue={activeCategory}
           onSelect={(value) => chooseCategory(value as ServiceCategoryId | "all")}
-          items={[{ value: "all", label: t("all"), icon: "ti-layout-grid", tone: "services-category-all" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon, tone: `services-category-${id}` }))]}
+          items={[{ value: "all", label: t("all"), icon: "ms-grid-view", tone: "services-category-all" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon, tone: `services-category-${id}` }))]}
         />
 
         <div className="services-category-grid" role="group" aria-label={text.serviceType}>
           {serviceCategories.map(({ id, icon }) => (
             <button key={id} className={activeCategory === id ? "services-category is-active" : "services-category"} type="button" aria-pressed={activeCategory === id} onClick={() => chooseCategory(activeCategory === id ? "all" : id)}>
-              <span><i className={`ti ${icon}`} aria-hidden="true" /></span>
+              <span><i className={`ms ${icon}`} aria-hidden="true" /></span>
               <strong>{categoryLabels[id]}</strong>
             </button>
           ))}
@@ -181,7 +181,7 @@ export function ServicesPageClient() {
 
         <section className="services-sponsor-banner" aria-label={text.sponsored}>
           <div className="services-sponsor-copy"><span>{text.sponsored}</span><strong>{text.sponsorTitle}</strong><p>{text.sponsorDescription}</p></div>
-          <ul>{text.benefits.map((benefit) => <li key={benefit}><i className="ti ti-circle-check" aria-hidden="true" /> {benefit}</li>)}</ul>
+          <ul>{text.benefits.map((benefit) => <li key={benefit}><i className="ms ms-check-circle" aria-hidden="true" /> {benefit}</li>)}</ul>
           <Image src={visibleServices[0]?.image ?? "/images/logo.png"} alt="" width={180} height={108} />
           <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.learnMore}</button>
         </section>
@@ -205,23 +205,23 @@ export function ServicesPageClient() {
                       </div>
                     </div>
                     <a className="services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
-                      <i className="ti ti-phone" aria-hidden="true" />
+                      <i className="ms ms-call" aria-hidden="true" />
                     </a>
                   </header>
                 </div>
               </div>
               <div className="services-listing-details">
                 <div className="services-listing-contact">
-                  <span><i className="ti ti-phone" aria-hidden="true" /> {service.phone}</span>
-                  <span><i className="ti ti-map-pin" aria-hidden="true" /> {location}</span>
+                  <span><i className="ms ms-call" aria-hidden="true" /> {service.phone}</span>
+                  <span><i className="ms ms-location-on" aria-hidden="true" /> {location}</span>
                 </div>
                 <div className="services-listing-meta">
-                  <span><i className="ti ti-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span>
+                  <span><i className="ms ms-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span>
                   <strong>{price}</strong>
                 </div>
                 <footer>
                   <button type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>
-                  <button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ti ti-message" aria-hidden="true" /> {text.message}</button>
+                  <button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
                 </footer>
               </div>
             </article>;
@@ -231,19 +231,19 @@ export function ServicesPageClient() {
         {notice ? <p className="services-notice" role="status">{notice}</p> : null}
 
         <section className="services-request-cta ui-card" aria-labelledby="services-request-title">
-          <span className="services-request-icon"><i className="ti ti-clipboard-list" aria-hidden="true" /></span>
+          <span className="services-request-icon"><i className="ms ms-assignment" aria-hidden="true" /></span>
           <div><p>{text.requestEyebrow}</p><h2 id="services-request-title">{text.requestTitle}</h2><span>{text.requestDescription}</span></div>
-          <Button pill onClick={() => setNotice(text.requestNotice)}><i className="ti ti-plus" aria-hidden="true" /> {text.requestAction}</Button>
+          <Button pill onClick={() => setNotice(text.requestNotice)}><i className="ms ms-add" aria-hidden="true" /> {text.requestAction}</Button>
         </section>
       </section>
 
       <aside className="services-side-rail" aria-label={text.whyTadaServices}>
         <section className="services-provider-promo ui-card">
           <span className="ui-pill">{text.providerLabel}</span>
-          <i className="ti ti-chart-line" aria-hidden="true" />
+          <i className="ms ms-show-chart" aria-hidden="true" />
           <h2>{text.providerTitle}</h2>
           <p>{text.providerDescription}</p>
-          <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.providerAction} <i className="ti ti-arrow-right" aria-hidden="true" /></button>
+          <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.providerAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
         </section>
         <section className="services-side-ad" aria-label={text.sidebarAdLabel}>
           <Image src="/images/home/journey-services.png" alt="" fill sizes="(max-width: 1199px) 100vw, 284px" />
@@ -251,7 +251,7 @@ export function ServicesPageClient() {
             <span>{text.sidebarAdLabel}</span>
             <strong>{text.sidebarAdTitle}</strong>
             <p>{text.sidebarAdDescription}</p>
-            <button type="button" onClick={() => chooseCategory("cleaning")}>{text.sidebarAdAction} <i className="ti ti-arrow-right" aria-hidden="true" /></button>
+            <button type="button" onClick={() => chooseCategory("cleaning")}>{text.sidebarAdAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
           </div>
         </section>
       </aside>

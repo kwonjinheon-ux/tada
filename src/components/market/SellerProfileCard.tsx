@@ -22,7 +22,7 @@ export function SellerProfileCard({ seller }: { seller: SellerProfileSummary }) 
   return (
     <>
       <Link className="listing-detail-back" href="/market">
-        <i className="ti ti-arrow-left" aria-hidden="true" />
+        <i className="ms ms-arrow-back" aria-hidden="true" />
         {t("bargainBackToListings")}
       </Link>
       <section className="seller-public-profile-card" aria-labelledby="seller-profile-name">
@@ -36,7 +36,7 @@ export function SellerProfileCard({ seller }: { seller: SellerProfileSummary }) 
         <dl className="seller-profile-stats">
           <div>
             <dt>{t("sellerRatingLabel")}</dt>
-            <dd>{seller.ratingCount ? <><i className="ti ti-star" aria-hidden="true" />{seller.ratingAverage.toFixed(1)}</> : <span className="seller-profile-stat-empty">{t("sellerNoRatings")}</span>}</dd>
+            <dd>{seller.ratingCount ? <><i className="ms ms-star" aria-hidden="true" />{seller.ratingAverage.toFixed(1)}</> : <span className="seller-profile-stat-empty">{t("sellerNoRatings")}</span>}</dd>
           </div>
           <div>
             <dt>{t("sellerReviewsLabel")}</dt>

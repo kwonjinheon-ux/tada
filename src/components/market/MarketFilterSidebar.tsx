@@ -11,30 +11,30 @@ import { useLanguage, type TranslationKey } from "@/components/LanguageProvider"
 export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
 export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey; icon: string; href: string }> = [
-  { value: "all", labelKey: "all", icon: "ti-layout-grid", href: "/market" },
-  { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "ti-building-store", href: "/market/secondhands" },
-  { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "ti-building-warehouse", href: "/market/garage-sales" },
-  { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "ti-truck-loading", href: "/market/moving-sales" },
-  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ti-coins", href: "/market/2dollarshop" },
-  { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "ti-users-group", href: "/market/groupbuy" },
+  { value: "all", labelKey: "all", icon: "ms-grid-view", href: "/market" },
+  { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "ms-storefront", href: "/market/secondhands" },
+  { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "ms-warehouse", href: "/market/garage-sales" },
+  { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "ms-moving", href: "/market/moving-sales" },
+  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ms-savings", href: "/market/2dollarshop" },
+  { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "ms-groups", href: "/market/groupbuy" },
 ];
 
 const categoryIcons: Record<string, string> = {
-  "mobile-phones-tablets": "ti-device-mobile",
-  "computers-laptops": "ti-device-laptop",
-  "electronics-appliances": "ti-device-tv",
-  "furniture-home-decor": "ti-sofa",
-  "home-kitchen": "ti-tools-kitchen-2",
-  "clothing-fashion": "ti-shirt",
-  "baby-kids": "ti-baby-carriage",
-  "books-music-media": "ti-book",
-  "hobbies-collectables": "ti-diamond",
-  "games-toys": "ti-device-gamepad-2",
-  "sports-leisure": "ti-ball-football",
-  "musical-instruments": "ti-guitar-pick",
-  "garden-tools-diy": "ti-tools",
-  "pet-supplies": "ti-paw",
-  "health-beauty": "ti-heartbeat",
+  "mobile-phones-tablets": "ms-smartphone",
+  "computers-laptops": "ms-computer",
+  "electronics-appliances": "ms-tv",
+  "furniture-home-decor": "ms-weekend",
+  "home-kitchen": "ms-restaurant",
+  "clothing-fashion": "ms-checkroom",
+  "baby-kids": "ms-stroller",
+  "books-music-media": "ms-menu-book",
+  "hobbies-collectables": "ms-diamond",
+  "games-toys": "ms-sports-esports",
+  "sports-leisure": "ms-sports-soccer",
+  "musical-instruments": "ms-music-note",
+  "garden-tools-diy": "ms-build",
+  "pet-supplies": "ms-pets",
+  "health-beauty": "ms-monitor-heart",
 };
 
 const marketCategoryLabelKeys: Record<string, TranslationKey> = {
@@ -89,7 +89,7 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
       <div className="filter-list">
         {marketShopTypes.map(({ value, labelKey, href, icon }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            <span className="shop-type-illustration"><i className={`ti ${icon}`} aria-hidden="true" /></span>
+            <span className="shop-type-illustration"><i className={`ms ${icon}`} aria-hidden="true" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </a>
         ))}
@@ -99,9 +99,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block category-filter">
       <h2>{t("category")}</h2>
       <div className="filter-list category-filter-list">
-        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "ti-layout-grid" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "ms-grid-view" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
-            <i className={`ti ${icon}`} aria-hidden="true" />
+            <i className={`ms ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
           </button>
         ))}

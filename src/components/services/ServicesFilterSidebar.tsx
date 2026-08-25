@@ -50,9 +50,9 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
     <section className="filter-block services-type-filter">
       <h2>{text.serviceType}</h2>
       <div className="filter-list">
-        {[{ value: "all" as const, label: text.allCategories, icon: "ti-layout-grid" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon }))].map(({ value, label, icon }) => (
+        {[{ value: "all" as const, label: text.allCategories, icon: "ms-grid-view" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon }))].map(({ value, label, icon }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} services-type-${value} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
-            <i className={`ti ${icon}`} aria-hidden="true" />
+            <i className={`ms ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
           </button>
         ))}

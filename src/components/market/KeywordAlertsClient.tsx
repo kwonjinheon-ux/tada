@@ -65,10 +65,10 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
   };
 
   return <div className="dashboard-content keywords-content">
-    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="ti ti-bell" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
+    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="ms ms-notifications" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
     <form className="keywords-add-panel" onSubmit={addKeyword}>
-      <div className="keywords-input-wrap"><i className="ti ti-search" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} aria-label={t("keywordInputLabel")} maxLength={80} /></div>
-      <button type="submit" disabled={!keyword.trim() || isSaving}><i className="ti ti-plus" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
+      <div className="keywords-input-wrap"><i className="ms ms-search" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} aria-label={t("keywordInputLabel")} maxLength={80} /></div>
+      <button type="submit" disabled={!keyword.trim() || isSaving}><i className="ms ms-add" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
     </form>
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
     <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2></div>
@@ -77,10 +77,10 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
         return <div className={`keyword-chip ${category.tone}`} key={alert.id} title={category.label}>
           <span>{alert.keyword}</span>
           <small>{category.label}</small>
-          <button type="button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`}><i className="ti ti-x" aria-hidden="true" /></button>
+          <button type="button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`}><i className="ms ms-close" aria-hidden="true" /></button>
         </div>;
-      })}</div> : <div className="keywords-empty"><i className="ti ti-bell-off" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
+      })}</div> : <div className="keywords-empty"><i className="ms ms-notifications-off" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
     </section>
-    <section className="keywords-notice" aria-label={t("keywordNoticeLabel")}><i className="ti ti-bulb" aria-hidden="true" /><p>{t("keywordNotice")}</p></section>
+    <section className="keywords-notice" aria-label={t("keywordNoticeLabel")}><i className="ms ms-lightbulb" aria-hidden="true" /><p>{t("keywordNotice")}</p></section>
   </div>;
 }

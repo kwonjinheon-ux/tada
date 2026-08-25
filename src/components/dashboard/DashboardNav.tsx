@@ -35,7 +35,7 @@ export function DashboardNav({
 
         return (
           <Link className={isActive ? "is-active" : ""} href={href} key={item.label}>
-            <i className={`ti ${item.icon}`} aria-hidden="true" />
+            <i className={`ms ${item.icon}`} aria-hidden="true" />
             <span>{item.translationKey ? t(item.translationKey) : item.label}</span>
             {unreadCount ? <b>{badgeLabel(unreadCount)}</b> : null}
           </Link>
@@ -43,7 +43,7 @@ export function DashboardNav({
       })}
       {isAdmin ? (
         <Link className={pathname.startsWith("/admin") ? "is-active" : ""} href="/admin/listings">
-          <i className="ti ti-shield-half" aria-hidden="true" />
+          <i className="ms ms-security" aria-hidden="true" />
           <span>Admin Centre</span>
         </Link>
       ) : null}

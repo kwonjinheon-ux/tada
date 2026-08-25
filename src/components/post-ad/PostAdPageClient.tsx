@@ -105,11 +105,11 @@ const meetingPlaces: SelectOption[] = [
 type ShopTypeValue = "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
 const postShopTypeOptions: Array<{ value: ShopTypeValue; label: string; icon: string }> = [
-  { value: "secondhand", label: "Second Hands", icon: "ti-building-store" },
-  { value: "garage-sale", label: "Garage Sale", icon: "ti-building-warehouse" },
-  { value: "moving-sale", label: "Moving Sale", icon: "ti-truck-loading" },
-  { value: "2dollarshop", label: "2 Dollar Shop", icon: "ti-coins" },
-  { value: "groupbuy", label: "Group Buy", icon: "ti-users-group" },
+  { value: "secondhand", label: "Second Hands", icon: "ms-storefront" },
+  { value: "garage-sale", label: "Garage Sale", icon: "ms-warehouse" },
+  { value: "moving-sale", label: "Moving Sale", icon: "ms-moving" },
+  { value: "2dollarshop", label: "2 Dollar Shop", icon: "ms-savings" },
+  { value: "groupbuy", label: "Group Buy", icon: "ms-groups" },
 ];
 
 const dollarShopTierValues: BargainListingType[] = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"];
@@ -1098,7 +1098,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   return (
     <main className={`post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
-      <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ti ti-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
+      <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ms ms-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
       <header className="post-ad-intro">
         <h1>{createHeading}</h1>
         <p>{createDescription}</p>
@@ -1113,7 +1113,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 <div className="post-shop-type-options">
                   {postShopTypeOptions.map(({ value, label, icon }) => (
                     <button key={value} type="button" className={`post-shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`} onClick={() => changeShopType(value)}>
-                      <i className={`ti ${icon}`} aria-hidden="true" />
+                      <i className={`ms ${icon}`} aria-hidden="true" />
                       <span>{label}</span>
                     </button>
                   ))}
@@ -1132,12 +1132,12 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                     <label>End time<input type="time" value={eventEndTime} onChange={(event) => setEventEndTime(event.target.value)} required /></label>
                   </div>
                   <label htmlFor="event-address">Event location (full address)</label>
-                  <div className="event-address-input"><i className="ti ti-map-pin" aria-hidden="true" /><input id="event-address" type="text" value={eventAddress} onChange={(event) => setEventAddress(event.target.value)} placeholder="123 Sunny Lane, Ponsonby, Auckland" required /></div>
+                  <div className="event-address-input"><i className="ms ms-location-on" aria-hidden="true" /><input id="event-address" type="text" value={eventAddress} onChange={(event) => setEventAddress(event.target.value)} placeholder="123 Sunny Lane, Ponsonby, Auckland" required /></div>
                   <label htmlFor="event-description">Sale description</label>
                   <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
                   <input type="hidden" name="body" value={description} />
                 </> : (isBargainListing ? (
-                  <SelectMenu id="bargain-type" name="bargain_type" label="Deal tier" icon="ti-tag" placeholder="Select deal tier" options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
+                  <SelectMenu id="bargain-type" name="bargain_type" label="Deal tier" icon="ms-sell" placeholder="Select deal tier" options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
                 ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
               </>}
             </div>
@@ -1152,9 +1152,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 </div>
                 {fixedBargainPriceCents !== null ? <p className="post-field-hint" id="bargain-fixed-price-hint">This deal type has a fixed ${fixedBargainPriceCents / 100} price.</p> : null}
               </div>
-              <SelectMenu id="main-category" name="main_category" label="Main Category" icon="ti-stack-2" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
-              <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="ti-tags" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
-              <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="ti-certificate" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
+              <SelectMenu id="main-category" name="main_category" label="Main Category" icon="ms-layers" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
+              <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="ms-sell" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
+              <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="ms-workspace-premium" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>}
 
             {!showGroupBuyNotice && <fieldset
@@ -1196,23 +1196,23 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                         {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>Main</span>}
                       </button>
                       <button className="post-photo-remove" type="button" aria-label={`Remove ${photo.name ?? photo.file?.name ?? "listing photo"}`} onClick={() => removePhoto(photo.id)}>
-                        <i className="ti ti-x" aria-hidden="true" />
+                        <i className="ms ms-close" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                   {!isMultiItemSale && Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
                   <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={() => openPhotoPicker(isMultiItemSale ? "cover" : "listing")}>
-                    <i className="ti ti-camera" aria-hidden="true" />
+                    <i className="ms ms-photo-camera" aria-hidden="true" />
                     <span>Add</span>
                   </button>
                   ))}
                 </div> : null}
-                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="ti ti-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
+                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="ms ms-photo-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
                 <strong>{isMultiItemSale ? "Upload the cover first, then add item photos. GPT fills every item automatically." : "Click to upload or drag and drop multiple photos at once"}</strong>
               </p>
-              {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="ti ti-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
+              {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="ms ms-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
               {!isMultiItemSale && <section className="post-photo-ai-help" aria-label="AI help">
                 <AiListingGenerator
@@ -1246,8 +1246,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
-                  <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="ti ti-rotate" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Redo" title="Redo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("redo")}><i className="ti ti-rotate-clockwise" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="ms ms-rotate-left" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Redo" title="Redo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("redo")}><i className="ms ms-rotate-right" aria-hidden="true" /></button>
                   <select aria-label="Text style" title="Text style" defaultValue="p" disabled={isHtmlMode} onChange={(event) => runEditorCommand("formatBlock", `<${event.target.value}>`)}>
                     <option value="p">Paragraph</option>
                     <option value="h2">Heading</option>
@@ -1268,12 +1268,12 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                     ))}
                   </div>
                   <span className="post-editor-divider" aria-hidden="true" />
-                  <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="ti ti-list" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="ti ti-list-numbers" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert link" title="Insert link" onMouseDown={(event) => event.preventDefault()} onClick={addEditorLink}><i className="ti ti-link" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Remove formatting" title="Remove formatting" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("removeFormat")}><i className="ti ti-eraser" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="ms ms-list" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="ms ms-format-list-numbered" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Insert link" title="Insert link" onMouseDown={(event) => event.preventDefault()} onClick={addEditorLink}><i className="ms ms-link" aria-hidden="true" /></button>
+                  <button type="button" aria-label="Remove formatting" title="Remove formatting" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("removeFormat")}><i className="ms ms-ink-eraser" aria-hidden="true" /></button>
                   <span className="post-editor-divider" aria-hidden="true" />
-                  <button className={isHtmlMode ? "is-active" : ""} type="button" aria-label="Edit HTML source" title="Edit HTML source" onClick={toggleHtmlMode}><i className="ti ti-code" aria-hidden="true" /></button>
+                  <button className={isHtmlMode ? "is-active" : ""} type="button" aria-label="Edit HTML source" title="Edit HTML source" onClick={toggleHtmlMode}><i className="ms ms-code" aria-hidden="true" /></button>
                 </div>
                 <input type="hidden" name="body" value={description} />
                 {isHtmlMode ? (
@@ -1312,7 +1312,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                       <label htmlFor="smartphone-colour">Colour</label>
                       <input id="smartphone-colour" type="text" value={smartphoneSpecs.colour} onChange={(event) => updateSmartphoneSpec("colour", event.target.value)} placeholder="e.g. Natural Titanium" />
                     </div>
-              <SelectMenu id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="ti-device-mobile" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
+              <SelectMenu id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="ms-smartphone" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
                   </div>
                 </section>
               )}
@@ -1321,8 +1321,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
             {!showGroupBuyNotice && !isMultiItemSale && <div className="post-form-grid post-location-grid">
               <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? "Event location & trade" : "Location & trade"}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
-              <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="ti-truck-delivery" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
-              <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="ti-building" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
+              <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="ms-local-shipping" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
+              <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="ms-apartment" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>}
 
             {!showGroupBuyNotice && (notice || error) && (
@@ -1349,9 +1349,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
           <ProductCard className="post-ad-preview-card" listing={previewListing} imageSizes="240px" persistSave={false} isPreview />
           <section className="post-ad-tips" aria-label="Posting tips">
             <h2>Tips for a great listing</h2>
-          <article><i className="ti ti-bulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
-          <article><i className="ti ti-circle-check" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
-          <article><i className="ti ti-shield-half" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
+          <article><i className="ms ms-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
+          <article><i className="ms ms-check-circle" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
+          <article><i className="ms ms-security" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
           </section>
         </aside>
       </div>

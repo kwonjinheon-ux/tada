@@ -12,7 +12,7 @@ export function BargainSaleCoverPreview({ imageUrl, imageAlt, title, type, date,
   const typeLabel = type === "moving-sale" ? "Moving sale" : "Garage sale";
   return <aside className="bargain-sale-cover-preview" aria-label="Event page cover preview">
     <div className="bargain-sale-cover-preview-frame">
-      {imageUrl ? <img src={imageUrl} alt={imageAlt ?? "Sale cover preview"} /> : <div className="bargain-sale-cover-preview-placeholder"><i className="ti ti-home" aria-hidden="true" /></div>}
+      {imageUrl ? <img src={imageUrl} alt={imageAlt ?? "Sale cover preview"} /> : <div className="bargain-sale-cover-preview-placeholder"><i className="ms ms-home" aria-hidden="true" /></div>}
       <div className="bargain-sale-cover-preview-shade" />
       <div className="bargain-sale-cover-preview-copy">
         <span>{typeLabel}</span>

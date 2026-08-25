@@ -24,7 +24,7 @@ export function ServiceCategoryDetailsFields({ category, locale, values, onValue
   return (
     <div className="service-category-details" aria-live="polite">
       <div className="service-category-details-heading">
-        <i className="ti ti-adjustments" aria-hidden="true" />
+        <i className="ms ms-tune" aria-hidden="true" />
         <div>
           <strong>{isKorean ? "서비스 상세 및 가격" : "Service details & pricing"}</strong>
           <p>{isKorean ? "선택한 서비스에 필요한 항목을 모두 입력해 주세요." : "Complete the required details for this service category."}</p>

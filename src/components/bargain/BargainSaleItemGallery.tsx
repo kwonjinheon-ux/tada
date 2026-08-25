@@ -67,13 +67,13 @@ export function BargainSaleItemGallery({ activeIndex, items, onClose, onSelect }
 
   return <DialogOverlay className="listing-gallery-lightbox bargain-sale-item-gallery" onClose={onClose} aria-label={`${item.title} photo gallery`}>
     <Image className="listing-gallery-lightbox-backdrop" src={item.image.src} alt="" fill aria-hidden="true" unoptimized sizes="100vw" />
-    <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={onClose}><i className="ti ti-x" aria-hidden="true" /></button>
+    <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={onClose}><i className="ms ms-close" aria-hidden="true" /></button>
     <div className="listing-gallery-lightbox-stage" onClick={closeWhenClickingOutsidePhoto}>
       <Image key={item.id} className={`listing-gallery-lightbox-photo bargain-gallery-slide-${direction}`} src={item.image.src} alt={item.image.alt} fill priority unoptimized sizes="100vw" />
     </div>
     {items.length > 1 ? <>
-      <button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous item" onClick={() => showItem(activeIndex - 1, "previous")}><i className="ti ti-chevron-left" aria-hidden="true" /></button>
-      <button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next item" onClick={() => showItem(activeIndex + 1, "next")}><i className="ti ti-chevron-right" aria-hidden="true" /></button>
+      <button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous item" onClick={() => showItem(activeIndex - 1, "previous")}><i className="ms ms-chevron-left" aria-hidden="true" /></button>
+      <button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next item" onClick={() => showItem(activeIndex + 1, "next")}><i className="ms ms-chevron-right" aria-hidden="true" /></button>
     </> : null}
     <div className="bargain-gallery-caption" key={`caption-${item.id}`}>
       <strong>{formatMarketPrice(item.priceCents)}</strong>

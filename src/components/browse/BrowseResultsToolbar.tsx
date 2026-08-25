@@ -72,10 +72,10 @@ export function BrowseResultsToolbar({
     <div className="market-toolbar-top">
       {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
-          <i className="ti ti-list" aria-hidden="true" />
+          <i className="ms ms-list" aria-hidden="true" />
         </button>
         <button className={viewMode === "grid" ? "is-selected" : ""} type="button" aria-label={t("gridView")} aria-pressed={viewMode === "grid"} onClick={() => onViewModeChange("grid")}>
-          <i className="ti ti-layout-grid" aria-hidden="true" />
+          <i className="ms ms-grid-view" aria-hidden="true" />
         </button>
       </div> : null}
 

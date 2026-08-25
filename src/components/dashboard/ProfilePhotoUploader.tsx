@@ -182,14 +182,14 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
       <input ref={inputRef} className="profile-photo-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={selectPhoto} />
       <div className="profile-avatar-wrap">
         <button className="profile-avatar" type="button" aria-label={avatarUrl ? "Adjust profile photo" : "Upload profile photo"} onClick={() => avatarUrl ? openEditor(avatarUrl) : inputRef.current?.click()}>
-          {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <span className="profile-avatar-placeholder"><i className="ti ti-user" /></span>}
+          {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}
         </button>
-        <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ti ti-camera" /></button>
+        <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button>
       </div>
       <div className="profile-photo-details">
         <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
         {email && <p className="profile-photo-email">{email}</p>}
-        {locationLabel && <p className="profile-photo-location"><i className="ti ti-map-pin" aria-hidden="true" /> {locationLabel}</p>}
+        {locationLabel && <p className="profile-photo-location"><i className="ms ms-location-on" aria-hidden="true" /> {locationLabel}</p>}
         {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
         <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 5MB</p>
         {status && <p className="profile-upload-status" role="status">{status}</p>}
@@ -198,7 +198,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
       {editorUrl && (
         <DialogOverlay className="avatar-editor-backdrop" aria-label="Adjust profile photo" onClose={closeEditor}>
           <section className="avatar-editor">
-            <div className="avatar-editor-heading"><h2>Adjust profile photo</h2><button type="button" aria-label="Close photo editor" onClick={closeEditor}><i className="ti ti-x" /></button></div>
+            <div className="avatar-editor-heading"><h2>Adjust profile photo</h2><button type="button" aria-label="Close photo editor" onClick={closeEditor}><i className="ms ms-close" /></button></div>
             <div
               ref={previewRef}
               className="avatar-editor-preview"
@@ -211,7 +211,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
               <img ref={editorImageRef} src={editorUrl} alt="Profile photo preview" draggable={false} style={{ transform: `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(${transform.rotation}deg) scale(${transform.zoom})` }} />
               <span className="avatar-editor-frame" aria-hidden="true" />
             </div>
-            <p className="avatar-editor-hint"><i className="ti ti-hand-click" /> Drag to move · pinch to zoom · twist to rotate</p>
+            <p className="avatar-editor-hint"><i className="ms ms-touch-app" /> Drag to move · pinch to zoom · twist to rotate</p>
             <div className="avatar-editor-actions"><button className="profile-outline-button" type="button" onClick={closeEditor}>Cancel</button><button className="profile-primary-button" type="button" disabled={isUploading} onClick={() => void saveCroppedAvatar()}>{isUploading ? "Saving…" : "Save photo"}</button></div>
           </section>
         </DialogOverlay>

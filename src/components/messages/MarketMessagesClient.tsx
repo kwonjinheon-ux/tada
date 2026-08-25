@@ -532,7 +532,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         <header className="messages-list-header">
           <div><p>{t("marketplace")}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div></div>
           <button className="bulk-action-button is-compact" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
-            <i className="ti ti-mail-opened" aria-hidden="true" />
+            <i className="ms ms-drafts" aria-hidden="true" />
             {t("markAllRead")}
           </button>
         </header>
@@ -543,26 +543,26 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         {isSelecting ? (
           <div className="messages-selection-bar" role="group" aria-label="Bulk conversation actions">
             <button className="messages-selection-toggle" type="button" onClick={toggleSelectAllVisible} disabled={!visibleIds.length}>
-              <i className={`ti ${selectedVisibleIds.length && selectedVisibleIds.length === visibleIds.length ? "ti-square-check-filled" : "ti-square"}`} aria-hidden="true" />
+              <i className={`ms ${selectedVisibleIds.length && selectedVisibleIds.length === visibleIds.length ? "ms-check-box" : "ms-check-box-outline-blank"}`} aria-hidden="true" />
               {selectedVisibleIds.length ? `${selectedVisibleIds.length} ${t("selected")}` : t("selectAll")}
             </button>
             <button className="bulk-action-button is-compact" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => archiveConversations(selectedVisibleIds, !isViewingArchive)}>
-              <i className={`ti ${isViewingArchive ? "ti-inbox" : "ti-archive"}`} aria-hidden="true" />
+              <i className={`ms ${isViewingArchive ? "ms-inbox" : "ms-archive"}`} aria-hidden="true" />
               {isViewingArchive ? t("restore") : t("archive")}
             </button>
             {pendingDeleteScope === "selection" ? (
               <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ conversationIds: selectedVisibleIds })}>
-                <i className="ti ti-alert-triangle" aria-hidden="true" />
+                <i className="ms ms-warning" aria-hidden="true" />
                 {t("deleteConfirm")}
               </button>
             ) : (
               <button className="bulk-action-button is-compact is-danger" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => setPendingDeleteScope("selection")}>
-                <i className="ti ti-trash" aria-hidden="true" />
+                <i className="ms ms-delete" aria-hidden="true" />
                 {t("delete")}
               </button>
             )}
             <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={exitSelection}>
-              <i className="ti ti-x" aria-hidden="true" />
+              <i className="ms ms-close" aria-hidden="true" />
               {t("cancel")}
             </button>
           </div>
@@ -571,23 +571,23 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         {!isSelecting && visibleConversations.length ? (
           <div className="messages-selection-bar">
             <button className="messages-selection-toggle" type="button" onClick={() => setIsSelecting(true)}>
-              <i className="ti ti-square-check" aria-hidden="true" />
+              <i className="ms ms-check-box" aria-hidden="true" />
               {t("select")}
             </button>
             {pendingDeleteScope === "everything" ? (
               <>
                 <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ scope: isViewingArchive ? "archived" : "inbox" })}>
-                  <i className="ti ti-alert-triangle" aria-hidden="true" />
+                  <i className="ms ms-warning" aria-hidden="true" />
                   {`${t("deleteConfirm")} (${visibleConversations.length})`}
                 </button>
                 <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope(null)}>
-                  <i className="ti ti-x" aria-hidden="true" />
+                  <i className="ms ms-close" aria-hidden="true" />
                   {t("cancel")}
                 </button>
               </>
             ) : (
               <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope("everything")}>
-                <i className="ti ti-trash" aria-hidden="true" />
+                <i className="ms ms-delete" aria-hidden="true" />
                 {isViewingArchive ? t("deleteArchived") : t("deleteAll")}
               </button>
             )}
@@ -597,10 +597,10 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         {bulkError ? <p className="messages-bulk-error" role="alert">{bulkError}</p> : null}
         <div className="messages-conversation-list">
           {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId && !isSelecting ? "is-active" : ""} ${isSelecting ? "is-selectable" : ""} ${selectedIds.includes(conversation.id) ? "is-selected" : ""}`} type="button" key={conversation.id} aria-pressed={isSelecting ? selectedIds.includes(conversation.id) : undefined} onClick={() => isSelecting ? toggleSelection(conversation.id) : openConversation(conversation.id)}>
-            {isSelecting ? <span className="messages-conversation-check" aria-hidden="true"><i className={`ti ${selectedIds.includes(conversation.id) ? "ti-square-check-filled" : "ti-square"}`} /></span> : null}
+            {isSelecting ? <span className="messages-conversation-check" aria-hidden="true"><i className={`ms ${selectedIds.includes(conversation.id) ? "ms-check-box" : "ms-check-box-outline-blank"}`} /></span> : null}
             {conversation.listing.imageUrl
               ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
-              : <span className="messages-listing-thumbnail"><i className="ti ti-photo" aria-hidden="true" /></span>}
+              : <span className="messages-listing-thumbnail"><i className="ms ms-image" aria-hidden="true" /></span>}
             <span className="messages-conversation-copy">
               <span><strong>{conversation.listing.title}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt)}</time></span>
               <em>{conversation.counterpart.name} · {conversation.role === "buying" ? "Seller" : "Buyer"}</em>
@@ -610,19 +610,19 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               </span>
             </span>
           </button>) : conversations.length
-            ? <div className="messages-empty-list"><i className={`ti ${filter === "archived" ? "ti-archive" : "ti-message-dots"}`} aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations."}</span></div>
-            : <div className="messages-empty-list"><i className="ti ti-message-dots" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
+            ? <div className="messages-empty-list"><i className={`ms ${filter === "archived" ? "ms-archive" : "ms-sms"}`} aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations."}</span></div>
+            : <div className="messages-empty-list"><i className="ms ms-sms" aria-hidden="true" /><strong>No messages yet</strong><span>Start a conversation from any listing.</span></div>}
         </div>
       </section>
 
       <section className="messages-thread-panel" aria-label="Conversation">
         {selectedConversation ? <>
           <header className="messages-thread-header">
-            <Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="ti ti-arrow-left" aria-hidden="true" /></Link>
+            <Link className="messages-mobile-back" href="/market/dashboard/messages" aria-label="Back to conversations"><i className="ms ms-arrow-back" aria-hidden="true" /></Link>
             <a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">
-              {selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={48} height={48} /> : <i className="ti ti-photo" aria-hidden="true" />}
+              {selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={48} height={48} /> : <i className="ms ms-image" aria-hidden="true" />}
               <span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span>
-              <i className="ti ti-chevron-right" aria-hidden="true" />
+              <i className="ms ms-chevron-right" aria-hidden="true" />
             </a>
             <div className="messages-thread-counterpart">
               <Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} />
@@ -637,15 +637,15 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               const isUpdating = updatingOfferId === offer.id;
               return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{offer.status}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offer.status === "completed" ? "Trade complete. Both members received 1 trust point." : offer.status === "accepted" ? "Accepted. Meet safely, then buyer confirms completion." : offer.status === "pending" ? "Waiting for seller response." : "This offer is closed."}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>Accept</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>Decline</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>Cancel offer</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>Confirm trade complete</button> : null}{offer.status === "completed" && isBuyer && !offer.reviewedAt ? <button type="button" onClick={() => setReviewOffer(offer)}>Rate seller</button> : null}{offer.status === "completed" && isBuyer && offer.reviewedAt ? <span>Seller reviewed</span> : null}{offer.status === "accepted" && isSeller ? <span>Waiting for buyer confirmation</span> : null}</footer></article>;
             }) : null}
-            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`ti ${message.readAt ? "ti-checks" : "ti-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="ti ti-heart-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
+            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`ms ${message.readAt ? "ms-done-all" : "ms-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="ms ms-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
           </div>
-          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>Purchase</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="ti ti-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
-        </> : <div className="messages-select-empty"><i className="ti ti-messages" aria-hidden="true" /><h2>Select a conversation</h2><p>Your messages about marketplace listings will appear here.</p></div>}
+          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>Purchase</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="ms ms-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
+        </> : <div className="messages-select-empty"><i className="ms ms-forum" aria-hidden="true" /><h2>Select a conversation</h2><p>Your messages about marketplace listings will appear here.</p></div>}
       </section>
 
       {isOfferDialogOpen && selectedConversation ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="messages-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}>
         <section className="listing-offer-dialog">
-          <div className="listing-offer-dialog-icon"><i className="ti ti-heart-handshake" aria-hidden="true" /></div>
+          <div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div>
           <h2 id="messages-offer-title">Make an offer</h2>
           <p>Send a clear price to {selectedConversation.counterpart.name}. If they accept, you can confirm the trade and both members receive trust points.</p>
           <label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label>

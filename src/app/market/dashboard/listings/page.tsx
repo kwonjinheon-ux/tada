@@ -131,7 +131,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
         <h1><TranslatedText translationKey="manageListings" /></h1>
         <span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span>
       </div>
-      <Link href={createHref}><i className="ti ti-plus" /> <TranslatedText translationKey="createListing" /></Link>
+      <Link href={createHref}><i className="ms ms-add" /> <TranslatedText translationKey="createListing" /></Link>
     </header>
 
     <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} />
@@ -158,7 +158,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
             <strong className="listing-row-price">{formatMarketPrice(row.price_cents)}</strong>
             <small className="listing-row-meta">Bargain · Created {dateLabel(row.created_at)}</small>
           </div>
-          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ti ti-pencil" /> Manage</Link><Link href={`/market/${row.id}`}>View sale</Link></div>
+          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ms ms-edit" /> Manage</Link><Link href={`/market/${row.id}`}>View sale</Link></div>
         </article>;
       }
 
@@ -172,9 +172,9 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
         <ManageListingActions id={row.id} title={row.title} status={row.status} />
       </article>;
     })}</div> : term ? (
-      <div className="manage-listings-empty"><i className="ti ti-search" /><h2>No matches for “{term}”</h2><p>Try a shorter word, or clear the search to see everything again.</p></div>
+      <div className="manage-listings-empty"><i className="ms ms-search" /><h2>No matches for “{term}”</h2><p>Try a shorter word, or clear the search to see everything again.</p></div>
     ) : (
-      <div className="manage-listings-empty"><i className="ti ti-list-details" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>
+      <div className="manage-listings-empty"><i className="ms ms-list-alt" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>
     )}
 
     <ListPagination page={page} totalPages={totalPages} label="Listing pages" />

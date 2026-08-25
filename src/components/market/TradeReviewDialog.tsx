@@ -53,7 +53,7 @@ export function TradeReviewDialog({ offerId, sellerName, onClose, onSubmitted }:
     <DialogOverlay className="trade-review-backdrop" aria-labelledby="trade-review-title" onClose={onClose} isDismissible={!isSubmitting}>
       <section className="trade-review-dialog">
         <div className="trade-review-dialog-heading">
-          <i className="ti ti-star" aria-hidden="true" />
+          <i className="ms ms-star" aria-hidden="true" />
           <div><p>Trade complete</p><h2 id="trade-review-title">Rate {sellerName}</h2></div>
         </div>
         <p>Share your experience with this verified seller. Your review appears on their public profile.</p>
@@ -62,7 +62,7 @@ export function TradeReviewDialog({ offerId, sellerName, onClose, onSubmitted }:
           <div className="trade-review-stars" role="radiogroup" aria-label="Seller rating">
             {RATING_OPTIONS.map((option) => <label key={option} className={score === option ? "is-selected" : ""}>
               <input type="radio" name="trade-rating" value={option} checked={score === option} onChange={() => setScore(option)} />
-              <span aria-hidden="true"><i className={`ti ${option % 1 ? "ti-star-half-filled" : "ti-star-filled"}`} /></span>
+              <span aria-hidden="true"><i className={`ms ${option % 1 ? "ms-star-half" : "ms-star"}`} /></span>
               <b>{option}</b>
             </label>)}
           </div>

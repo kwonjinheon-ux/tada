@@ -46,7 +46,7 @@ function JourneyStepper({ stage }: { stage: JourneyStage }) {
       <ol>
         {JOURNEY_STAGES.map((step, index) => (
           <li key={step} className={index <= currentIndex ? "is-done" : index === currentIndex + 1 ? "is-next" : "is-upcoming"}>
-            <i className={index <= currentIndex ? "ti ti-check" : ""} aria-hidden="true" />
+            <i className={index <= currentIndex ? "ms ms-check" : ""} aria-hidden="true" />
             <span><TranslatedText translationKey={stageLabelKey[step]} /></span>
           </li>
         ))}
@@ -56,7 +56,7 @@ function JourneyStepper({ stage }: { stage: JourneyStage }) {
 }
 
 function JourneyThumbnail({ imageUrl }: { imageUrl: string | null }) {
-  return imageUrl ? <img className="journey-thumbnail" src={imageUrl} alt="" /> : <span className="journey-thumbnail"><i className="ti ti-photo" aria-hidden="true" /></span>;
+  return imageUrl ? <img className="journey-thumbnail" src={imageUrl} alt="" /> : <span className="journey-thumbnail"><i className="ms ms-image" aria-hidden="true" /></span>;
 }
 
 function JourneyCard({ item }: { item: ActiveJourneyItem }) {
@@ -68,17 +68,17 @@ function JourneyCard({ item }: { item: ActiveJourneyItem }) {
           <div>
             <em><TranslatedText translationKey="buying" /></em>
             <h3>{item.title}</h3>
-            <p><i className="ti ti-circle-check" aria-hidden="true" />{item.statusLabel}</p>
+            <p><i className="ms ms-check-circle" aria-hidden="true" />{item.statusLabel}</p>
           </div>
         </div>
         <JourneyStepper stage={item.stage} />
         {item.meetingLabel ? (
           <div className="journey-card-footer">
-            <span><i className="ti ti-calendar" aria-hidden="true" />{item.meetingLabel}</span>
+            <span><i className="ms ms-calendar-today" aria-hidden="true" />{item.meetingLabel}</span>
             <a href={item.conversationHref}><TranslatedText translationKey="openConversation" /></a>
           </div>
         ) : (
-          <a className="journey-card-action" href={item.conversationHref}><TranslatedText translationKey="openConversation" /><i className="ti ti-chevron-right" aria-hidden="true" /></a>
+          <a className="journey-card-action" href={item.conversationHref}><TranslatedText translationKey="openConversation" /><i className="ms ms-chevron-right" aria-hidden="true" /></a>
         )}
       </article>
     );
@@ -90,14 +90,14 @@ function JourneyCard({ item }: { item: ActiveJourneyItem }) {
         <div>
           <em><TranslatedText translationKey="selling" /></em>
           <h3>{item.title}</h3>
-          {item.newOfferCount ? <p><i className="ti ti-info-circle" aria-hidden="true" />{item.newOfferCount} <TranslatedText translationKey="newOffers" /></p> : null}
+          {item.newOfferCount ? <p><i className="ms ms-info" aria-hidden="true" />{item.newOfferCount} <TranslatedText translationKey="newOffers" /></p> : null}
         </div>
       </div>
       <div className="journey-stats">
         <div><span><TranslatedText translationKey="bestOffer" /></span><strong>{item.bestOfferLabel}</strong></div>
         <div><span><TranslatedText translationKey="totalViews" /></span><strong>{item.totalViews}</strong></div>
       </div>
-      <a className="journey-card-action" href={item.reviewHref}><TranslatedText translationKey="reviewOffers" /><i className="ti ti-chevron-right" aria-hidden="true" /></a>
+      <a className="journey-card-action" href={item.reviewHref}><TranslatedText translationKey="reviewOffers" /><i className="ms ms-chevron-right" aria-hidden="true" /></a>
     </article>
   );
 }
@@ -123,8 +123,8 @@ function JourneyRow({ role, labelKey, items }: { role: "buying" | "selling"; lab
         </h3>
         {items.length > 1 ? (
           <div className="active-journey-nav">
-            <button type="button" aria-label={t("previousJourney")} onClick={() => scrollByCard(-1)}><i className="ti ti-chevron-left" aria-hidden="true" /></button>
-            <button type="button" aria-label={t("nextJourney")} onClick={() => scrollByCard(1)}><i className="ti ti-chevron-right" aria-hidden="true" /></button>
+            <button type="button" aria-label={t("previousJourney")} onClick={() => scrollByCard(-1)}><i className="ms ms-chevron-left" aria-hidden="true" /></button>
+            <button type="button" aria-label={t("nextJourney")} onClick={() => scrollByCard(1)}><i className="ms ms-chevron-right" aria-hidden="true" /></button>
           </div>
         ) : null}
       </header>

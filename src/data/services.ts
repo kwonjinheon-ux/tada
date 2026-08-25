@@ -23,14 +23,14 @@ export type ServiceListing = {
 };
 
 export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> = [
-  { id: "cleaning", icon: "ti-tools-kitchen-2" },
-  { id: "handyman", icon: "ti-hammer" },
-  { id: "moving", icon: "ti-truck" },
-  { id: "auto", icon: "ti-car" },
-  { id: "gardening", icon: "ti-seeding" },
-  { id: "tutoring", icon: "ti-school" },
-  { id: "beauty", icon: "ti-scissors" },
-  { id: "petCare", icon: "ti-paw" },
+  { id: "cleaning", icon: "ms-restaurant" },
+  { id: "handyman", icon: "ms-handyman" },
+  { id: "moving", icon: "ms-local-shipping" },
+  { id: "auto", icon: "ms-directions-car" },
+  { id: "gardening", icon: "ms-yard" },
+  { id: "tutoring", icon: "ms-school" },
+  { id: "beauty", icon: "ms-content-cut" },
+  { id: "petCare", icon: "ms-pets" },
 ];
 
 const serviceCategoryLabels = {
@@ -63,9 +63,9 @@ export function serviceBadgeLabel(badge: ServiceBadge, locale: string) {
 }
 
 export const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
-  { id: "verified", icon: "ti-shield-half" },
-  { id: "payments", icon: "ti-lock" },
-  { id: "support", icon: "ti-headset" },
+  { id: "verified", icon: "ms-security" },
+  { id: "payments", icon: "ms-lock" },
+  { id: "support", icon: "ms-headset-mic" },
 ];
 
 const serviceCopy = {

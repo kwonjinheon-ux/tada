@@ -119,7 +119,7 @@ export function LoginForm({
             <div className="field-group">
               <label htmlFor="email">Email Address</label>
               <div className="input-wrap">
-                <i className="ti ti-mail" aria-hidden="true" />
+                <i className="ms ms-mail" aria-hidden="true" />
                 <input
                   id="email"
                   name="email"
@@ -144,7 +144,7 @@ export function LoginForm({
                 <Link href="#">Forgot Password?</Link>
               </div>
               <div className="input-wrap">
-                <i className="ti ti-lock" aria-hidden="true" />
+                <i className="ms ms-lock" aria-hidden="true" />
                 <input ref={passwordInputRef} id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
                 <IconButton aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
@@ -162,7 +162,7 @@ export function LoginForm({
           </form>
 
           <div className="divider compact"><span>or</span></div>
-          <Button variant="secondary"><i className="ti ti-user-plus" aria-hidden="true" />Sign in with Passkey</Button>
+          <Button variant="secondary"><i className="ms ms-person-add" aria-hidden="true" />Sign in with Passkey</Button>
           <p className="signup-copy">Don&apos;t have an account? <Link href="/signup">Sign Up</Link></p>
         </div>
       </section>
@@ -226,7 +226,7 @@ export function SignupForm() {
             <div className="field-group">
               <label htmlFor="full-name">Full Name</label>
               <div className="input-wrap">
-                <i className="ti ti-user" aria-hidden="true" />
+                <i className="ms ms-person" aria-hidden="true" />
                 <input id="full-name" name="full-name" type="text" placeholder="John Doe" value={fullName} onChange={(event) => setFullName(event.target.value)} required />
               </div>
             </div>
@@ -234,7 +234,7 @@ export function SignupForm() {
             <div className="field-group">
               <label htmlFor="signup-email">Email Address</label>
               <div className="input-wrap has-action">
-                <i className="ti ti-mail" aria-hidden="true" />
+                <i className="ms ms-mail" aria-hidden="true" />
                 <input id="signup-email" name="email" type="email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
               </div>
               <p className="field-hint">After signing up, check your email and click the confirmation link.</p>
@@ -243,7 +243,7 @@ export function SignupForm() {
             <div className="field-group">
               <label htmlFor="signup-password">Password</label>
               <div className="input-wrap">
-                <i className="ti ti-lock" aria-hidden="true" />
+                <i className="ms ms-lock" aria-hidden="true" />
                 <input id="signup-password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="At least 8 characters" value={password} onChange={(event) => setPassword(event.target.value)} required />
                 <IconButton aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)}>
                   <PasswordToggleIcon />
@@ -254,9 +254,9 @@ export function SignupForm() {
             <div className="field-group">
               <label htmlFor="confirm-password">Confirm Password</label>
               <div className={`input-wrap password-confirm-wrap ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}>
-                <i className="ti ti-lock" aria-hidden="true" />
+                <i className="ms ms-lock" aria-hidden="true" />
                 <input id="confirm-password" name="confirm-password" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} placeholder="Repeat your password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
-                {confirmPassword ? <i className={`password-confirm-status ti ${passwordsMatch ? "ti-check" : "ti-x"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} /> : null}
+                {confirmPassword ? <i className={`password-confirm-status icon ${passwordsMatch ? "ms-check" : "ms-close"}`} aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"} /> : null}
                 <IconButton aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)}>
                   <PasswordToggleIcon />
                 </IconButton>

@@ -30,7 +30,7 @@ export function ListPagination({ page, totalPages, label = "Pagination" }: { pag
         aria-disabled={page === 1}
         tabIndex={page === 1 ? -1 : undefined}
       >
-        <i className="ti ti-chevron-left" aria-hidden="true" />
+        <i className="ms ms-chevron-left" aria-hidden="true" />
       </Link>
 
       <ol className="list-pagination-pages">
@@ -59,7 +59,7 @@ export function ListPagination({ page, totalPages, label = "Pagination" }: { pag
         aria-disabled={page === totalPages}
         tabIndex={page === totalPages ? -1 : undefined}
       >
-        <i className="ti ti-chevron-right" aria-hidden="true" />
+        <i className="ms ms-chevron-right" aria-hidden="true" />
       </Link>
     </nav>
   );
