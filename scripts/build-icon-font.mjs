@@ -87,7 +87,10 @@ async function main() {
   }
 
   const text = used.map((name) => table.get(name)).join("");
-  const source = readFileSync(join(PKG, "fonts", "tabler-icons.ttf"));
+  // The -200 cut is Tabler's thinnest stroke: measured at 54% of the default
+  // face's ink for the same glyph. Codepoints are identical across the cuts,
+  // so only the font file changes.
+  const source = readFileSync(join(PKG, "fonts", "tabler-icons-200.ttf"));
   const subset = await subsetFont(source, text, { targetFormat: "woff2" });
 
   mkdirSync(dirname(WOFF2_OUT), { recursive: true });
