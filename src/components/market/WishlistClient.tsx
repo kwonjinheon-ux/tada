@@ -108,11 +108,11 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
           <div className="listing-row-actions wishlist-item-actions">
             <Link href={item.space === "community" ? `/community/${item.id}` : `/market/${item.id}`}>{item.space === "community" ? "View post" : "View listing"}</Link>
             {item.space === "market" ? <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{messagingId === item.id ? "Opening..." : "Send message"}</button> : null}
-            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} onClick={() => void removeItem(item)}><i className="fa-solid fa-xmark" aria-hidden="true" /> Remove</button>
+            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} onClick={() => void removeItem(item)}><i className="ti ti-x" aria-hidden="true" /> Remove</button>
           </div>
         </article>)}
       </section> : <section className="wishlist-discovery" aria-labelledby="wishlist-discovery-title">
-        <div className="wishlist-discovery-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this service." : "Explore Market or Community and save posts you want to revisit."}</p><div><Link href="/market">Explore Market <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link><Link href="/community">Explore Community <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></Link></div>
+        <div className="wishlist-discovery-icon"><i className="ti ti-search" aria-hidden="true" /></div><h2 id="wishlist-discovery-title">Looking for more?</h2><p>{items.length ? "There are no saved items in this service." : "Explore Market or Community and save posts you want to revisit."}</p><div><Link href="/market">Explore Market <i className="ti ti-external-link" aria-hidden="true" /></Link><Link href="/community">Explore Community <i className="ti ti-external-link" aria-hidden="true" /></Link></div>
       </section>}
 
       {recentlyViewed.length ? <section className="wishlist-recently-viewed" aria-labelledby="recently-viewed-title">

@@ -26,7 +26,7 @@ export function CommunityBrowseIntro({ category }: { category: CommunityCategory
       <p>{t(copy.description)}</p>
     </div>
     <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
-      <i className="fa-solid fa-plus" aria-hidden="true" />
+      <i className="ti ti-plus" aria-hidden="true" />
       <span>{t("createPostAction")}</span>
     </Link>
   </div>;

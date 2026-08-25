@@ -27,8 +27,8 @@ export function BrowseFilterDrawer({ open, onOpenChange, openLabel, closeLabel, 
         aria-expanded={open}
         onClick={() => onOpenChange(!open)}
       >
-        <i className="fa-solid fa-sliders filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" />
-        <i className="fa-solid fa-xmark filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
+        <i className="ti ti-adjustments filter-toggle-icon filter-toggle-icon-open" aria-hidden="true" />
+        <i className="ti ti-x filter-toggle-icon filter-toggle-icon-close" aria-hidden="true" />
       </button>
 
       <MobileDrawer
@@ -39,7 +39,7 @@ export function BrowseFilterDrawer({ open, onOpenChange, openLabel, closeLabel, 
         panelClassName={["market-filter-panel", panelClassName].filter(Boolean).join(" ")}
       >
         <button className="filter-close-button" type="button" aria-label={closeLabel} onClick={() => onOpenChange(false)}>
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
+          <i className="ti ti-x" aria-hidden="true" />
         </button>
         {children}
       </MobileDrawer>

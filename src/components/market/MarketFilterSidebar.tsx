@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { CSSProperties } from "react";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
@@ -12,39 +11,30 @@ import { useLanguage, type TranslationKey } from "@/components/LanguageProvider"
 export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
 export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey; icon: string; href: string }> = [
-  { value: "all", labelKey: "all", icon: "fa-border-all", href: "/market" },
-  { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "fa-store", href: "/market/secondhands" },
-  { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "fa-warehouse", href: "/market/garage-sales" },
-  { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "fa-truck-ramp-box", href: "/market/moving-sales" },
-  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "fa-coins", href: "/market/2dollarshop" },
-  { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "fa-people-group", href: "/market/groupbuy" },
+  { value: "all", labelKey: "all", icon: "ti-layout-grid", href: "/market" },
+  { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "ti-building-store", href: "/market/secondhands" },
+  { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "ti-building-warehouse", href: "/market/garage-sales" },
+  { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "ti-truck-loading", href: "/market/moving-sales" },
+  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ti-coins", href: "/market/2dollarshop" },
+  { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "ti-users-group", href: "/market/groupbuy" },
 ];
 
-export const marketShopTypeIllustrations: Record<ShopType, string> = {
-  all: "/images/market/shop-types/all-market.png",
-  secondhand: "/images/market/shop-types/secondhand-exchange.png",
-  "garage-sale": "/images/market/shop-types/garage-sale.png",
-  "moving-sale": "/images/market/shop-types/moving-sale.png",
-  "2dollarshop": "/images/market/shop-types/dollar-shop.png",
-  groupbuy: "/images/market/shop-types/group-buy.png",
-};
-
 const categoryIcons: Record<string, string> = {
-  "mobile-phones-tablets": "fa-mobile-screen-button",
-  "computers-laptops": "fa-laptop",
-  "electronics-appliances": "fa-tv",
-  "furniture-home-decor": "fa-couch",
-  "home-kitchen": "fa-kitchen-set",
-  "clothing-fashion": "fa-shirt",
-  "baby-kids": "fa-baby",
-  "books-music-media": "fa-book-open",
-  "hobbies-collectables": "fa-gem",
-  "games-toys": "fa-gamepad",
-  "sports-leisure": "fa-futbol",
-  "musical-instruments": "fa-guitar",
-  "garden-tools-diy": "fa-screwdriver-wrench",
-  "pet-supplies": "fa-paw",
-  "health-beauty": "fa-heart-pulse",
+  "mobile-phones-tablets": "ti-device-mobile",
+  "computers-laptops": "ti-device-laptop",
+  "electronics-appliances": "ti-device-tv",
+  "furniture-home-decor": "ti-sofa",
+  "home-kitchen": "ti-tools-kitchen-2",
+  "clothing-fashion": "ti-shirt",
+  "baby-kids": "ti-baby-carriage",
+  "books-music-media": "ti-book",
+  "hobbies-collectables": "ti-diamond",
+  "games-toys": "ti-device-gamepad-2",
+  "sports-leisure": "ti-ball-football",
+  "musical-instruments": "ti-guitar-pick",
+  "garden-tools-diy": "ti-tools",
+  "pet-supplies": "ti-paw",
+  "health-beauty": "ti-heartbeat",
 };
 
 const marketCategoryLabelKeys: Record<string, TranslationKey> = {
@@ -97,9 +87,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block shop-type-filter market-type-filter">
       <h2>{t("marketType")}</h2>
       <div className="filter-list">
-        {marketShopTypes.map(({ value, labelKey, href }) => (
+        {marketShopTypes.map(({ value, labelKey, href, icon }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            <span className="shop-type-illustration"><Image src={marketShopTypeIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>
+            <span className="shop-type-illustration"><i className={`ti ${icon}`} aria-hidden="true" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </a>
         ))}
@@ -109,9 +99,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block category-filter">
       <h2>{t("category")}</h2>
       <div className="filter-list category-filter-list">
-        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "fa-border-all" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
+        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "ti-layout-grid" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
           <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" />
+            <i className={`ti ${icon}`} aria-hidden="true" />
             <span className={mobileDrawerClasses.menuLabel}>{label}</span>
           </button>
         ))}

@@ -53,13 +53,13 @@ export function ListingSafetyActions({ listingId, sellerId, sellerProfileVariant
 
   return <section className="listing-safety-actions" aria-label="Listing safety tools">
     <div className={`listing-safety-buttons ${sellerProfileVariant ? "is-seller-profile-variant" : ""}`}>
-      <button type="button" aria-label="Report listing" title="Report" onClick={() => setIsReportOpen(true)}><i className="fa-regular fa-flag" aria-hidden="true" /> {!iconOnly && (sellerProfileVariant ? "신고" : "Report")}</button>
-      {sellerId ? <button type="button" aria-label="Block seller" title="Block seller" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="fa-solid fa-ban" aria-hidden="true" /> {!iconOnly && (sellerProfileVariant ? "차단" : "Block")}</button> : null}
+      <button type="button" aria-label="Report listing" title="Report" onClick={() => setIsReportOpen(true)}><i className="ti ti-flag" aria-hidden="true" /> {!iconOnly && (sellerProfileVariant ? "신고" : "Report")}</button>
+      {sellerId ? <button type="button" aria-label="Block seller" title="Block seller" onClick={() => void blockSeller()} disabled={isSubmitting}><i className="ti ti-ban" aria-hidden="true" /> {!iconOnly && (sellerProfileVariant ? "차단" : "Block")}</button> : null}
     </div>
     {feedback ? <p role="status">{feedback}</p> : null}
     {isReportOpen ? <DialogOverlay className="listing-report-dialog" aria-labelledby="listing-report-title" onClose={() => setIsReportOpen(false)} isDismissible={!isSubmitting}>
       <div className="listing-report-panel">
-        <button className="listing-report-close" type="button" aria-label="Close report form" onClick={() => setIsReportOpen(false)}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+        <button className="listing-report-close" type="button" aria-label="Close report form" onClick={() => setIsReportOpen(false)}><i className="ti ti-x" aria-hidden="true" /></button>
         <h2 id="listing-report-title">Report listing</h2>
         <label>Reason<select value={reason} onChange={(event) => setReason(event.target.value as typeof reason)}>{reasons.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         <label>Details (optional)<textarea value={details} maxLength={1000} rows={4} onChange={(event) => setDetails(event.target.value)} placeholder="Tell us what happened" /></label>

@@ -84,7 +84,7 @@ export function CommunityCreateClient() {
   return (
     <CommunityDesktopLayout>
       <div className="post-ad-page community-create-page">
-      <div className="post-ad-create-bar"><Link href="/community"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {t("communityBackToCommunity")}</Link></div>
+      <div className="post-ad-create-bar"><Link href="/community"><i className="ti ti-arrow-left" aria-hidden="true" /> {t("communityBackToCommunity")}</Link></div>
       <div className="post-ad-layout">
         <section className="post-ad-card">
           <header className="post-ad-intro">
@@ -94,7 +94,7 @@ export function CommunityCreateClient() {
           <form className="post-ad-form" onSubmit={submit}>
             <section className="post-title-field">
               <div className="post-section-heading"><span>1</span><h2>{t("communityChooseCategory")}</h2></div>
-              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`fa-solid ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
+              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`ti ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
               <p className="post-field-hint">{t("communitySameCategoriesHint")}</p>
             </section>
 
@@ -121,9 +121,9 @@ export function CommunityCreateClient() {
         <aside className="post-ad-sidebar" aria-label="Community posting tips">
           <section className="post-ad-tips">
             <h2>{t("communityTipsHeading")}</h2>
-            <article><i className="fa-solid fa-location-dot" aria-hidden="true" /><div><h2>{t("communityTipLocalTitle")}</h2><p>{t("communityTipLocalDesc")}</p></div></article>
-            <article><i className="fa-regular fa-message" aria-hidden="true" /><div><h2>{t("communityTipClearTitle")}</h2><p>{t("communityTipClearDesc")}</p></div></article>
-            <article><i className="fa-solid fa-shield-halved" aria-hidden="true" /><div><h2>{t("communityTipSafeTitle")}</h2><p>{t("communityTipSafeDesc")}</p></div></article>
+            <article><i className="ti ti-map-pin" aria-hidden="true" /><div><h2>{t("communityTipLocalTitle")}</h2><p>{t("communityTipLocalDesc")}</p></div></article>
+            <article><i className="ti ti-message" aria-hidden="true" /><div><h2>{t("communityTipClearTitle")}</h2><p>{t("communityTipClearDesc")}</p></div></article>
+            <article><i className="ti ti-shield-half" aria-hidden="true" /><div><h2>{t("communityTipSafeTitle")}</h2><p>{t("communityTipSafeDesc")}</p></div></article>
           </section>
         </aside>
       </div>

@@ -35,7 +35,7 @@ export function LocationFilterSection({
         id={`${idPrefix}-main-location`}
         name="mainLocation"
         label={mainLocationLabel}
-        icon="fa-location-dot"
+        icon="ti-map-pin"
         placeholder={mainLocationPlaceholder}
         options={NZ_MAIN_LOCATIONS.map((location) => ({ label: location, value: location }))}
         value={mainLocation}
@@ -47,7 +47,7 @@ export function LocationFilterSection({
         id={`${idPrefix}-sub-location`}
         name="subLocation"
         label={subLocationLabel}
-        icon="fa-map-pin"
+        icon="ti-map-pin"
         placeholder={subLocationPlaceholder}
         options={mainLocation ? getSubLocations(mainLocation).map((location) => ({ label: location, value: location })) : []}
         value={subLocation}

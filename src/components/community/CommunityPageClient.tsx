@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { CommunityBrowseIntro } from "@/components/community/CommunityBrowseIntro";
-import { CommunityFilterSidebar, communityCategories, communityCategoryIllustrations, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { CommunityFilterSidebar, communityCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
@@ -143,7 +143,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           className="community-mobile-category-rail"
           activeValue={activeCategory}
           onSelect={(value) => setActiveCategory(value as CommunityCategory)}
-          items={communityCategories.map(({ value, labelKey }) => ({ value, label: t(labelKey), image: communityCategoryIllustrations[value], tone: `community-category-${value}` }))}
+          items={communityCategories.map(({ value, labelKey, icon }) => ({ value, label: t(labelKey), icon, tone: `community-category-${value}` }))}
         />
 
         <BrowseResultsToolbar

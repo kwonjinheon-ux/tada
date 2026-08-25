@@ -4,15 +4,15 @@ import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const items = [
-  ["fa-border-all", "Dashboard", "dashboard", ""],
-  ["fa-circle-user", "Profile Settings", "profileSettings", "/profile"],
-  ["fa-bell", "Notifications", "notifications", "/notifications"],
-  ["fa-message", "Messages", "messages", "/messages"],
-  ["fa-heart", "Wishlist", "wishlist", "/wishlist"],
-  ["fa-key", "Keywords", "keywords", "/keywords"],
-  ["fa-rectangle-list", "Manage Listings", "manageListings", "/listings"],
-  ["fa-calendar-check", "Reservations", null, "/reservations"],
-  ["fa-map", "Nearby Map", "nearbyMap", "/map"],
+  ["ti-layout-grid", "Dashboard", "dashboard", ""],
+  ["ti-user-circle", "Profile Settings", "profileSettings", "/profile"],
+  ["ti-bell", "Notifications", "notifications", "/notifications"],
+  ["ti-message", "Messages", "messages", "/messages"],
+  ["ti-heart", "Wishlist", "wishlist", "/wishlist"],
+  ["ti-key", "Keywords", "keywords", "/keywords"],
+  ["ti-list-details", "Manage Listings", "manageListings", "/listings"],
+  ["ti-calendar-check", "Reservations", null, "/reservations"],
+  ["ti-map", "Nearby Map", "nearbyMap", "/map"],
 ] as const;
 
 export async function DashboardSidebar({ context = "market", active = "Dashboard" }: { context?: "market" | "jobs"; active?: string }) {
@@ -36,10 +36,10 @@ export async function DashboardSidebar({ context = "market", active = "Dashboard
       <nav className="dashboard-nav">
         {items.filter(([, label]) => context === "market" || (label !== "Notifications" && label !== "Reservations")).map(([icon, label, translationKey, suffix]) => (
           <Link className={active === label ? "is-active" : ""} href={context === "market" && label === "Wishlist" ? "/market/wishlist" : `${base}${suffix}`} key={label}>
-            <i className={`fa-solid ${icon}`} aria-hidden="true" /><span>{translationKey ? <TranslatedText translationKey={translationKey} /> : label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
+            <i className={`ti ${icon}`} aria-hidden="true" /><span>{translationKey ? <TranslatedText translationKey={translationKey} /> : label}</span>{label === "Messages" && unreadMessageCount ? <b>{unreadBadge}</b> : label === "Notifications" && unreadNotificationCount ? <b>{notificationBadge}</b> : null}
           </Link>
         ))}
-        {isAdmin ? <Link className={active === "Admin Centre" ? "is-active" : ""} href="/admin/listings"><i className="fa-solid fa-shield-halved" aria-hidden="true" /><span>Admin Centre</span></Link> : null}
+        {isAdmin ? <Link className={active === "Admin Centre" ? "is-active" : ""} href="/admin/listings"><i className="ti ti-shield-half" aria-hidden="true" /><span>Admin Centre</span></Link> : null}
       </nav>
     </aside>
   );

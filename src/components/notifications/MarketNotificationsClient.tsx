@@ -29,11 +29,11 @@ const filters: Array<{ value: Filter; label: string }> = [
 ];
 
 const iconByType = {
-  message: "fa-comment-dots",
-  offer: "fa-handshake",
-  trade: "fa-circle-check",
-  keyword: "fa-bell",
-  wishlist: "fa-heart",
+  message: "ti-message-dots",
+  offer: "ti-heart-handshake",
+  trade: "ti-circle-check",
+  keyword: "ti-bell",
+  wishlist: "ti-heart",
 } as const;
 
 function mapRealtimeNotification(row: Record<string, unknown>): MarketNotification | null {
@@ -142,23 +142,23 @@ export function MarketNotificationsClient({
         <h1>{t("notifications")}</h1>
         <div className="notifications-heading-actions">
           <button className="bulk-action-button" type="button" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}>
-            <i className="fa-regular fa-envelope-open" aria-hidden="true" />
+            <i className="ti ti-mail-opened" aria-hidden="true" />
             {t("markAllRead")}
           </button>
           {isConfirmingDeleteAll ? (
             <>
               <button className="bulk-action-button is-danger" type="button" disabled={isDeletingAll} onClick={() => void deleteAll()}>
-                <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+                <i className="ti ti-alert-triangle" aria-hidden="true" />
                 {t("deleteAllConfirm")}
               </button>
               <button className="bulk-action-button" type="button" disabled={isDeletingAll} onClick={() => setIsConfirmingDeleteAll(false)}>
-                <i className="fa-solid fa-xmark" aria-hidden="true" />
+                <i className="ti ti-x" aria-hidden="true" />
                 {t("cancel")}
               </button>
             </>
           ) : (
             <button className="bulk-action-button is-danger" type="button" disabled={!notifications.length} onClick={() => setIsConfirmingDeleteAll(true)}>
-              <i className="fa-regular fa-trash-can" aria-hidden="true" />
+              <i className="ti ti-trash" aria-hidden="true" />
               {t("deleteAll")}
             </button>
           )}
@@ -177,7 +177,7 @@ export function MarketNotificationsClient({
       <section className="notifications-list" aria-live="polite">
         {visibleNotifications.length ? visibleNotifications.map((notification) => (
           <Link className={`notification-row ${notification.readAt ? "" : "is-unread"}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.id)}>
-            <span className={`notification-icon is-${notification.type}`}><i className={`fa-solid ${iconByType[notification.type]}`} aria-hidden="true" /></span>
+            <span className={`notification-icon is-${notification.type}`}><i className={`ti ${iconByType[notification.type]}`} aria-hidden="true" /></span>
             <span className="notification-copy">
               <span>
                 <strong>{notification.type === "message" && notification.actorName ? notification.actorName : notification.title}</strong>
@@ -185,18 +185,18 @@ export function MarketNotificationsClient({
               </span>
               {notification.type === "message" && notification.listingTitle ? (
                 <small className="notification-listing-title">
-                  <i className="fa-solid fa-tag" aria-hidden="true" />
+                  <i className="ti ti-tag" aria-hidden="true" />
                   {notification.listingTitle}
                 </small>
               ) : null}
               {notification.body ? <small>{notification.body}</small> : null}
             </span>
             {!notification.readAt ? <i className="notification-unread-dot" aria-label="Unread" /> : null}
-            <i className="fa-solid fa-chevron-right notification-chevron" aria-hidden="true" />
+            <i className="ti ti-chevron-right notification-chevron" aria-hidden="true" />
           </Link>
         )) : (
           <div className="notifications-empty" role="status">
-            <i className="fa-regular fa-bell" aria-hidden="true" />
+            <i className="ti ti-bell" aria-hidden="true" />
             <strong>{filter === "unread" ? "You are all caught up" : "No notifications here yet"}</strong>
             <span>New marketplace activity will appear here.</span>
           </div>

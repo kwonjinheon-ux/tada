@@ -514,6 +514,20 @@ button { cursor: pointer; }
 .ui-avatar--sm { width: var(--control-h-md); height: var(--control-h-md); font-size: var(--text-sm); }
 .ui-avatar--lg { width: 64px; height: 64px; font-size: var(--text-2xl); }
 
+/* --- Icon --------------------------------------------------------------- */
+/* Tabler is a single outline weight, so an icon can only say one thing at a
+   time: colour it like the text it sits with, and let the active or selected
+   state take the accent. Filled variants (`ti-heart-filled`) are reserved for
+   controls whose on/off state the glyph itself has to carry. */
+.ti { line-height: 1; vertical-align: -0.05em; }
+.ti-spin { display: inline-block; animation: ti-spin 900ms linear infinite; }
+
+@keyframes ti-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ti-spin { animation-duration: 2400ms; }
+}
+
 /* --- Dialog backdrop ---------------------------------------------------- */
 .ui-backdrop {
   position: fixed;

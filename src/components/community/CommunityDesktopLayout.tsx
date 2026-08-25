@@ -43,7 +43,7 @@ export function CommunityDesktopLayout({ children, activeCategory = "all" }: Com
     <main className="marketplace-page community-page community-desktop-layout">
       <MobileDrawer open={isMobileCategoryOpen} onClose={() => setIsMobileCategoryOpen(false)} ariaLabel="Close community categories" className="filter-backdrop" panelClassName="market-filter-panel">
         <button className="filter-close-button" type="button" aria-label="Close community categories" onClick={() => setIsMobileCategoryOpen(false)}>
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
+          <i className="ti ti-x" aria-hidden="true" />
         </button>
         <CommunityFilterSidebar
           activeCategory={activeCategory}

@@ -44,7 +44,7 @@ function ServiceProfileContactCard({
     <section className="service-profile-contact ui-card">
       <header className="service-profile-contact-header">
         {profile.logo ? <img className="service-profile-contact-logo" src={profile.logo} alt={`${profile.businessName} logo`} /> : (
-          <span className="service-profile-contact-logo service-profile-contact-logo--fallback" aria-hidden="true"><i className="fa-solid fa-briefcase" /></span>
+          <span className="service-profile-contact-logo service-profile-contact-logo--fallback" aria-hidden="true"><i className="ti ti-briefcase" /></span>
         )}
         <div>
           <p className="service-profile-eyebrow">{isKorean ? "연락처 및 위치" : "Contact & location"}</p>
@@ -52,13 +52,13 @@ function ServiceProfileContactCard({
           <span>{categoryLabel}</span>
         </div>
       </header>
-      <p><i className="fa-solid fa-location-dot" aria-hidden="true" /> {location}</p>
-      {profile.streetAddress ? <p><i className="fa-solid fa-location-crosshairs" aria-hidden="true" /> {profile.streetAddress}</p> : null}
-      {directionsHref ? <a className="ui-button ui-button--primary service-profile-directions" href={directionsHref} target="_blank" rel="noreferrer"><i className="fa-solid fa-diamond-turn-right" aria-hidden="true" /> {isKorean ? "길찾기" : "Get directions"}</a> : null}
-      <p><i className="fa-solid fa-briefcase" aria-hidden="true" /> {profile.providerType === "business" ? (isKorean ? "지역 업체" : "Local business") : (isKorean ? "개인 사업자" : "Sole trader")}</p>
-      <p><i className="fa-solid fa-phone" aria-hidden="true" /> <a href={`tel:${profile.phone.replace(/\s/g, "")}`}>{profile.phone}</a></p>
-      {profile.email ? <p><i className="fa-regular fa-envelope" aria-hidden="true" /> <a href={`mailto:${profile.email}`}>{profile.email}</a></p> : null}
-      {websiteHref ? <p><i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /> <a href={websiteHref} target="_blank" rel="noreferrer">{isKorean ? "웹사이트 방문" : "Visit website"}</a></p> : null}
+      <p><i className="ti ti-map-pin" aria-hidden="true" /> {location}</p>
+      {profile.streetAddress ? <p><i className="ti ti-current-location" aria-hidden="true" /> {profile.streetAddress}</p> : null}
+      {directionsHref ? <a className="ui-button ui-button--primary service-profile-directions" href={directionsHref} target="_blank" rel="noreferrer"><i className="ti ti-directions" aria-hidden="true" /> {isKorean ? "길찾기" : "Get directions"}</a> : null}
+      <p><i className="ti ti-briefcase" aria-hidden="true" /> {profile.providerType === "business" ? (isKorean ? "지역 업체" : "Local business") : (isKorean ? "개인 사업자" : "Sole trader")}</p>
+      <p><i className="ti ti-phone" aria-hidden="true" /> <a href={`tel:${profile.phone.replace(/\s/g, "")}`}>{profile.phone}</a></p>
+      {profile.email ? <p><i className="ti ti-mail" aria-hidden="true" /> <a href={`mailto:${profile.email}`}>{profile.email}</a></p> : null}
+      {websiteHref ? <p><i className="ti ti-external-link" aria-hidden="true" /> <a href={websiteHref} target="_blank" rel="noreferrer">{isKorean ? "웹사이트 방문" : "Visit website"}</a></p> : null}
     </section>
   );
 }
@@ -127,15 +127,15 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       </aside>
       <section className="market-results services-results service-profile-main">
         <div className="service-profile-shell">
-          <Link className="service-profile-back" href="/services"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> {isKorean ? "서비스 목록" : "Services"}</Link>
+          <Link className="service-profile-back" href="/services"><i className="ti ti-arrow-left" aria-hidden="true" /> {isKorean ? "서비스 목록" : "Services"}</Link>
           <section className="service-profile-hero ui-card">
-            <div className="service-profile-media">{heroImage ? <img src={heroImage} alt={`${profile.provider} ${isKorean ? "서비스 사진" : "service"}`} /> : <i className="fa-solid fa-briefcase" aria-hidden="true" />}</div>
+            <div className="service-profile-media">{heroImage ? <img src={heroImage} alt={`${profile.provider} ${isKorean ? "서비스 사진" : "service"}`} /> : <i className="ti ti-briefcase" aria-hidden="true" />}</div>
             <div className="service-profile-hero-copy">
               <p>{labels[profile.category]}</p>
               <h1 className={profile.logo ? "has-logo" : undefined}>{profile.logo ? <img className="service-profile-logo" src={profile.logo} alt={`${profile.provider} logo`} /> : null}<span>{profile.provider}</span></h1>
               <div className="services-listing-badges">{profile.badges.map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}</div>
-              <div className="service-profile-rating"><i className="fa-solid fa-star" aria-hidden="true" /> <strong>{profile.rating.toFixed(1)}</strong><span>({profile.reviewCount} {isKorean ? "후기" : "reviews"})</span></div>
-              <div className="service-profile-actions"><a className="ui-button ui-button--primary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="fa-solid fa-phone" aria-hidden="true" /> {isKorean ? "전화 문의" : "Call now"}</a>{profile.email ? <a className="ui-button ui-button--secondary" href={`mailto:${profile.email}`}><i className="fa-regular fa-envelope" aria-hidden="true" /> {isKorean ? "이메일" : "Email"}</a> : null}</div>
+              <div className="service-profile-rating"><i className="ti ti-star" aria-hidden="true" /> <strong>{profile.rating.toFixed(1)}</strong><span>({profile.reviewCount} {isKorean ? "후기" : "reviews"})</span></div>
+              <div className="service-profile-actions"><a className="ui-button ui-button--primary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="ti ti-phone" aria-hidden="true" /> {isKorean ? "전화 문의" : "Call now"}</a>{profile.email ? <a className="ui-button ui-button--secondary" href={`mailto:${profile.email}`}><i className="ti ti-mail" aria-hidden="true" /> {isKorean ? "이메일" : "Email"}</a> : null}</div>
             </div>
           </section>
           <section className="service-profile-content">

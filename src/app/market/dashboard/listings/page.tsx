@@ -67,7 +67,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   return <main className="marketplace-page dashboard-page dashboard-layout manage-listings-page">
     <DashboardSidebar context="market" active="Manage Listings" />
     <section className="dashboard-content manage-listings-content">
-      <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span></div><Link href={createHref}><i className="fa-solid fa-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
+      <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span></div><Link href={createHref}><i className="ti ti-plus" /> <TranslatedText translationKey="createListing" /></Link></header>
       <ManageListingsCategoryTabs activeCategory={activeCategory} counts={{ all: totalListings, market: listings.length, bargain: bargainListings.length, services: serviceListings.length }} />
       {visibleTotal ? <div className="manage-listings-grid">{(activeCategory === "all" || activeCategory === "services") && serviceListings.map((listing) => {
         const imageUrl = serviceSignedPhotos.get(servicePrimaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png";
@@ -101,9 +101,9 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
             <strong className="listing-row-price">{formatMarketPrice(listing.price_cents)}</strong>
             <small className="listing-row-meta">Bargain · Created {new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(listing.created_at))}</small>
           </div>
-          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="fa-solid fa-pen" /> Manage</Link><Link href={`/market/${listing.id}`}>View sale</Link></div>
+          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ti ti-pencil" /> Manage</Link><Link href={`/market/${listing.id}`}>View sale</Link></div>
         </article>;
-      })}</div> : <div className="manage-listings-empty"><i className="fa-regular fa-rectangle-list" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
+      })}</div> : <div className="manage-listings-empty"><i className="ti ti-list-details" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>}
     </section>
   </main>;
 }

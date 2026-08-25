@@ -104,7 +104,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       <div className="product-media">
         {imageFailed ? (
           <div className="product-image-unavailable" role="img" aria-label={`${listing.title}: ${t("imageUnavailable")}`}>
-            <i className="fa-regular fa-image" aria-hidden="true" />
+            <i className="ti ti-photo" aria-hidden="true" />
           </div>
         ) : (
           <Image
@@ -142,11 +142,11 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         */}
         <div className="product-title-row"><h2>{listing.title}<CommentCountBadge count={listing.commentCount} className={`product-comment-count ${listing.commentCount && listing.commentCount <= 10 ? "is-low" : ""}`} /></h2></div>
         <div className="price-row">
-          {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="fa-regular fa-calendar" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
+          {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="ti ti-calendar" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
           <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>
         </div>
         <p>
-          <i className="fa-solid fa-location-dot" aria-hidden="true" />
+          <i className="ti ti-map-pin" aria-hidden="true" />
           {listing.location}
         </p>
       </div>

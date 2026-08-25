@@ -1477,7 +1477,7 @@ a {
 }
 
 .bargain-results { gap: var(--space-4); }
-.bargain-category-list .bargain-category-2-dollar-deals > i { color: var(--rose-500); }.bargain-category-list .bargain-category-5-dollar-deals > i { color: var(--amber-450); }.bargain-category-list .bargain-category-10-dollar-deals > i { color: var(--green-600); }.bargain-category-list .bargain-category-moving-sale > i { color: var(--blue-450); }.bargain-category-list .bargain-category-garage-sale > i { color: var(--blue-700); }.bargain-category-list .bargain-category-newly-listed > i { color: var(--green-550); }.bargain-category-list .bargain-category-nearby-deals > i { color: var(--blue-400); }.bargain-category-list button.is-selected > i { color: currentColor; }
+.bargain-category-list button.is-selected > i { color: currentColor; }
 
 
 .listing-location-selector {
@@ -1566,36 +1566,20 @@ a {
   color: var(--color-on-primary);
 }
 
-.shop-type-filter .filter-list > a.shop-type-all > i { color: var(--teal-soft-900); }
-.shop-type-filter .filter-list > a.shop-type-secondhand > i { color: var(--green-600); }
-.shop-type-filter .filter-list > a.shop-type-garage-sale > i { color: var(--blue-700); }
-.shop-type-filter .filter-list > a.shop-type-moving-sale > i { color: var(--blue-450); }
-.shop-type-filter .filter-list > a.shop-type-2dollarshop > i { color: var(--rose-500); }
-.shop-type-filter .filter-list > a.shop-type-groupbuy > i { color: var(--amber-450); }
 .shop-type-filter .filter-list a.is-selected > i { color: currentColor; }
 .shop-type-filter .filter-list > a { grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto; }
 .shop-type-illustration { width: calc(var(--control-h-md) * 0.7); height: calc(var(--control-h-md) * 0.7); display: grid; place-items: center; }
-.shop-type-illustration img { width: 100%; height: 100%; object-fit: contain; }
+.shop-type-illustration { color: var(--color-ink); font-size: var(--text-lg); }
 
-.community-category-list > button.community-category-all > i { color: var(--teal-soft-900); }.community-category-list > button.community-category-free-board > i { color: var(--blue-500); }.community-category-list > button.community-category-local-noticeboard > i, .post-shop-type-options > button.community-category-local-noticeboard > i { color: var(--red-550); }.community-category-list > button.community-category-events > i, .post-shop-type-options > button.community-category-events > i { color: var(--violet-700); }.community-category-list > button.community-category-qna > i, .post-shop-type-options > button.community-category-qna > i { color: var(--amber-550); }.community-category-list > button.community-category-recommendations > i, .post-shop-type-options > button.community-category-recommendations > i { color: var(--green-600); }.community-category-list > button.community-category-together > i { color: var(--rose-500); }.community-category-list > button.community-category-parenting > i { color: var(--rose-500); }.community-category-list > button.community-category-immigration > i { color: var(--blue-soft-750); }
+
 .community-category-filter .filter-list button.is-selected > i { color: currentColor; }
 .community-category-filter .filter-list > button { grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto; }
-.community-category-illustration { width: calc(var(--control-h-md) * 0.7); height: calc(var(--control-h-md) * 0.7); display: grid; place-items: center; }
-.community-category-illustration img { width: 100%; height: 100%; object-fit: contain; }
-.community-category-list .community-category-free-board .community-category-illustration,
-.community-category-list .community-category-local-noticeboard .community-category-illustration { overflow: hidden; }
-.community-category-list .community-category-local-noticeboard .community-category-illustration img { transform: scale(1.35); }
-/* Services carries the same per-category icon colours the other rails use, at
-   full saturation so each row is identifiable at a glance. */
-.services-type-filter .filter-list > button.services-type-all > i { color: var(--teal-soft-900); }
-.services-type-filter .filter-list > button.services-type-cleaning > i { color: var(--amber-450); }
-.services-type-filter .filter-list > button.services-type-handyman > i { color: var(--blue-700); }
-.services-type-filter .filter-list > button.services-type-moving > i { color: var(--blue-450); }
-.services-type-filter .filter-list > button.services-type-auto > i { color: var(--red-750); }
-.services-type-filter .filter-list > button.services-type-gardening > i { color: var(--green-600); }
-.services-type-filter .filter-list > button.services-type-tutoring > i { color: var(--violet-700); }
-.services-type-filter .filter-list > button.services-type-beauty > i { color: var(--rose-700); }
-.services-type-filter .filter-list > button.services-type-petCare > i { color: var(--red-550); }
+/* The category glyph now comes from the icon font, so the per-category image
+   crops that used to correct the illustrations are gone with them. */
+.community-category-illustration { width: calc(var(--control-h-md) * 0.7); height: calc(var(--control-h-md) * 0.7); display: grid; place-items: center; color: var(--color-ink); font-size: var(--text-lg); }
+.community-category-list .is-selected .community-category-illustration { color: var(--color-primary); }
+/* Services filter rows share the single icon colour; selection is the signal. */
+.services-type-filter .filter-list > button > i { color: var(--color-ink); }
 .services-type-filter .filter-list button.is-selected > i { color: currentColor; }
 
 .price-filter .price-filter-range {
@@ -4494,11 +4478,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-shop-type-options button:hover:not(.is-selected) { border-color: var(--neutral-300); background: var(--neutral-150); }
 .post-shop-type-options button.is-selected { border-color: var(--primary); background: var(--primary); color: var(--neutral-50); }
 .post-shop-type-options button.is-selected > i { color: currentColor; }
-.post-shop-type-secondhand > i { color: var(--green-600); }
-.post-shop-type-garage-sale > i { color: var(--blue-700); }
-.post-shop-type-moving-sale > i { color: var(--blue-450); }
-.post-shop-type-2dollarshop > i { color: var(--rose-500); }
-.post-shop-type-groupbuy > i { color: var(--amber-450); }
 .post-coming-soon-hint { padding: var(--space-4); border: 1px dashed var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-150); color: var(--blue-soft-650); text-align: center; }
 
 .bargain-sale-items,
@@ -8257,16 +8236,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   place-items: center;
   border: 0;
   border-radius: var(--radius-circle);
-  background: var(--green-soft-50);
-  color: var(--green-700);
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
   font-size: var(--text-lg);
 }
 
-.notification-icon.is-message { background: var(--blue-soft-100); color: var(--blue-550); }
-.notification-icon.is-offer { background: var(--amber-50); color: var(--amber-700); }
-.notification-icon.is-trade { background: var(--green-soft-50); color: var(--green-700); }
-.notification-icon.is-keyword { background: var(--violet-soft-100); color: var(--violet-750); }
-.notification-icon.is-wishlist { background: var(--rose-soft-100); color: var(--rose-750); }
+/* Notification type is already stated in the title and body; a fifth tint per
+   row only made the list noisy. Unread is what deserves the accent. */
+.notification-row.is-unread .notification-icon { background: var(--color-primary-soft); color: var(--color-primary); }
 
 .notification-copy {
   min-width: 0;
@@ -8770,17 +8747,12 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .mobile-browse-category-icon img { width: 100%; height: 100%; object-fit: contain; }
   .mobile-browse-category-icon i { font-size: var(--text-xl); }
   .mobile-browse-category strong { color: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.25; white-space: nowrap; }
+  /* One colour for every category. Giving each its own tint turned the rail
+     into six competing accents and made none of them mean anything; the
+     selected tab is the only thing worth colouring. */
   .market-page-with-bottom-dock .mobile-browse-category-icon { border-radius: var(--radius-md); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-all .mobile-browse-category-icon { background: var(--color-primary-soft); color: var(--color-primary-strong); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-trade .mobile-browse-category-icon { background: var(--green-soft-50); color: var(--green-700); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-garage .mobile-browse-category-icon { background: var(--blue-soft-100); color: var(--blue-650); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-moving .mobile-browse-category-icon { background: var(--violet-soft-100); color: var(--violet-750); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-dollar .mobile-browse-category-icon { background: var(--rose-soft-100); color: var(--rose-800); }
-  .market-page-with-bottom-dock .mobile-browse-category.is-group .mobile-browse-category-icon { background: var(--amber-50); color: var(--amber-700); }
-  .community-mobile-category-rail .mobile-browse-category-icon { color: var(--color-brand); }
-  .community-mobile-category-rail .community-category-free-board .mobile-browse-category-icon,
-  .community-mobile-category-rail .community-category-local-noticeboard .mobile-browse-category-icon { overflow: hidden; }
-  .community-mobile-category-rail .community-category-local-noticeboard .mobile-browse-category-icon img { transform: scale(1.35); }
+  .mobile-browse-category-icon { color: var(--color-ink); }
+  .mobile-browse-category.is-active .mobile-browse-category-icon { color: var(--color-primary); }
 
   .market-toolbar { min-width: 0; overflow: hidden; }
   .market-toolbar-top { min-width: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
@@ -10339,11 +10311,7 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-destination footer.is-korean strong { width: fit-content; min-height: var(--control-h-sm); display: inline-flex; align-items: center; padding-inline: var(--space-3); border: 1px solid currentColor; border-radius: var(--radius-xs); }.home-reference-destination footer.is-korean small { padding-left: var(--space-1); }
 .home-reference-jobs-cta > em { flex: 0 0 auto; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface-soft); color: var(--color-muted); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }
 .home-reference-destination-subtitle { color: var(--color-primary-strong) !important; font-size: var(--text-2xs) !important; font-weight: var(--weight-bold); }
-.home-reference-destination--market > i:first-child { background: var(--green-soft-50); color: var(--green-700); }
-.home-reference-destination--community > i:first-child { background: var(--violet-soft-100); color: var(--violet-750); }
-.home-reference-destination--services > i:first-child { background: var(--amber-50); color: var(--amber-700); }
-.home-reference-destination--jobs > i:first-child { background: var(--blue-soft-100); color: var(--blue-650); }
-.home-reference-destination--market footer strong { color: var(--green-700); }.home-reference-destination--community footer strong { color: var(--violet-750); }.home-reference-destination--services footer strong { color: var(--amber-700); }.home-reference-destination--jobs footer strong { color: var(--blue-650); }
+
 .home-reference-destination:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
 
 /* Keep elevation for the primary destination choices only; all supporting home cards stay flat. */
@@ -10362,13 +10330,13 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-market-shortcut > i:first-child { width: var(--control-h-md); height: var(--control-h-md); display: grid; flex: 0 0 auto; place-items: center; border-radius: var(--radius-circle); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-lg); }
 .home-reference-market-shortcut-image { width: var(--control-h-md); height: var(--control-h-md); flex: 0 0 auto; border-radius: var(--radius-circle); object-fit: contain; }
 .home-reference-market-shortcut > i:last-child { margin-left: auto; color: var(--color-primary-strong); font-size: var(--text-2xs); }
-.home-reference-market-shortcut:nth-child(1) { background: color-mix(in srgb, var(--green-soft-50) 88%, var(--color-surface)); }.home-reference-market-shortcut:nth-child(2) { background: color-mix(in srgb, var(--amber-50) 68%, var(--color-surface)); }.home-reference-market-shortcut:nth-child(3) { background: color-mix(in srgb, var(--blue-soft-100) 72%, var(--color-surface)); }.home-reference-market-shortcut:nth-child(4) { background: color-mix(in srgb, var(--violet-soft-100) 72%, var(--color-surface)); }.home-reference-market-shortcut:nth-child(5) { background: color-mix(in srgb, var(--rose-soft-100) 72%, var(--color-surface)); }
-.home-reference-market-shortcut:nth-child(2) > i:first-child { background: var(--amber-50); color: var(--amber-700); }.home-reference-market-shortcut:nth-child(3) > i:first-child { background: var(--blue-soft-100); color: var(--blue-650); }.home-reference-market-shortcut:nth-child(4) > i:first-child { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-market-shortcut:nth-child(5) > i:first-child { background: var(--rose-soft-100); color: var(--rose-800); }
+
+
 .home-reference-market-shortcut > span { display: grid; gap: 0.1rem; }
 .home-reference-market-shortcut small { color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--font-weight-regular); }
 .home-reference-market h2:empty { display: none; }
 .home-reference-market-shortcut:hover { border-color: var(--green-700); }
-.home-reference-market-shortcut:nth-child(2):hover { border-color: var(--amber-700); }.home-reference-market-shortcut:nth-child(3):hover { border-color: var(--blue-650); }.home-reference-market-shortcut:nth-child(4):hover { border-color: var(--violet-750); }.home-reference-market-shortcut:nth-child(5):hover { border-color: var(--rose-800); }
+
 
 @media (max-width: 767.98px) {
   .home-reference { padding-top: var(--space-4); }
@@ -10423,16 +10391,13 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .home-reference-community,
 .home-reference-help { display: grid; gap: var(--space-4); padding: var(--space-5); }
 .home-reference-help { background: var(--color-surface); }
-.home-reference-panel-heading { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }.home-reference-panel-heading > div { display: flex; gap: var(--space-2); align-items: center; }.home-reference-panel-heading > div > i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-md); }.home-reference-community .home-reference-panel-heading > div > i { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-help .home-reference-panel-heading > div > i { background: var(--amber-50); color: var(--amber-700); }.home-reference-panel-heading h2 { margin: 0; color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); }.home-reference-panel-heading a { color: var(--color-primary-strong); font-size: var(--text-xs); font-weight: var(--weight-bold); }
-.home-reference-community-list { display: grid; gap: var(--space-1); }.home-reference-community-list > a { display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; min-height: var(--control-h-xl); padding: var(--space-3) 0; border-top: 1px solid var(--color-line-soft); }.home-reference-community-list > a > i:first-child { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xs); }.home-reference-community-list .is-featured { margin-bottom: var(--space-1); padding: var(--space-3); border: 0; border-radius: var(--radius-md); background: var(--violet-soft-100); }.home-reference-community-list span { min-width: 0; display: grid; gap: var(--space-1); }.home-reference-community-list strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-list small { overflow: hidden; color: var(--color-muted); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-list > a > i:last-child { color: var(--color-muted-soft); font-size: var(--text-2xs); }.home-reference-community-list > .home-reference-community-post--event > i:first-child { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-community-list > .home-reference-community-post--question > i:first-child { background: var(--amber-50); color: var(--amber-700); }.home-reference-community-list > .home-reference-community-post--recommendation > i:first-child { background: var(--green-soft-50); color: var(--green-700); }.home-reference-community-list > .home-reference-community-post--free > i:first-child { background: var(--blue-soft-100); color: var(--blue-650); }.home-reference-community-list > .home-reference-community-post--notice > i:first-child { background: var(--rose-soft-100); color: var(--rose-800); }.home-reference-community-list > .home-reference-community-post--housing > i:first-child { background: var(--blue-100); color: var(--blue-700); }
-.home-reference-help > p { margin: calc(var(--space-2) * -1) 0 0; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }.home-reference-help-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }.home-reference-help-grid > a { display: grid; gap: var(--space-2); min-height: calc(var(--control-h-2xl) * 1.4); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); }.home-reference-help-grid i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-md); }.home-reference-help-grid span { color: var(--color-ink); font-size: var(--text-xs); font-weight: var(--weight-bold); }.home-reference-help-grid small { display: none; }.home-reference-help-grid > a:nth-child(2) i { background: var(--blue-soft-100); color: var(--blue-650); }.home-reference-help-grid > a:nth-child(3) i { background: var(--amber-50); color: var(--amber-700); }.home-reference-help-grid > a:nth-child(4) i { background: var(--green-soft-50); color: var(--green-700); }.home-reference-help-grid > a:nth-child(5) i { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-help-grid > a:nth-child(6) i { background: var(--rose-soft-100); color: var(--rose-800); }.home-reference-help-grid > a:nth-child(7) i { background: var(--blue-100); color: var(--blue-700); }.home-reference-help-grid > a:nth-child(8) i { background: var(--violet-soft-100); color: var(--violet-650); }.home-reference-help-grid > a:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }.home-reference-help-posts { display: grid; grid-template-columns: repeat(3, minmax(9.5rem, 1fr)); gap: var(--space-3); overflow-x: auto; }.home-reference-help-post { min-width: 9.5rem; display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); align-items: center; min-height: calc(var(--control-h-2xl) * 1.55); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); }.home-reference-help-post > i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-sm); }.home-reference-help-post > span { min-width: 0; display: grid; gap: var(--space-1); }.home-reference-help-post strong, .home-reference-help-post small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.home-reference-help-post strong { color: var(--color-ink); font-size: var(--text-xs); }.home-reference-help-post small { color: var(--color-muted); font-size: var(--text-2xs); }.home-reference-help-post em { grid-column: 1 / -1; color: var(--color-primary-strong); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }.home-reference-help-post--moving > i { background: var(--blue-soft-100); color: var(--blue-650); }.home-reference-help-post--handyman > i { background: var(--amber-50); color: var(--amber-700); }
-
+.home-reference-panel-heading { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }.home-reference-panel-heading > div { display: flex; gap: var(--space-2); align-items: center; }.home-reference-panel-heading > div > i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-md); }.home-reference-panel-heading h2 { margin: 0; color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); }.home-reference-panel-heading a { color: var(--color-primary-strong); font-size: var(--text-xs); font-weight: var(--weight-bold); }
+.home-reference-community-list { display: grid; gap: var(--space-1); }.home-reference-community-list > a { display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; min-height: var(--control-h-xl); padding: var(--space-3) 0; border-top: 1px solid var(--color-line-soft); }.home-reference-community-list > a > i:first-child { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xs); }.home-reference-community-list .is-featured { margin-bottom: var(--space-1); padding: var(--space-3); border: 0; border-radius: var(--radius-md); background: var(--color-surface-soft); }.home-reference-community-list span { min-width: 0; display: grid; gap: var(--space-1); }.home-reference-community-list strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-list small { overflow: hidden; color: var(--color-muted); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-list > a > i:last-child { color: var(--color-muted-soft); font-size: var(--text-2xs); }.home-reference-help > p { margin: calc(var(--space-2) * -1) 0 0; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }.home-reference-help-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }.home-reference-help-grid > a { display: grid; gap: var(--space-2); min-height: calc(var(--control-h-2xl) * 1.4); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); }.home-reference-help-grid i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-md); }.home-reference-help-grid span { color: var(--color-ink); font-size: var(--text-xs); font-weight: var(--weight-bold); }.home-reference-help-grid small { display: none; }.home-reference-help-grid > a:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }.home-reference-help-posts { display: grid; grid-template-columns: repeat(3, minmax(9.5rem, 1fr)); gap: var(--space-3); overflow-x: auto; }.home-reference-help-post { min-width: 9.5rem; display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); align-items: center; min-height: calc(var(--control-h-2xl) * 1.55); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); }.home-reference-help-post > i { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-md); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-sm); }.home-reference-help-post > span { min-width: 0; display: grid; gap: var(--space-1); }.home-reference-help-post strong, .home-reference-help-post small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.home-reference-help-post strong { color: var(--color-ink); font-size: var(--text-xs); }.home-reference-help-post small { color: var(--color-muted); font-size: var(--text-2xs); }.home-reference-help-post em { grid-column: 1 / -1; color: var(--color-primary-strong); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }
 @media (max-width: 767.98px) {
   .home-reference-help-grid > a { justify-items: center; text-align: center; }
 }
 
-.home-reference-community-feed { display: grid; gap: var(--space-3); }.home-reference-community-feed .home-reference-panel-heading > div > i { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-community-cards { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-1); scroll-snap-type: x proximity; }.home-reference-community-card { flex: 0 0 min(78vw, 20rem); display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); min-height: calc(var(--control-h-2xl) * 2.5); padding: var(--space-4); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-xs); scroll-snap-align: start; }.home-reference-community-card > i:first-child { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xs); }.home-reference-community-card > div { min-width: 0; display: grid; align-content: start; gap: var(--space-1); }.home-reference-community-card strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-sm); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-card p { display: -webkit-box; overflow: hidden; margin: 0; color: var(--color-ink-soft); font-size: var(--text-xs); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.home-reference-community-card small { overflow: hidden; display: inline-flex; gap: var(--space-1); align-items: center; color: var(--color-muted); font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-card small i { color: var(--color-primary-strong); }.home-reference-community-card > span, .home-reference-community-card > i:last-of-type { display: none; }.home-reference-community-card footer { grid-column: 1 / -1; display: flex; gap: var(--space-3); align-self: end; color: var(--color-muted); font-size: var(--text-xs); }.home-reference-community-card footer span { display: inline-flex; gap: var(--space-1); align-items: center; }.home-reference-community-card--event > i:first-child { background: var(--violet-soft-100); color: var(--violet-750); }.home-reference-community-card--question > i:first-child { background: var(--amber-50); color: var(--amber-700); }.home-reference-community-card--recommendation > i:first-child { background: var(--green-soft-50); color: var(--green-700); }.home-reference-community-card--free > i:first-child { background: var(--blue-soft-100); color: var(--blue-650); }.home-reference-community-card--notice > i:first-child { background: var(--rose-soft-100); color: var(--rose-800); }.home-reference-community-card--housing > i:first-child { background: var(--blue-100); color: var(--blue-700); }
-.home-reference-community-card footer { grid-column: 2; }
+.home-reference-community-feed { display: grid; gap: var(--space-3); }.home-reference-community-cards { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-1); scroll-snap-type: x proximity; }.home-reference-community-card { flex: 0 0 min(78vw, 20rem); display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); min-height: calc(var(--control-h-2xl) * 2.5); padding: var(--space-4); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-xs); scroll-snap-align: start; }.home-reference-community-card > i:first-child { width: var(--control-h-sm); height: var(--control-h-sm); display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xs); }.home-reference-community-card > div { min-width: 0; display: grid; align-content: start; gap: var(--space-1); }.home-reference-community-card strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-sm); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-card p { display: -webkit-box; overflow: hidden; margin: 0; color: var(--color-ink-soft); font-size: var(--text-xs); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.home-reference-community-card small { overflow: hidden; display: inline-flex; gap: var(--space-1); align-items: center; color: var(--color-muted); font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }.home-reference-community-card small i { color: var(--color-primary-strong); }.home-reference-community-card > span, .home-reference-community-card > i:last-of-type { display: none; }.home-reference-community-card footer { grid-column: 1 / -1; display: flex; gap: var(--space-3); align-self: end; color: var(--color-muted); font-size: var(--text-xs); }.home-reference-community-card footer span { display: inline-flex; gap: var(--space-1); align-items: center; }.home-reference-community-card footer { grid-column: 2; }
 
 @media (max-width: 767.98px) {
   .home-reference-community-cards { display: grid; gap: 0; overflow: visible; padding-bottom: 0; scroll-snap-type: none; }
@@ -10553,26 +10518,12 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
 .services-category.is-active span { background: var(--color-surface); }
 .services-category strong { font-size: var(--text-sm); }
 
-/* Each tile keeps its own accent so the row reads as a palette, not a block. */
-.services-category:nth-child(1) span { background: var(--amber-50); color: var(--amber-700); }
-.services-category:nth-child(2) span { background: var(--blue-soft-100); color: var(--blue-650); }
-.services-category:nth-child(3) span { background: var(--green-soft-50); color: var(--green-700); }
-.services-category:nth-child(4) span { background: var(--rose-soft-100); color: var(--rose-800); }
-.services-category:nth-child(5) span { background: var(--green-soft-50); color: var(--green-700); }
-.services-category:nth-child(6) span { background: var(--violet-soft-100); color: var(--violet-750); }
-.services-category:nth-child(7) span { background: var(--rose-soft-100); color: var(--rose-800); }
-.services-category:nth-child(8) span { background: var(--amber-50); color: var(--amber-700); }
+/* One neutral chip for every tile; only the selected one takes the accent. */
+.services-category:not(.is-active) span { background: var(--color-surface-soft); color: var(--color-ink); }
 
-.services-mobile-category-rail .mobile-browse-category-icon { color: var(--color-brand); }
-.services-mobile-category-rail .services-category-all .mobile-browse-category-icon { color: var(--teal-soft-900); }
-.services-mobile-category-rail .services-category-cleaning .mobile-browse-category-icon { color: var(--amber-700); }
-.services-mobile-category-rail .services-category-handyman .mobile-browse-category-icon { color: var(--blue-650); }
-.services-mobile-category-rail .services-category-moving .mobile-browse-category-icon { color: var(--green-700); }
-.services-mobile-category-rail .services-category-auto .mobile-browse-category-icon { color: var(--rose-800); }
-.services-mobile-category-rail .services-category-gardening .mobile-browse-category-icon { color: var(--green-700); }
-.services-mobile-category-rail .services-category-tutoring .mobile-browse-category-icon { color: var(--violet-750); }
-.services-mobile-category-rail .services-category-beauty .mobile-browse-category-icon { color: var(--rose-800); }
-.services-mobile-category-rail .services-category-petCare .mobile-browse-category-icon { color: var(--amber-700); }
+/* Services categories follow the same single-colour rule as the market rail. */
+.services-mobile-category-rail .mobile-browse-category-icon { color: var(--color-ink); }
+.services-mobile-category-rail .mobile-browse-category.is-active .mobile-browse-category-icon { color: var(--color-primary); }
 
 .services-listing-copy h3,
 .services-listing-copy p,
@@ -10914,9 +10865,9 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   align-items: center;
   overflow: hidden;
   padding: var(--space-4);
-  border: 1px solid var(--violet-200);
+  border: 1px solid var(--color-line-soft);
   border-radius: var(--radius-md);
-  background: linear-gradient(100deg, var(--violet-soft-100), var(--color-surface) 62%, var(--green-soft-50));
+  background: var(--color-surface-soft);
 }
 
 .services-sponsor-copy { display: grid; gap: var(--space-1); }
@@ -11256,3 +11207,19 @@ body:has(.messages-dashboard-page) { height: 100dvh; overflow: hidden; }
   .primary-nav,
   .nav-actions { display: none; }
 }
+
+/* Every browse list and home panel draws its glyph in the same ink. The
+   per-category hues turned each list into a paint chart while none of the
+   colours carried meaning; selection is the only state worth colouring. */
+.bargain-category-list > * > i,
+.shop-type-filter .filter-list > a > i,
+.community-category-list > button > i,
+.post-shop-type-options > button > i { color: var(--color-ink); }
+
+.home-reference-panel-heading > div > i,
+.home-reference-help-grid > a > i,
+.home-reference-help-post > i,
+.home-reference-market-shortcut > i:first-child,
+.home-reference-destination > i:first-child,
+.home-reference-community-list > * > i:first-child,
+[class*="home-reference-community-card"] > i:first-child { background: var(--color-surface-soft); color: var(--color-ink); }

@@ -114,7 +114,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
       />
       {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
         {listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedIdSet.has(listing.id)} listingHref={`/market/${listing.id}`} wishlistEndpoint="/api/bargain/wishlist" />)}
-      </div> : <div className="market-search-empty" role="status"><i className="fa-solid fa-tags" aria-hidden="true" /><strong>{emptyLabel}</strong><span>Try another category or nearby location.</span></div>}
+      </div> : <div className="market-search-empty" role="status"><i className="ti ti-tags" aria-hidden="true" /><strong>{emptyLabel}</strong><span>Try another category or nearby location.</span></div>}
     </section>
   </main>;
 }

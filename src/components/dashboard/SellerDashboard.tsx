@@ -15,7 +15,7 @@ type DashboardPhoto = { listing_id: string; storage_path: string; display_order:
 type DashboardMetrics = { total_views: number | string; total_saves: number | string; total_sales: number | string };
 type ActivityRow = { id: string; type: "message" | "offer" | "trade" | "keyword" | "wishlist"; title: string; body: string; href: string; created_at: string };
 
-const activityIconByType = { message: ["fa-regular fa-message", "is-slate"], offer: ["fa-regular fa-handshake", "is-amber"], trade: ["fa-solid fa-circle-check", "is-green"], keyword: ["fa-regular fa-bell", "is-blue"], wishlist: ["fa-regular fa-heart", "is-amber"] } as const;
+const activityIconByType = { message: ["ti ti-message", "is-slate"], offer: ["ti ti-heart-handshake", "is-amber"], trade: ["ti ti-circle-check", "is-green"], keyword: ["ti ti-bell", "is-blue"], wishlist: ["ti ti-heart", "is-amber"] } as const;
 
 function formatCount(value: number) {
   return new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -77,7 +77,7 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const totalViews = Number(metricRow?.total_views ?? activeListings.reduce((total, listing) => total + Number(listing.view_count ?? 0), 0));
   const totalSaves = Number(metricRow?.total_saves ?? 0);
   const totalSales = Number(metricRow?.total_sales ?? completedSalesCount.count ?? 0) + (bargainSellingReservationsCount.count ?? 0);
-  const insights = [["totalViews", formatCount(totalViews), "fa-solid fa-chart-line", "is-green"], ["totalSaves", formatCount(totalSaves), "fa-solid fa-heart", "is-amber"], ["sales", formatCount(totalSales), "fa-solid fa-bag-shopping", "is-blue"]] as const;
+  const insights = [["totalViews", formatCount(totalViews), "ti ti-chart-line", "is-green"], ["totalSaves", formatCount(totalSaves), "ti ti-heart", "is-amber"], ["sales", formatCount(totalSales), "ti ti-shopping-bag", "is-blue"]] as const;
   const activity = (activityRowsResult.data ?? []) as ActivityRow[];
   const activeListingCount = (listingCount.count ?? 0) + (bargainListingCount.count ?? 0);
   const savedWishlistCount = (wishlistCount.count ?? 0) + (bargainWishlistCount.count ?? 0);
@@ -87,11 +87,11 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
   const trustTone = trustPower <= 10 ? "is-red" : trustPower <= 20 ? "is-yellow" : trustPower <= 50 ? "is-blue" : "is-green";
   const activeJourneyItems = supabase ? await getActiveJourneys(supabase, user.id) : [];
   const quickStats = [
-    ["fa-regular fa-rectangle-list", "listings", activeListingCount, "active", "/market/dashboard/listings"],
-    ["fa-solid fa-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],
-    ["fa-solid fa-list", "keywords", savedKeywordCount, "tracked", "/market/dashboard/keywords"],
-    ["fa-regular fa-message", "messages", unreadMessages, "new", "/market/dashboard/messages"],
-    ["fa-solid fa-calendar-check", "reservations", (bargainSellingReservationsCount.count ?? 0) + (bargainBuyingReservationsCount.count ?? 0), "active", "/market/dashboard/reservations"],
+    ["ti ti-list-details", "listings", activeListingCount, "active", "/market/dashboard/listings"],
+    ["ti ti-heart", "wishlist", savedWishlistCount, "items", "/market/wishlist"],
+    ["ti ti-list", "keywords", savedKeywordCount, "tracked", "/market/dashboard/keywords"],
+    ["ti ti-message", "messages", unreadMessages, "new", "/market/dashboard/messages"],
+    ["ti ti-calendar-check", "reservations", (bargainSellingReservationsCount.count ?? 0) + (bargainBuyingReservationsCount.count ?? 0), "active", "/market/dashboard/reservations"],
   ] as const;
 
   return (
@@ -100,11 +100,11 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
       <div className="dashboard-content seller-dashboard-content">
         <section className="seller-dashboard-top">
           <article className="seller-summary-card">
-            <div className="seller-summary-avatar"><Avatar src={signedAvatar?.signedUrl} name={displayName} alt="Your profile" /><span className="seller-summary-badge"><i className="fa-solid fa-check" /></span></div>
-            <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="fa-solid fa-location-dot" /> {locationLabel}</small> : null}<small><i className="fa-regular fa-calendar" /> Joined {memberSince}</small></div>
-            <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="fa-solid fa-gear" /></Link>
+            <div className="seller-summary-avatar"><Avatar src={signedAvatar?.signedUrl} name={displayName} alt="Your profile" /><span className="seller-summary-badge"><i className="ti ti-check" /></span></div>
+            <div className="seller-summary-copy"><div className="seller-summary-name"><h1>{displayName}</h1><em>{membershipLabel}</em></div><p>{user.email}</p>{locationLabel ? <small><i className="ti ti-map-pin" /> {locationLabel}</small> : null}<small><i className="ti ti-calendar" /> Joined {memberSince}</small></div>
+            <Link className="seller-summary-settings" href="/market/dashboard/profile" aria-label="Open profile settings"><i className="ti ti-settings" /></Link>
           </article>
-          <article className={`seller-trust-card ${trustTone}`}><div><i className="fa-solid fa-bolt" /><span><TranslatedText translationKey="trustPower" /></span><strong>{trustPower}%</strong></div><div className="seller-trust-battery" role="img" aria-label={`Trust power ${trustPower} percent`}><div className="seller-trust-battery-shell"><span className="seller-trust-battery-fill" style={{ width: `${trustPower}%` }}><em /></span><span className="seller-trust-battery-cells" aria-hidden="true"><i /><i /><i /><i /></span><i className="fa-solid fa-bolt seller-trust-battery-bolt" aria-hidden="true" /></div><span className="seller-trust-battery-tip" aria-hidden="true" /></div><p><TranslatedText translationKey="earnTrade" /></p></article>
+          <article className={`seller-trust-card ${trustTone}`}><div><i className="ti ti-bolt" /><span><TranslatedText translationKey="trustPower" /></span><strong>{trustPower}%</strong></div><div className="seller-trust-battery" role="img" aria-label={`Trust power ${trustPower} percent`}><div className="seller-trust-battery-shell"><span className="seller-trust-battery-fill" style={{ width: `${trustPower}%` }}><em /></span><span className="seller-trust-battery-cells" aria-hidden="true"><i /><i /><i /><i /></span><i className="ti ti-bolt seller-trust-battery-bolt" aria-hidden="true" /></div><span className="seller-trust-battery-tip" aria-hidden="true" /></div><p><TranslatedText translationKey="earnTrade" /></p></article>
         </section>
 
         <ActiveJourneyCarousel items={activeJourneyItems} />
@@ -120,10 +120,10 @@ export async function SellerDashboard({ context = "market" }: { context?: "marke
 
         <div className="seller-dashboard-columns">
           <section className="seller-active-listings"><header><h2><TranslatedText translationKey={isJobsDashboard ? "activeJobPosts" : "activeListings"} /></h2><Link href="/market/dashboard/listings"><TranslatedText translationKey="viewAll" /></Link></header><div>
-            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatMarketPrice(listing.price_cents)}</strong><p><span><i className="fa-regular fa-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span><TranslatedText translationKey={listing.status === "pending" ? "inTrade" : "active"} /></span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}><TranslatedText translationKey="edit" /></Link><Link href="/market/dashboard/messages"><TranslatedText translationKey={listing.status === "pending" ? "viewTrade" : "manage"} /></Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="fa-solid fa-ellipsis-vertical" /></Link></article>)}
-            <button className="seller-new-listing" type="button"><i className="fa-solid fa-plus" /><span><TranslatedText translationKey={isJobsDashboard ? "postNewJob" : "postNewListing"} /></span><small><TranslatedText translationKey="postListingHint" /></small></button>
+            {activeListings.map((listing) => <article key={listing.id}><img src={listingImages.get(primaryPhotoByListing.get(listing.id) ?? "") ?? "/images/logo.png"} alt="" /><div><h3>{listing.title}</h3><strong>{formatMarketPrice(listing.price_cents)}</strong><p><span><i className="ti ti-eye" /> {formatCount(Number(listing.view_count ?? 0))}</span><span><TranslatedText translationKey={listing.status === "pending" ? "inTrade" : "active"} /></span></p><div className="seller-listing-actions"><Link href={`/market/${listing.id}/edit`}><TranslatedText translationKey="edit" /></Link><Link href="/market/dashboard/messages"><TranslatedText translationKey={listing.status === "pending" ? "viewTrade" : "manage"} /></Link></div></div><Link href={`/market/${listing.id}/edit`} aria-label={`Manage ${listing.title}`}><i className="ti ti-dots-vertical" /></Link></article>)}
+            <button className="seller-new-listing" type="button"><i className="ti ti-plus" /><span><TranslatedText translationKey={isJobsDashboard ? "postNewJob" : "postNewListing"} /></span><small><TranslatedText translationKey="postListingHint" /></small></button>
           </div></section>
-          <aside className="seller-activity"><header><h2><TranslatedText translationKey="activity" /></h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="fa-solid fa-ellipsis" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty"><TranslatedText translationKey="recentActivityEmpty" /></p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications"><TranslatedText translationKey="showAllActivity" /></Link><article className="seller-boost-card"><strong><TranslatedText translationKey="boostSales" /></strong><p><TranslatedText translationKey="boostSalesCopy" /></p><button type="button"><TranslatedText translationKey="tryTadaLens" /></button></article></aside>
+          <aside className="seller-activity"><header><h2><TranslatedText translationKey="activity" /></h2><Link href="/market/dashboard/notifications" aria-label="Manage activity"><i className="ti ti-dots" /></Link></header><div className="seller-activity-list">{activity.length ? activity.map((item) => { const [icon, color] = activityIconByType[item.type]; return <Link href={item.href} key={item.id}><i className={`${icon} ${color}`} /><div><strong>{item.title}</strong><span>{item.body || relativeTime(item.created_at)}</span></div></Link>; }) : <p className="seller-activity-empty"><TranslatedText translationKey="recentActivityEmpty" /></p>}</div><Link className="seller-show-activity" href="/market/dashboard/notifications"><TranslatedText translationKey="showAllActivity" /></Link><article className="seller-boost-card"><strong><TranslatedText translationKey="boostSales" /></strong><p><TranslatedText translationKey="boostSalesCopy" /></p><button type="button"><TranslatedText translationKey="tryTadaLens" /></button></article></aside>
         </div>
       </div>
     </main>

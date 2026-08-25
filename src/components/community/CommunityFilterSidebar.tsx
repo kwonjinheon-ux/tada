@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
@@ -18,26 +17,15 @@ export type CommunityCategory =
   | "free-board";
 
 export const communityCategories: Array<{ value: CommunityCategory; labelKey: TranslationKey; icon: string }> = [
-  { value: "all", labelKey: "all", icon: "fa-border-all" },
-  { value: "qna", labelKey: "communityCategoryQnA", icon: "fa-circle-question" },
-  { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "fa-comments" },
-  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "fa-bullhorn" },
-  { value: "events", labelKey: "communityCategoryEvents", icon: "fa-calendar-day" },
-  { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "fa-thumbs-up" },
-  { value: "together", labelKey: "communityCategoryTogether", icon: "fa-people-group" },
-  { value: "immigration", labelKey: "communityCategoryImmigration", icon: "fa-plane-departure" },
+  { value: "all", labelKey: "all", icon: "ti-layout-grid" },
+  { value: "qna", labelKey: "communityCategoryQnA", icon: "ti-help-circle" },
+  { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "ti-messages" },
+  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "ti-speakerphone" },
+  { value: "events", labelKey: "communityCategoryEvents", icon: "ti-calendar-event" },
+  { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "ti-thumb-up" },
+  { value: "together", labelKey: "communityCategoryTogether", icon: "ti-users-group" },
+  { value: "immigration", labelKey: "communityCategoryImmigration", icon: "ti-plane-departure" },
 ];
-
-export const communityCategoryIllustrations: Record<CommunityCategory, string> = {
-  all: "/images/community/categories/all.png",
-  qna: "/images/community/categories/qna.png",
-  "free-board": "/images/community/categories/free-board.png",
-  "local-noticeboard": "/images/community/categories/local-noticeboard.png",
-  events: "/images/community/categories/events.png",
-  recommendations: "/images/community/categories/recommendations.png",
-  together: "/images/community/categories/together.png",
-  immigration: "/images/community/categories/immigration.png",
-};
 
 // This is the single category catalogue used by both community browsing and
 // publishing.  The database migration seeds the same stable slugs, while the
@@ -64,14 +52,14 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
     <section className="filter-block community-category-filter">
       <h2>{t("categories")}</h2>
       <div className="filter-list community-category-list">
-        {communityCategories.map(({ value, labelKey }) => {
+        {communityCategories.map(({ value, labelKey, icon }) => {
           return <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
-            <span className="community-category-illustration"><Image src={communityCategoryIllustrations[value]} alt="" width={32} height={32} sizes="32px" /></span>
+            <span className="community-category-illustration"><i className={`ti ${icon}`} aria-hidden="true" /></span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </button>;
         })}
         <button type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-parenting`} onClick={() => onCategorySelect("together")}>
-          <i className="fa-solid fa-baby" aria-hidden="true" />
+          <i className="ti ti-baby-carriage" aria-hidden="true" />
           <span className={mobileDrawerClasses.menuLabel}>{t("communityTogetherParenting")}</span>
         </button>
       </div>

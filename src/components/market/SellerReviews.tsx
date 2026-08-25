@@ -14,7 +14,7 @@ const sortLabelKeys: Record<SellerReviewSort, TranslationKey> = {
 
 function RatingStars({ score }: { score: number }) {
   return <span className="seller-review-stars" aria-label={`${score.toFixed(1)} / 5`}>
-    {[1, 2, 3, 4, 5].map((star) => <i key={star} className={score >= star ? "fa-solid fa-star" : score >= star - 0.5 ? "fa-solid fa-star-half-stroke" : "fa-regular fa-star"} aria-hidden="true" />)}
+    {[1, 2, 3, 4, 5].map((star) => <i key={star} className={score >= star ? "ti ti-star" : score >= star - 0.5 ? "ti ti-star-half" : "ti ti-star"} aria-hidden="true" />)}
   </span>;
 }
 
@@ -79,14 +79,14 @@ export function SellerReviews({ sellerId, reviews, total, page, pageCount, sort 
     </div>
 
     {pageCount > 1 ? <nav className="seller-review-pagination" aria-label={t("sellerPaginationLabel")}>
-      {page > 1 ? <Link href={hrefFor(sort, page - 1)} aria-label={t("sellerPreviousPage")} scroll={false}><i className="fa-solid fa-chevron-left" aria-hidden="true" /></Link> : null}
+      {page > 1 ? <Link href={hrefFor(sort, page - 1)} aria-label={t("sellerPreviousPage")} scroll={false}><i className="ti ti-chevron-left" aria-hidden="true" /></Link> : null}
       {pages.map((entry, index) => <Fragment key={entry}>
         {index > 0 && entry - pages[index - 1] > 1 ? <span className="seller-review-pagination-gap" aria-hidden="true">…</span> : null}
         {entry === page
           ? <span className="is-selected" aria-current="page">{entry}</span>
           : <Link href={hrefFor(sort, entry)} scroll={false}>{entry}</Link>}
       </Fragment>)}
-      {page < pageCount ? <Link href={hrefFor(sort, page + 1)} aria-label={t("sellerNextPage")} scroll={false}><i className="fa-solid fa-chevron-right" aria-hidden="true" /></Link> : null}
+      {page < pageCount ? <Link href={hrefFor(sort, page + 1)} aria-label={t("sellerNextPage")} scroll={false}><i className="ti ti-chevron-right" aria-hidden="true" /></Link> : null}
     </nav> : null}
   </section>;
 }
