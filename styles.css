@@ -2028,6 +2028,10 @@ a {
   }
 
   .market-toolbar .market-chip-row { display: none; }
+
+  /* Community uses the shared browse toolbar on every breakpoint. Keep its
+     quick-category chips visible on desktop so they match the mobile rail. */
+  .community-results .market-toolbar .market-chip-row { display: flex; }
 }
 
 @media (max-width: 1023.98px) {
@@ -6802,9 +6806,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock .mobile-dock-create {
     width: 100%;
-    min-height: 52px;
+    min-height: var(--mobile-dock-control-size);
     color: var(--blue-400);
-    font-size: var(--text-xl);
+    font-size: var(--text-3xl);
   }
 
   .mobile-bottom-dock .mobile-dock-create:hover,
@@ -6822,14 +6826,14 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock .mobile-dock-create:active i { animation: mobile-dock-create-press 220ms ease-out; }
 
   .mobile-bottom-dock .mobile-dock-create i {
-    width: 44px;
-    height: 44px;
+    width: var(--text-3xl);
+    height: var(--text-3xl);
     display: grid;
     place-items: center;
     border-radius: var(--radius-circle);
     background: var(--blue-400);
     color: var(--neutral-50);
-    font-size: var(--text-2xl);
+    font-size: var(--text-3xl);
     box-shadow: none;
   }
 
@@ -6846,9 +6850,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock .mobile-dock-create i { background: var(--blue-400); }
 
-  /* The plus sits inside a filled circle, so it scales with the rest of the
-     dock but stays smaller than the standalone glyphs. */
-  .mobile-bottom-dock .mobile-dock-create .ms { font-size: var(--text-2xl); }
+  /* Keep the primary action glyph on the same 24px scale as every other dock
+     icon. The filled circle remains the action affordance, not a larger icon. */
+  .mobile-bottom-dock .mobile-dock-create .ms { font-size: var(--text-3xl); }
 
   .mobile-bottom-dock .mobile-dock-action-label {
     width: auto;
