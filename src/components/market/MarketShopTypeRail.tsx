@@ -18,10 +18,11 @@ export function MarketShopTypeRail({ activeShopType, onShopTypeSelect }: { activ
     ariaLabel={t("marketType")}
     activeValue={activeShopType}
     onSelect={(value) => onShopTypeSelect(value as ShopType)}
-    items={marketShopTypes.map(({ icon, labelKey, value }) => ({
+    items={marketShopTypes.map(({ icon, image, labelKey, value }) => ({
       value,
       label: t(labelKey),
       icon,
+      image,
       tone: shopTypeTones[value],
     }))}
   />;

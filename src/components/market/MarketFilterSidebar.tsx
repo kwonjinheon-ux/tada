@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
@@ -10,12 +11,12 @@ import { useLanguage, type TranslationKey } from "@/components/LanguageProvider"
 
 export type ShopType = "all" | "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
 
-export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey; icon: string; href: string }> = [
+export const marketShopTypes: Array<{ value: ShopType; labelKey: TranslationKey; icon: string; image?: string; href: string }> = [
   { value: "all", labelKey: "all", icon: "ms-grid-view", href: "/market" },
   { value: "secondhand", labelKey: "shopTypeSecondhand", icon: "ms-storefront", href: "/market/secondhands" },
   { value: "garage-sale", labelKey: "shopTypeGarageSale", icon: "ms-warehouse", href: "/market/garage-sales" },
   { value: "moving-sale", labelKey: "shopTypeMovingSale", icon: "ms-local-shipping", href: "/market/moving-sales" },
-  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ms-local-offer", href: "/market/2dollarshop" },
+  { value: "2dollarshop", labelKey: "shopTypeTwoDollarShop", icon: "ms-attach-money", image: "/images/home/2-dollar-deals-icon.png", href: "/market/2dollarshop" },
   { value: "groupbuy", labelKey: "shopTypeGroupBuy", icon: "ms-groups", href: "/market/groupbuy" },
 ];
 
@@ -87,9 +88,9 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <section className="filter-block shop-type-filter market-type-filter">
       <h2>{t("marketType")}</h2>
       <div className="filter-list">
-        {marketShopTypes.map(({ value, labelKey, href, icon }) => (
+        {marketShopTypes.map(({ value, labelKey, href, icon, image }) => (
           <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            <span className="shop-type-illustration"><i className={`ms ${icon}`} aria-hidden="true" /></span>
+            <span className="shop-type-illustration">{image ? <Image src={image} alt="" width={32} height={32} /> : <i className={`ms ${icon}`} aria-hidden="true" />}</span>
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </a>
         ))}
