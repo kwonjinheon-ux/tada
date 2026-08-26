@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
+import { ServiceProfileBusinessCard } from "@/components/services/ServiceProfileBusinessCard";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { serviceBadgeLabel, serviceDetailsSummary, services, servicesCategoryLabels, type ServiceBadge, type ServiceCategoryId } from "@/data/services";
 import type { MainLocation } from "@/data/nzLocations";
@@ -149,6 +150,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       <aside className="service-profile-support-rail">
         {profile.ownerId && profile.ownerId === viewerId ? <ServiceOwnerActions serviceId={profile.id} providerName={profile.provider} /> : null}
         <ServiceProfileContactCard profile={profile} location={location} directionsHref={directionsHref} websiteHref={websiteHref} categoryLabel={labels[profile.category]} isKorean={isKorean} />
+        <ServiceProfileBusinessCard businessName={profile.businessName} categoryLabel={labels[profile.category]} description={profile.description} location={location} streetAddress={profile.streetAddress} phone={profile.phone} email={profile.email} website={websiteHref} logo={profile.logo} image={heroImage ?? null} isKorean={isKorean} />
       </aside>
     </main>
   );
