@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
 import "./globals.css";
 import "./icon-font.css";
 import "../../styles.css";
@@ -30,9 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body>
         <LanguageProvider>
-          <Suspense fallback={null}>
-            <Navbar />
-          </Suspense>
+          <Navbar />
           {children}
         </LanguageProvider>
       </body>

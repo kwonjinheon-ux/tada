@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
 import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
@@ -22,10 +22,27 @@ declare global {
   }
 }
 
+/** Mirrors the `q` query param into the header's search box.
+ *
+ *   is what obliges a Suspense boundary, and a boundary
+ *  around the whole header made it hydrate in a later pass than
+ *  LanguageProvider — by which time the locale had already flipped, so the
+ *  header hydrated Korean text against English server markup. Isolating the
+ *  hook here keeps the boundary down to a component that renders nothing. */
+function SearchQuerySync({ onQueryChange }: { onQueryChange: (query: string) => void }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    onQueryChange(new URLSearchParams(window.location.search).get("q") ?? "");
+  }, [pathname, searchParams, onQueryChange]);
+
+  return null;
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isDesktopDashboardOpen, setIsDesktopDashboardOpen] = useState(false);
@@ -51,10 +68,7 @@ export function Navbar() {
   const shareCopiedTimer = useRef<number | null>(null);
   const { locale, setLocale, t } = useLanguage();
 
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search).get("q") ?? "";
-    setSearchQuery(query);
-  }, [pathname, searchParams]);
+
 
   useEffect(() => {
     const showCopiedState = () => {
@@ -554,6 +568,7 @@ export function Navbar() {
 
   return (
     <>
+      <Suspense fallback={null}><SearchQuerySync onQueryChange={setSearchQuery} /></Suspense>
       <header className="site-header">
       <div className="site-nav global-shell">
         <Link className="site-logo" href="/" aria-label="Tada home">
