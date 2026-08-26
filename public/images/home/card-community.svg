@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 120" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+  <!-- two speech bubbles trading places above -->
+  <path d="M20 10h62a7 7 0 0 1 7 7v20a7 7 0 0 1-7 7H44l-11 11V44h-13a7 7 0 0 1-7-7V17a7 7 0 0 1 7-7z" />
+  <path d="M36 22h30M36 32h18" />
+  <path d="M104 26h44a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6h-8l9 9-19-9h-26a6 6 0 0 1-6-6V32a6 6 0 0 1 6-6z" />
+  <path d="M116 38h26M116 47h16" />
+  <!-- the two neighbours doing the talking -->
+  <circle cx="42" cy="86" r="10" />
+  <path d="M26 118c0-9 7-16 16-16s16 7 16 16" />
+  <circle cx="128" cy="86" r="10" />
+  <path d="M112 118c0-9 7-16 16-16s16 7 16 16" />
+</svg>

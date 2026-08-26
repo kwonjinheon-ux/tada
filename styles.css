@@ -10458,27 +10458,25 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .home-reference-destination-heading > i { width: auto; height: auto; display: block; background: transparent; border-radius: 0; font-size: calc(var(--text-xl) * 1.2); }
 .home-reference-destination-heading strong { color: var(--color-ink); font-size: var(--text-md); line-height: 1.25; white-space: nowrap; }
 .home-reference-destination--market .home-reference-destination-heading > i { color: var(--success-700); }
-/* Photo-backed destination cards. The photo sits under a heavy white wash so
-   it reads as a faint texture rather than a picture — the card keeps its own
-   ink and its own icon colour, and the image only hints at what the section
-   is. Images are WebP: the source PNGs are ~2MB each, which is not a
-   background. Each card supplies only its own image. */
-.home-reference-destination:where(.home-reference-destination--market, .home-reference-destination--services, .home-reference-destination--jobs) {
-  background-position: center;
-  background-size: cover;
+/* Destination cards carry a line illustration of what the section is for,
+   drawn in that card's own icon colour and parked on the right where the copy
+   does not reach. The photographs that were here read as noise once they were
+   washed out far enough to keep the text legible; a line drawing stays legible
+   at a size where it still reads as background. All four cards get one, in
+   both locales. */
+.home-reference-destination:where(.home-reference-destination--market, .home-reference-destination--community, .home-reference-destination--services, .home-reference-destination--jobs) {
+  background-repeat: no-repeat;
+  /* Sized to stop short of the copy. The longest subtitle on these cards runs
+     to about 190px on a 262px card, so the drawing is held to roughly a third
+     of the width; anything larger puts line work under the words. */
+  background-position: right -8px bottom -6px;
+  background-size: auto 62%;
 }
 
-.home-reference-destination--market {
-  background-image: linear-gradient(150deg, rgb(255 255 255 / 90%), rgb(255 255 255 / 95%)), url("/images/home/journey-market.webp");
-}
-
-.home-reference-destination--services {
-  background-image: linear-gradient(150deg, rgb(255 255 255 / 90%), rgb(255 255 255 / 95%)), url("/images/home/journey-services.webp");
-}
-
-.home-reference-destination--jobs {
-  background-image: linear-gradient(150deg, rgb(255 255 255 / 90%), rgb(255 255 255 / 95%)), url("/images/home/journey-jobs.webp");
-}
+.home-reference-destination--market { background-image: url("/images/home/card-market.svg"); }
+.home-reference-destination--community { background-image: url("/images/home/card-community.svg"); }
+.home-reference-destination--services { background-image: url("/images/home/card-services.svg"); }
+.home-reference-destination--jobs { background-image: url("/images/home/card-jobs.svg"); }
 
 
 .home-reference-destination--community .home-reference-destination-heading > i { color: var(--violet-700); }

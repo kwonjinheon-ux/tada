@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 120" fill="none" stroke="#1c6e31" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+  <!-- shopfront: awning, counter, and a tagged secondhand piece out front -->
+  <path d="M34 40h84l-6-16H40z" />
+  <path d="M34 40c0 6 5 10 11 10s11-4 11-10" />
+  <path d="M56 40c0 6 5 10 11 10s11-4 11-10" />
+  <path d="M78 40c0 6 5 10 11 10s11-4 11-10" />
+  <path d="M100 40c0 6 5 10 11 10s11-4 11-10" />
+  <path d="M40 50v46h72V50" />
+  <path d="M52 96V70h20v26" />
+  <path d="M86 68h16v14H86z" />
+  <!-- price tag -->
+  <path d="M128 62l18 18-16 16-18-18V62z" />
+  <circle cx="134" cy="68" r="3.4" />
+  <!-- ground line -->
+  <path d="M24 96h124" stroke-dasharray="2 9" />
+</svg>
