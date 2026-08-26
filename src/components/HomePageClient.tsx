@@ -297,20 +297,24 @@ export function HomePageClient({
               {visibleDestinations.map((destination) => {
                 const subtitle = "subtitle" in destination && typeof destination.subtitle === "string" ? destination.subtitle : null;
                 const action = (isKorean ? koreanDestinationActions : destinationActions)[destination.tone as keyof typeof destinationActions];
-                const href = isKorean
-                  ? destination.tone === "market"
-                    ? "/market/create"
-                    : destination.tone === "community"
-                      ? "/community/create"
-                      : destination.tone === "services"
-                        ? "/services/create"
-                        : destination.href
-                  : destination.href;
-                return <Link className={`home-reference-destination home-reference-destination--${destination.tone}${isKorean ? " is-korean" : ""} ui-card`} href={href} key={destination.title}>
-                  <div className="home-reference-destination-heading"><i className={`ms ${destination.icon}`} aria-hidden="true" /><strong>{destination.title}</strong></div>
-                  <span>{!isKorean && subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
-                  <footer className={isKorean ? "is-korean" : undefined}><strong>{action.primary} {!destination.comingSoon ? <i className="ms ms-arrow-forward" aria-hidden="true" /> : null}</strong>{action.secondary ? <small><i className="ms ms-add" aria-hidden="true" /> {action.secondary}</small> : destination.comingSoon ? <em>{text.soon}</em> : null}</footer>
-                </Link>
+                // Splitting the card gave the body its own destination, so the
+                // footer has to carry the create route itself — English shows it
+                // as the secondary action, Korean as the only one.
+                const createHref = destination.tone === "market"
+                  ? "/market/create"
+                  : destination.tone === "community"
+                    ? "/community/create"
+                    : destination.tone === "services"
+                      ? "/services/create"
+                      : null;
+                const actionHref = isKorean ? createHref ?? destination.href : destination.href;
+                return <article className={`home-reference-destination home-reference-destination--${destination.tone}${isKorean ? " is-korean" : ""} ui-card`} key={destination.title}>
+                  <Link className="home-reference-destination-content" href={destination.href}>
+                    <div className="home-reference-destination-heading"><i className={`ms ${destination.icon}`} aria-hidden="true" /><strong>{destination.title}</strong></div>
+                    <span>{!isKorean && subtitle ? <small className="home-reference-destination-subtitle">{subtitle}</small> : null}<small>{destination.description}</small></span>
+                  </Link>
+                  <footer className={isKorean ? "is-korean" : undefined}>{destination.comingSoon ? <strong>{action.primary}</strong> : <Link href={actionHref}><strong>{action.primary} <i className="ms ms-arrow-forward" aria-hidden="true" /></strong></Link>}{action.secondary && createHref ? <Link href={createHref}><small><i className="ms ms-add" aria-hidden="true" /> {action.secondary}</small></Link> : destination.comingSoon ? <em>{text.soon}</em> : null}</footer>
+                </article>
               })}
             </div>
           </section>
