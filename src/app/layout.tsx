@@ -4,6 +4,7 @@ import "./icon-font.css";
 import "../../styles.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
+import { getRequestLocale } from "@/lib/locale-cookie";
 
 export const metadata: Metadata = {
   title: { default: "tada.nz 짜잔! 새로운 정보와 물건들이 여기에 모여 있습니다.", template: "%s | tada.nz" },
@@ -18,9 +19,15 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-visual",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Reading the cookie makes every route render on demand. That is the price
+  // of shipping the right language in the first byte, and it is a small one
+  // here: 96 of 115 routes were already dynamic, and the 19 that were not are
+  // sign-in shells and create forms rather than cacheable content.
+  const locale = await getRequestLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <head>
         {/* Fonts are self-hosted from public/fonts — see globals.css. Both
             faces are preloaded because text and icons paint on first render. */}
@@ -28,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preload" href="/fonts/material-symbols-subset.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body>
-        <LanguageProvider>
+        <LanguageProvider initialLocale={locale}>
           <Navbar />
           {children}
         </LanguageProvider>

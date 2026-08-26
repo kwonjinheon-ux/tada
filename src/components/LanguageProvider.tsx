@@ -2,9 +2,11 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { isSupportedLocale, type SupportedLocale } from "@/lib/locales";
 
-export const supportedLocales = ["en", "ko", "zh", "ja", "es", "hi", "ar"] as const;
-export type SupportedLocale = (typeof supportedLocales)[number];
+// The list itself lives in a non-client module so the server can read it too;
+// re-exported here because most of the app already imports it from this file.
+export { supportedLocales, type SupportedLocale } from "@/lib/locales";
 
 export const languageOptions: Array<{ code: SupportedLocale; flag: string; label: string; nativeLabel: string }> = [
   { code: "en", flag: "🇳🇿", label: "English", nativeLabel: "English" },
@@ -116,28 +118,52 @@ type LanguageContextValue = { locale: SupportedLocale; setLocale: (locale: Suppo
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 const STORAGE_KEY = "tada-preferred-locale";
 
-const validLocale = (value: unknown): value is SupportedLocale => typeof value === "string" && supportedLocales.includes(value as SupportedLocale);
+const validLocale = isSupportedLocale;
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>("en");
+/** Mirrored into a cookie so the server can render the right language on the
+ *  first pass. Without it the server always sent English and the client
+ *  swapped to Korean after mount, which showed as a flash of the wrong
+ *  language on every load. */
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+const rememberLocale = (nextLocale: SupportedLocale) => {
+  window.localStorage.setItem(STORAGE_KEY, nextLocale);
+  document.cookie = `${STORAGE_KEY}=${nextLocale}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
+};
+
+const readCookieLocale = () => {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${STORAGE_KEY}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+export function LanguageProvider({ children, initialLocale = "en" }: { children: React.ReactNode; initialLocale?: SupportedLocale }) {
+  const [locale, setLocaleState] = useState<SupportedLocale>(initialLocale);
 
   const setLocale = (nextLocale: SupportedLocale) => {
     setLocaleState(nextLocale);
-    window.localStorage.setItem(STORAGE_KEY, nextLocale);
+    rememberLocale(nextLocale);
   };
 
   useEffect(() => {
+    // The cookie is what the server just rendered from, so only localStorage
+    // can disagree — that is a visitor from before the cookie existed. Adopt
+    // their stored choice and write the cookie so the next load is server-side.
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (validLocale(stored)) setLocaleState(stored);
+    if (validLocale(stored)) {
+      if (!readCookieLocale()) rememberLocale(stored);
+      if (stored !== initialLocale) setLocaleState(stored);
+    }
 
     const supabase = createBrowserSupabaseClient();
     if (!supabase) return;
     void supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const { data: profile } = await supabase.from("profiles").select("preferred_locale").eq("id", data.user.id).maybeSingle();
-      if (validLocale(profile?.preferred_locale)) setLocaleState(profile.preferred_locale);
+      if (!validLocale(profile?.preferred_locale)) return;
+      rememberLocale(profile.preferred_locale);
+      setLocaleState(profile.preferred_locale);
     });
-  }, []);
+  }, [initialLocale]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
