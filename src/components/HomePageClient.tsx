@@ -13,34 +13,19 @@ import type { Listing } from "@/data/listings";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const destinations = [
-  { title: "Market", description: "Buy & sell locally", href: "/market", icon: "ms-storefront", tone: "market" },
-  { title: "Community", description: "Share with neighbours", href: "/community", icon: "ms-forum", tone: "community" },
-  { title: "Services", description: "Find trusted local help", href: "/services", icon: "ms-build", tone: "services" },
-  { title: "Jobs", description: "Find work near you", href: "/jobs", icon: "ms-work", tone: "jobs", comingSoon: true },
-];
-
-const koreanDestinations = [
-  { title: "마켓", subtitle: "Market", description: "사고 팔고 나눠요", href: "/market", icon: "ms-storefront", tone: "market" },
-  { title: "동네이야기", subtitle: "Community", description: "묻고 나누고 연결해요", href: "/community", icon: "ms-forum", tone: "community" },
-  { title: "생활도움", subtitle: "Services", description: "필요한 도움을 가까운 곳에서", href: "/services", icon: "ms-build", tone: "services" },
-  { title: "일자리", subtitle: "Jobs", description: "가까운 일자리 찾기", href: "/jobs", icon: "ms-work", tone: "jobs", comingSoon: true },
-];
+  { title: { ko: "마켓", en: "Market" }, description: { ko: "사고 팔고 나눠요", en: "Buy & sell locally" }, href: "/market", icon: "ms-storefront", tone: "market", comingSoon: false },
+  { title: { ko: "동네이야기", en: "Community" }, description: { ko: "묻고 나누고 연결해요", en: "Share with neighbours" }, href: "/community", icon: "ms-forum", tone: "community", comingSoon: false },
+  { title: { ko: "생활도움", en: "Services" }, description: { ko: "필요한 도움을 가까운 곳에서", en: "Find trusted local help" }, href: "/services", icon: "ms-build", tone: "services", comingSoon: false },
+  { title: { ko: "일자리", en: "Jobs" }, description: { ko: "가까운 일자리 찾기", en: "Find work near you" }, href: "/jobs", icon: "ms-work", tone: "jobs", comingSoon: true },
+] as const;
 
 const marketShortcuts = [
-  { label: "Second Hands", href: "/market/secondhands", icon: "ms-storefront" },
-  { label: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
-  { label: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 Deals", href: "/market/2dollarshop", icon: "ms-savings" },
-  { label: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
-];
-
-const koreanMarketShortcuts = [
-  { label: "중고마켓", subtitle: "Second Hand", href: "/market/secondhands", icon: "ms-storefront" },
-  { label: "차고세일", subtitle: "Garage Sale", href: "/market/garage-sales", icon: "ms-warehouse" },
-  { label: "이사세일", subtitle: "Moving Sale", href: "/market/moving-sales", icon: "ms-local-shipping" },
-  { label: "$2 마켓", subtitle: "2 Dollar Shop", href: "/market/2dollarshop", icon: "ms-savings" },
-  { label: "공동구매", subtitle: "Group Buy", href: "/market/groupbuy", icon: "ms-groups" },
-];
+  { label: { ko: "중고마켓", en: "Second Hands" }, href: "/market/secondhands", icon: "ms-storefront" },
+  { label: { ko: "차고세일", en: "Garage Sale" }, href: "/market/garage-sales", icon: "ms-warehouse" },
+  { label: { ko: "이사세일", en: "Moving Sale" }, href: "/market/moving-sales", icon: "ms-local-shipping" },
+  { label: { ko: "$2 마켓", en: "$2 Deals" }, href: "/market/2dollarshop", icon: "ms-savings" },
+  { label: { ko: "공동구매", en: "Group Buy" }, href: "/market/groupbuy", icon: "ms-groups" },
+] as const;
 
 const marketShortcutIcons: Record<string, string> = {
   "/market/secondhands": "ms-storefront",
@@ -54,17 +39,10 @@ const marketShortcutIcons: Record<string, string> = {
 // body is what takes you to the section. These were the secondary labels; they
 // already described the create action, which is why they read correctly here.
 const destinationActions = {
-  market: { primary: "Sell something" },
-  community: { primary: "Start a post" },
-  services: { primary: "Offer a service" },
-  jobs: { primary: "Coming soon" },
-} as const;
-
-const koreanDestinationActions = {
-  market: { primary: "판매 등록" },
-  community: { primary: "글쓰기" },
-  services: { primary: "서비스 등록" },
-  jobs: { primary: "준비중" },
+  market: { primary: { ko: "판매 등록", en: "Sell something" } },
+  community: { primary: { ko: "글쓰기", en: "Start a post" } },
+  services: { primary: { ko: "서비스 등록", en: "Offer a service" } },
+  jobs: { primary: { ko: "준비중", en: "Coming soon" } },
 } as const;
 
 const helpCategories = [
@@ -242,11 +220,8 @@ export function HomePageClient({
   const router = useRouter();
   const isKorean = locale === "ko";
   const text = isKorean ? homeCopy.ko : homeCopy.en;
-  const heroWordmark = isKorean
-    ? { src: "/images/brand/tada-wordmark.png", width: 2048, height: 850 }
-    : { src: "/images/logo.png", width: 1536, height: 1024 };
-  const visibleDestinations = isKorean ? koreanDestinations : destinations;
-  const visibleMarketShortcuts = isKorean ? koreanMarketShortcuts : marketShortcuts;
+  const language = isKorean ? "ko" : "en";
+  const heroWordmark = { src: "/images/brand/tada-wordmark.png", width: 2048, height: 850 };
   const destinationHeading = isKorean ? "우리동네 둘러보기" : "Explore your neighbourhood";
   const destinationIntro = null;
   const marketHeading = isKorean ? "타다 마켓 둘러보기" : "Browse market your way";
@@ -285,7 +260,7 @@ export function HomePageClient({
         <PageContainer className="home-reference-content">
           <section className="home-reference-hero" aria-labelledby="home-reference-title">
             <div className="home-reference-hero-copy">
-              <h1 id="home-reference-title">{text.heroLead} <span className={`home-reference-hero-wordmark ${isKorean ? "is-korean" : "is-english"}`}><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
+              <h1 id="home-reference-title">{text.heroLead} <span className="home-reference-hero-wordmark"><Image src={heroWordmark.src} alt={text.heroBrand} width={heroWordmark.width} height={heroWordmark.height} priority /></span></h1>
               <p>{text.heroDescription}</p>
               <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="ms ms-location-on" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="ms ms-add" aria-hidden="true" />{heroPostAction}</Link></div>
               <small className="home-reference-hero-trust">{heroTrust}</small>
@@ -296,8 +271,8 @@ export function HomePageClient({
           <section className="home-reference-destinations" aria-label={destinationHeading}>
             {destinationIntro ? <p>{destinationIntro}</p> : null}
             <div className="home-reference-destination-grid">
-              {visibleDestinations.map((destination) => {
-                const action = (isKorean ? koreanDestinationActions : destinationActions)[destination.tone as keyof typeof destinationActions];
+              {destinations.map((destination) => {
+                const action = destinationActions[destination.tone];
                 // The card body already goes to the section, so the footer
                 // button is the create route in both languages — the English
                 // side used to spend it on a second "browse" link and hang the
@@ -309,12 +284,12 @@ export function HomePageClient({
                     : destination.tone === "services"
                       ? "/services/create"
                       : null;
-                return <article className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} key={destination.title}>
+                return <article className={`home-reference-destination home-reference-destination--${destination.tone} ui-card`} key={destination.tone}>
                   <Link className="home-reference-destination-content" href={destination.href}>
-                    <div className="home-reference-destination-heading"><i className={`ms ${destination.icon}`} aria-hidden="true" /><strong>{destination.title}</strong></div>
-                    <span><small>{destination.description}</small></span>
+                    <div className="home-reference-destination-heading"><i className={`ms ${destination.icon}`} aria-hidden="true" /><strong>{destination.title[language]}</strong></div>
+                    <span><small>{destination.description[language]}</small></span>
                   </Link>
-                  <footer>{destination.comingSoon || !createHref ? <strong>{action.primary}</strong> : <Link href={createHref}><strong>{action.primary} <i className="ms ms-arrow-forward" aria-hidden="true" /></strong></Link>}{destination.comingSoon ? <em>{text.soon}</em> : null}</footer>
+                  <footer>{destination.comingSoon || !createHref ? <strong>{action.primary[language]}</strong> : <Link href={createHref}><strong>{action.primary[language]} <i className="ms ms-arrow-forward" aria-hidden="true" /></strong></Link>}{destination.comingSoon ? <em>{text.soon}</em> : null}</footer>
                 </article>
               })}
             </div>
@@ -323,10 +298,9 @@ export function HomePageClient({
           <section className="home-reference-market" aria-labelledby="market-shortcuts-title">
             <header><h2 id="market-shortcuts-title">{marketHeading}</h2></header>
             <div>
-              {visibleMarketShortcuts.map((shortcut) => {
-                const subtitle = "subtitle" in shortcut && typeof shortcut.subtitle === "string" ? shortcut.subtitle : null;
+              {marketShortcuts.map((shortcut) => {
                 const icon = marketShortcutIcons[shortcut.href] ?? shortcut.icon;
-                return <Link className={`home-reference-market-shortcut home-reference-market-shortcut--${shortcut.href.split("/").pop()} ui-card`} href={shortcut.href} key={shortcut.href}><i className={`ms ${icon}`} aria-hidden="true" /><span>{shortcut.label}{subtitle ? <small>{subtitle}</small> : null}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
+                return <Link className={`home-reference-market-shortcut home-reference-market-shortcut--${shortcut.href.split("/").pop()} ui-card`} href={shortcut.href} key={shortcut.href}><i className={`ms ${icon}`} aria-hidden="true" /><span>{shortcut.label[language]}</span><i className="ms ms-chevron-right" aria-hidden="true" /></Link>;
               })}
             </div>
           </section>

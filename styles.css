@@ -9361,6 +9361,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .community-post-author-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .community-post-save { width: var(--control-h-xs); min-width: var(--control-h-xs); padding: 0 !important; }.community-post-save:disabled { cursor: wait; opacity: .65; }.community-post-save.community-post-card-save { --save-button-size: var(--control-h-compact); position: absolute; top: 50%; right: var(--space-2); z-index: 1; width: var(--control-h-compact); height: var(--control-h-compact); margin-top: calc(var(--control-h-compact) / -2); padding: 0 !important; border: 0; border-radius: var(--radius-circle); background: var(--color-surface-soft); color: var(--color-muted); font-size: var(--save-heart-icon-size); box-shadow: var(--shadow-xs); }.community-post-card-save:hover { background: var(--neutral-150); }
 
+/* Saving stays available from mobile feed rows and post details. On wider list
+   layouts the action is intentionally omitted so every row keeps one clean,
+   consistent reading edge. Grid/blog cards retain their own actions. */
+@media (min-width: 768px) {
+  .community-post-list:not(.is-grid-view) .community-post-card-save { display: none; }
+  .community-post-list:not(.is-grid-view) .community-post-body { padding-right: 0; }
+}
+
 .community-post-list.is-grid-view { display: grid; grid-template-columns: minmax(0, 760px); justify-content: center; gap: 0; }
 .community-blog-post { display: grid; gap: var(--space-3); padding: var(--space-5) 0; border: 0; border-bottom: 1px solid var(--neutral-250); border-radius: 0; background: transparent; box-shadow: none; }
 .community-blog-post:first-child { padding-top: var(--space-3); }
@@ -10420,7 +10428,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .home-reference-hero-copy { position: relative; z-index: 1; display: grid; gap: var(--space-3); max-width: 42rem; }
 .home-reference-hero h1 { margin: 0; color: var(--color-ink); font-size: var(--text-5xl); font-weight: var(--weight-extrabold); letter-spacing: -0.04em; line-height: 1.12; }
 .home-reference-hero-wordmark { display: inline-flex; width: clamp(6rem, 12vw, 10.5rem); margin-left: var(--space-1); vertical-align: -0.15em; }
-.home-reference-hero-wordmark.is-english { vertical-align: -0.42em; }
 .home-reference-hero-wordmark img { width: 100%; height: auto; object-fit: contain; }
 .home-reference-hero-copy > p { max-width: 34rem; margin: 0; color: var(--color-ink-soft); font-size: var(--text-base); font-weight: var(--weight-medium); line-height: 1.55; }
 .home-reference-hero-copy > div { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-1); }
@@ -10459,21 +10466,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .home-reference-destination-heading > i { width: auto; height: auto; display: block; background: transparent; border-radius: 0; font-size: calc(var(--text-xl) * 1.2); }
 .home-reference-destination-heading strong { color: var(--color-ink); font-size: var(--text-md); line-height: 1.25; white-space: nowrap; }
 .home-reference-destination--market .home-reference-destination-heading > i { color: var(--success-700); }
-/* Destination cards carry a line illustration of what the section is for,
-   drawn in that card's own icon colour and parked on the right where the copy
-   does not reach. The photographs that were here read as noise once they were
-   washed out far enough to keep the text legible; a line drawing stays legible
-   at a size where it still reads as background. All four cards get one, in
-   both locales. */
-.home-reference-destination:where(.home-reference-destination--market, .home-reference-destination--community, .home-reference-destination--services, .home-reference-destination--jobs) {
-  background-repeat: no-repeat;
-  /* Sized to stop short of the copy. The longest subtitle on these cards runs
-     to about 190px on a 262px card, so the drawing is held to roughly a third
-     of the width; anything larger puts line work under the words. */
-  background-position: right -8px bottom -6px;
-  background-size: auto 62%;
-}
-
 /* The whole card is the way into its section: the body link is stretched over
    the card so the padding and the empty space count as a target too. The
    footer button is the one thing that escapes it, so it is lifted above. */
@@ -10489,8 +10481,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .home-reference-destination-content { min-width: 0; display: grid; justify-items: center; gap: var(--space-2); color: inherit; text-decoration: none; }.home-reference-destination footer { display: grid; justify-items: center; gap: var(--space-2); align-self: end; margin-top: auto; }.home-reference-destination footer > a { color: inherit; text-decoration: none; }.home-reference-destination footer strong { color: var(--color-primary-strong); font-size: var(--text-xs); }.home-reference-destination footer strong i { margin-left: var(--space-1); }.home-reference-destination footer small { color: var(--color-ink-soft); font-size: var(--text-xs); }.home-reference-destination footer em { width: fit-content; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface-soft); color: var(--color-muted); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }
 .home-reference-destination footer strong { width: fit-content; min-height: var(--control-h-sm); display: inline-flex; align-items: center; padding-inline: var(--space-3); border: 1px solid currentColor; border-radius: var(--radius-xs); }.home-reference-destination footer small { padding-left: var(--space-1); }
 .home-reference-jobs-cta > em { flex: 0 0 auto; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface-soft); color: var(--color-muted); font-size: var(--text-2xs); font-style: normal; font-weight: var(--weight-bold); }
-.home-reference-destination-subtitle { color: var(--color-primary-strong) !important; font-size: var(--text-2xs) !important; font-weight: var(--weight-bold); }
-
 .home-reference-destination:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
 
 /* Keep elevation for the primary destination choices only; all supporting home cards stay flat. */
