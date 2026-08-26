@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">No listing photo</title>
+  <desc id="desc">A neutral image placeholder for a marketplace listing without a photo.</desc>
+  <rect width="800" height="600" fill="#f5f5f7"/>
+  <rect x="178" y="138" width="444" height="324" rx="28" fill="#ffffff" stroke="#dcdce1" stroke-width="16"/>
+  <circle cx="315" cy="258" r="38" fill="#93c5fd"/>
+  <path d="M232 410l108-104 74 66 58-55 96 93H232z" fill="#cfe4fb"/>
+  <path d="M252 164l296 272" stroke="#86868b" stroke-width="24" stroke-linecap="round"/>
+</svg>

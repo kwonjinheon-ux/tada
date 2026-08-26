@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 const RAIL_SIZE = 6;
@@ -105,12 +106,11 @@ async function toListings(supabase: SupabaseClient, rows: ListingRow[]) {
     .filter((path): path is string => Boolean(path));
   const signedImages = await getSignedStorageImages("market-listing-images", imagePaths, "thumbnail");
 
-  return rows.flatMap((row) => {
+  return rows.map((row) => {
     const photo = primaryPhotos.get(row.id);
-    const image = photo?.storage_path ? signedImages.get(photo.storage_path) : null;
-    if (!image) return [];
+    const image = photo?.storage_path ? signedImages.get(photo.storage_path) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE;
 
-    return [{
+    return {
       id: row.id,
       title: row.title,
       price: formatMarketPrice(row.price_cents),
@@ -120,7 +120,7 @@ async function toListings(supabase: SupabaseClient, rows: ListingRow[]) {
       categorySlug: row.category_slug,
       subcategorySlug: row.subcategory_slug,
       status: "available",
-    } satisfies Listing];
+    } satisfies Listing;
   });
 }
 

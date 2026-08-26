@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { WishlistClient, type WishlistItem } from "@/components/market/WishlistClient";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
@@ -50,7 +51,7 @@ export default async function MarketWishlistPage() {
   const toItem = (listingId: string): WishlistItem | null => {
     const listing = byId.get(listingId);
     if (!listing) return null;
-    return { id: listing.id, space: "market", title: listing.title, price: formatMarketPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? "/images/logo.png" };
+    return { id: listing.id, space: "market", title: listing.title, price: formatMarketPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? MARKET_LISTING_PLACEHOLDER_IMAGE };
   };
   const bargainIds = bargainSaved.map((row) => row.listing_id);
   const { data: bargainListingRows } = bargainIds.length

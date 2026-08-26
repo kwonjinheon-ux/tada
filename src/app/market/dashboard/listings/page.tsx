@@ -6,6 +6,7 @@ import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { TranslatedText } from "@/components/LanguageProvider";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -108,7 +109,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     )))
     : new Map<Kind, Map<string, string>>();
 
-  const imageFor = (kind: Kind, id: string) => thumbnails.get(kind)?.get(id) ?? "/images/logo.png";
+  const imageFor = (kind: Kind, id: string) => thumbnails.get(kind)?.get(id) ?? (kind === "market" ? MARKET_LISTING_PLACEHOLDER_IMAGE : "/images/logo.png");
   const createHref = activeCategory === "services" ? "/services/create" : activeCategory === "bargain" ? "/market/create/bargain" : "/market/create";
 
   // The tabs show how much sits behind each one, so they need counts that the

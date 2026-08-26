@@ -8,6 +8,7 @@ import { marketplaceCategories } from "@/data/marketplace-categories";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { getBargainListingDetail } from "@/lib/bargain/get-bargain-listing-detail";
 
 export const dynamic = "force-dynamic";
@@ -117,7 +118,7 @@ async function getListingDetail(
     createdAt: formatDate(listing.created_at),
     status: listing.status === "sold" ? "sold" : listing.status === "pending" ? "pending" : "available",
     viewCount: Number(listing.view_count ?? 0),
-    images: images.length ? images : [{ src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80", alt: listing.title }],
+    images: images.length ? images : [{ src: MARKET_LISTING_PLACEHOLDER_IMAGE, alt: listing.title }],
     seller: {
       id: seller?.id ?? null,
       name: seller?.display_name || "Tada seller",
@@ -203,7 +204,7 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
       title: row.title,
       price: formatMarketPrice(row.price_cents),
       location: formatLocation(row.region_city, row.region_suburb),
-      image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "/images/logo.png" : "/images/logo.png",
+      image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE,
       imageAlt: photo?.original_name ?? row.title,
       status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
       // commentCount: commentCounts.get(row.id) ?? 0,

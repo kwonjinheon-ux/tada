@@ -5,6 +5,7 @@ import type { z } from "zod";
 import { marketFeedQuerySchema } from "@/contracts/api";
 import type { Listing } from "@/data/listings";
 import { formatMarketPrice } from "@/lib/market/format-price";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { getBargainFeed } from "@/lib/bargain/feed";
 import { encodeCursor, decodeCursor, type Cursor } from "@/lib/pagination/cursor";
@@ -78,7 +79,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   for (const row of (commentRows ?? []) as { listing_id: string }[]) commentCounts.set(row.listing_id, (commentCounts.get(row.listing_id) ?? 0) + 1);
   const listings = page.map((row) => {
     const photo = photos.get(row.id);
-    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80" : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80", imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: newlyListedBadge(row.status, row.created_at), status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "priceAsc" || query.sort === "priceDesc" ? row.price_cents : row.created_at } satisfies Listing;
+    return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE, imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: newlyListedBadge(row.status, row.created_at), status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "priceAsc" || query.sort === "priceDesc" ? row.price_cents : row.created_at } satisfies Listing;
   });
   const last = page.at(-1);
   return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "priceAsc" || query.sort === "priceDesc" ? last.price_cents : last.created_at, last.id) : null };
