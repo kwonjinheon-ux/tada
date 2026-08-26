@@ -10473,15 +10473,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   background-size: auto 62%;
 }
 
-/* The art sits on its own layer so the card can hold two links without the
-   drawing landing on top of either. Both locales get the same treatment. */
-.home-reference-destination { position: relative; overflow: hidden; isolation: isolate; background-image: none; }
-.home-reference-destination::before { position: absolute; inset: 0; z-index: 0; background: var(--home-destination-art) no-repeat right -8px bottom -6px / auto 62%; filter: blur(1.5px); opacity: 0.8; transform: scale(1.03); content: ""; }
-.home-reference-destination > * { position: relative; z-index: 1; }
-.home-reference-destination--market { --home-destination-art: url("/images/home/card-market.svg"); }
-.home-reference-destination--community { --home-destination-art: url("/images/home/card-community.svg"); }
-.home-reference-destination--services { --home-destination-art: url("/images/home/card-services.svg"); }
-.home-reference-destination--jobs { --home-destination-art: url("/images/home/card-jobs.svg"); }
+/* The whole card is the way into its section: the body link is stretched over
+   the card so the padding and the empty space count as a target too. The
+   footer button is the one thing that escapes it, so it is lifted above. */
+.home-reference-destination { position: relative; background-image: none; }
+.home-reference-destination-content::after { position: absolute; inset: 0; z-index: 0; content: ""; }
+.home-reference-destination footer > a { position: relative; z-index: 1; }
 
 
 .home-reference-destination--community .home-reference-destination-heading > i { color: var(--violet-700); }
