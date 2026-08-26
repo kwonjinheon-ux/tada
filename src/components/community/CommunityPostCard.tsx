@@ -54,9 +54,9 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   }, [activeImage, galleryImages.length, isGalleryOpen, showImage]);
 
   return (
-    <article className={`community-post-card community-post-card-${post.type} ${featuredImage ? "" : "community-post-card-no-media"}`}>
+    <article className={`community-post-card community-post-card-${post.type}`}>
       <div className="community-post-card-link">
-        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={post.thumbnail ?? featuredImage.src} alt={featuredImage.alt} width={200} height={200} loading="lazy" decoding="async" /></button> : null}
+        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={post.thumbnail ?? featuredImage.src} alt={featuredImage.alt} width={200} height={200} loading="lazy" decoding="async" /></button> : <span className="community-post-media is-text" aria-hidden="true"><i className="ms ms-description" /></span>}
         <Link className="community-post-body-link" href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`} onClick={() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST", keepalive: true }); }}>
           <div className="community-post-body">
           <div className="community-post-title-row">
