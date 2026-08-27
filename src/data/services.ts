@@ -20,7 +20,6 @@ export type ServiceListing = {
   location?: string;
   price?: string;
   imageAlt?: string;
-  description?: string;
   isOwner?: boolean;
   isSaved?: boolean;
 };
@@ -98,7 +97,6 @@ const serviceCopy = {
     serviceCount: (count: number) => `${count} ${count === 1 ? "service" : "services"}`,
     saveService: (service: string) => `Save ${service}`,
     removeSavedService: (service: string) => `Remove ${service} from saved`,
-    recommendedProvider: "Recommended provider",
     whyTadaServices: "Why use Tada Services",
     providerLabel: "For providers",
     providerTitle: "Grow your local service.",
@@ -174,7 +172,6 @@ const serviceCopy = {
     serviceCount: (count: number) => `${count}개 서비스`,
     saveService: (service: string) => `${service} 찜하기`,
     removeSavedService: (service: string) => `${service} 찜한 서비스에서 삭제`,
-    recommendedProvider: "추천 업체",
     whyTadaServices: "Tada 서비스를 이용하는 이유",
     providerLabel: "서비스 제공자용",
     providerTitle: "내 지역 서비스 고객을 만나보세요.",
