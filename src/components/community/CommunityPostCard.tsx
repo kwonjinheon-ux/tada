@@ -9,6 +9,7 @@ import { CommunityPostSaveButton } from "@/components/community/CommunityPostSav
 import { CommentCountBadge } from "@/components/ui/CommentCountBadge";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
+import { TextOnlyMedia } from "@/components/ui/TextOnlyMedia";
 
 export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge = false, href }: { post: CommunityPost; showTypeBadge?: boolean; mutedTypeBadge?: boolean; href?: string }) {
   const { t } = useLanguage();
@@ -56,7 +57,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
   return (
     <article className={`community-post-card community-post-card-${post.type}`}>
       <div className="community-post-card-link">
-        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={post.thumbnail ?? featuredImage.src} alt={featuredImage.alt} width={200} height={200} loading="lazy" decoding="async" /></button> : <span className="community-post-media is-text" aria-hidden="true"><i className="ms ms-description" /></span>}
+        {featuredImage ? <button className="community-post-media" type="button" aria-label={`Open ${post.title} photo gallery`} onClick={() => { setActiveImage(0); setIsGalleryOpen(true); }}><img src={post.thumbnail ?? featuredImage.src} alt={featuredImage.alt} width={200} height={200} loading="lazy" decoding="async" /></button> : <TextOnlyMedia className="community-post-media is-text" />}
         <Link className="community-post-body-link" href={href ?? `/community/${post.id}`} aria-label={`Open ${post.title}`} onClick={() => { void fetch(`/api/community/posts/${post.id}/view`, { method: "POST", keepalive: true }); }}>
           <div className="community-post-body">
           <div className="community-post-title-row">

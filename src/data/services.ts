@@ -20,6 +20,8 @@ export type ServiceListing = {
   location?: string;
   price?: string;
   imageAlt?: string;
+  isOwner?: boolean;
+  isSaved?: boolean;
 };
 
 export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> = [
@@ -94,6 +96,7 @@ const serviceCopy = {
     categoryNearby: (category: string) => `${category} near Hamilton`,
     serviceCount: (count: number) => `${count} ${count === 1 ? "service" : "services"}`,
     saveService: (service: string) => `Save ${service}`,
+    removeSavedService: (service: string) => `Remove ${service} from saved`,
     whyTadaServices: "Why use Tada Services",
     providerLabel: "For providers",
     providerTitle: "Grow your local service.",
@@ -168,6 +171,7 @@ const serviceCopy = {
     categoryNearby: (category: string) => `해밀턴 주변 ${category}`,
     serviceCount: (count: number) => `${count}개 서비스`,
     saveService: (service: string) => `${service} 찜하기`,
+    removeSavedService: (service: string) => `${service} 찜한 서비스에서 삭제`,
     whyTadaServices: "Tada 서비스를 이용하는 이유",
     providerLabel: "서비스 제공자용",
     providerTitle: "내 지역 서비스 고객을 만나보세요.",

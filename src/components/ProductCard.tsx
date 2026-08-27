@@ -9,6 +9,8 @@ import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/comp
 import { CommentCountBadge } from "@/components/ui/CommentCountBadge";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
+import { TextOnlyMedia } from "@/components/ui/TextOnlyMedia";
+import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 
 // Comment-count badge — parked for reuse on a different category later.
 // function commentCountTier(count: number) {
@@ -36,6 +38,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
   const [imageFailed, setImageFailed] = useState(false);
+  const isTextOnly = listing.image === MARKET_LISTING_PLACEHOLDER_IMAGE;
   const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status === "sold" ? t("soldOut") : listing.status === "pending" ? t("pending") : t("available");
   const saleBadge = listing.bargainType === "garage-sale"
@@ -102,10 +105,8 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
       }}
     >
       <div className="product-media">
-        {imageFailed ? (
-          <div className="product-image-unavailable" role="img" aria-label={`${listing.title}: ${t("imageUnavailable")}`}>
-            <i className="ms ms-image" aria-hidden="true" />
-          </div>
+        {isTextOnly || imageFailed ? (
+          <TextOnlyMedia className="product-media-text-only" />
         ) : (
           <Image
             src={listing.image}

@@ -30,6 +30,8 @@ export const marketWishlistRequestSchema = z.object({ listingId: uuidSchema });
 export const marketWishlistResponseSchema = z.object({ saved: z.boolean() });
 export const communityWishlistRequestSchema = z.object({ postId: uuidSchema });
 export const communityWishlistResponseSchema = z.object({ saved: z.boolean() });
+export const serviceWishlistRequestSchema = z.object({ serviceId: uuidSchema });
+export const serviceWishlistResponseSchema = z.object({ saved: z.boolean() });
 
 export const marketSearchTermRequestSchema = z.object({ term: z.string().trim().min(2).max(80) });
 export const marketSearchTermsResponseSchema = z.object({ terms: z.array(z.string().min(2).max(80)).max(3) });

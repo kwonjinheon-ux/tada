@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
@@ -48,9 +49,15 @@ export function ServicesPageClient() {
 
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
         .order("created_at", { ascending: false });
       if (error || !data || !isCurrent) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: savedRows } = user
+        ? await supabase.from("service_wishlist").select("service_id").eq("user_id", user.id)
+        : { data: [] as Array<{ service_id: string }> };
+      const savedServiceIds = new Set((savedRows ?? []).map((row) => row.service_id));
 
       const photoPaths = data.flatMap((listing) => (listing.service_listing_photos ?? []).map((photo) => photo.storage_path));
       const { data: signedPhotos } = photoPaths.length
@@ -67,6 +74,8 @@ export function ServicesPageClient() {
         const image = cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined;
         return {
           id: listing.id,
+          isOwner: listing.owner_id === user?.id,
+          isSaved: savedServiceIds.has(listing.id),
           category: listing.category_slug as ServiceCategoryId,
           badges: listing.rating >= 4.5 ? ["highlyRated"] : ["new"],
           provider: listing.provider_name,
@@ -197,6 +206,7 @@ export function ServicesPageClient() {
             const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
             const isVerified = service.badges.includes("verified");
             return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
+              {!service.isOwner ? <ServiceSaveButton serviceId={service.id} provider={service.provider} initialIsSaved={service.isSaved} /> : null}
               <div className="services-listing-top">
                 <div className="services-listing-image"><Image src={service.image} alt={imageAlt} fill sizes="64px" /></div>
                 <div className="services-listing-copy">
