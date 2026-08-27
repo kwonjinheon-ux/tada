@@ -11000,6 +11000,62 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .services-listing[role="link"] { cursor: pointer; }
 .services-listing[role="link"]:focus-visible { outline: none; box-shadow: var(--ring-focus-strong); }
 
+@media (min-width: 768px) {
+  .services-page .services-listing {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+  .services-page .services-listing-recommended {
+    width: fit-content;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    background: var(--color-primary-soft);
+    color: var(--color-primary-strong);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+  }
+  .services-page .services-listing-top {
+    display: grid;
+    grid-template-columns: calc(var(--space-12) * 3) minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+  }
+  .services-page .services-listing-image {
+    width: calc(var(--space-12) * 3);
+    height: calc(var(--space-12) * 3);
+    aspect-ratio: 1;
+    border: 1px solid var(--color-primary-soft);
+    border-radius: var(--radius-md);
+  }
+  .services-page .services-listing-copy { padding: 0; }
+  .services-page .services-listing-copy h3 { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); }
+  .services-page .services-listing-details { gap: var(--space-4); padding: 0; }
+  .services-page .services-listing-contact { gap: var(--space-3); font-size: var(--text-md); }
+  .services-page .services-listing-description {
+    margin: 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+  .services-page .services-listing-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: var(--space-2);
+    padding-top: var(--space-4);
+  }
+  .services-page .services-listing-actions strong {
+    grid-column: 1 / -1;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-line);
+    font-size: var(--text-2xl);
+  }
+  .services-page .services-listing-actions button:first-of-type { display: block; background: var(--color-surface); color: var(--color-primary); }
+  .services-page .services-listing-actions button:last-of-type { grid-column: 2; }
+  .services-page .services-listing-details-link { display: none; }
+}
+
 /* Directory cards use a tall editorial layout on desktop and switch to a
    compact horizontal result row on phones. */
 .services-listing {
@@ -11161,6 +11217,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
 @media (max-width: 767.98px) {
   .services-page .services-card-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .services-page .services-listing-recommended,
+  .services-page .services-listing-phone,
+  .services-page .services-listing-description { display: none; }
   .services-page .services-listing { grid-template-columns: var(--control-h-2xl) minmax(0, 1fr); gap: 0; padding: 0; }
   .services-page .services-listing-top { display: contents; }
   .services-page .services-listing-image { grid-column: 1; grid-row: 1 / span 2; width: var(--control-h-2xl); height: 100%; min-height: calc(var(--space-12) * 4); aspect-ratio: auto; border-radius: 0; }
