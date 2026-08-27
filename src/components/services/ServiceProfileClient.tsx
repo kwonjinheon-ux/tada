@@ -45,8 +45,6 @@ function ServiceProfileContactCard({
   return (
     <section className="service-profile-contact ui-card">
       <div className="service-profile-contact-actions">
-        <p className="service-profile-eyebrow">{isKorean ? "문의하기" : "Get in touch"}</p>
-        <p className="service-profile-contact-mobile-title">{isKorean ? "연락처 및 위치" : "Contact & location"}</p>
         <a className="ui-button ui-button--primary" href={`sms:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-chat" aria-hidden="true" /> {isKorean ? "메시지" : "Message"}</a>
         <a className="ui-button ui-button--secondary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-call" aria-hidden="true" /> {isKorean ? "전화하기" : "Call now"}</a>
       </div>
@@ -55,7 +53,6 @@ function ServiceProfileContactCard({
           <span className="service-profile-contact-logo service-profile-contact-logo--fallback" aria-hidden="true"><i className="ms ms-work" /></span>
         )}
         <div>
-          <p className="service-profile-eyebrow">{isKorean ? "연락처 및 위치" : "Contact & location"}</p>
           <h2>{profile.businessName}</h2>
           <span>{categoryLabel}</span>
         </div>
