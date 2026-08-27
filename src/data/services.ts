@@ -20,6 +20,8 @@ export type ServiceListing = {
   image: string;
   /** The business logo, shown beside the provider name. */
   logo?: string;
+  /** The provider's own introduction, clamped to two lines on the card. */
+  description?: string;
   /** Trust mark beside the provider name. Falls back to the `verified` badge
    *  until `service_listings` carries its own verification column. */
   isVerified?: boolean;

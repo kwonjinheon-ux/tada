@@ -10803,11 +10803,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
 .services-listing-media > img { object-fit: cover; }
 
+/* A column rather than a grid: the identity block stays at the top and the
+   price pair is pushed to the bottom, so a short and a long introduction still
+   line their prices and actions up across a row of cards. */
 .services-listing-body {
   grid-area: body;
   min-width: 0;
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
 }
@@ -10873,6 +10876,21 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   white-space: nowrap;
 }
 
+/* The provider's own introduction. Two lines and then an ellipsis, so a long
+   description cannot push one card out of step with the rest of the grid. */
+.services-listing-summary {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
 /* Rating and reviews are the reason a reader picks one provider over another,
    so the score sits at heading size next to a filled star. */
 .services-listing-meta { display: grid; min-width: 0; gap: var(--space-1); }
@@ -10915,7 +10933,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Price is the second thing a reader compares, so it takes the largest type
    in the card and sits on its own rule above the actions. */
 .services-listing-price {
-  margin: 0;
+  margin: var(--space-1) 0 0;
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-line-soft);
 }
@@ -10987,11 +11005,16 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 @media (min-width: 768px) {
   .services-listing {
     grid-template-columns: minmax(0, 1fr);
+    /* The body takes the free height, so the details bar sits on the bottom
+       edge of every card in a row however long an introduction runs. */
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "media"
       "body"
       "more";
   }
+
+  .services-listing-price { margin-top: auto; }
 
   .services-listing-media { aspect-ratio: 16 / 10; min-height: 0; }
   .services-listing-body { gap: var(--space-3); padding: var(--space-4); }

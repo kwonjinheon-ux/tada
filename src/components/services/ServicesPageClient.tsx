@@ -49,7 +49,7 @@ export function ServicesPageClient() {
 
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,description,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
         .order("created_at", { ascending: false });
       if (error || !data || !isCurrent) return;
 
@@ -89,6 +89,7 @@ export function ServicesPageClient() {
           reviewCount: listing.review_count,
           image: image ?? "/images/home/journey-services.png",
           logo,
+          description: listing.description ?? undefined,
           // Placeholder until the listing row carries its own verification
           // column; only this line changes once the flag is stored.
           isVerified: true,
@@ -231,6 +232,7 @@ export function ServicesPageClient() {
                     <p className="services-listing-category">{categoryLabels[service.category]}</p>
                   </div>
                 </header>
+                <p className="services-listing-summary">{service.description?.trim() || text.serviceDescription}</p>
                 <div className="services-listing-meta">
                   <span className="services-listing-rating">
                     <i className="ms ms-star" aria-hidden="true" />
