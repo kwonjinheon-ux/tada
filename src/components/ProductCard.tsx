@@ -106,7 +106,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     >
       <div className="product-media">
         {isTextOnly || imageFailed ? (
-          <TextOnlyMedia className="product-media-text-only" />
+          <TextOnlyMedia className="product-media-text-only" reason={imageFailed ? "imageUnavailable" : "textOnly"} />
         ) : (
           <Image
             src={listing.image}
