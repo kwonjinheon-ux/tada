@@ -11070,6 +11070,24 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .services-listing-call { width: var(--control-h-lg); height: var(--control-h-lg); }
 }
 
+@media (max-width: 767.98px) {
+  .services-page .services-card-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .services-page .services-listing { gap: var(--space-3); padding: var(--space-3) var(--space-3) 0; }
+  .services-page .services-listing-top { grid-template-columns: 56px minmax(0, 1fr); gap: var(--space-3); }
+  .services-page .services-listing-image { width: 56px; height: 56px; }
+  .services-page .services-listing-copy h3 { font-size: var(--text-md); }
+  .services-page .services-listing-copy h3 .ms { font-size: var(--text-sm); }
+  .services-page .services-listing-category { font-size: var(--text-xs); }
+  .services-page .services-listing-call { width: var(--control-h-md); height: var(--control-h-md); font-size: var(--text-md); }
+  .services-page .services-listing-contact, .services-page .services-listing-meta { font-size: var(--text-xs); }
+  .services-page .services-listing-meta i { font-size: var(--text-md); }
+  .services-page .service-badge { min-height: 22px; padding-inline: 6px; font-size: 9px; }
+  .services-page .services-listing-actions { flex-direction: row; gap: var(--space-2); align-items: center; }
+  .services-page .services-listing-actions strong { font-size: var(--text-sm); }
+  .services-page .services-listing-actions button { width: auto; min-width: 112px; min-height: var(--control-h-md); padding-inline: var(--space-3); font-size: var(--text-xs); }
+  .services-page .services-listing-details-link { min-height: var(--control-h-lg); font-size: var(--text-xs); }
+}
+
 /* Service registration follows the existing Market / Community posting
    surface, with its own concise contact-area step. */
 .service-create-page .post-title-field { order: 1; }
@@ -11710,12 +11728,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-profile-page .service-profile-gallery img { aspect-ratio: 4 / 3; }
 .service-profile-contact-actions { display: grid; gap: var(--space-2); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line); }
 .service-profile-contact-actions p { margin: 0; }
+.service-profile-contact-mobile-title { display: none; }
 .service-profile-contact-actions small { color: var(--color-muted); font-size: var(--text-xs); }
 .service-profile-contact-actions a { min-height: var(--control-h-lg); display: flex; align-items: center; justify-content: center; gap: var(--space-2); color: var(--color-on-primary); text-decoration: none; }
 .service-profile-contact-actions a:last-child { border: 1px solid var(--success-500); background: var(--color-surface); color: var(--success-700); }
 .service-profile-contact-header { order: 1; }
 .service-profile-contact-actions { order: 2; }
 .service-profile-contact > p { order: 3; }
+.service-profile-contact .service-profile-directions { order: 4; }
 .service-profile-map { min-height: 118px; display: grid; place-items: center; gap: var(--space-2); border-radius: var(--radius-md); background: var(--success-100); color: var(--success-700); text-align: center; }
 .service-profile-map i { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--success-500); border-radius: var(--radius-circle); background: var(--color-surface); font-size: var(--text-xl); }
 .service-profile-map span { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
@@ -11748,6 +11768,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .service-profile-page .service-profile-hero-copy h1 { font-size: var(--text-xl); }
   .service-profile-page .service-profile-tabs { gap: var(--space-4); }
   .service-profile-page .service-profile-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .service-profile-page .service-profile-contact-header { display: none; }
+  .service-profile-page .service-profile-contact-actions > .service-profile-eyebrow { display: none; }
+  .service-profile-page .service-profile-contact-mobile-title { display: block; order: -1; color: var(--color-primary-strong); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+  .service-profile-page .service-profile-contact-actions { gap: var(--space-2); padding-bottom: var(--space-3); }
 }
 
 /* Service profiles remain part of the Services app layout: the standing
@@ -11790,6 +11814,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .service-profile-page { padding: 0; }
 }
 
+@media (min-width: 1024px) {
+  .service-profile-page .service-profile-content { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Tabs filter the profile canvas instead of just jumping down the page. */
 .service-profile-shell.is-section-about .service-profile-content > article,
 .service-profile-shell.is-section-details .service-profile-content > article,
@@ -11805,8 +11833,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-profile-shell.is-section-gallery .service-profile-tabs a[href="#gallery"],
 .service-profile-shell.is-section-area .service-profile-tabs a[href="#area"] { border-color: var(--success-500); color: var(--success-700); }
 .service-profile-shell:not(.is-section-about) .service-profile-tabs a:first-child { border-color: transparent; color: var(--color-muted); }
+.service-profile-shell:not(.is-section-about) .service-review-open { display: none; }
 .service-review-open { width: fit-content; min-height: var(--control-h-lg); display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); border: 1px solid var(--color-primary); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
 .service-review-open:hover { background: var(--color-primary-soft); }
+.service-profile-reviews-heading { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }
+.service-profile-reviews-heading .service-review-open { flex: 0 0 auto; }
 .service-review-backdrop { z-index: 80; display: grid; place-items: center; padding: var(--space-4); }
 .service-review-dialog { width: min(100%, 30rem); display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
 .service-review-dialog header { display: flex; gap: var(--space-3); align-items: center; }.service-review-dialog header > i { color: var(--color-warning); font-size: var(--text-2xl); }.service-review-dialog header div { display: grid; gap: 2px; }.service-review-dialog header p, .service-review-dialog h2 { margin: 0; }.service-review-dialog header p { color: var(--color-muted); font-size: var(--text-xs); }.service-review-dialog h2 { color: var(--color-ink); font-size: var(--text-xl); }.service-review-dialog fieldset { margin: 0; padding: 0; border: 0; }.service-review-dialog legend, .service-review-dialog label > span { display: block; margin-bottom: var(--space-2); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-bold); }.service-review-stars { display: flex; gap: var(--space-1); }.service-review-stars button { width: var(--control-h-lg); height: var(--control-h-lg); padding: 0; border: 0; border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-line); font-size: var(--text-xl); cursor: pointer; }.service-review-stars button.is-selected { color: var(--color-warning); }.service-review-dialog textarea { width: 100%; resize: vertical; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-md); color: var(--color-ink); font: inherit; line-height: 1.5; }.service-review-dialog textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--ring-focus); }.service-review-dialog footer { display: flex; justify-content: flex-end; gap: var(--space-2); }.service-review-dialog footer button { min-height: var(--control-h-lg); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink-soft); font: inherit; font-weight: var(--weight-bold); cursor: pointer; }.service-review-dialog footer button:last-child { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }.service-review-error { margin: 0; color: var(--color-danger); font-size: var(--text-sm); }

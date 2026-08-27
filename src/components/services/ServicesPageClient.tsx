@@ -61,8 +61,10 @@ export function ServicesPageClient() {
       const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
       setDatabaseServices(data.map((listing) => {
         const photos = [...(listing.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
-        const galleryPhoto = photos.find((photo) => photo.photo_kind !== "logo") ?? photos.find((photo) => photo.photo_kind === "logo");
-        const image = galleryPhoto?.storage_path ? signedByPath.get(galleryPhoto.storage_path) : undefined;
+        const logoPhoto = photos.find((photo) => photo.photo_kind === "logo");
+        const galleryPhoto = photos.find((photo) => photo.photo_kind !== "logo");
+        const cardPhoto = logoPhoto ?? galleryPhoto;
+        const image = cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined;
         return {
           id: listing.id,
           category: listing.category_slug as ServiceCategoryId,
