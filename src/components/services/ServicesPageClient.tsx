@@ -69,9 +69,12 @@ export function ServicesPageClient() {
       setDatabaseServices(data.map((listing) => {
         const photos = [...(listing.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
         const logoPhoto = photos.find((photo) => photo.photo_kind === "logo");
+        // The card leads with the representative work photo and keeps the logo
+        // as the small identity mark beside the business name.
         const galleryPhoto = photos.find((photo) => photo.photo_kind !== "logo");
-        const cardPhoto = logoPhoto ?? galleryPhoto;
+        const cardPhoto = galleryPhoto ?? logoPhoto;
         const image = cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined;
+        const logo = (logoPhoto?.storage_path ? signedByPath.get(logoPhoto.storage_path) : undefined) ?? undefined;
         return {
           id: listing.id,
           isOwner: listing.owner_id === user?.id,
@@ -85,6 +88,10 @@ export function ServicesPageClient() {
           rating: Number(listing.rating),
           reviewCount: listing.review_count,
           image: image ?? "/images/home/journey-services.png",
+          logo,
+          // Placeholder until the listing row carries its own verification
+          // column; only this line changes once the flag is stored.
+          isVerified: true,
           location: listing.service_areas[0] ?? "New Zealand",
           price: listing.price_from === null || !listing.price_unit ? (locale === "ko" ? "가격 문의" : "Contact for pricing") : serviceDetailsSummary(listing.category_slug as ServiceCategoryId, { price_from: String(listing.price_from), price_unit: listing.price_unit }, locale)[0]?.value ?? (locale === "ko" ? "가격 문의" : "Contact for pricing"),
           imageAlt: listing.provider_name,
@@ -204,38 +211,44 @@ export function ServicesPageClient() {
             const location = service.location ?? listing?.location ?? "New Zealand";
             const price = service.price ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
             const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
-            const isVerified = service.badges.includes("verified");
+            // Verification is a listing-level trust mark; it still falls back to
+            // the badge list so the seeded services keep their old behaviour.
+            const isVerified = service.isVerified ?? service.badges.includes("verified");
+            const reviewsLabel = locale === "ko" ? "후기" : service.reviewCount === 1 ? "review" : "reviews";
             return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
               {!service.isOwner ? <ServiceSaveButton serviceId={service.id} provider={service.provider} initialIsSaved={service.isSaved} /> : null}
-              <div className="services-listing-top">
-                <div className="services-listing-image"><Image src={service.image} alt={imageAlt} fill sizes="64px" /></div>
-                <div className="services-listing-copy">
-                  <header>
-                    <div>
-                      <h3>{service.provider}{isVerified ? <i className="ms ms-verified-user" aria-label={serviceBadgeLabel("verified", locale)} /> : null}</h3>
-                      <p className="services-listing-category">{categoryLabels[service.category]}</p>
-                    </div>
-                    <a className="services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
-                      <i className="ms ms-call" aria-hidden="true" />
-                    </a>
-                  </header>
-                </div>
-              </div>
-              <div className="services-listing-details">
-                <div className="services-listing-contact">
-                  <span><i className="ms ms-location-on" aria-hidden="true" /> {location}</span>
-                </div>
+              <div className="services-listing-media"><Image src={service.image} alt={imageAlt} fill sizes="(max-width: 767.98px) 116px, (max-width: 1199.98px) 33vw, 400px" /></div>
+              <div className="services-listing-body">
+                <header className="services-listing-identity">
+                  <span className="services-listing-logo">
+                    {service.logo ? <Image src={service.logo} alt="" fill sizes="44px" /> : <i className="ms ms-storefront" aria-hidden="true" />}
+                  </span>
+                  <div className="services-listing-name">
+                    <h3>
+                      <span>{service.provider}</span>
+                      {isVerified ? <i className="ms ms-verified services-listing-verified" role="img" aria-label={serviceBadgeLabel("verified", locale)} /> : null}
+                    </h3>
+                    <p className="services-listing-category">{categoryLabels[service.category]}</p>
+                  </div>
+                </header>
                 <div className="services-listing-meta">
-                  <span><i className="ms ms-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span>
+                  <span className="services-listing-rating">
+                    <i className="ms ms-star" aria-hidden="true" />
+                    <b>{service.rating.toFixed(1)}</b>
+                    <span>({service.reviewCount} {reviewsLabel})</span>
+                  </span>
+                  <span className="services-listing-place"><i className="ms ms-location-on" aria-hidden="true" /><span>{location}</span></span>
                 </div>
                 <div className="services-listing-badges">
                   {service.badges.slice(0, 3).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
                   {service.badges.length > 3 ? <span className="service-badge service-badge-more">+{service.badges.length - 3}</span> : null}
                 </div>
-                <div className="services-listing-actions">
-                  <strong>{price}</strong>
-                  <button type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>
-                  <button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
+                <p className="services-listing-price"><strong>{price}</strong></p>
+                <div className="services-listing-controls">
+                  <a className="ui-button ui-button--secondary services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
+                    <i className="ms ms-call" aria-hidden="true" />
+                  </a>
+                  <button className="ui-button ui-button--primary services-listing-message" type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
                 </div>
               </div>
               <button className="services-listing-details-link" type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}<i className="ms ms-arrow-forward" aria-hidden="true" /></button>

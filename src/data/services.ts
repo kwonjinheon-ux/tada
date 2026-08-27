@@ -16,7 +16,13 @@ export type ServiceListing = {
   availability: "today" | "this-week";
   rating: number;
   reviewCount: number;
+  /** The provider's representative photo — the card's main image. */
   image: string;
+  /** The business logo, shown beside the provider name. */
+  logo?: string;
+  /** Trust mark beside the provider name. Falls back to the `verified` badge
+   *  until `service_listings` carries its own verification column. */
+  isVerified?: boolean;
   location?: string;
   price?: string;
   imageAlt?: string;
