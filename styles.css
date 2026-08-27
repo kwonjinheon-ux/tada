@@ -10958,14 +10958,15 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-md);
-  background: var(--success-500);
+  background: var(--color-primary);
   color: var(--color-surface);
   font: inherit;
   font-weight: var(--weight-bold);
   cursor: pointer;
 }
-.services-listing-actions button:hover { background: var(--success-700); }
+.services-listing-actions button:hover { background: var(--color-primary-strong); }
 .services-listing-actions button .ms { margin-right: var(--space-1); }
+.services-listing-actions button:first-of-type { display: none; }
 .services-listing-details-link {
   display: flex;
   width: calc(100% + (var(--space-4) * 2));
@@ -10984,6 +10985,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   cursor: pointer;
 }
 .services-listing-details-link:hover { background: var(--color-primary-soft); }
+.services-listing-details-link { display: none; }
 .services-listing[role="link"] { cursor: pointer; }
 .services-listing[role="link"]:focus-visible { outline: none; box-shadow: var(--ring-focus-strong); }
 
