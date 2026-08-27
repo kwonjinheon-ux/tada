@@ -193,17 +193,15 @@ export function ServicesPageClient() {
             const location = service.location ?? listing?.location ?? "New Zealand";
             const price = service.price ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
             const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
+            const isVerified = service.badges.includes("verified");
             return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
               <div className="services-listing-top">
                 <div className="services-listing-image"><Image src={service.image} alt={imageAlt} fill sizes="64px" /></div>
                 <div className="services-listing-copy">
                   <header>
                     <div>
-                      <h3>{service.provider}</h3>
+                      <h3>{service.provider}{isVerified ? <i className="ms ms-verified-user" aria-label={serviceBadgeLabel("verified", locale)} /> : null}</h3>
                       <p className="services-listing-category">{categoryLabels[service.category]}</p>
-                      <div className="services-listing-badges">
-                        {service.badges.map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
-                      </div>
                     </div>
                     <a className="services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
                       <i className="ms ms-call" aria-hidden="true" />
@@ -213,18 +211,22 @@ export function ServicesPageClient() {
               </div>
               <div className="services-listing-details">
                 <div className="services-listing-contact">
-                  <span><i className="ms ms-call" aria-hidden="true" /> {service.phone}</span>
                   <span><i className="ms ms-location-on" aria-hidden="true" /> {location}</span>
                 </div>
                 <div className="services-listing-meta">
                   <span><i className="ms ms-star" aria-hidden="true" /> {service.rating.toFixed(1)} ({service.reviewCount} {locale === "ko" ? "후기" : "reviews"})</span>
-                  <strong>{price}</strong>
                 </div>
-                <footer>
+                <div className="services-listing-badges">
+                  {service.badges.slice(0, 3).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
+                  {service.badges.length > 3 ? <span className="service-badge service-badge-more">+{service.badges.length - 3}</span> : null}
+                </div>
+                <div className="services-listing-actions">
+                  <strong>{price}</strong>
                   <button type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}</button>
                   <button type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
-                </footer>
+                </div>
               </div>
+              <button className="services-listing-details-link" type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}<i className="ms ms-arrow-forward" aria-hidden="true" /></button>
             </article>;
           })}
         </div>
