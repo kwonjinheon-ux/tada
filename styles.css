@@ -11713,6 +11713,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-profile-contact-actions small { color: var(--color-muted); font-size: var(--text-xs); }
 .service-profile-contact-actions a { min-height: var(--control-h-lg); display: flex; align-items: center; justify-content: center; gap: var(--space-2); color: var(--color-on-primary); text-decoration: none; }
 .service-profile-contact-actions a:last-child { border: 1px solid var(--success-500); background: var(--color-surface); color: var(--success-700); }
+.service-profile-contact-header { order: 1; }
+.service-profile-contact-actions { order: 2; }
+.service-profile-contact > p { order: 3; }
 .service-profile-map { min-height: 118px; display: grid; place-items: center; gap: var(--space-2); border-radius: var(--radius-md); background: var(--success-100); color: var(--success-700); text-align: center; }
 .service-profile-map i { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--success-500); border-radius: var(--radius-circle); background: var(--color-surface); font-size: var(--text-xl); }
 .service-profile-map span { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
@@ -11766,3 +11769,44 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     padding: var(--space-2);
   }
 }
+
+/* Reuse the service-registration canvas: only the content changes between
+   listing a service and reading its profile. */
+.service-profile-page { background: transparent; }
+.service-profile-page .service-profile-back {
+  gap: var(--space-2);
+  color: var(--blue-850);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+.service-profile-page .service-profile-back:hover { color: var(--green-700); }
+@media (min-width: 1024px) {
+  .service-profile-page .service-profile-main {
+    padding: 20px max(var(--page-padding-inline), env(safe-area-inset-right)) 42px max(var(--page-padding-inline), env(safe-area-inset-left));
+    background: transparent;
+  }
+}
+@media (max-width: 1023.98px) {
+  .service-profile-page { padding: 0; }
+}
+
+/* Tabs filter the profile canvas instead of just jumping down the page. */
+.service-profile-shell.is-section-about .service-profile-content > article,
+.service-profile-shell.is-section-details .service-profile-content > article,
+.service-profile-shell.is-section-gallery .service-profile-content > article,
+.service-profile-shell.is-section-area .service-profile-content > article { display: none; }
+.service-profile-shell.is-section-about .service-profile-content > article:first-child,
+.service-profile-shell.is-section-about .service-profile-content > .service-profile-reviews { display: grid; }
+.service-profile-shell.is-section-details .service-profile-content > article:has(.service-profile-details) { display: grid; }
+.service-profile-shell.is-section-gallery .service-profile-content > article:has(.service-profile-gallery) { display: grid; }
+.service-profile-shell.is-section-area .service-profile-content > .service-profile-area { display: grid; }
+.service-profile-shell.is-section-about .service-profile-tabs a[href="#about"],
+.service-profile-shell.is-section-details .service-profile-tabs a[href="#details"],
+.service-profile-shell.is-section-gallery .service-profile-tabs a[href="#gallery"],
+.service-profile-shell.is-section-area .service-profile-tabs a[href="#area"] { border-color: var(--success-500); color: var(--success-700); }
+.service-profile-shell:not(.is-section-about) .service-profile-tabs a:first-child { border-color: transparent; color: var(--color-muted); }
+.service-review-open { width: fit-content; min-height: var(--control-h-lg); display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); border: 1px solid var(--color-primary); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
+.service-review-open:hover { background: var(--color-primary-soft); }
+.service-review-backdrop { z-index: 80; display: grid; place-items: center; padding: var(--space-4); }
+.service-review-dialog { width: min(100%, 30rem); display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
+.service-review-dialog header { display: flex; gap: var(--space-3); align-items: center; }.service-review-dialog header > i { color: var(--color-warning); font-size: var(--text-2xl); }.service-review-dialog header div { display: grid; gap: 2px; }.service-review-dialog header p, .service-review-dialog h2 { margin: 0; }.service-review-dialog header p { color: var(--color-muted); font-size: var(--text-xs); }.service-review-dialog h2 { color: var(--color-ink); font-size: var(--text-xl); }.service-review-dialog fieldset { margin: 0; padding: 0; border: 0; }.service-review-dialog legend, .service-review-dialog label > span { display: block; margin-bottom: var(--space-2); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-bold); }.service-review-stars { display: flex; gap: var(--space-1); }.service-review-stars button { width: var(--control-h-lg); height: var(--control-h-lg); padding: 0; border: 0; border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-line); font-size: var(--text-xl); cursor: pointer; }.service-review-stars button.is-selected { color: var(--color-warning); }.service-review-dialog textarea { width: 100%; resize: vertical; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-md); color: var(--color-ink); font: inherit; line-height: 1.5; }.service-review-dialog textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--ring-focus); }.service-review-dialog footer { display: flex; justify-content: flex-end; gap: var(--space-2); }.service-review-dialog footer button { min-height: var(--control-h-lg); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink-soft); font: inherit; font-weight: var(--weight-bold); cursor: pointer; }.service-review-dialog footer button:last-child { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }.service-review-error { margin: 0; color: var(--color-danger); font-size: var(--text-sm); }

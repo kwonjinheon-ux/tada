@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
 import { ServiceProfileBusinessCard } from "@/components/services/ServiceProfileBusinessCard";
+import { ServiceReviewDialog } from "@/components/services/ServiceReviewDialog";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { serviceBadgeLabel, serviceDetailsSummary, services, servicesCategoryLabels, type ServiceBadge, type ServiceCategoryId } from "@/data/services";
 import type { MainLocation } from "@/data/nzLocations";
@@ -81,6 +82,8 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
+  const [activeSection, setActiveSection] = useState<"about" | "details" | "gallery" | "area">("about");
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -133,8 +136,12 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
         <ServicesFilterSidebar activeCategory={profile.category} onCategorySelect={() => router.push("/services")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setMainLocation(nextMainLocation); setSubLocation(nextSubLocation); }} filters={filters} onFilterChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact />
       </aside>
       <section className="market-results services-results service-profile-main">
-        <div className="service-profile-shell">
-          <Link className="service-profile-back" href="/services"><i className="ms ms-arrow-back" aria-hidden="true" /> {isKorean ? "서비스 목록" : "Services"}</Link>
+        <div className={`service-profile-shell is-section-${activeSection}`} onClick={(event) => {
+          const link = (event.target as HTMLElement).closest<HTMLAnchorElement>(".service-profile-tabs a");
+          const section = link?.getAttribute("href")?.slice(1);
+          if (section === "about" || section === "details" || section === "gallery" || section === "area") { event.preventDefault(); setActiveSection(section); }
+        }}>
+          <Link className="service-profile-back" href="/services"><i className="ms ms-arrow-back" aria-hidden="true" /> {isKorean ? "서비스로 돌아가기" : "Back to services"}</Link>
           <section className="service-profile-hero ui-card">
             <div className="service-profile-media">{heroImage ? <img src={heroImage} alt={`${profile.provider} ${isKorean ? "서비스 사진" : "service"}`} /> : <i className="ms ms-work" aria-hidden="true" />}</div>
             <div className="service-profile-hero-copy">
@@ -153,6 +160,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
             {profile.images.length ? <article className="service-profile-section ui-card"><p className="service-profile-eyebrow">{isKorean ? "작업 사진" : "Work gallery"}</p><div className="service-profile-gallery">{profile.images.map((image, index) => <img key={image} src={image} alt={`${profile.provider} ${index + 1}`} />)}</div></article> : null}
             <article className="service-profile-section service-profile-area ui-card"><p className="service-profile-eyebrow">{isKorean ? "서비스 지역" : "Service area"}</p><div className="service-profile-map" aria-label={location}><i className="ms ms-location-on" aria-hidden="true" /><span>{location}</span></div><div className="service-profile-area-chips">{[...profile.suburbs, ...profile.serviceAreas].filter(Boolean).map((area) => <span key={area}>{area}</span>)}</div></article>
             <article className="service-profile-section service-profile-reviews ui-card"><p className="service-profile-eyebrow">{isKorean ? "후기" : "Reviews"}</p><div className="service-profile-review-summary"><strong>{profile.rating.toFixed(1)}</strong><span><i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /></span><small>{profile.reviewCount} {isKorean ? "개의 후기" : "reviews"}</small></div><p>{isKorean ? "Tada의 실제 이용자 후기가 이곳에 표시됩니다." : "Reviews from local Tada customers appear here."}</p></article>
+            <button className="service-review-open" type="button" onClick={() => setIsReviewOpen(true)}><i className="ms ms-star" aria-hidden="true" /> {isKorean ? "후기 등록하기" : "Write a review"}</button>
           </section>
         </div>
       </section>
@@ -161,6 +169,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
         <ServiceProfileContactCard profile={profile} location={location} directionsHref={directionsHref} websiteHref={websiteHref} categoryLabel={labels[profile.category]} isKorean={isKorean} />
         <ServiceProfileBusinessCard businessName={profile.businessName} categoryLabel={labels[profile.category]} description={profile.description} location={location} streetAddress={profile.streetAddress} phone={profile.phone} email={profile.email} website={websiteHref} logo={profile.logo} image={heroImage ?? null} isKorean={isKorean} />
       </aside>
+      {isReviewOpen ? <ServiceReviewDialog serviceId={profile.id} providerName={profile.provider} isKorean={isKorean} onClose={() => setIsReviewOpen(false)} onSubmitted={() => { setProfile((current) => current ? { ...current, reviewCount: current.reviewCount + 1 } : current); setIsReviewOpen(false); }} /> : null}
     </main>
   );
 }
