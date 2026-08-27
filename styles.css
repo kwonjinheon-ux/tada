@@ -10965,7 +10965,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   cursor: pointer;
 }
 .services-listing-actions button:hover { background: var(--color-primary-strong); }
-.services-listing-actions button .ms { margin-right: var(--space-1); }
+.services-listing-actions button .ms { margin-right: var(--space-1); color: var(--color-surface); }
 .services-listing-actions button:first-of-type { display: none; }
 .services-listing-details-link {
   display: flex;
@@ -10985,7 +10985,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   cursor: pointer;
 }
 .services-listing-details-link:hover { background: var(--color-primary-soft); }
-.services-listing-details-link { display: none; }
 .services-listing[role="link"] { cursor: pointer; }
 .services-listing[role="link"]:focus-visible { outline: none; box-shadow: var(--ring-focus-strong); }
 
