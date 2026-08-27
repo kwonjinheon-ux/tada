@@ -11104,29 +11104,27 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-profile-contact i { width: var(--space-4); flex: 0 0 auto; color: var(--color-primary-strong); }
 .service-profile-contact a { color: inherit; }
 .service-profile-contact .service-profile-directions { justify-content: center; color: var(--color-on-primary); text-decoration: none; }
-.service-profile-business-card { display: grid; gap: var(--space-3); padding: var(--space-4); }
-.service-profile-business-card header { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }
-.service-profile-business-card header > div { display: grid; gap: var(--space-1); min-width: 0; }
-.service-profile-business-card h2, .service-profile-business-card > p { margin: 0; }
-.service-profile-business-card h2 { overflow-wrap: anywhere; color: var(--color-ink); font-size: var(--text-lg); }
-.service-profile-business-card-preview { overflow: hidden; display: grid; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); }
-.service-profile-business-card-media { position: relative; min-height: calc(var(--space-12) * 4); overflow: hidden; background: var(--color-surface-soft); }
-.service-profile-business-card-media > img, .service-profile-business-card-image-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.service-profile-business-card-media > img { filter: brightness(.58); }
-.service-profile-business-card-image-fallback { display: grid; place-items: center; color: var(--color-primary-strong); font-size: var(--text-3xl); }
-.service-profile-business-card-brand { position: absolute; right: var(--space-3); bottom: var(--space-3); left: var(--space-3); z-index: 1; display: flex; gap: var(--space-2); align-items: center; color: var(--color-on-primary); }
-.service-profile-business-card-brand > img, .service-profile-business-card-brand > span { width: var(--control-h-xl); height: var(--control-h-xl); flex: 0 0 auto; display: grid; place-items: center; border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-primary-strong); object-fit: cover; }
-.service-profile-business-card-brand > div { display: grid; gap: var(--space-1); min-width: 0; }
-.service-profile-business-card-brand strong { overflow-wrap: anywhere; font-size: var(--text-md); }
-.service-profile-business-card-brand span { font-size: var(--text-sm); }
-.service-profile-business-card-copy { display: grid; gap: var(--space-3); padding: var(--space-3); }
-.service-profile-business-card-copy > div, .service-profile-business-card-copy dl, .service-profile-business-card-copy dl > div { display: grid; gap: var(--space-1); margin: 0; }
-.service-profile-business-card-copy p, .service-profile-business-card-copy dd { margin: 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.5; overflow-wrap: anywhere; }
-.service-profile-business-card-copy dt { color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.service-profile-business-card-copy footer { display: flex; gap: var(--space-2); justify-content: space-between; align-items: center; padding-top: var(--space-2); border-top: 1px solid var(--color-line); color: var(--color-primary-strong); font-size: var(--text-xs); }
-.service-profile-business-card-copy footer strong { font-size: var(--text-lg); }
-.service-profile-business-card > p { color: var(--color-muted); font-size: var(--text-sm); line-height: 1.5; }
-.service-profile-business-card-save { justify-content: center; }
+/* Saveable provider card.
+   The panel is a frame around a <canvas>: the artwork itself lives in
+   `lib/media/service-card-image`, so nothing here can make the preview drift
+   from the file that gets saved. The stage carries the aspect ratio of the
+   selected format inline, because that ratio comes from the export size. */
+.service-card-preview { display: grid; gap: var(--space-3); padding: var(--space-4); }
+.service-card-preview > header { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: space-between; }
+.service-card-preview > header > div { min-width: 0; display: grid; gap: var(--space-1); }
+.service-card-preview h2 { margin: 0; overflow-wrap: anywhere; color: var(--color-ink); font-size: var(--text-lg); }
+.service-card-preview-formats { display: inline-flex; flex: 0 0 auto; padding: 2px; border-radius: var(--radius-pill); background: var(--color-surface-sunken); }
+.service-card-preview-formats button { min-height: var(--control-h-xs); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); cursor: pointer; transition: background var(--transition-fast), color var(--transition-fast); }
+.service-card-preview-formats button.is-selected { background: var(--color-surface); color: var(--color-ink); box-shadow: var(--shadow-xs); }
+.service-card-preview-formats button:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
+.service-card-preview-stage { overflow: hidden; border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface-sunken); }
+.service-card-preview-stage canvas { display: block; width: 100%; height: 100%; }
+.service-card-preview-hint { margin: 0; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.5; }
+.service-card-preview-status { margin: 0; color: var(--color-primary-strong); font-size: var(--text-xs); line-height: 1.5; }
+/* The rail is a narrow column, so the card leads it rather than sitting under
+   the tips a provider has already read by the time they get here. */
+.service-create-card-preview { order: -1; }
+
 .service-owner-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .service-owner-actions a, .service-owner-actions button { min-height: var(--control-h-sm); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: 0 var(--space-3); border: 1px solid var(--green-700); border-radius: var(--radius-xs); background: var(--neutral-50); color: var(--green-700); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; cursor: pointer; }
 .service-owner-actions .is-danger { border-color: var(--red-600); color: var(--red-900); }

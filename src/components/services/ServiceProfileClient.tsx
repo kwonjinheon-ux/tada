@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
-import { ServiceProfileBusinessCard } from "@/components/services/ServiceProfileBusinessCard";
+import { ServiceCardPreview } from "@/components/services/ServiceCardPreview";
 import { ServiceReviewDialog } from "@/components/services/ServiceReviewDialog";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { serviceBadgeLabel, serviceDetailsSummary, services, servicesCategoryLabels, type ServiceBadge, type ServiceCategoryId } from "@/data/services";
@@ -163,7 +163,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       <aside className="service-profile-support-rail">
         {profile.ownerId && profile.ownerId === viewerId ? <ServiceOwnerActions serviceId={profile.id} providerName={profile.provider} /> : null}
         <ServiceProfileContactCard profile={profile} location={location} directionsHref={directionsHref} websiteHref={websiteHref} categoryLabel={labels[profile.category]} isKorean={isKorean} />
-        <ServiceProfileBusinessCard businessName={profile.businessName} categoryLabel={labels[profile.category]} description={profile.description} location={location} streetAddress={profile.streetAddress} phone={profile.phone} email={profile.email} website={websiteHref} logo={profile.logo} image={profile.images[0] ?? heroImage ?? null} isKorean={isKorean} />
+        <ServiceCardPreview className="ui-card service-profile-card-preview" content={{ businessName: profile.businessName, serviceName: profile.provider, categoryLabel: labels[profile.category], description: profile.description, location, streetAddress: profile.streetAddress, phone: profile.phone, email: profile.email, website: websiteHref, priceLabel: detailRows.find((row) => row.label === (isKorean ? "가격" : "Price"))?.value ?? null, logo: profile.logo, photo: profile.images[0] ?? heroImage ?? null, isKorean }} />
       </aside>
       {isReviewOpen ? <ServiceReviewDialog serviceId={profile.id} providerName={profile.provider} isKorean={isKorean} onClose={() => setIsReviewOpen(false)} onSubmitted={() => { setProfile((current) => current ? { ...current, reviewCount: current.reviewCount + 1 } : current); setIsReviewOpen(false); }} /> : null}
     </main>

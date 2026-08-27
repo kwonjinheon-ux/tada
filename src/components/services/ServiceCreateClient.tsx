@@ -7,7 +7,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
-import { serviceCategories, serviceDetailFields, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
+import { ServiceCardPreview } from "@/components/services/ServiceCardPreview";
+import { serviceCategories, serviceDetailFields, serviceDetailsSummary, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
 import { isAcceptedMarketListingImage, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -47,6 +48,10 @@ export function ServiceCreateClient() {
   const [serviceArea, setServiceArea] = useState("Hamilton");
   const [suburb, setSuburb] = useState("");
   const allAreasValue = "__all_nz__";
+  // The form stays uncontrolled — it is read with FormData on submit — so the
+  // live preview mirrors it by re-reading the same FormData on every input
+  // rather than turning fifteen fields into fifteen pieces of state.
+  const [previewFields, setPreviewFields] = useState<Record<string, string>>({});
   const photosRef = useRef<PhotoPreview[]>([]);
   const logoRef = useRef<PhotoPreview | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -215,6 +220,29 @@ export function ServiceCreateClient() {
     }
   };
 
+  const readPreviewFields = (form: HTMLFormElement) => setPreviewFields(Object.fromEntries(
+    [...new FormData(form).entries()].flatMap(([key, value]) => typeof value === "string" ? [[key, value] as const] : []),
+  ));
+
+  const primaryPhoto = photos.find((photo) => photo.id === primaryPhotoId) ?? photos[0] ?? null;
+  const previewLocation = [suburb, serviceArea === allAreasValue ? (isKorean ? "뉴질랜드 전체" : "All New Zealand") : serviceArea].filter(Boolean).join(", ");
+  const previewPrice = category ? serviceDetailsSummary(category, serviceDetailValues, locale).find((row) => row.label === (isKorean ? "가격" : "Price"))?.value ?? null : null;
+  const previewContent = {
+    businessName: previewFields["business-name"]?.trim() || "",
+    serviceName: previewFields["service-name"]?.trim() || "",
+    categoryLabel: category ? categoryLabels[category] : (isKorean ? "카테고리를 선택하세요" : "Choose a category"),
+    description: previewFields["service-description"]?.trim() || "",
+    location: previewLocation,
+    streetAddress: previewFields["service-address"]?.trim() || null,
+    phone: previewFields["service-phone"]?.trim() || "",
+    email: previewFields["service-email"]?.trim() || null,
+    website: previewFields["service-website"]?.trim() || null,
+    priceLabel: previewPrice,
+    logo: logo?.url ?? null,
+    photo: primaryPhoto?.url ?? null,
+    isKorean,
+  };
+
   return <main className="marketplace-page services-page service-create-page">
       <aside className="market-filter-panel services-filter-rail service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
       <section className="market-results services-results service-create-main">
@@ -224,7 +252,7 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <form className="post-ad-form" onSubmit={submit} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
+        <form className="post-ad-form" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>
           <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{isKorean ? "서비스명" : "Service name"}</label><input id="service-name" name="service-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: 수학 과외 또는 잔디 관리" : "e.g. Maths tutoring or lawn care"} /></div><div className="post-field"><label htmlFor="business-name">{isKorean ? "업체명" : "Business name"}</label><input id="business-name" name="business-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: Hamilton Maths Academy" : "e.g. Hamilton Maths Academy"} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" name="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div><ServiceCategoryDetailsFields key={category} category={category} locale={locale} values={serviceDetailValues} onValueChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} /></section>
           <section className="post-description-field service-logo-field"><div className="post-section-heading"><span>3</span><h2>{copy.logo}</h2></div><input ref={logoInputRef} className="post-photo-input" id="service-logo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { addLogo(event.target.files); event.currentTarget.value = ""; }} />{logo ? <div className="service-logo-preview"><img src={logo.url} alt={isKorean ? "업체 로고 미리보기" : "Business logo preview"} /><div><strong>{logo.file.name}</strong><span>{copy.logoHint}</span></div><button className="post-photo-remove" type="button" aria-label={isKorean ? "로고 삭제" : "Remove logo"} onClick={removeLogo}><i className="ms ms-close" aria-hidden="true" /></button></div> : <button className="service-logo-upload" type="button" onClick={() => logoInputRef.current?.click()}><i className="ms ms-image" aria-hidden="true" /><span>{isKorean ? "로고 추가" : "Add logo"}</span><small>{copy.logoHint}</small></button>}</section>
@@ -238,6 +266,6 @@ export function ServiceCreateClient() {
     </div>
       </div>
       </section>
-      <aside className="post-ad-sidebar service-create-sidebar service-create-support-rail" aria-label={isKorean ? "서비스 등록 도움말" : "Service registration help"}><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["ms ms-checklist", "ms ms-location-on", "ms ms-security"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="ms ms-security" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["ms ms-description", "ms ms-badge", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="ms ms-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
+      <aside className="post-ad-sidebar service-create-sidebar service-create-support-rail" aria-label={isKorean ? "서비스 등록 도움말" : "Service registration help"}><ServiceCardPreview content={previewContent} className="ui-card service-create-card-preview" /><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["ms ms-checklist", "ms ms-location-on", "ms ms-security"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="ms ms-security" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["ms ms-description", "ms ms-badge", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="ms ms-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
   </main>;
 }
