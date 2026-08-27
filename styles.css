@@ -11746,3 +11746,23 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .service-profile-page .service-profile-tabs { gap: var(--space-4); }
   .service-profile-page .service-profile-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Service profiles remain part of the Services app layout: the standing
+   filter rail is the desktop navigation anchor, with profile contact support
+   on the right. Below desktop the existing browse drawer takes over. */
+@media (min-width: 1024px) {
+  .marketplace-page.services-page.service-profile-page {
+    grid-template-columns: 272px minmax(0, 1fr) 300px;
+    gap: 0;
+    max-width: none;
+    margin-inline: 0;
+    padding: 0;
+  }
+  .service-profile-page .service-profile-filter-rail { display: grid; grid-column: 1; }
+  .service-profile-page .service-profile-main { grid-column: 2; padding: var(--space-4) var(--space-3) var(--space-7); }
+  .service-profile-page .service-profile-support-rail {
+    grid-column: 3;
+    margin: var(--space-3) max(var(--page-padding-inline), env(safe-area-inset-right)) var(--space-3) var(--space-2);
+    padding: var(--space-2);
+  }
+}

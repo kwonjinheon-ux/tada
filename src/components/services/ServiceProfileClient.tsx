@@ -122,7 +122,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
   if (!profile) return <main className="service-profile-page"><section className="service-profile-empty ui-card"><h1>{isKorean ? "서비스를 찾을 수 없습니다." : "Service not found."}</h1><p>{isKorean ? "삭제되었거나 공개되지 않은 서비스입니다." : "This service is no longer available or has not been published."}</p><Link className="ui-button ui-button--primary" href="/services">{isKorean ? "서비스 목록으로" : "Back to services"}</Link></section></main>;
 
   const location = [...profile.suburbs, ...profile.serviceAreas].filter(Boolean).join(", ") || (isKorean ? "뉴질랜드" : "New Zealand");
-  const heroImage = profile.images[0];
+  const heroImage = profile.logo ?? profile.images[0];
   const websiteHref = profile.website?.startsWith("http") ? profile.website : profile.website ? `https://${profile.website}` : null;
   const directionsHref = profile.streetAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${profile.streetAddress}, ${location}`)}` : null;
   const detailRows = profile.priceFrom === null || !profile.priceUnit ? [] : serviceDetailsSummary(profile.category, { ...profile.serviceDetails, price_from: String(profile.priceFrom), price_unit: profile.priceUnit }, locale);
@@ -139,7 +139,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
             <div className="service-profile-media">{heroImage ? <img src={heroImage} alt={`${profile.provider} ${isKorean ? "서비스 사진" : "service"}`} /> : <i className="ms ms-work" aria-hidden="true" />}</div>
             <div className="service-profile-hero-copy">
               <p>{labels[profile.category]}</p>
-              <h1 className={profile.logo ? "has-logo" : undefined}>{profile.logo ? <img className="service-profile-logo" src={profile.logo} alt={`${profile.provider} logo`} /> : null}<span>{profile.provider}</span></h1>
+              <h1><span>{profile.provider}</span></h1>
               <div className="services-listing-badges">{profile.badges.map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}</div>
               <div className="service-profile-rating"><i className="ms ms-star" aria-hidden="true" /> <strong>{profile.rating.toFixed(1)}</strong><span>({profile.reviewCount} {isKorean ? "후기" : "reviews"})</span></div>
               <div className="service-profile-actions"><a className="ui-button ui-button--primary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-call" aria-hidden="true" /> {isKorean ? "전화 문의" : "Call now"}</a>{profile.email ? <a className="ui-button ui-button--secondary" href={`mailto:${profile.email}`}><i className="ms ms-mail" aria-hidden="true" /> {isKorean ? "이메일" : "Email"}</a> : null}</div>
