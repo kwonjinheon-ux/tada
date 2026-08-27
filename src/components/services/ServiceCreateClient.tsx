@@ -134,6 +134,7 @@ export function ServiceCreateClient() {
       const foundedYear = foundedYearValue ? Number(foundedYearValue) : null;
       const detailFields = serviceDetailFields(category, locale);
       const detailValues = Object.fromEntries(detailFields.map((field) => [field.key, String(formData.get(`service-detail-${field.key}`) ?? "").trim()]));
+      const selectedLanguages = formData.getAll("service-language").map((value) => String(value)).filter(Boolean);
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
       if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
@@ -169,6 +170,7 @@ export function ServiceCreateClient() {
       founded_year: foundedYear,
       price_from: priceFrom,
       price_unit: priceUnit,
+      languages: selectedLanguages.length ? selectedLanguages : ["English"],
       service_details: detailValues,
       // The column defaults to 'pending', and nothing in the product moves a
       // service off that state — there is no moderation queue for services the
@@ -224,7 +226,7 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <form className="post-ad-form" onSubmit={submit} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
+        <form className="post-ad-form service-create-form" onSubmit={submit} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>
           <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{isKorean ? "서비스명" : "Service name"}</label><input id="service-name" name="service-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: 수학 과외 또는 잔디 관리" : "e.g. Maths tutoring or lawn care"} /></div><div className="post-field"><label htmlFor="business-name">{isKorean ? "업체명" : "Business name"}</label><input id="business-name" name="business-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: Hamilton Maths Academy" : "e.g. Hamilton Maths Academy"} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" name="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div><ServiceCategoryDetailsFields key={category} category={category} locale={locale} values={serviceDetailValues} onValueChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} /></section>
           <section className="post-description-field service-logo-field"><div className="post-section-heading"><span>3</span><h2>{copy.logo}</h2></div><input ref={logoInputRef} className="post-photo-input" id="service-logo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { addLogo(event.target.files); event.currentTarget.value = ""; }} />{logo ? <div className="service-logo-preview"><img src={logo.url} alt={isKorean ? "업체 로고 미리보기" : "Business logo preview"} /><div><strong>{logo.file.name}</strong><span>{copy.logoHint}</span></div><button className="post-photo-remove" type="button" aria-label={isKorean ? "로고 삭제" : "Remove logo"} onClick={removeLogo}><i className="ms ms-close" aria-hidden="true" /></button></div> : <button className="service-logo-upload" type="button" onClick={() => logoInputRef.current?.click()}><i className="ms ms-image" aria-hidden="true" /><span>{isKorean ? "로고 추가" : "Add logo"}</span><small>{copy.logoHint}</small></button>}</section>

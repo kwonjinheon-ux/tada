@@ -18,7 +18,7 @@ type ServiceProfile = {
   phone: string; email: string | null; website: string | null; streetAddress: string | null;
   weekdayHours: string | null; saturdayHours: string | null; sundayHours: string | null;
   foundedYear: number | null; rating: number; reviewCount: number; priceFrom: number | null;
-  priceUnit: string | null; serviceDetails: Record<string, unknown>; logo: string | null;
+  priceUnit: string | null; languages: string[]; serviceDetails: Record<string, unknown>; logo: string | null;
   images: string[]; badges: ServiceBadge[];
 };
 
@@ -32,7 +32,7 @@ function previewProfile(serviceId: string, isKorean: boolean): ServiceProfile | 
     serviceAreas: ["Hamilton"], suburbs: [], phone: service.phone, email: null, website: null,
     streetAddress: null, weekdayHours: null, saturdayHours: null, sundayHours: null,
     foundedYear: null, rating: service.rating, reviewCount: service.reviewCount, priceFrom: null,
-    priceUnit: null, serviceDetails: {}, logo: null, images: [service.image], badges: service.badges,
+    priceUnit: null, languages: ["English"], serviceDetails: {}, logo: null, images: [service.image], badges: service.badges,
   };
 }
 
@@ -89,7 +89,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       if (!supabase) { if (isCurrent) setIsLoading(false); return; }
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,languages,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
         .eq("id", serviceId).maybeSingle();
       if (error || !data || !isCurrent) { if (isCurrent) setIsLoading(false); return; }
       const photos = [...(data.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
@@ -108,7 +108,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
         streetAddress: data.street_address, weekdayHours: data.weekday_hours, saturdayHours: data.saturday_hours,
         sundayHours: data.sunday_hours, foundedYear: data.founded_year, rating: Number(data.rating),
         reviewCount: data.review_count, priceFrom: data.price_from === null ? null : Number(data.price_from),
-        priceUnit: data.price_unit, serviceDetails: data.service_details && typeof data.service_details === "object" && !Array.isArray(data.service_details) ? data.service_details : {},
+        priceUnit: data.price_unit, languages: data.languages ?? ["English"], serviceDetails: data.service_details && typeof data.service_details === "object" && !Array.isArray(data.service_details) ? data.service_details : {},
         logo: logoPath ? urlsByPath.get(logoPath) ?? null : null,
         images: galleryPaths.map((path) => urlsByPath.get(path)).filter((url): url is string => Boolean(url)),
         badges: Number(data.rating) >= 4.5 ? ["highlyRated"] : ["new"],
