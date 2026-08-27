@@ -3,8 +3,6 @@
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { serviceDetailFields, type ServiceCategoryId } from "@/data/services";
 
-const serviceLanguageOptions = ["English", "Korean", "Mandarin", "Hindi", "Japanese", "Spanish", "Samoan", "Tongan"] as const;
-
 type ServiceCategoryDetailsFieldsProps = {
   category: ServiceCategoryId | "";
   locale: string;
@@ -45,18 +43,6 @@ export function ServiceCategoryDetailsFields({ category, locale, values, onValue
           </div>;
         })}
       </div>
-      <fieldset className="service-language-field">
-        <legend>{isKorean ? "제공 가능 언어" : "Languages spoken"}</legend>
-        <p>{isKorean ? "고객이 서비스를 받을 수 있는 언어를 선택해 주세요." : "Choose the languages customers can use when contacting you."}</p>
-        <div>
-          {serviceLanguageOptions.map((language) => (
-            <label key={language}>
-              <input type="checkbox" name="service-language" value={language} defaultChecked={language === "English"} />
-              <span>{language === "Korean" ? "한국어" : language}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
     </div>
   );
 }
