@@ -43,6 +43,12 @@ function ServiceProfileContactCard({
 }) {
   return (
     <section className="service-profile-contact ui-card">
+      <div className="service-profile-contact-actions">
+        <p className="service-profile-eyebrow">{isKorean ? "문의하기" : "Get in touch"}</p>
+        <small>{isKorean ? "보통 몇 시간 안에 답변합니다." : "Usually replies within a few hours"}</small>
+        <a className="ui-button ui-button--primary" href={`sms:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-chat" aria-hidden="true" /> {isKorean ? "메시지" : "Message"}</a>
+        <a className="ui-button ui-button--secondary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-call" aria-hidden="true" /> {isKorean ? "전화하기" : "Call now"}</a>
+      </div>
       <header className="service-profile-contact-header">
         {profile.logo ? <img className="service-profile-contact-logo" src={profile.logo} alt={`${profile.businessName} logo`} /> : (
           <span className="service-profile-contact-logo service-profile-contact-logo--fallback" aria-hidden="true"><i className="ms ms-work" /></span>
@@ -139,11 +145,14 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
               <div className="service-profile-actions"><a className="ui-button ui-button--primary" href={`tel:${profile.phone.replace(/\s/g, "")}`}><i className="ms ms-call" aria-hidden="true" /> {isKorean ? "전화 문의" : "Call now"}</a>{profile.email ? <a className="ui-button ui-button--secondary" href={`mailto:${profile.email}`}><i className="ms ms-mail" aria-hidden="true" /> {isKorean ? "이메일" : "Email"}</a> : null}</div>
             </div>
           </section>
+          <nav className="service-profile-tabs" aria-label={isKorean ? "서비스 정보" : "Service information"}><a href="#about">{isKorean ? "소개" : "About"}</a><a href="#details">{isKorean ? "서비스 및 가격" : "Service details & pricing"}</a><a href="#gallery">{isKorean ? "작업 사진" : "Work gallery"}</a><a href="#area">{isKorean ? "서비스 지역" : "Service area"}</a></nav>
           <section className="service-profile-content">
             <article className="service-profile-section ui-card"><p className="service-profile-eyebrow">{isKorean ? "서비스 소개" : "About this service"}</p><h2>{isKorean ? "고객에게 제공하는 도움" : "How this provider can help"}</h2><p>{profile.description}</p></article>
             {detailRows.length ? <article className="service-profile-section ui-card"><p className="service-profile-eyebrow">{isKorean ? "서비스 및 가격" : "Service details & pricing"}</p><dl className="service-profile-details">{detailRows.map(({ label, value }) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></article> : null}
             {profile.weekdayHours || profile.saturdayHours || profile.sundayHours || profile.foundedYear ? <article className="service-profile-section ui-card"><p className="service-profile-eyebrow">{isKorean ? "업체 정보" : "Business information"}</p><dl className="service-profile-details">{profile.weekdayHours ? <div><dt>{isKorean ? "평일" : "Weekdays"}</dt><dd>{profile.weekdayHours}</dd></div> : null}{profile.saturdayHours ? <div><dt>{isKorean ? "토요일" : "Saturday"}</dt><dd>{profile.saturdayHours}</dd></div> : null}{profile.sundayHours ? <div><dt>{isKorean ? "일요일·공휴일" : "Sunday & public holidays"}</dt><dd>{profile.sundayHours}</dd></div> : null}{profile.foundedYear ? <div><dt>{isKorean ? "설립" : "Established"}</dt><dd>{profile.foundedYear}</dd></div> : null}</dl></article> : null}
             {profile.images.length ? <article className="service-profile-section ui-card"><p className="service-profile-eyebrow">{isKorean ? "작업 사진" : "Work gallery"}</p><div className="service-profile-gallery">{profile.images.map((image, index) => <img key={image} src={image} alt={`${profile.provider} ${index + 1}`} />)}</div></article> : null}
+            <article className="service-profile-section service-profile-area ui-card"><p className="service-profile-eyebrow">{isKorean ? "서비스 지역" : "Service area"}</p><div className="service-profile-map" aria-label={location}><i className="ms ms-location-on" aria-hidden="true" /><span>{location}</span></div><div className="service-profile-area-chips">{[...profile.suburbs, ...profile.serviceAreas].filter(Boolean).map((area) => <span key={area}>{area}</span>)}</div></article>
+            <article className="service-profile-section service-profile-reviews ui-card"><p className="service-profile-eyebrow">{isKorean ? "후기" : "Reviews"}</p><div className="service-profile-review-summary"><strong>{profile.rating.toFixed(1)}</strong><span><i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /></span><small>{profile.reviewCount} {isKorean ? "개의 후기" : "reviews"}</small></div><p>{isKorean ? "Tada의 실제 이용자 후기가 이곳에 표시됩니다." : "Reviews from local Tada customers appear here."}</p></article>
           </section>
         </div>
       </section>
