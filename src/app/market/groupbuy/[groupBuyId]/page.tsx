@@ -40,7 +40,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
     closesLabel: new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.closes_at)),
     handoverLabel: new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.handover_at)),
     bank: { accountName: data.bank_account_name, accountNumber: data.bank_account_number }, minimumOrderCents: data.minimum_order_cents,
-    participantCount: 0,
+    participantCount: data.participant_count ?? 0,
     items: itemRows.sort((a, b) => a.display_order - b.display_order).map((item) => ({ id: item.id, name: item.name, note: item.note, priceCents: item.price_cents, unitLabel: item.unit_label, limitPerPerson: item.limit_per_person, image: item.photo_path ? signedImages.get(item.photo_path) ?? "/images/home/journey-market.png" : "/images/home/journey-market.png", imageAlt: item.photo_alt ?? item.name, orderedCount: 0 })),
   };
   if (!groupBuy) notFound();

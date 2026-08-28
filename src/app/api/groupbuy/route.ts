@@ -20,6 +20,7 @@ async function toGroupBuyCard(row: {
   pickup_available: boolean;
   delivery_available: boolean;
   delivery_fee_cents: number;
+  participant_count: number;
   cover_image_path: string | null;
   cover_image_alt: string | null;
   group_buy_items: Array<{ id: string; name: string; note: string; price_cents: number; unit_label: string; limit_per_person: number | null; photo_path: string | null; photo_alt: string | null; display_order: number }>;
@@ -43,7 +44,7 @@ async function toGroupBuyCard(row: {
     handoverLabel: formatDate(row.handover_at),
     bank: { accountName: "", accountNumber: "" },
     minimumOrderCents: null,
-    participantCount: 0,
+    participantCount: row.participant_count,
     items: row.group_buy_items.map((item) => ({
       id: item.id,
       name: item.name,
@@ -63,7 +64,7 @@ export async function GET() {
   if (!supabase) return apiFailure("UNAVAILABLE", "Group buys are unavailable right now.", 503);
   const { data, error } = await supabase
     .from("group_buys")
-    .select("id,title,summary,status,closes_at,handover_at,pickup_available,delivery_available,delivery_fee_cents,cover_image_path,cover_image_alt,group_buy_items(id,name,note,price_cents,unit_label,limit_per_person,photo_path,photo_alt,display_order)")
+    .select("id,title,summary,status,closes_at,handover_at,pickup_available,delivery_available,delivery_fee_cents,participant_count,cover_image_path,cover_image_alt,group_buy_items(id,name,note,price_cents,unit_label,limit_per_person,photo_path,photo_alt,display_order)")
     .order("created_at", { ascending: false });
   if (error) return apiFailure("INTERNAL", "Unable to load group buys.", 500);
   return apiSuccess(await Promise.all((data ?? []).filter((row) => row.group_buy_items.length > 0).map(toGroupBuyCard)));
