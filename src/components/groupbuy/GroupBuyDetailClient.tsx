@@ -8,6 +8,7 @@ import { formatMarketPrice } from "@/lib/market/format-price";
 import { encodeGroupBuyBasket } from "@/lib/market/group-buy-basket";
 import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
 import { Avatar } from "@/components/ui/Avatar";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 
 /** The list, and the basket built from it.
  *
@@ -20,6 +21,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [previewItemId, setPreviewItemId] = useState<string | null>(null);
   const isClosed = groupBuy.status === "closed";
 
   // A delta, not an absolute: two taps inside one render both read the same
@@ -40,6 +42,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
   const subtotalCents = lines.reduce((sum, line) => sum + line.totalCents, 0);
   const belowMinimum = groupBuy.minimumOrderCents !== null && subtotalCents > 0 && subtotalCents < groupBuy.minimumOrderCents;
   const canReview = itemCount > 0 && !belowMinimum && !isClosed;
+  const previewItem = groupBuy.items.find((item) => item.id === previewItemId) ?? null;
 
   return (
     <section className="market-results groupbuy-detail" aria-label={groupBuy.title}>
@@ -106,7 +109,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
                 const atLimit = item.limitPerPerson !== null && quantity >= item.limitPerPerson;
                 return (
                   <li className={quantity ? "groupbuy-item is-added" : "groupbuy-item"} key={item.id}>
-                    <div className="groupbuy-item-media"><Image src={item.image} alt={item.imageAlt} fill sizes="96px" /></div>
+                    <button className="groupbuy-item-media" type="button" aria-label={isKorean ? `${item.name} 사진 크게 보기` : `View ${item.name} photo`} onClick={() => setPreviewItemId(item.id)}><Image src={item.image} alt={item.imageAlt} fill sizes="96px" /></button>
                     <div className="groupbuy-item-copy">
                       <strong>{item.name}</strong>
                       <small>{item.note}</small>
@@ -158,6 +161,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
           <p className="groupbuy-basket-note"><i className="ms ms-payments" aria-hidden="true" /> {isKorean ? "Tada는 결제를 대행하지 않습니다. 판매자에게 직접 입금합니다." : "Tada takes no payment. You transfer to the seller directly."}</p>
         </aside>
       </div>
+      {previewItem ? <DialogOverlay className="groupbuy-photo-dialog" onClose={() => setPreviewItemId(null)} aria-label={isKorean ? "상품 사진 크게 보기" : "Item photo preview"}><div className="groupbuy-photo-dialog-content"><button className="ui-icon-button" type="button" onClick={() => setPreviewItemId(null)} aria-label={isKorean ? "닫기" : "Close"}><i className="ms ms-close" aria-hidden="true" /></button><Image src={previewItem.image} alt={previewItem.imageAlt} width={1200} height={1200} sizes="(max-width: 767px) 92vw, 760px" /></div></DialogOverlay> : null}
     </section>
   );
 }
