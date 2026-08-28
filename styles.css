@@ -10817,7 +10817,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   position: relative;
   min-width: 0;
   display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
+  /* The photo takes a full third of the row. At a fixed 116px it read as a
+     stamp beside the text rather than the card's main image, and it shrank
+     against the copy as the phone got wider. */
+  grid-template-columns: minmax(116px, 36%) minmax(0, 1fr);
   grid-template-areas:
     "media body"
     "more  more";
@@ -10995,25 +10998,42 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .services-listing-call:hover { border-color: var(--color-primary); color: var(--color-primary-strong); }
 .services-listing-message { min-width: 0; overflow: hidden; padding-inline: var(--space-3); text-overflow: ellipsis; }
 
-.services-listing-details-link {
+/* The footer bar carries the two things a reader does with a card they like:
+   open it, or keep the provider's details. Splitting the existing full-width
+   bar in two adds the second without crowding the actions above it. */
+.services-listing-footer {
   grid-area: more;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.services-listing-details-link,
+.services-listing-card-save {
   display: flex;
+  min-width: 0;
   min-height: var(--control-h-xl);
   gap: var(--space-1);
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  padding-inline: var(--space-3);
   border: 0;
-  border-top: 1px solid var(--color-line-soft);
   background: transparent;
   color: var(--color-primary);
   font: inherit;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
-.services-listing-details-link:hover { background: var(--color-primary-soft); }
+.services-listing-details-link:hover,
+.services-listing-card-save:hover { background: var(--color-primary-soft); }
+.services-listing-card-save { border-left: 1px solid var(--color-line-soft); color: var(--color-ink-soft); }
+.services-listing-card-save:disabled { color: var(--color-muted); cursor: wait; }
 
 .services-listing-save {
   --save-button-size: var(--control-h-md);
@@ -11111,7 +11131,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
    selected format inline, because that ratio comes from the export size. */
 .service-card-preview { display: grid; gap: var(--space-3); padding: var(--space-4); }
 .service-card-preview > header { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: space-between; }
-.service-card-preview > header > div { min-width: 0; display: grid; gap: var(--space-1); }
+/* First child only: the second is the format toggle, which is a row and was
+   being turned into a stacked grid by a rule meant for the title block. */
+.service-card-preview > header > div:first-child { min-width: 0; display: grid; gap: var(--space-1); }
 .service-card-preview h2 { margin: 0; overflow-wrap: anywhere; color: var(--color-ink); font-size: var(--text-lg); }
 .service-card-preview-formats { display: inline-flex; flex: 0 0 auto; padding: 2px; border-radius: var(--radius-pill); background: var(--color-surface-sunken); }
 .service-card-preview-formats button { min-height: var(--control-h-xs); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); cursor: pointer; transition: background var(--transition-fast), color var(--transition-fast); }
@@ -11136,68 +11158,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-edit-page { display: block; max-width: var(--page-max-width); margin: 0 auto; padding: var(--page-shell-y) var(--page-shell-x); }.service-edit-card { width: min(100%, 52rem); display: grid; gap: var(--space-5); margin: 0 auto; padding: var(--space-6); }.service-edit-card header { display: grid; gap: var(--space-2); }.service-edit-card header > a { color: var(--color-primary-strong); font-weight: var(--weight-semibold); text-decoration: none; }.service-edit-card h1, .service-edit-card p { margin: 0; }.service-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }.service-edit-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 @media (max-width: 767px) { .service-edit-page { padding: var(--space-4); }.service-edit-card { padding: var(--space-4); }.service-edit-grid { grid-template-columns: 1fr; }.service-owner-actions:not(.is-compact) { display: grid; grid-template-columns: 1fr 1fr; }.service-owner-actions:not(.is-compact) a, .service-owner-actions:not(.is-compact) button { width: 100%; } }
 
+/* Phones tighten the gutter between result rows; everything else about the
+   card comes from the one recipe above. Two blocks of overrides used to sit
+   here for the old markup — .services-listing-top, -image, -copy, -details —
+   and they pinned the media column to 48px, which is why the photo stayed a
+   stamp however the shared rule was sized.
+*/
 @media (max-width: 767.98px) {
-  .services-page .services-listing {
-    grid-template-columns: var(--control-h-2xl) minmax(0, 1fr);
-    gap: 0;
-    padding: 0;
-  }
-  .services-page .services-listing-top { display: contents; }
-  .services-page .services-listing-image {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    width: var(--control-h-2xl);
-    height: 100%;
-    min-height: calc(var(--space-12) * 4);
-    aspect-ratio: auto;
-    border-radius: 0;
-  }
-  .services-page .services-listing-copy {
-    grid-column: 2;
-    grid-row: 1;
-    padding: var(--space-3) var(--space-3) 0;
-  }
-  .services-page .services-listing-details {
-    grid-column: 2;
-    grid-row: 2;
-    padding: var(--space-2) var(--space-3) var(--space-3);
-  }
-  .services-page .services-listing-details-link {
-    grid-column: 1 / -1;
-    grid-row: 3;
-  }
-  .services-page .services-listing-save {
-    top: var(--space-2);
-    right: var(--space-2);
-    --save-button-size: var(--control-h-md);
-  }
-  .services-listing-top { grid-template-columns: 64px minmax(0, 1fr); }
-  .services-listing-image { width: 64px; height: 64px; }
-  .services-listing-copy h3 { font-size: var(--text-lg); }
-  .services-listing-category { font-size: var(--text-sm); }
-  .services-listing-call { width: var(--control-h-lg); height: var(--control-h-lg); }
-}
-
-@media (max-width: 767.98px) {
-  .services-page .services-card-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-  .services-page .services-listing { grid-template-columns: var(--control-h-2xl) minmax(0, 1fr); gap: 0; padding: 0; }
-  .services-page .services-listing-top { display: contents; }
-  .services-page .services-listing-image { grid-column: 1; grid-row: 1 / span 2; width: var(--control-h-2xl); height: 100%; min-height: calc(var(--space-12) * 4); aspect-ratio: auto; border-radius: 0; }
-  .services-page .services-listing-copy { grid-column: 2; grid-row: 1; padding: var(--space-3) var(--space-3) 0; }
-  .services-page .services-listing-details { grid-column: 2; grid-row: 2; padding: var(--space-2) var(--space-3) var(--space-3); }
-  .services-page .services-listing-details-link { grid-column: 1 / -1; grid-row: 3; }
-  .services-page .services-listing-save { top: var(--space-2); right: var(--space-2); --save-button-size: var(--control-h-md); }
-  .services-page .services-listing-copy h3 { font-size: var(--text-md); }
-  .services-page .services-listing-copy h3 .ms { font-size: var(--text-sm); }
-  .services-page .services-listing-category { font-size: var(--text-xs); }
-  .services-page .services-listing-call { width: var(--control-h-md); height: var(--control-h-md); font-size: var(--text-md); }
-  .services-page .services-listing-contact, .services-page .services-listing-meta { font-size: var(--text-xs); }
-  .services-page .services-listing-meta i { font-size: var(--text-md); }
-  .services-page .service-badge { min-height: 22px; padding-inline: 6px; font-size: 9px; }
-  .services-page .services-listing-actions { flex-direction: row; gap: var(--space-2); align-items: center; }
-  .services-page .services-listing-actions strong { font-size: var(--text-sm); }
-  .services-page .services-listing-actions button { width: auto; min-width: 112px; min-height: var(--control-h-md); padding-inline: var(--space-3); font-size: var(--text-xs); }
-  .services-page .services-listing-details-link { min-height: var(--control-h-lg); font-size: var(--text-xs); }
+  .services-page .services-card-grid { gap: var(--space-2); }
 }
 
 /* Service registration follows the existing Market / Community posting

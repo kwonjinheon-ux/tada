@@ -13,7 +13,7 @@
  * directory card. Colours come from the design tokens at draw time, so the
  * export follows a palette change like every other surface. */
 
-export type ServiceCardFormat = "card" | "thumbnail";
+export type ServiceCardFormat = "card" | "cardPortrait" | "thumbnail";
 
 export type ServiceCardContent = {
   businessName: string;
@@ -32,17 +32,26 @@ export type ServiceCardContent = {
   isKorean: boolean;
 };
 
-export const serviceCardFormats: readonly ServiceCardFormat[] = ["card", "thumbnail"] as const;
+export const serviceCardFormats: readonly ServiceCardFormat[] = ["card", "cardPortrait", "thumbnail"] as const;
 
 /** Business-card proportions (91×55mm) and the directory card's 16:10 media
  *  box. Both are sized so the export stays sharp when printed or shared. */
 export const serviceCardSizes: Record<ServiceCardFormat, { width: number; height: number }> = {
   card: { width: 1080, height: 660 },
+  cardPortrait: { width: 900, height: 1480 },
   thumbnail: { width: 1200, height: 750 },
 };
 
+/** A phone saves a portrait card: it fills the screen it will be looked at on,
+ *  and a landscape card in a photo album is a letterbox with two grey bands. */
+export function preferredServiceCardFormat(): ServiceCardFormat {
+  if (typeof window === "undefined") return "card";
+  return window.matchMedia("(max-width: 767.98px), (pointer: coarse)").matches ? "cardPortrait" : "card";
+}
+
 export function serviceCardFormatLabel(format: ServiceCardFormat, isKorean: boolean) {
-  if (format === "card") return isKorean ? "명함" : "Business card";
+  if (format === "card") return isKorean ? "명함 가로" : "Card";
+  if (format === "cardPortrait") return isKorean ? "명함 세로" : "Tall card";
   return isKorean ? "썸네일" : "Thumbnail";
 }
 
@@ -336,6 +345,112 @@ function drawBusinessCard(context: CanvasRenderingContext2D, content: ServiceCar
   context.fillText(truncate(context, content.isKorean ? "Tada에서 더 많은 지역 전문가를 만나보세요" : "Find more local experts on Tada", panelWidth), panelX, height - padding - 22);
 }
 
+/* --- Portrait business card --------------------------------------------- */
+
+/** The same card stood on its end. A phone saves this one: it fills the screen
+ *  it will be looked at on, and the extra height buys room for the provider's
+ *  own description, which the landscape card has to leave out. */
+function drawPortraitCard(context: CanvasRenderingContext2D, content: ServiceCardContent, palette: Palette, photo: HTMLImageElement | null, logo: HTMLImageElement | null) {
+  const { width, height } = serviceCardSizes.cardPortrait;
+  const padding = 56;
+  const contentWidth = width - padding * 2;
+  const mediaHeight = 660;
+  const logoSize = 124;
+
+  context.fillStyle = palette.surface;
+  context.fillRect(0, 0, width, height);
+
+  context.save();
+  clipRoundRect(context, 0, 0, width, mediaHeight, 0);
+  if (photo) {
+    drawCover(context, photo, 0, 0, width, mediaHeight);
+    const scrim = context.createLinearGradient(0, 0, 0, mediaHeight);
+    scrim.addColorStop(0, "rgba(0, 0, 0, 0.48)");
+    scrim.addColorStop(0.3, "rgba(0, 0, 0, 0.06)");
+    scrim.addColorStop(0.6, "rgba(0, 0, 0, 0.16)");
+    scrim.addColorStop(1, "rgba(0, 0, 0, 0.62)");
+    context.fillStyle = scrim;
+    context.fillRect(0, 0, width, mediaHeight);
+  } else {
+    drawBrandPanel(context, palette, content.businessName, width, mediaHeight);
+  }
+  context.restore();
+
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillStyle = palette.onPrimary;
+  context.font = font(700, 34);
+  context.fillText("tada", padding, padding);
+  context.font = font(600, 22);
+  context.globalAlpha = 0.82;
+  context.fillText(content.isKorean ? "지역 전문가" : "Local experts", padding, padding + 42);
+  context.globalAlpha = 1;
+
+  if (content.priceLabel) {
+    context.font = font(600, 24);
+    context.globalAlpha = 0.9;
+    context.fillText(content.isKorean ? "요금" : "Pricing", padding, mediaHeight - logoSize / 2 - 96);
+    context.globalAlpha = 1;
+    context.font = font(700, 38);
+    context.fillText(truncate(context, content.priceLabel, contentWidth), padding, mediaHeight - logoSize / 2 - 64);
+  }
+
+  // The logo straddles the photo edge, which is what ties the two halves of a
+  // portrait card together — landscape gets that from the vertical split.
+  // A hairline ring, not a white one: half this disc sits on the white panel
+  // below the photo and a white ring makes it read as a cut-off half circle.
+  drawLogo(context, logo, content.businessName, padding, mediaHeight - logoSize / 2, logoSize, palette.line, palette.primarySoft, palette.primary, palette.surface);
+
+  let y = mediaHeight + logoSize / 2 + 32;
+
+  context.fillStyle = palette.ink;
+  context.font = font(700, 54);
+  y = drawLines(context, wrapLines(context, content.businessName || (content.isKorean ? "업체명" : "Business name"), contentWidth, 2), padding, y, 64) + 6;
+
+  context.fillStyle = palette.primary;
+  context.font = font(600, 28);
+  context.fillText(truncate(context, content.categoryLabel, contentWidth), padding, y);
+  y += 44;
+
+  if (content.description) {
+    context.fillStyle = palette.muted;
+    context.font = font(400, 26);
+    y = drawLines(context, wrapLines(context, content.description, contentWidth, 3), padding, y, 38) + 10;
+  }
+
+  y += 14;
+  context.strokeStyle = palette.line;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(padding, y);
+  context.lineTo(width - padding, y);
+  context.stroke();
+  y += 34;
+
+  const rows: Array<[string, string]> = [];
+  if (content.phone) rows.push([content.isKorean ? "전화" : "Phone", content.phone]);
+  if (content.email) rows.push([content.isKorean ? "이메일" : "Email", content.email]);
+  if (content.website) rows.push([content.isKorean ? "웹사이트" : "Website", content.website]);
+  const place = [content.streetAddress, content.location].filter(Boolean).join(", ");
+  if (place) rows.push([content.isKorean ? "위치" : "Location", place]);
+
+  const footerTop = height - padding - 40;
+  for (const [label, value] of rows) {
+    if (y + 52 > footerTop) break;
+    context.fillStyle = palette.muted;
+    context.font = font(600, 20);
+    context.fillText(label.toUpperCase(), padding, y);
+    context.fillStyle = palette.ink;
+    context.font = font(600, 28);
+    context.fillText(truncate(context, value, contentWidth), padding, y + 24);
+    y += 68;
+  }
+
+  context.fillStyle = palette.muted;
+  context.font = font(500, 22);
+  context.fillText(truncate(context, content.isKorean ? "Tada에서 더 많은 지역 전문가를 만나보세요" : "Find more local experts on Tada", contentWidth), padding, height - padding - 24);
+}
+
 /* --- Listing thumbnail -------------------------------------------------- */
 
 function drawThumbnail(context: CanvasRenderingContext2D, content: ServiceCardContent, palette: Palette, photo: HTMLImageElement | null, logo: HTMLImageElement | null) {
@@ -412,6 +527,7 @@ export async function drawServiceCard(canvas: HTMLCanvasElement, content: Servic
 
   context.clearRect(0, 0, width, height);
   if (format === "card") drawBusinessCard(context, content, palette, photo, logo);
+  else if (format === "cardPortrait") drawPortraitCard(context, content, palette, photo, logo);
   else drawThumbnail(context, content, palette, photo, logo);
 }
 
@@ -430,4 +546,44 @@ export async function serviceCardFile(canvas: HTMLCanvasElement, businessName: s
   } catch {
     return null;
   }
+}
+
+/** The same drawing, off-screen, for callers with nothing on show — the save
+ *  button on a directory card renders the card only to hand it over. */
+export async function renderServiceCardFile(content: ServiceCardContent, format: ServiceCardFormat) {
+  const canvas = document.createElement("canvas");
+  await drawServiceCard(canvas, content, format);
+  return serviceCardFile(canvas, content.businessName, format);
+}
+
+export type ServiceCardSaveResult = "shared" | "downloaded" | "cancelled" | "failed";
+
+/** Phones and tablets get the share sheet, which is the only route a web page
+ *  has into the photo album. A mouse gets a straight download instead, because
+ *  a share dialog on a desktop is a detour, not a save. */
+export async function saveServiceCardFile(file: File | null, title: string): Promise<ServiceCardSaveResult> {
+  if (!file) return "failed";
+
+  // `canShare` without `share` is a real combination in the wild, so both are
+  // checked before the sheet is treated as available.
+  const wantsShareSheet = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (wantsShareSheet && typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title });
+      return "shared";
+    } catch (error) {
+      // A dismissed sheet is a choice; anything else falls through to a
+      // download, including Safari refusing a share whose activation expired
+      // while the photo was loading.
+      if (error instanceof DOMException && error.name === "AbortError") return "cancelled";
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = file.name;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  return "downloaded";
 }

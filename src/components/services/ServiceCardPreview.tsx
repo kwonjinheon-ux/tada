@@ -1,31 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { drawServiceCard, serviceCardFile, serviceCardFormatLabel, serviceCardFormats, serviceCardSizes, type ServiceCardContent, type ServiceCardFormat } from "@/lib/media/service-card-image";
+import { ServiceCardSaveButton } from "@/components/services/ServiceCardSaveButton";
+import { drawServiceCard, preferredServiceCardFormat, serviceCardFormatLabel, serviceCardFormats, serviceCardSizes, type ServiceCardContent, type ServiceCardFormat } from "@/lib/media/service-card-image";
 
 type ServiceCardPreviewProps = {
   content: ServiceCardContent;
   className?: string;
-  defaultFormat?: ServiceCardFormat;
 };
-
-/** Phones and tablets get the share sheet, which is the only route a web page
- *  has into the photo album. A mouse gets a straight download instead, because
- *  a share dialog on a desktop is a detour, not a save. */
-function prefersShareSheet() {
-  return typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-}
 
 /** The provider's card, drawn once and used twice: this canvas is the preview,
  *  and saving hands the very same canvas to `toBlob`. See
  *  `lib/media/service-card-image` for the artwork itself. */
-export function ServiceCardPreview({ content, className = "", defaultFormat = "card" }: ServiceCardPreviewProps) {
+export function ServiceCardPreview({ content, className = "" }: ServiceCardPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [format, setFormat] = useState<ServiceCardFormat>(defaultFormat);
-  const [isSaving, setIsSaving] = useState(false);
+  // Server and client must agree on the first render, so the phone's portrait
+  // default is applied after mount rather than guessed during it.
+  const [format, setFormat] = useState<ServiceCardFormat>("card");
   const [status, setStatus] = useState("");
   const { isKorean } = content;
+
+  useEffect(() => { setFormat(preferredServiceCardFormat()); }, []);
 
   // Redrawing on every keystroke would reload the photo each time; a short
   // settle keeps the preview live without thrashing the canvas.
@@ -43,41 +38,6 @@ export function ServiceCardPreview({ content, className = "", defaultFormat = "c
     const timer = window.setTimeout(() => { if (isCurrent) void drawPreview(); }, 220);
     return () => { isCurrent = false; window.clearTimeout(timer); };
   }, [drawPreview]);
-
-  const saveCard = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas || isSaving) return;
-    setIsSaving(true);
-    setStatus("");
-    try {
-      const file = await serviceCardFile(canvas, content.businessName, format);
-      if (!file) {
-        setStatus(isKorean ? "이미지를 만들지 못했습니다. 사진을 다시 올린 뒤 시도해 주세요." : "The image could not be created. Re-upload the photo and try again.");
-        return;
-      }
-
-      if (prefersShareSheet() && navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: content.businessName });
-          setStatus(isKorean ? "저장 메뉴에서 ‘이미지 저장’을 선택하면 앨범에 담깁니다." : "Choose “Save image” in the share sheet to keep it in your album.");
-          return;
-        } catch (error) {
-          // A dismissed share sheet is a choice, not a failure.
-          if (error instanceof DOMException && error.name === "AbortError") return;
-        }
-      }
-
-      const url = URL.createObjectURL(file);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = file.name;
-      anchor.click();
-      URL.revokeObjectURL(url);
-      setStatus(isKorean ? "이미지를 저장했습니다." : "Image saved.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const { width, height } = serviceCardSizes[format];
 
@@ -107,10 +67,20 @@ export function ServiceCardPreview({ content, className = "", defaultFormat = "c
           : "What you see is exactly what gets saved. On a phone the share sheet drops it straight into your album."}
       </p>
 
-      <Button onClick={() => void saveCard()} disabled={isSaving} block>
-        <i className="ms ms-image" aria-hidden="true" />
-        {isSaving ? (isKorean ? "이미지 준비 중…" : "Preparing image…") : isKorean ? "이미지 저장" : "Save image"}
-      </Button>
+      <ServiceCardSaveButton
+        className="ui-button ui-button--primary ui-button--block"
+        content={content}
+        format={format}
+        canvas={canvasRef.current}
+        onResult={(result) => setStatus(
+          result === "failed" ? (isKorean ? "이미지를 만들지 못했습니다. 사진을 다시 올린 뒤 시도해 주세요." : "The image could not be created. Re-upload the photo and try again.")
+            : result === "shared" ? (isKorean ? "저장 메뉴에서 ‘이미지 저장’을 선택하면 앨범에 담깁니다." : "Choose “Save image” in the share sheet to keep it in your album.")
+              : result === "downloaded" ? (isKorean ? "이미지를 저장했습니다." : "Image saved.")
+                : "",
+        )}
+      >
+        <><i className="ms ms-badge" aria-hidden="true" /> {isKorean ? "이미지 저장" : "Save image"}</>
+      </ServiceCardSaveButton>
 
       {status ? <p className="service-card-preview-status" role="status">{status}</p> : null}
     </section>

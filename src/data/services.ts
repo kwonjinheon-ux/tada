@@ -20,6 +20,12 @@ export type ServiceListing = {
   image: string;
   /** The business logo, shown beside the provider name. */
   logo?: string;
+  /** Carried for the saveable card image, which is a contact card and needs
+   *  the registered business identity rather than the service's own name. */
+  businessName?: string;
+  email?: string;
+  website?: string;
+  streetAddress?: string;
   /** The provider's own introduction, clamped to two lines on the card. */
   description?: string;
   /** Trust mark beside the provider name. Falls back to the `verified` badge

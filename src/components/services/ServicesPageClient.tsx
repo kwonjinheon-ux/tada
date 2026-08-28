@@ -14,6 +14,8 @@ import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
+import { ServiceCardSaveButton } from "@/components/services/ServiceCardSaveButton";
+import { preferredServiceCardFormat, type ServiceCardFormat } from "@/lib/media/service-card-image";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
 
@@ -34,6 +36,10 @@ export function ServicesPageClient() {
   const [notice, setNotice] = useState("");
   const [databaseServices, setDatabaseServices] = useState<ServiceListing[] | null>(null);
   const resultsRef = useRef<HTMLElement>(null);
+  // Phones save a portrait card. Resolved after mount so the server and the
+  // first client render agree on the markup.
+  const [cardFormat, setCardFormat] = useState<ServiceCardFormat>("card");
+  useEffect(() => { setCardFormat(preferredServiceCardFormat()); }, []);
 
   useEffect(() => {
     if (searchParams.get("submitted") === "pending") {
@@ -49,7 +55,7 @@ export function ServicesPageClient() {
 
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,description,phone,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,business_name,description,phone,email,website,street_address,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
         .order("created_at", { ascending: false });
       if (error || !data || !isCurrent) return;
 
@@ -82,6 +88,10 @@ export function ServicesPageClient() {
           category: listing.category_slug as ServiceCategoryId,
           badges: listing.rating >= 4.5 ? ["highlyRated"] : ["new"],
           provider: listing.provider_name,
+          businessName: listing.business_name ?? listing.provider_name,
+          email: listing.email ?? undefined,
+          website: listing.website ?? undefined,
+          streetAddress: listing.street_address ?? undefined,
           phone: listing.phone,
           providerType: listing.provider_type === "business" ? "businesses" : "individuals",
           availability: "this-week",
@@ -216,6 +226,21 @@ export function ServicesPageClient() {
             // the badge list so the seeded services keep their old behaviour.
             const isVerified = service.isVerified ?? service.badges.includes("verified");
             const reviewsLabel = locale === "ko" ? "후기" : service.reviewCount === 1 ? "review" : "reviews";
+            const cardContent = {
+              businessName: service.businessName ?? service.provider,
+              serviceName: service.provider,
+              categoryLabel: categoryLabels[service.category],
+              description: service.description ?? "",
+              location,
+              streetAddress: service.streetAddress ?? null,
+              phone: service.phone,
+              email: service.email ?? null,
+              website: service.website ?? null,
+              priceLabel: price,
+              logo: service.logo ?? null,
+              photo: service.image,
+              isKorean: locale === "ko",
+            };
             return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
               {!service.isOwner ? <ServiceSaveButton serviceId={service.id} provider={service.provider} initialIsSaved={service.isSaved} /> : null}
               <div className="services-listing-media"><Image src={service.image} alt={imageAlt} fill sizes="(max-width: 767.98px) 116px, (max-width: 1199.98px) 33vw, 400px" /></div>
@@ -253,7 +278,12 @@ export function ServicesPageClient() {
                   <button className="ui-button ui-button--primary services-listing-message" type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
                 </div>
               </div>
-              <button className="services-listing-details-link" type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}<i className="ms ms-arrow-forward" aria-hidden="true" /></button>
+              <div className="services-listing-footer">
+                <button className="services-listing-details-link" type="button" onClick={() => router.push(`/services/${service.id}`)}>{locale === "ko" ? "상세 보기" : "View details"}<i className="ms ms-arrow-forward" aria-hidden="true" /></button>
+                <ServiceCardSaveButton className="services-listing-card-save" content={cardContent} format={cardFormat}>
+                  <><i className="ms ms-badge" aria-hidden="true" /> {locale === "ko" ? "명함 저장" : "Save card"}</>
+                </ServiceCardSaveButton>
+              </div>
             </article>;
           })}
         </div>
