@@ -117,13 +117,13 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
                         <b>{formatMarketPrice(item.priceCents)}</b> {item.unitLabel}
                         {item.limitPerPerson ? <em>{text.perPerson(item.limitPerPerson)}</em> : null}
                       </span>
-                      <span className="groupbuy-item-ordered">{text.ordered(item.orderedCount)}</span>
+                      {!isOwner ? <span className="groupbuy-item-ordered">{text.ordered(item.orderedCount)}</span> : null}
                     </div>
-                    <div className="groupbuy-stepper" role="group" aria-label={item.name}>
+                    {!isOwner ? <div className="groupbuy-stepper" role="group" aria-label={item.name}>
                       <button type="button" aria-label={isKorean ? `${item.name} 하나 빼기` : `Remove one ${item.name}`} disabled={!quantity || isClosed} onClick={() => changeQuantity(item.id, -1)}><i className="ms ms-remove" aria-hidden="true" /></button>
                       <output aria-live="polite">{quantity}</output>
                       <button type="button" aria-label={isKorean ? `${item.name} 하나 담기` : `Add one ${item.name}`} disabled={atLimit || isClosed} onClick={() => changeQuantity(item.id, 1)}><i className="ms ms-add" aria-hidden="true" /></button>
-                    </div>
+                    </div> : null}
                   </li>
                 );
               })}
