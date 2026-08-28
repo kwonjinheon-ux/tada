@@ -2038,6 +2038,11 @@ a {
   /* Community uses the shared browse toolbar on every breakpoint. Keep its
      quick-category chips visible on desktop so they match the mobile rail. */
   .community-results .market-toolbar .market-chip-row { display: flex; }
+
+  /* Group Buy's chips are its status filter, not a category rail — the rail
+     has no equivalent for them, so hiding them on desktop would take the
+     filter away entirely. */
+  .groupbuy-results .market-toolbar .market-chip-row { display: flex; }
 }
 
 @media (max-width: 1023.98px) {
@@ -11894,6 +11899,17 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
    Group Buy's colour in the Market type rail and on the home shortcut, so it
    carries through here rather than a new accent being introduced.
    ========================================================================== */
+/* The status chips lead the row and the count follows immediately, at every
+   width. Elsewhere the chip row is pushed right so the count lands on the page
+   edge; here there is nothing to its left to balance against. */
+/* The row does not stack on a phone the way the other toolbars do: with no
+   view toggle and no sort row there is nothing to stack, and breaking it would
+   put the count on a line of its own. */
+.groupbuy-results .market-toolbar { flex-direction: row; align-items: center; }
+.groupbuy-results .market-toolbar-top { flex: 0 1 auto; }
+.groupbuy-results .market-toolbar-top > .market-chip-row { margin-left: 0; }
+.groupbuy-results .market-tools { margin-left: 0; }
+
 .groupbuy-results,
 .groupbuy-detail,
 .groupbuy-order,
