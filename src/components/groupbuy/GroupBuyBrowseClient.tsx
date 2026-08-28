@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import { GroupBuyCard } from "@/components/groupbuy/GroupBuyCard";
-import { groupBuys, groupBuyText, type GroupBuyStatus } from "@/data/groupBuy";
+import { groupBuyText, type GroupBuy, type GroupBuyStatus } from "@/data/groupBuy";
 
 const filters: Array<GroupBuyStatus | "all"> = ["all", "open", "closing-soon", "closed"];
 
@@ -13,8 +13,22 @@ export function GroupBuyBrowseClient() {
   const { t, locale } = useLanguage();
   const text = groupBuyText(locale);
   const [status, setStatus] = useState<GroupBuyStatus | "all">("all");
+  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
 
-  const visible = useMemo(() => groupBuys.filter((groupBuy) => status === "all" || groupBuy.status === status), [status]);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/groupbuy")
+      .then(async (response) => {
+        if (!response.ok) return [];
+        const body = await response.json() as { data?: GroupBuy[] };
+        return body.data ?? [];
+      })
+      .then((data) => { if (active) setGroupBuys(data); })
+      .catch(() => { if (active) setGroupBuys([]); });
+    return () => { active = false; };
+  }, []);
+
+  const visible = useMemo(() => groupBuys.filter((groupBuy) => status === "all" || groupBuy.status === status), [groupBuys, status]);
 
   return (
     <section className="market-results groupbuy-results" aria-label={text.browseLabel}>

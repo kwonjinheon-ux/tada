@@ -32,6 +32,20 @@ export const communityWishlistRequestSchema = z.object({ postId: uuidSchema });
 export const communityWishlistResponseSchema = z.object({ saved: z.boolean() });
 export const serviceWishlistRequestSchema = z.object({ serviceId: uuidSchema });
 export const serviceWishlistResponseSchema = z.object({ saved: z.boolean() });
+export const groupBuyCreateRequestSchema = z.object({
+  title: z.string().trim().min(4).max(100),
+  summary: z.string().trim().min(4).max(140),
+  description: z.string().trim().min(20).max(5_000),
+  referencePrefix: z.string().regex(/^[A-Z]{2,4}$/),
+  closesAt: z.string().datetime({ offset: true }),
+  handoverAt: z.string().datetime({ offset: true }),
+  pickup: z.object({ available: z.boolean(), address: z.string().trim().max(200), window: z.string().trim().max(120), note: z.string().trim().max(500) }),
+  delivery: z.object({ available: z.boolean(), feeCents: z.number().int().min(0).max(100_000_000), freeOverCents: z.number().int().min(0).max(100_000_000).nullable(), areas: z.array(z.string().trim().min(1).max(80)).max(30) }),
+  bank: z.object({ accountName: z.string().trim().min(2).max(120), accountNumber: z.string().trim().min(5).max(80) }),
+  minimumOrderCents: z.number().int().min(0).max(100_000_000).nullable(),
+  items: z.array(z.object({ name: z.string().trim().min(2).max(100), note: z.string().trim().max(280), priceCents: z.number().int().min(1).max(100_000_000), unitLabel: z.string().trim().min(1).max(40), limitPerPerson: z.number().int().min(1).max(1_000).nullable(), photoPath: z.string().regex(/^[0-9a-f-]{36}\/group-buy\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i).nullable(), photoAlt: z.string().trim().max(200) })).min(1).max(50),
+}).refine((data) => data.pickup.available || data.delivery.available, "Choose pickup or delivery.").refine((data) => !data.pickup.available || (data.pickup.address.length > 0 && data.pickup.window.length > 0), "Pickup address and time are required.").refine((data) => new Date(data.handoverAt) > new Date(data.closesAt), "Handover must be after closing.");
+export const groupBuyCreateResponseSchema = z.object({ id: uuidSchema });
 
 export const marketSearchTermRequestSchema = z.object({ term: z.string().trim().min(2).max(80) });
 export const marketSearchTermsResponseSchema = z.object({ terms: z.array(z.string().min(2).max(80)).max(3) });

@@ -9,8 +9,11 @@ import { PostShopTypeSelector } from "@/components/post-ad/PostShopTypeSelector"
 import { isAcceptedMarketListingImage } from "@/lib/media/market-listing-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyReference, groupBuyText, groupBuys, type GroupBuy } from "@/data/groupBuy";
+import { groupBuyCreateResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-type DraftPhoto = { url: string; name: string; isUploaded: boolean };
+type DraftPhoto = { url: string; name: string; isUploaded: boolean; file?: File };
 type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string; photo: DraftPhoto | null };
 
 const emptyItem = (): DraftItem => ({ id: crypto.randomUUID(), name: "", note: "", price: "", unit: "each", limit: "", photo: null });
@@ -49,6 +52,8 @@ export function GroupBuyCreateClient() {
   // Remounts the uncontrolled fields so a loaded round's defaults take effect
   // without turning every input on the page into controlled state.
   const [formKey, setFormKey] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photoTargetRef = useRef<string | null>(null);
   const itemsRef = useRef(items);
@@ -73,7 +78,7 @@ export function GroupBuyCreateClient() {
     const file = Array.from(files ?? []).find(isAcceptedMarketListingImage);
     photoTargetRef.current = null;
     if (!itemId || !file) return;
-    setPhoto(itemId, { url: URL.createObjectURL(file), name: file.name, isUploaded: true });
+    setPhoto(itemId, { url: URL.createObjectURL(file), name: file.name, isUploaded: true, file });
   };
 
   const applyTemplate = (groupBuy: GroupBuy) => {
@@ -100,6 +105,46 @@ export function GroupBuyCreateClient() {
   // Math.min of an empty list is Infinity, which is truthy and would reach the
   // formatter — an item can be named before it is priced.
   const pricedCents = items.map((item) => Math.round(Number(item.price) * 100)).filter((cents) => Number.isFinite(cents) && cents > 0);
+  const submit = async (form: HTMLFormElement) => {
+    const values = new FormData(form);
+    const read = (name: string) => String(values.get(name) ?? "").trim();
+    const cents = (name: string) => {
+      const raw = read(name);
+      if (!raw) return null;
+      const value = Math.round(Number(raw) * 100);
+      return Number.isFinite(value) ? value : null;
+    };
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) { setSubmitError(isKorean ? "서비스 연결을 확인할 수 없습니다." : "Unable to connect to Tada."); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/login?redirectTo=" + encodeURIComponent("/market/groupbuy/create")); return; }
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const paths = new Map<string, string | null>();
+      for (const item of items) {
+        if (!item.photo?.file) { paths.set(item.id, null); continue; }
+        const extension = item.photo.file.name.split(".").pop()?.toLowerCase() || "webp";
+        const path = user.id + "/group-buy/" + crypto.randomUUID() + "." + extension;
+        const { error } = await supabase.storage.from("group-buy-images").upload(path, item.photo.file, { contentType: item.photo.file.type, upsert: false });
+        if (error) throw new Error(isKorean ? "사진을 업로드하지 못했습니다." : "Unable to upload a photo.");
+        paths.set(item.id, path);
+      }
+      const response = await fetch("/api/groupbuy", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        title: read("title"), summary: read("summary"), description: read("description"), referencePrefix: prefix,
+        closesAt: new Date(read("closes")).toISOString(), handoverAt: new Date(read("handover")).toISOString(),
+        pickup: { available: offersPickup, address: read("pickupAddress"), window: read("pickupWindow"), note: read("pickupNote") },
+        delivery: { available: offersDelivery, feeCents: cents("deliveryFee") ?? 0, freeOverCents: cents("deliveryFree"), areas: read("deliveryAreas").split(",").map((area) => area.trim()).filter(Boolean) },
+        bank: { accountName: read("accountName"), accountNumber: read("accountNumber") }, minimumOrderCents: cents("minimum"),
+        items: items.map((item) => ({ name: item.name.trim(), note: item.note.trim(), priceCents: Math.round(Number(item.price) * 100), unitLabel: item.unit.trim(), limitPerPerson: item.limit ? Number(item.limit) : null, photoPath: paths.get(item.id) ?? null, photoAlt: item.photo?.name ?? "" })),
+      }) });
+      const result = await readApiResponse(response, groupBuyCreateResponseSchema);
+      if (!result.data) throw new Error(result.error?.message ?? (isKorean ? "공동구매를 게시하지 못했습니다." : "Unable to publish group buy."));
+      router.push("/market/groupbuy/" + result.data.id);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : (isKorean ? "공동구매를 게시하지 못했습니다." : "Unable to publish group buy."));
+    } finally { setIsSubmitting(false); }
+  };
 
   return (
     <section className="market-results groupbuy-create" aria-label={text.createTitle}>
@@ -146,7 +191,7 @@ export function GroupBuyCreateClient() {
           can hold a stale value. */}
       <input ref={photoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptPhoto(event.target.files); event.currentTarget.value = ""; }} />
 
-      <form className="post-ad-form groupbuy-form" key={formKey} onSubmit={(event) => event.preventDefault()}>
+      <form className="post-ad-form groupbuy-form" key={formKey} onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
         <section className="post-description-field">
           <div className="post-section-heading"><span>1</span><h2>{text.basics}</h2></div>
           {/* Picking any other type hands back to the market form, the same way
@@ -256,7 +301,8 @@ export function GroupBuyCreateClient() {
 
         <div className="post-submit-row">
           <label className="terms-row"><input type="checkbox" /><span>{isKorean ? "직접 판매하는 상품이며 Tada 가이드라인을 지킵니다." : "I sell these items myself and follow Tada's guidelines."}</span></label>
-          <button className="post-submit-button" type="submit"><span>{text.publish}</span></button>
+          {submitError ? <p className="post-create-status" role="alert">{submitError}</p> : null}
+          <button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "게시 중…" : "Publishing…") : text.publish}</span></button>
         </div>
       </form>
 
