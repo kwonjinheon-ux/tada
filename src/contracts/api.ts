@@ -46,6 +46,17 @@ export const groupBuyCreateRequestSchema = z.object({
   items: z.array(z.object({ name: z.string().trim().min(1).max(100), note: z.string().trim().max(280), priceCents: z.number().int().min(1).max(100_000_000), unitLabel: z.string().trim().min(1).max(40), limitPerPerson: z.number().int().min(1).max(1_000).nullable(), photoPath: z.string().regex(/^[0-9a-f-]{36}\/group-buy\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i).nullable(), photoAlt: z.string().trim().max(200) })).min(1).max(50),
 }).refine((data) => data.pickup.available || data.delivery.available, "Choose pickup or delivery.").refine((data) => !data.pickup.available || (data.pickup.address.length > 0 && data.pickup.window.length > 0), "Pickup address and time are required.").refine((data) => new Date(data.handoverAt) > new Date(data.closesAt), "Handover must be after closing.");
 export const groupBuyCreateResponseSchema = z.object({ id: uuidSchema });
+export const groupBuyOrderRequestSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(254),
+  phone: z.string().trim().min(3).max(50),
+  fulfilment: z.enum(["pickup", "delivery"]),
+  address: z.string().trim().max(300).optional(),
+  note: z.string().trim().max(1_000).optional(),
+  lines: z.array(z.object({ itemId: uuidSchema, quantity: z.number().int().min(1).max(1_000) })).min(1).max(50),
+}).superRefine((data, context) => {
+  if (data.fulfilment === "delivery" && !data.address) context.addIssue({ code: z.ZodIssueCode.custom, path: ["address"], message: "Delivery address is required." });
+});
 
 export const marketSearchTermRequestSchema = z.object({ term: z.string().trim().min(2).max(80) });
 export const marketSearchTermsResponseSchema = z.object({ terms: z.array(z.string().min(2).max(80)).max(3) });

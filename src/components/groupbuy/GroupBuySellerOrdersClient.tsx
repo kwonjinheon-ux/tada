@@ -4,7 +4,24 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
-import { groupBuyOrders, groupBuyText, type GroupBuy } from "@/data/groupBuy";
+import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
+
+type SellerOrder = {
+  id: string;
+  reference: string;
+  buyer_name: string;
+  buyer_email: string | null;
+  buyer_phone: string;
+  fulfilment: "pickup" | "delivery";
+  delivery_address: string | null;
+  buyer_note: string | null;
+  total_cents: number;
+  subtotal_cents: number;
+  delivery_cents: number;
+  paid_at: string | null;
+  created_at: string;
+  group_buy_order_items: Array<{ item_id: string; quantity: number; unit_price_cents: number; group_buy_items: { name: string; unit_label: string }[] }>;
+};
 
 /** Escapes one CSV cell. Quotes are doubled and any cell containing a comma,
  *  quote or newline is wrapped — a buyer's note or a street address will
@@ -20,46 +37,44 @@ function csvCell(value: string | number) {
  *  to leave the browser and land in whatever they already use to run their
  *  books. The export is a plain CSV built from the rows on screen, so what
  *  opens in Excel is exactly what was read here. */
-export function GroupBuySellerOrdersClient({ groupBuy }: { groupBuy: GroupBuy }) {
+export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: GroupBuy; orders: SellerOrder[] }) {
   const { locale } = useLanguage();
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
   const [showUnpaidOnly, setShowUnpaidOnly] = useState(false);
 
   const itemsById = useMemo(() => new Map(groupBuy.items.map((item) => [item.id, item])), [groupBuy.items]);
-  const rows = useMemo(() => groupBuyOrders.map((order) => {
-    const lines = order.lines.map((line) => ({ line, item: itemsById.get(line.itemId) })).filter((entry) => entry.item);
-    const subtotalCents = lines.reduce((sum, { line, item }) => sum + (item?.priceCents ?? 0) * line.quantity, 0);
-    const freeDelivery = groupBuy.delivery.freeOverCents !== null && subtotalCents >= groupBuy.delivery.freeOverCents;
-    const deliveryCents = order.fulfilment === "delivery" && !freeDelivery ? groupBuy.delivery.feeCents : 0;
-    return { order, lines, subtotalCents, deliveryCents, totalCents: subtotalCents + deliveryCents };
-  }), [groupBuy.delivery.feeCents, groupBuy.delivery.freeOverCents, itemsById]);
+  const rows = useMemo(() => orders.map((order) => {
+    const lines = order.group_buy_order_items.map((line) => ({ line: { itemId: line.item_id, quantity: line.quantity }, item: itemsById.get(line.item_id) ?? { id: line.item_id, name: line.group_buy_items[0]?.name ?? "Item", unitLabel: line.group_buy_items[0]?.unit_label ?? "", priceCents: line.unit_price_cents } }));
+    return { order, lines, subtotalCents: order.subtotal_cents, deliveryCents: order.delivery_cents, totalCents: order.total_cents };
+  }), [itemsById, orders]);
 
-  const visibleRows = showUnpaidOnly ? rows.filter((row) => !row.order.isPaid) : rows;
+  const visibleRows = showUnpaidOnly ? rows.filter((row) => !row.order.paid_at) : rows;
   const grandTotalCents = rows.reduce((sum, row) => sum + row.totalCents, 0);
-  const unpaidCount = rows.filter((row) => !row.order.isPaid).length;
+  const unpaidCount = rows.filter((row) => !row.order.paid_at).length;
   const deliveryCount = rows.filter((row) => row.order.fulfilment === "delivery").length;
 
   // What to bake: every order collapsed down to a quantity per item.
   const packingList = useMemo(() => groupBuy.items.map((item) => ({
     item,
-    quantity: rows.reduce((sum, row) => sum + (row.order.lines.find((line) => line.itemId === item.id)?.quantity ?? 0), 0),
+    quantity: rows.reduce((sum, row) => sum + (row.order.group_buy_order_items.find((line) => line.item_id === item.id)?.quantity ?? 0), 0),
   })).filter((entry) => entry.quantity > 0), [groupBuy.items, rows]);
 
   const exportCsv = () => {
-    const header = [text.reference, text.buyer, text.phone, text.method, text.deliveryAddress, text.items, text.subtotal, text.deliveryFee, text.orderTotal, text.payment, text.placed];
+    const header = [text.reference, text.buyer, isKorean ? "이메일" : "Email", text.phone, text.method, text.deliveryAddress, text.items, text.subtotal, text.deliveryFee, text.orderTotal, text.payment, text.placed];
     const body = visibleRows.map(({ order, lines, subtotalCents, deliveryCents, totalCents }) => [
       order.reference,
-      order.buyerName,
-      order.phone,
+      order.buyer_name,
+      order.buyer_email ?? "",
+      order.buyer_phone,
       order.fulfilment === "delivery" ? text.delivery : text.pickup,
-      order.address ?? "",
+      order.delivery_address ?? "",
       lines.map(({ line, item }) => `${item?.name} x${line.quantity}`).join("; "),
       (subtotalCents / 100).toFixed(2),
       (deliveryCents / 100).toFixed(2),
       (totalCents / 100).toFixed(2),
-      order.isPaid ? text.paid : text.awaitingPayment,
-      order.placedLabel,
+      order.paid_at ? text.paid : text.awaitingPayment,
+      new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(order.created_at)),
     ]);
     // The BOM is what makes Excel read the Korean columns as UTF-8 rather than
     // the system codepage; without it every Hangul cell opens as mojibake.
@@ -132,9 +147,10 @@ export function GroupBuySellerOrdersClient({ groupBuy }: { groupBuy: GroupBuy })
                 <tr key={order.reference}>
                   <td className="groupbuy-table-reference">{order.reference}</td>
                   <td>
-                    <strong>{order.buyerName}</strong>
-                    <small>{order.phone}</small>
-                    <small>{order.placedLabel}</small>
+                    <strong>{order.buyer_name}</strong>
+                    <small>{order.buyer_phone}</small>
+                    {order.buyer_email ? <small>{order.buyer_email}</small> : null}
+                    <small>{new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(order.created_at))}</small>
                   </td>
                   <td>
                     <ul className="groupbuy-table-items">
@@ -146,10 +162,11 @@ export function GroupBuySellerOrdersClient({ groupBuy }: { groupBuy: GroupBuy })
                       <i className={`ms ${order.fulfilment === "delivery" ? "ms-local-shipping" : "ms-storefront"}`} aria-hidden="true" />
                       {order.fulfilment === "delivery" ? text.delivery : text.pickup}
                     </span>
-                    {order.address ? <small>{order.address}</small> : null}
+                    {order.delivery_address ? <small>{order.delivery_address}</small> : null}
+                    {order.buyer_note ? <small>{order.buyer_note}</small> : null}
                   </td>
                   <td className="groupbuy-table-total">{formatMarketPrice(totalCents)}</td>
-                  <td><span className={order.isPaid ? "groupbuy-paid is-paid" : "groupbuy-paid"}>{order.isPaid ? text.paid : text.awaitingPayment}</span></td>
+                  <td><span className={order.paid_at ? "groupbuy-paid is-paid" : "groupbuy-paid"}>{order.paid_at ? text.paid : text.awaitingPayment}</span></td>
                 </tr>
               ))}
             </tbody>

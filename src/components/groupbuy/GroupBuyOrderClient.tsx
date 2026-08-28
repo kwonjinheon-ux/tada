@@ -8,12 +8,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyOrders, groupBuyReference, groupBuyText, type GroupBuy, type GroupBuyFulfilment } from "@/data/groupBuy";
 
-/** The order form. Design only — nothing is submitted.
- *
- *  The reference is the whole point of this screen. Tada holds no money, so the
- *  only thing tying a bank transfer to a bag of bread is a short code the buyer
- *  types into their own banking app. It is shown early, shown large, and
- *  repeated beside the account number. */
+/** The persisted order form. Tada holds no money, so the reference is what
+ * ties a bank transfer to the buyer's order. */
 export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; basket: Record<string, number> }) {
   const { locale } = useLanguage();
   const router = useRouter();
@@ -27,7 +23,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
   const deliveryCents = fulfilment === "delivery" && !freeDelivery ? groupBuy.delivery.feeCents : 0;
   const totalCents = subtotalCents + deliveryCents;
   const [error, setError] = useState(""); const [submitting, setSubmitting] = useState(false);
-  const submit = async (form: HTMLFormElement) => { const supabase = createBrowserSupabaseClient(); const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } }; setSubmitting(true); setError(""); const values = new FormData(form); const response = await fetch(`/api/groupbuy/${groupBuy.id}/orders`, { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({ name: values.get("name"), phone: values.get("phone"), fulfilment, address: values.get("address"), note: values.get("note"), lines: lines.map(({ item, quantity }) => ({ itemId: item.id, quantity })) }) }); const result = await response.json(); if (!response.ok) { setError(result.error?.message ?? "Unable to submit order."); setSubmitting(false); return; } router.push(`/market/groupbuy/${groupBuy.id}?order=${result.data.reference}`); };
+  const submit = async (form: HTMLFormElement) => { const supabase = createBrowserSupabaseClient(); const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } }; setSubmitting(true); setError(""); const values = new FormData(form); const response = await fetch(`/api/groupbuy/${groupBuy.id}/orders`, { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({ name: values.get("name"), email: values.get("email"), phone: values.get("phone"), fulfilment, address: values.get("address"), note: values.get("note"), lines: lines.map(({ item, quantity }) => ({ itemId: item.id, quantity })) }) }); const result = await response.json(); if (!response.ok) { setError(result.error?.message ?? "Unable to submit order."); setSubmitting(false); return; } router.push(`/market/groupbuy/${groupBuy.id}?order=${result.data.reference}`); };
 
   // The next number in the seller's own sequence. On a live round this comes
   // back from the server when the order is accepted; here it is derived so the
@@ -107,8 +103,9 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
           <section className="groupbuy-section ui-card" aria-labelledby="groupbuy-order-details">
             <h2 id="groupbuy-order-details">{text.yourDetails}</h2>
             <div className="groupbuy-field-grid">
-              <div className="post-field"><label htmlFor="groupbuy-name">{text.name}</label><input id="groupbuy-name" name="name" autoComplete="name" placeholder={isKorean ? "홍길동" : "Your name"} /></div>
-              <div className="post-field"><label htmlFor="groupbuy-phone">{text.phone}</label><input id="groupbuy-phone" name="phone" type="tel" autoComplete="tel" placeholder="021 123 4567" /></div>
+              <div className="post-field"><label htmlFor="groupbuy-name">{text.name}</label><input id="groupbuy-name" name="name" autoComplete="name" placeholder={isKorean ? "홍길동" : "Your name"} required /></div>
+              <div className="post-field"><label htmlFor="groupbuy-email">{isKorean ? "이메일" : "Email"}</label><input id="groupbuy-email" name="email" type="email" autoComplete="email" placeholder="you@example.com" required /></div>
+              <div className="post-field"><label htmlFor="groupbuy-phone">{text.phone}</label><input id="groupbuy-phone" name="phone" type="tel" autoComplete="tel" placeholder="021 123 4567" required /></div>
               {fulfilment === "delivery" ? (
                 <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-address">{text.deliveryAddress}</label><input id="groupbuy-address" name="address" autoComplete="street-address" placeholder={isKorean ? "예: 12 Grey Street, Hamilton East" : "e.g. 12 Grey Street, Hamilton East"} /></div>
               ) : null}
