@@ -2047,8 +2047,6 @@ a {
 
 @media (max-width: 1023.98px) {
   .market-toolbar {
-    flex-direction: column;
-    align-items: stretch;
     gap: var(--space-2);
     overflow: visible;
   }
@@ -11902,10 +11900,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* The status chips lead the row and the count follows immediately, at every
    width. Elsewhere the chip row is pushed right so the count lands on the page
    edge; here there is nothing to its left to balance against. */
-/* The row does not stack on a phone the way the other toolbars do: with no
-   view toggle and no sort row there is nothing to stack, and breaking it would
-   put the count on a line of its own. */
-.groupbuy-results .market-toolbar { flex-direction: row; align-items: center; }
 .groupbuy-results .market-toolbar-top { flex: 0 1 auto; }
 .groupbuy-results .market-toolbar-top > .market-chip-row { margin-left: 0; }
 .groupbuy-results .market-tools { margin-left: 0; }
