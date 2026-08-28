@@ -272,8 +272,8 @@ export function ServicesPageClient() {
                 </div>
                 <p className="services-listing-price"><strong>{price}</strong></p>
                 <div className="services-listing-controls">
-                  <a className="ui-button ui-button--secondary services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${service.provider}: ${service.phone}`}>
-                    <i className="ms ms-call" aria-hidden="true" />
+                  <a className="ui-button ui-button--secondary services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${locale === "ko" ? "전화" : "Call"} ${service.provider}: ${service.phone}`}>
+                    <span>{service.phone}</span>
                   </a>
                   <button className="ui-button ui-button--primary services-listing-message" type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
                 </div>

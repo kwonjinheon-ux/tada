@@ -10988,15 +10988,31 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   line-height: 1.15;
 }
 
-.services-listing-controls { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2); }
+/* Equal halves: calling and messaging are the same size of decision, so
+   neither gets the wider button. */
+.services-listing-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 
 /* Both actions ride the shared .ui-button primitive; only the card's tighter
-   height and the icon-only call target are set here. */
+   height and the narrower label sizing are set here. */
 .services-listing-call,
-.services-listing-message { min-height: var(--control-h-lg); }
-.services-listing-call { width: var(--control-h-lg); padding: 0; border-color: var(--color-line); color: var(--color-ink-soft); }
+.services-listing-message {
+  min-width: 0;
+  min-height: var(--control-h-lg);
+  overflow: hidden;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+/* The number is the label, and it carries no phone glyph: a ten-digit NZ
+   mobile needs the whole half to itself, and beside an icon it was cut to
+   "0211234…", which is worse than no icon. It still shortens rather than
+   pushing the button wider, and the tel: link and the accessible name always
+   carry it in full. */
+.services-listing-call { border-color: var(--color-line); color: var(--color-ink-soft); }
+.services-listing-call > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .services-listing-call:hover { border-color: var(--color-primary); color: var(--color-primary-strong); }
-.services-listing-message { min-width: 0; overflow: hidden; padding-inline: var(--space-3); text-overflow: ellipsis; }
+.services-listing-message .ms { flex: 0 0 auto; font-size: var(--text-lg); }
 
 /* The footer bar carries the two things a reader does with a card they like:
    open it, or keep the provider's details. Splitting the existing full-width
