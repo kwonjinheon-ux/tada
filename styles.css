@@ -9349,7 +9349,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Community post list rows keep one shared left media column. Posts without
    a photo show the text-document treatment in that same aligned slot. */
 .community-post-list { display: grid; }
-.community-post-card { position: relative; margin: 0 -12px; border-bottom: 1px solid var(--neutral-250); }
+/* The row sits on the column edge like every other card in the product. It
+   used to bleed 12px outward so its text lined up with the section heading
+   while its surface ran past it, which on desktop left the row 4px from the
+   filter rail and the recent-posts panel. Services aligns the card surface and
+   insets the text; Community now does the same. */
+.community-post-card { position: relative; margin: 0; border-bottom: 1px solid var(--neutral-250); }
 /* 75px is 19.231vw at 390px, so this holds at exactly 75px on iPhone and wider
    and only scales down on narrower phones — same basis as the type scale. The
    custom property cascades to .community-post-media and the skeleton below. */
@@ -9494,7 +9499,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 @media (max-width: 767.98px) { .community-detail-gallery .listing-detail-main-image { display: block; }.community-detail-gallery .listing-detail-thumbnails { display: none; }.community-detail-gallery .listing-detail-image-count { display: inline-flex; align-items: center; gap: 4px; } }
 
 @media (max-width: 767.98px) {
-  .community-post-card { margin: 0; }.community-post-card-link { --community-thumb: calc(var(--space-12) + (var(--space-1) / 2)); grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: var(--space-3); padding: 14px 0; border-radius: 0; }
+  .community-post-card-link { --community-thumb: calc(var(--space-12) + (var(--space-1) / 2)); grid-template-columns: var(--community-thumb) minmax(0, 1fr); gap: var(--space-3); padding: 14px 0; border-radius: 0; }
   .community-post-media { width: var(--community-thumb, 75px); height: var(--community-thumb, 75px); }
   .community-post-list:not(.is-grid-view) .community-post-card-save { display: none; }.community-post-list:not(.is-grid-view) .community-post-body { padding-right: 0; }
   .community-post-badge { display: none; }
