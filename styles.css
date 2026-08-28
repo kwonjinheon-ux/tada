@@ -1545,6 +1545,11 @@ a {
   transition: background-color 160ms ease, color 160ms ease;
 }
 
+/* Market type and category menus are the primary controls in the rail; give
+   both labels one step more reading room without changing their touch rows. */
+.market-filter-panel .filter-list button,
+.market-filter-panel .filter-list a { font-size: var(--text-lg); }
+
 .filter-list button:hover:not(.is-selected),
 .filter-list a:hover:not(.is-selected) {
   background: var(--neutral-200);
@@ -11478,7 +11483,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     padding-left: calc(var(--space-3) + 3px);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     color: var(--color-muted);
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
   }
 
   .market-filter-panel.is-open .category-filter .filter-list button.is-selected {
