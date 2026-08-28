@@ -21,10 +21,11 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
   const itemRows = (data.group_buy_items ?? []) as Array<{ id: string; name: string; note: string; price_cents: number; unit_label: string; limit_per_person: number | null; photo_path: string | null; photo_alt: string | null; display_order: number }>;
   const signedImages = await getSignedStorageImages("group-buy-images", itemRows.flatMap((item) => item.photo_path ? [item.photo_path] : []), "thumbnail");
   const millisecondsUntilClose = new Date(data.closes_at).getTime() - Date.now();
+  const coverImage = data.cover_image_path ? await getSignedStorageImage("group-buy-images", data.cover_image_path, "gallery") : null;
   const groupBuy: GroupBuy = {
     id: data.id, title: data.title, summary: data.summary, description: data.description.split(/\n\n+/).filter(Boolean),
     status: data.status !== "open" || millisecondsUntilClose <= 0 ? "closed" : millisecondsUntilClose < 24 * 60 * 60 * 1000 ? "closing-soon" : "open",
-    referencePrefix: data.reference_prefix, coverImage: "/images/home/journey-market.png", coverAlt: data.title,
+    referencePrefix: data.reference_prefix, coverImage: coverImage ?? "/images/home/journey-market.png", coverAlt: data.cover_image_alt ?? data.title,
     seller: {
       name: sellerProfile?.display_name ?? "Tada member",
       location: [sellerProfile?.region_suburb, sellerProfile?.region_city].filter(Boolean).join(", ") || "New Zealand",

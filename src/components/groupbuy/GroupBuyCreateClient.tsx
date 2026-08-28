@@ -54,14 +54,19 @@ export function GroupBuyCreateClient() {
   const [formKey, setFormKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [coverPhoto, setCoverPhoto] = useState<DraftPhoto | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const coverPhotoInputRef = useRef<HTMLInputElement>(null);
   const photoTargetRef = useRef<string | null>(null);
   const itemsRef = useRef(items);
 
   useEffect(() => { itemsRef.current = items; }, [items]);
   // Only object URLs this component minted are ours to revoke; a reused round's
   // photos are ordinary stored URLs and revoking them would break the page.
-  useEffect(() => () => { itemsRef.current.forEach((item) => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); }); }, []);
+  useEffect(() => () => {
+    itemsRef.current.forEach((item) => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); });
+    if (coverPhoto?.isUploaded) URL.revokeObjectURL(coverPhoto.url);
+  }, [coverPhoto]);
 
   const updateItem = (id: string, patch: Partial<DraftItem>) => setItems((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
 
@@ -73,12 +78,21 @@ export function GroupBuyCreateClient() {
 
   const choosePhoto = (itemId: string) => { photoTargetRef.current = itemId; photoInputRef.current?.click(); };
 
+  const chooseCoverPhoto = () => coverPhotoInputRef.current?.click();
+
   const acceptPhoto = (files: FileList | null) => {
     const itemId = photoTargetRef.current;
     const file = Array.from(files ?? []).find(isAcceptedMarketListingImage);
     photoTargetRef.current = null;
     if (!itemId || !file) return;
     setPhoto(itemId, { url: URL.createObjectURL(file), name: file.name, isUploaded: true, file });
+  };
+
+  const acceptCoverPhoto = (files: FileList | null) => {
+    const file = Array.from(files ?? []).find(isAcceptedMarketListingImage);
+    if (!file) return;
+    if (coverPhoto?.isUploaded) URL.revokeObjectURL(coverPhoto.url);
+    setCoverPhoto({ url: URL.createObjectURL(file), name: file.name, isUploaded: true, file });
   };
 
   const applyTemplate = (groupBuy: GroupBuy) => {
@@ -139,6 +153,13 @@ export function GroupBuyCreateClient() {
     setSubmitError("");
     try {
       const paths = new Map<string, string | null>();
+      let coverImagePath: string | null = null;
+      if (coverPhoto?.file) {
+        const extension = coverPhoto.file.name.split(".").pop()?.toLowerCase() || "webp";
+        coverImagePath = user.id + "/group-buy/" + crypto.randomUUID() + "." + extension;
+        const { error } = await supabase.storage.from("group-buy-images").upload(coverImagePath, coverPhoto.file, { contentType: coverPhoto.file.type, upsert: false });
+        if (error) throw new Error(isKorean ? "대표 이미지를 업로드하지 못했습니다." : "Unable to upload the cover image.");
+      }
       for (const item of postItems) {
         if (!item.photo?.file) { paths.set(item.id, null); continue; }
         const extension = item.photo.file.name.split(".").pop()?.toLowerCase() || "webp";
@@ -153,7 +174,7 @@ export function GroupBuyCreateClient() {
       if (closesAt <= new Date()) throw new Error(isKorean ? "주문 마감은 현재 시각 이후로 설정해 주세요." : "Set the order closing time in the future.");
       if (handoverAt <= closesAt) throw new Error(isKorean ? "수령 일정은 주문 마감 이후여야 합니다." : "Handover must be after the order closes.");
       const response = await fetch("/api/groupbuy", { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({
-        title: read("title"), summary: read("summary"), description: read("description"), referencePrefix: prefix,
+        title: read("title"), coverImagePath, coverImageAlt: coverPhoto?.name ?? "", summary: read("summary"), description: read("description"), referencePrefix: prefix,
         closesAt: closesAt.toISOString(), handoverAt: handoverAt.toISOString(),
         pickup: { available: offersPickup, address: read("pickupAddress"), window: read("pickupWindow"), note: read("pickupNote") },
         delivery: { available: offersDelivery, feeCents: cents("deliveryFee") ?? 0, freeOverCents: cents("deliveryFree"), areas: read("deliveryAreas").split(",").map((area) => area.trim()).filter(Boolean) },
@@ -213,6 +234,7 @@ export function GroupBuyCreateClient() {
       {/* One picker serves every row: twenty file inputs is twenty things that
           can hold a stale value. */}
       <input ref={photoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptPhoto(event.target.files); event.currentTarget.value = ""; }} />
+      <input ref={coverPhotoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptCoverPhoto(event.target.files); event.currentTarget.value = ""; }} />
 
       <form className="post-ad-form groupbuy-form" key={formKey} noValidate onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
         <section className="post-description-field">
@@ -220,6 +242,20 @@ export function GroupBuyCreateClient() {
           {/* Picking any other type hands back to the market form, the same way
               picking Group Buy there brings the seller here. */}
           <PostShopTypeSelector activeShopType="groupbuy" onSelect={(value) => { if (value !== "groupbuy") router.push(`/market/create?type=${value}`); }} />
+          <div className="groupbuy-cover-field">
+            <div className="field-label-row"><label>{isKorean ? "대표 이미지" : "Cover image"}</label><span>{isKorean ? "1장" : "1 image"}</span></div>
+            {coverPhoto ? (
+              <div className="groupbuy-cover-preview">
+                <Image src={coverPhoto.url} alt={coverPhoto.name} fill sizes="(max-width: 767px) 100vw, 480px" unoptimized={coverPhoto.isUploaded} />
+                <button type="button" className="post-photo-remove" aria-label={text.removePhoto} onClick={() => { if (coverPhoto.isUploaded) URL.revokeObjectURL(coverPhoto.url); setCoverPhoto(null); }}><i className="ms ms-close" aria-hidden="true" /></button>
+              </div>
+            ) : (
+              <button type="button" className="post-photo-upload is-initial groupbuy-cover-upload" onClick={chooseCoverPhoto}>
+                <i className="ms ms-photo-camera" aria-hidden="true" /><span>{isKorean ? "대표 이미지 추가" : "Add cover image"}</span>
+              </button>
+            )}
+            <p className="post-upload-hint"><strong>{isKorean ? "공동구매 카드에 표시될 대표 사진을 추가해 주세요." : "Add one image to show on the group buy card."}</strong><span>JPEG, PNG, WebP</span></p>
+          </div>
           <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" required minLength={4} maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
           <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" required minLength={4} maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
           <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" required minLength={20} maxLength={5000} rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>

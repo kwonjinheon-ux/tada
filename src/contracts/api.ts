@@ -34,6 +34,8 @@ export const serviceWishlistRequestSchema = z.object({ serviceId: uuidSchema });
 export const serviceWishlistResponseSchema = z.object({ saved: z.boolean() });
 export const groupBuyCreateRequestSchema = z.object({
   title: z.string().trim().min(4).max(100),
+  coverImagePath: z.string().regex(/^[0-9a-f-]{36}\/group-buy\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i).nullable(),
+  coverImageAlt: z.string().trim().max(200),
   summary: z.string().trim().min(4).max(140),
   description: z.string().trim().min(20).max(5_000),
   referencePrefix: z.string().regex(/^[A-Z]{2,4}$/),
