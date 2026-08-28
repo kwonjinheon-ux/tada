@@ -39,9 +39,12 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
   const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
   const [imageFailed, setImageFailed] = useState(false);
   const isTextOnly = listing.image === MARKET_LISTING_PLACEHOLDER_IMAGE;
+  const isGroupBuy = listing.bargainType === "groupbuy";
   const hasPrefetchedDetail = useRef(false);
   const statusLabel = listing.status === "sold" ? t("soldOut") : listing.status === "pending" ? t("pending") : t("available");
-  const saleBadge = listing.bargainType === "garage-sale"
+  const saleBadge = isGroupBuy
+    ? { label: t("shopTypeGroupBuy"), className: "groupbuy" }
+    : listing.bargainType === "garage-sale"
     ? { label: "Garage Sale", className: "garage-sale" }
     : listing.bargainType === "moving-sale"
       ? { label: "Moving Sale", className: "moving-sale" }
@@ -73,7 +76,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
     }
   };
 
-  const detailPath = listingHref ?? `/market/${listing.id}`;
+  const detailPath = listingHref ?? (isGroupBuy ? `/market/groupbuy/${listing.id}` : `/market/${listing.id}`);
   const prefetchListing = () => {
     if (isPreview) return;
     if (hasPrefetchedDetail.current) return;
@@ -144,14 +147,14 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
         <div className="product-title-row"><h2>{listing.title}<CommentCountBadge count={listing.commentCount} className={`product-comment-count ${listing.commentCount && listing.commentCount <= 10 ? "is-low" : ""}`} /></h2></div>
         <div className="price-row">
           {saleBadge && listing.eventDateRange ? <strong className="product-event-date"><i className="ms ms-calendar-today" aria-hidden="true" />{listing.eventDateRange}</strong> : <strong>{listing.price}</strong>}
-          <span className={`listing-status status-${listing.status}`}>{statusLabel}</span>
+          {!isGroupBuy ? <span className={`listing-status status-${listing.status}`}>{statusLabel}</span> : null}
         </div>
         <p>
           <i className="ms ms-location-on" aria-hidden="true" />
           {listing.location}
         </p>
       </div>
-      {!isPreview && !listing.isOwner ? <button
+      {!isPreview && !listing.isOwner && !isGroupBuy ? <button
         className={`save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`}
         type="button"
         aria-label={`${t("saveListing")}: ${listing.title}`}

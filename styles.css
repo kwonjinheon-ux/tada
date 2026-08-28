@@ -2427,6 +2427,10 @@ a {
   background: var(--amber-550);
 }
 
+.product-badge.groupbuy {
+  background: var(--amber-550);
+}
+
 .product-badge-mobile-label {
   display: none;
 }
