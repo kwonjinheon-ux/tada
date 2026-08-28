@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyOrders, groupBuyReference, groupBuyText, type GroupBuy, type GroupBuyFulfilment } from "@/data/groupBuy";
@@ -14,6 +16,7 @@ import { groupBuyOrders, groupBuyReference, groupBuyText, type GroupBuy, type Gr
  *  repeated beside the account number. */
 export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; basket: Record<string, number> }) {
   const { locale } = useLanguage();
+  const router = useRouter();
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
   const lines = groupBuy.items.filter((item) => basket[item.id]).map((item) => ({ item, quantity: basket[item.id], totalCents: item.priceCents * basket[item.id] }));
@@ -23,6 +26,8 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
   const freeDelivery = groupBuy.delivery.freeOverCents !== null && subtotalCents >= groupBuy.delivery.freeOverCents;
   const deliveryCents = fulfilment === "delivery" && !freeDelivery ? groupBuy.delivery.feeCents : 0;
   const totalCents = subtotalCents + deliveryCents;
+  const [error, setError] = useState(""); const [submitting, setSubmitting] = useState(false);
+  const submit = async (form: HTMLFormElement) => { const supabase = createBrowserSupabaseClient(); const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } }; setSubmitting(true); setError(""); const values = new FormData(form); const response = await fetch(`/api/groupbuy/${groupBuy.id}/orders`, { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({ name: values.get("name"), phone: values.get("phone"), fulfilment, address: values.get("address"), note: values.get("note"), lines: lines.map(({ item, quantity }) => ({ itemId: item.id, quantity })) }) }); const result = await response.json(); if (!response.ok) { setError(result.error?.message ?? "Unable to submit order."); setSubmitting(false); return; } router.push(`/market/groupbuy/${groupBuy.id}?order=${result.data.reference}`); };
 
   // The next number in the seller's own sequence. On a live round this comes
   // back from the server when the order is accepted; here it is derived so the
@@ -53,7 +58,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
       </div>
 
       <div className="groupbuy-order-layout">
-        <form className="groupbuy-order-form" onSubmit={(event) => event.preventDefault()}>
+        <form id="groupbuy-order-form" className="groupbuy-order-form" onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
           <section className="groupbuy-section ui-card" aria-labelledby="groupbuy-order-items">
             <h2 id="groupbuy-order-items">{text.items}</h2>
             <ul className="groupbuy-order-lines">
@@ -134,7 +139,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
             </dl>
           </section>
 
-          <button className="ui-button ui-button--primary ui-button--block" type="button">{text.submitOrder}</button>
+          {error ? <p role="alert">{error}</p> : null}<button className="ui-button ui-button--primary ui-button--block" type="submit" form="groupbuy-order-form" disabled={submitting}>{submitting ? (isKorean ? "제출 중…" : "Submitting…") : text.submitOrder}</button>
           <p className="groupbuy-basket-note">{text.submitNote}</p>
         </aside>
       </div>
