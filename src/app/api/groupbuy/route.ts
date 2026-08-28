@@ -21,13 +21,15 @@ function toGroupBuyCard(row: {
   delivery_fee_cents: number;
   group_buy_items: Array<{ id: string; name: string; note: string; price_cents: number; unit_label: string; limit_per_person: number | null; photo_alt: string | null }>;
 }): GroupBuy {
-  const isClosingSoon = row.status === "open" && new Date(row.closes_at).getTime() - Date.now() < 24 * 60 * 60 * 1000;
+  const millisecondsUntilClose = new Date(row.closes_at).getTime() - Date.now();
+  const isClosed = row.status === "closed" || row.status === "cancelled" || millisecondsUntilClose <= 0;
+  const isClosingSoon = !isClosed && millisecondsUntilClose < 24 * 60 * 60 * 1000;
   return {
     id: row.id,
     title: row.title,
     summary: row.summary,
     description: [],
-    status: row.status === "closed" || row.status === "cancelled" ? "closed" : isClosingSoon ? "closing-soon" : "open",
+    status: isClosed ? "closed" : isClosingSoon ? "closing-soon" : "open",
     referencePrefix: "GB",
     coverImage: fallbackImage,
     coverAlt: row.title,

@@ -134,6 +134,7 @@ export function GroupBuyCreateClient() {
       const closesAt = new Date(read("closes"));
       const handoverAt = new Date(read("handover"));
       if (Number.isNaN(closesAt.getTime()) || Number.isNaN(handoverAt.getTime())) throw new Error(isKorean ? "주문 마감과 수령 일정을 입력해 주세요." : "Enter the order closing and handover dates.");
+      if (closesAt <= new Date()) throw new Error(isKorean ? "주문 마감은 현재 시각 이후로 설정해 주세요." : "Set the order closing time in the future.");
       if (handoverAt <= closesAt) throw new Error(isKorean ? "수령 일정은 주문 마감 이후여야 합니다." : "Handover must be after the order closes.");
       const response = await fetch("/api/groupbuy", { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({
         title: read("title"), summary: read("summary"), description: read("description"), referencePrefix: prefix,
