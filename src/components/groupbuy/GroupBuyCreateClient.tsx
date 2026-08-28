@@ -1,13 +1,32 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
-import { groupBuyReference, groupBuyText } from "@/data/groupBuy";
+import { isAcceptedMarketListingImage } from "@/lib/media/market-listing-image";
+import { formatMarketPrice } from "@/lib/market/format-price";
+import { groupBuyReference, groupBuyText, groupBuys, type GroupBuy } from "@/data/groupBuy";
 
-type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string };
+type DraftPhoto = { url: string; name: string; isUploaded: boolean };
+type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string; photo: DraftPhoto | null };
 
-const emptyItem = (): DraftItem => ({ id: crypto.randomUUID(), name: "", note: "", price: "", unit: "each", limit: "" });
+const emptyItem = (): DraftItem => ({ id: crypto.randomUUID(), name: "", note: "", price: "", unit: "each", limit: "", photo: null });
+
+/** A previous round, flattened into the shape the editor holds. Photos come
+ *  back as the stored URL rather than a fresh upload, so reusing a round does
+ *  not ask the seller to find every picture again. */
+function draftFromGroupBuy(groupBuy: GroupBuy): DraftItem[] {
+  return groupBuy.items.map((item) => ({
+    id: crypto.randomUUID(),
+    name: item.name,
+    note: item.note,
+    price: (item.priceCents / 100).toFixed(2),
+    unit: item.unitLabel,
+    limit: item.limitPerPerson === null ? "" : String(item.limitPerPerson),
+    photo: { url: item.image, name: item.imageAlt, isUploaded: false },
+  }));
+}
 
 /** Posting a group buy. Design only — nothing is submitted.
  *
@@ -23,9 +42,61 @@ export function GroupBuyCreateClient() {
   const [prefix, setPrefix] = useState("");
   const [offersPickup, setOffersPickup] = useState(true);
   const [offersDelivery, setOffersDelivery] = useState(true);
+  const [template, setTemplate] = useState<GroupBuy | null>(null);
+  // Remounts the uncontrolled fields so a loaded round's defaults take effect
+  // without turning every input on the page into controlled state.
+  const [formKey, setFormKey] = useState(0);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoTargetRef = useRef<string | null>(null);
+  const itemsRef = useRef(items);
+
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  // Only object URLs this component minted are ours to revoke; a reused round's
+  // photos are ordinary stored URLs and revoking them would break the page.
+  useEffect(() => () => { itemsRef.current.forEach((item) => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); }); }, []);
 
   const updateItem = (id: string, patch: Partial<DraftItem>) => setItems((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
+
+  const setPhoto = (id: string, photo: DraftPhoto | null) => setItems((current) => current.map((item) => {
+    if (item.id !== id) return item;
+    if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url);
+    return { ...item, photo };
+  }));
+
+  const choosePhoto = (itemId: string) => { photoTargetRef.current = itemId; photoInputRef.current?.click(); };
+
+  const acceptPhoto = (files: FileList | null) => {
+    const itemId = photoTargetRef.current;
+    const file = Array.from(files ?? []).find(isAcceptedMarketListingImage);
+    photoTargetRef.current = null;
+    if (!itemId || !file) return;
+    setPhoto(itemId, { url: URL.createObjectURL(file), name: file.name, isUploaded: true });
+  };
+
+  const applyTemplate = (groupBuy: GroupBuy) => {
+    items.forEach((item) => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); });
+    setItems(draftFromGroupBuy(groupBuy));
+    setPrefix(groupBuy.referencePrefix);
+    setOffersPickup(groupBuy.pickup.available);
+    setOffersDelivery(groupBuy.delivery.available);
+    setTemplate(groupBuy);
+    setFormKey((current) => current + 1);
+  };
+
+  const clearTemplate = () => {
+    items.forEach((item) => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); });
+    setItems([emptyItem(), emptyItem(), emptyItem()]);
+    setPrefix("");
+    setOffersPickup(true);
+    setOffersDelivery(true);
+    setTemplate(null);
+    setFormKey((current) => current + 1);
+  };
+
   const namedItems = items.filter((item) => item.name.trim()).length;
+  // Math.min of an empty list is Infinity, which is truthy and would reach the
+  // formatter — an item can be named before it is priced.
+  const pricedCents = items.map((item) => Math.round(Number(item.price) * 100)).filter((cents) => Number.isFinite(cents) && cents > 0);
 
   return (
     <section className="market-results groupbuy-create" aria-label={text.createTitle}>
@@ -38,13 +109,50 @@ export function GroupBuyCreateClient() {
         </div>
       </div>
 
-      <form className="post-ad-form groupbuy-form" onSubmit={(event) => event.preventDefault()}>
+      {/* A group buy is usually the same list every week. Retyping twenty items
+          to change two dates is the whole reason sellers give up on running
+          them regularly, so reuse comes before the form rather than inside it. */}
+      <section className="groupbuy-reuse" aria-labelledby="groupbuy-reuse-title">
+        <header>
+          <div>
+            <p className="service-profile-eyebrow"><i className="ms ms-repeat" aria-hidden="true" /> {text.reuseTitle}</p>
+            <h2 id="groupbuy-reuse-title">{text.reuseIntro}</h2>
+          </div>
+          {template ? <button type="button" className="groupbuy-reuse-clear" onClick={clearTemplate}>{text.reuseClear}</button> : null}
+        </header>
+        {template ? (
+          <p className="groupbuy-reuse-applied" role="status">
+            <i className="ms ms-check-circle" aria-hidden="true" /> {text.reuseApplied(template.title)}
+          </p>
+        ) : (
+          <ul className="groupbuy-reuse-list">
+            {groupBuys.map((round) => (
+              <li key={round.id}>
+                <button type="button" onClick={() => applyTemplate(round)}>
+                  <span className="groupbuy-reuse-name">{round.title}</span>
+                  <span className="groupbuy-reuse-meta">{text.reuseItemCount(round.items.length)} · {text.reference} {round.referencePrefix}</span>
+                  <span className="groupbuy-reuse-cta">{text.reuseAction}<i className="ms ms-arrow-forward" aria-hidden="true" /></span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* One picker serves every row: twenty file inputs is twenty things that
+          can hold a stale value. */}
+      <input ref={photoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptPhoto(event.target.files); event.currentTarget.value = ""; }} />
+
+      <form className="post-ad-form groupbuy-form" key={formKey} onSubmit={(event) => event.preventDefault()}>
         <section className="post-description-field">
           <div className="post-section-heading"><span>1</span><h2>{text.basics}</h2></div>
-          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" maxLength={100} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" maxLength={140} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" rows={4} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
-          <div className="groupbuy-field-grid">
+          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
+          {/* Dates are deliberately never carried over — they are the one thing
+              that must change, and a prefilled old date is worse than none. */}
+          <div className={template ? "groupbuy-field-grid groupbuy-dates-needed" : "groupbuy-field-grid"}>
+            {template ? <p className="groupbuy-dates-flag"><i className="ms ms-schedule" aria-hidden="true" /> {text.datesNeeded}</p> : null}
             <div className="post-field"><label htmlFor="groupbuy-closes">{text.closesAt}</label><input id="groupbuy-closes" name="closes" type="datetime-local" /></div>
             <div className="post-field"><label htmlFor="groupbuy-handover">{text.handover}</label><input id="groupbuy-handover" name="handover" type="datetime-local" /></div>
           </div>
@@ -56,17 +164,27 @@ export function GroupBuyCreateClient() {
 
           <div className="groupbuy-item-editor" role="group" aria-label={text.itemsStep}>
             <div className="groupbuy-item-editor-head" aria-hidden="true">
-              <span>{text.itemName}</span><span>{text.itemNote}</span><span>{text.itemPrice}</span><span>{text.itemUnit}</span><span>{text.itemLimit}</span><span />
+              <span>{text.itemPhoto}</span><span>{text.itemName}</span><span>{text.itemNote}</span><span>{text.itemPrice}</span><span>{text.itemUnit}</span><span>{text.itemLimit}</span><span />
             </div>
             {items.map((item, index) => (
               <div className="groupbuy-item-row" key={item.id}>
-                <label className="groupbuy-item-index" aria-label={`${text.itemName} ${index + 1}`}>{index + 1}</label>
+                <span className="groupbuy-item-index" aria-hidden="true">{index + 1}</span>
+                {item.photo ? (
+                  <span className="groupbuy-item-photo has-photo">
+                    <Image src={item.photo.url} alt="" fill sizes="56px" unoptimized={item.photo.isUploaded} />
+                    <button type="button" aria-label={`${text.removePhoto} ${index + 1}`} onClick={() => setPhoto(item.id, null)}><i className="ms ms-close" aria-hidden="true" /></button>
+                  </span>
+                ) : (
+                  <button type="button" className="groupbuy-item-photo" aria-label={`${text.addPhoto} ${index + 1}`} onClick={() => choosePhoto(item.id)}>
+                    <i className="ms ms-photo-camera" aria-hidden="true" />
+                  </button>
+                )}
                 <input aria-label={`${text.itemName} ${index + 1}`} placeholder={isKorean ? "예: 사워도우" : "e.g. Country sourdough"} value={item.name} onChange={(event) => updateItem(item.id, { name: event.target.value })} />
                 <input aria-label={`${text.itemNote} ${index + 1}`} placeholder={isKorean ? "예: 800g 한 덩이" : "e.g. 800g whole loaf"} value={item.note} onChange={(event) => updateItem(item.id, { note: event.target.value })} />
                 <input aria-label={`${text.itemPrice} ${index + 1}`} inputMode="decimal" placeholder="12.00" value={item.price} onChange={(event) => updateItem(item.id, { price: event.target.value })} />
                 <input aria-label={`${text.itemUnit} ${index + 1}`} placeholder={isKorean ? "개" : "each"} value={item.unit} onChange={(event) => updateItem(item.id, { unit: event.target.value })} />
                 <input aria-label={`${text.itemLimit} ${index + 1}`} inputMode="numeric" placeholder="—" value={item.limit} onChange={(event) => updateItem(item.id, { limit: event.target.value })} />
-                <button type="button" className="groupbuy-item-remove" aria-label={`${text.removeItem} ${index + 1}`} disabled={items.length === 1} onClick={() => setItems((current) => current.filter((candidate) => candidate.id !== item.id))}>
+                <button type="button" className="groupbuy-item-remove" aria-label={`${text.removeItem} ${index + 1}`} disabled={items.length === 1} onClick={() => { if (item.photo?.isUploaded) URL.revokeObjectURL(item.photo.url); setItems((current) => current.filter((candidate) => candidate.id !== item.id)); }}>
                   <i className="ms ms-close" aria-hidden="true" />
                 </button>
               </div>
@@ -80,7 +198,7 @@ export function GroupBuyCreateClient() {
             <span>{isKorean ? `${namedItems}개 입력됨` : `${namedItems} named`}</span>
           </div>
 
-          <div className="post-field"><label htmlFor="groupbuy-minimum">{isKorean ? "최소 주문 금액 (선택)" : "Minimum order (optional)"}</label><input id="groupbuy-minimum" name="minimum" inputMode="decimal" placeholder="20.00" /></div>
+          <div className="post-field"><label htmlFor="groupbuy-minimum">{isKorean ? "최소 주문 금액 (선택)" : "Minimum order (optional)"}</label><input id="groupbuy-minimum" name="minimum" inputMode="decimal" defaultValue={template?.minimumOrderCents ? (template.minimumOrderCents / 100).toFixed(2) : ""} placeholder="20.00" /></div>
         </section>
 
         <section className="post-description-field">
@@ -92,9 +210,9 @@ export function GroupBuyCreateClient() {
           </label>
           {offersPickup ? (
             <div className="groupbuy-field-grid groupbuy-switch-body">
-              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-pickup-address">{isKorean ? "수령 주소" : "Pickup address"}</label><input id="groupbuy-pickup-address" name="pickupAddress" placeholder={isKorean ? "예: 12 Grey Street, Hamilton East" : "e.g. 12 Grey Street, Hamilton East"} /></div>
-              <div className="post-field"><label htmlFor="groupbuy-pickup-window">{isKorean ? "수령 시간" : "Pickup window"}</label><input id="groupbuy-pickup-window" name="pickupWindow" placeholder={isKorean ? "예: 금요일 15:00–18:00" : "e.g. Friday 3pm – 6pm"} /></div>
-              <div className="post-field"><label htmlFor="groupbuy-pickup-note">{isKorean ? "수령 안내 (선택)" : "Pickup note (optional)"}</label><input id="groupbuy-pickup-note" name="pickupNote" placeholder={isKorean ? "예: 옆문으로 오세요." : "e.g. Come to the side door."} /></div>
+              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-pickup-address">{isKorean ? "수령 주소" : "Pickup address"}</label><input id="groupbuy-pickup-address" name="pickupAddress" defaultValue={template?.pickup.address ?? ""} placeholder={isKorean ? "예: 12 Grey Street, Hamilton East" : "e.g. 12 Grey Street, Hamilton East"} /></div>
+              <div className="post-field"><label htmlFor="groupbuy-pickup-window">{isKorean ? "수령 시간" : "Pickup window"}</label><input id="groupbuy-pickup-window" name="pickupWindow" defaultValue={template?.pickup.window ?? ""} placeholder={isKorean ? "예: 금요일 15:00–18:00" : "e.g. Friday 3pm – 6pm"} /></div>
+              <div className="post-field"><label htmlFor="groupbuy-pickup-note">{isKorean ? "수령 안내 (선택)" : "Pickup note (optional)"}</label><input id="groupbuy-pickup-note" name="pickupNote" defaultValue={template?.pickup.note ?? ""} placeholder={isKorean ? "예: 옆문으로 오세요." : "e.g. Come to the side door."} /></div>
             </div>
           ) : null}
 
@@ -104,9 +222,9 @@ export function GroupBuyCreateClient() {
           </label>
           {offersDelivery ? (
             <div className="groupbuy-field-grid groupbuy-switch-body">
-              <div className="post-field"><label htmlFor="groupbuy-delivery-fee">{isKorean ? "배송비 (NZD)" : "Delivery fee (NZD)"}</label><input id="groupbuy-delivery-fee" name="deliveryFee" inputMode="decimal" placeholder="6.00" /></div>
-              <div className="post-field"><label htmlFor="groupbuy-delivery-free">{isKorean ? "무료 배송 기준 (선택)" : "Free over (optional)"}</label><input id="groupbuy-delivery-free" name="deliveryFree" inputMode="decimal" placeholder="80.00" /></div>
-              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-delivery-areas">{isKorean ? "배송 가능 지역" : "Delivery areas"}</label><input id="groupbuy-delivery-areas" name="deliveryAreas" placeholder={isKorean ? "예: Hamilton East, Rototuna" : "e.g. Hamilton East, Rototuna"} /></div>
+              <div className="post-field"><label htmlFor="groupbuy-delivery-fee">{isKorean ? "배송비 (NZD)" : "Delivery fee (NZD)"}</label><input id="groupbuy-delivery-fee" name="deliveryFee" inputMode="decimal" defaultValue={template?.delivery.feeCents ? (template.delivery.feeCents / 100).toFixed(2) : ""} placeholder="6.00" /></div>
+              <div className="post-field"><label htmlFor="groupbuy-delivery-free">{isKorean ? "무료 배송 기준 (선택)" : "Free over (optional)"}</label><input id="groupbuy-delivery-free" name="deliveryFree" inputMode="decimal" defaultValue={template?.delivery.freeOverCents ? (template.delivery.freeOverCents / 100).toFixed(2) : ""} placeholder="80.00" /></div>
+              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-delivery-areas">{isKorean ? "배송 가능 지역" : "Delivery areas"}</label><input id="groupbuy-delivery-areas" name="deliveryAreas" defaultValue={template?.delivery.areas.join(", ") ?? ""} placeholder={isKorean ? "예: Hamilton East, Rototuna" : "e.g. Hamilton East, Rototuna"} /></div>
             </div>
           ) : null}
         </section>
@@ -119,8 +237,8 @@ export function GroupBuyCreateClient() {
               <label htmlFor="groupbuy-prefix">{isKorean ? "레퍼런스 앞글자" : "Reference prefix"}</label>
               <input id="groupbuy-prefix" name="prefix" maxLength={4} placeholder="BR" value={prefix} onChange={(event) => setPrefix(event.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase())} />
             </div>
-            <div className="post-field"><label htmlFor="groupbuy-account-name">{text.accountName}</label><input id="groupbuy-account-name" name="accountName" placeholder={isKorean ? "예: 해밀턴 홈베이커리" : "e.g. Hamilton Home Bakery"} /></div>
-            <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-account-number">{text.accountNumber}</label><input id="groupbuy-account-number" name="accountNumber" placeholder="12-3456-0789012-00" /></div>
+            <div className="post-field"><label htmlFor="groupbuy-account-name">{text.accountName}</label><input id="groupbuy-account-name" name="accountName" defaultValue={template?.bank.accountName ?? ""} placeholder={isKorean ? "예: 해밀턴 홈베이커리" : "e.g. Hamilton Home Bakery"} /></div>
+            <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-account-number">{text.accountNumber}</label><input id="groupbuy-account-number" name="accountNumber" defaultValue={template?.bank.accountNumber ?? ""} placeholder="12-3456-0789012-00" /></div>
           </div>
           <p className="groupbuy-reference-preview">
             <span>{isKorean ? "발급 예시" : "Buyers will see"}</span>
@@ -135,6 +253,13 @@ export function GroupBuyCreateClient() {
           <button className="post-submit-button" type="submit"><span>{text.publish}</span></button>
         </div>
       </form>
+
+      {namedItems && pricedCents.length ? (
+        <p className="groupbuy-create-footnote">
+          {isKorean ? `상품 ${namedItems}개 · 최저 ` : `${namedItems} items · from `}
+          {formatMarketPrice(Math.min(...pricedCents))}
+        </p>
+      ) : null}
     </section>
   );
 }
