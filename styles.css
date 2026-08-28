@@ -11924,15 +11924,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .groupbuy-status.is-closing-soon { background: var(--amber-50); color: var(--amber-750); }
 .groupbuy-status.is-closed { background: var(--color-surface-soft); color: var(--color-muted); }
 
-/* How a group buy works. Tada holds no money, so the rules have to be legible
-   before anyone joins one. */
-.groupbuy-explainer { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); }
-.groupbuy-explainer article { display: flex; min-width: 0; gap: var(--space-3); align-items: flex-start; }
-.groupbuy-explainer article > i { width: var(--control-h-lg); height: var(--control-h-lg); flex: 0 0 auto; display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--amber-50); color: var(--amber-550); font-size: var(--text-xl); }
-.groupbuy-explainer article > div { min-width: 0; display: grid; gap: 2px; }
-.groupbuy-explainer strong { color: var(--color-ink); font-size: var(--text-md); }
-.groupbuy-explainer span { color: var(--color-muted); font-size: var(--text-sm); line-height: 1.45; }
-
 
 /* --- Browse card -------------------------------------------------------- */
 /* Same two shapes as the Services directory card: a horizontal row on a phone,
@@ -12195,7 +12186,6 @@ button.groupbuy-item-photo:hover { border-color: var(--amber-550); color: var(--
 .groupbuy-reference-preview > strong { padding: 4px var(--space-2); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--text-sm); }
 
 @media (min-width: 768px) {
-  .groupbuy-explainer { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: var(--space-4); }
   .groupbuy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
   .groupbuy-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "media" "body" "more"; }
   .groupbuy-card-media { aspect-ratio: 16 / 10; min-height: 0; }
