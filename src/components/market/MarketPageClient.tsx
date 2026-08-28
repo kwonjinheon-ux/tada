@@ -265,7 +265,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           onSortChange={changeSort}
           sortDisplay="chips"
           resultsLabel={locale === "ko" ? `${listings.length}개 매물` : `${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
-          resultsLabelPlacement="after-sort"
         />
 
         <AdSlot placement="market_top" />

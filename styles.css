@@ -1719,13 +1719,8 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  overflow-x: auto;
+  min-width: 0;
   padding: 4px 0;
-  scrollbar-width: none;
-}
-
-.market-toolbar::-webkit-scrollbar {
-  display: none;
 }
 
 .market-toolbar-top {
@@ -1734,20 +1729,20 @@ a {
   min-width: 0;
   align-items: center;
   gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-/* Chips sit hard against the right of the row; the toggle keeps the left and
-   the count stays last. margin-left:auto pushes them right while there is room
-   and collapses once they fill it, so the overflow scrolls from its first chip
-   instead of stranding it the way justify-content:flex-end would. */
+.market-toolbar-top::-webkit-scrollbar { display: none; }
+
+/* Chips sit hard against the right of the scrolling row; the toggle keeps the
+   left. margin-left:auto pushes them right while there is room and collapses
+   once they fill it, so the overflow scrolls from its first chip instead of
+   stranding it the way justify-content:flex-end would. */
 .market-toolbar-top > .market-chip-row {
   flex: 0 1 auto;
   min-width: 0;
   margin-left: auto;
-}
-
-.market-toolbar-top > .market-tools {
-  flex: 0 0 auto;
 }
 
 .market-toolbar-chip-rail {
@@ -1781,7 +1776,10 @@ a {
   flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
+
+.market-tools p { margin: 0; white-space: nowrap; }
 
 .view-toggle {
   flex: 0 0 auto;
@@ -8876,44 +8874,16 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
      already say which one is active, so the glyph keeps its colour throughout. */
   .mobile-browse-category-icon { color: var(--color-ink); }
 
-  .market-toolbar { min-width: 0; overflow: hidden; }
-  .market-toolbar-top { min-width: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
-  .market-toolbar-top::-webkit-scrollbar { display: none; }
+  .market-toolbar-top { overflow-y: hidden; overscroll-behavior-x: contain; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
   .market-toolbar-top > .view-toggle,
   .market-toolbar-top > .market-chip-row,
-  .market-toolbar-top > .market-sort-chip-row,
-  .market-toolbar-top > .market-tools { flex: 0 0 auto; }
+  .market-toolbar-top > .market-sort-chip-row { flex: 0 0 auto; }
   .market-toolbar-top > .market-chip-row { margin-left: 0; overflow: visible; }
   .market-toolbar-top > .market-sort-chip-row { overflow: visible; }
   .market-toolbar--hide-chips-mobile .market-chip-row { display: none; }
 
-  /* Services keeps the result count anchored on the trailing edge while its
-     filter and sort rails remain independently scrollable. */
-  .services-results .market-toolbar-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    overflow: visible;
-  }
-  .services-results .market-toolbar-top > .market-chip-row {
-    grid-column: 1;
-    min-width: 0;
-    overflow-x: auto;
-  }
-  .services-results .market-toolbar-top > .market-tools {
-    grid-column: 2;
-    justify-self: end;
-  }
-  .services-results .market-toolbar-top > .market-sort-chip-row {
-    grid-column: 1 / -1;
-    min-width: 0;
-    overflow-x: auto;
-  }
-
   /* Services presents its scope filters and sort choices as one continuous
      rail; the result count remains visible at the end of the toolbar. */
-  .services-results .market-toolbar--combined-chips .market-toolbar-top {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
   .services-results .market-toolbar--combined-chips .market-toolbar-chip-rail {
     grid-column: 1;
     min-width: 0;
@@ -8934,33 +8904,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     margin: 0;
     overflow: visible;
   }
-  .services-results .market-toolbar--combined-chips .market-tools {
-    grid-column: 2;
-    justify-self: end;
-  }
-
   /* Market keeps its result count in view while the sort options retain their
      own horizontal rail. The optional category rail is hidden on this screen. */
-  .market-toolbar--results-after-sort .market-toolbar-top {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    overflow: visible;
-  }
-  .market-toolbar--results-after-sort .view-toggle { grid-column: 1; }
-  .market-toolbar--results-after-sort .market-sort-chip-row {
-    grid-column: 2;
-    min-width: 0;
-    overflow-x: auto;
-  }
-  .market-toolbar--results-after-sort .market-tools {
-    grid-column: 3;
-    justify-self: end;
-  }
-  .market-toolbar--results-after-sort .market-tools p {
-    margin: 0;
-    white-space: nowrap;
-  }
-
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
   .dashboard-layout:has(> .messages-page) { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }

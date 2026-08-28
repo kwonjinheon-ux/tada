@@ -27,7 +27,6 @@ export type BrowseResultsToolbarProps = {
   sortDisplay?: "select" | "chips";
   chipStyle?: "category" | "sort";
   resultsLabel?: string;
-  resultsLabelPlacement?: "before-sort" | "after-sort";
   combineChipsAndSort?: boolean;
   hideChipsOnMobile?: boolean;
 };
@@ -51,7 +50,6 @@ export function BrowseResultsToolbar({
   sortDisplay = "select",
   chipStyle = "category",
   resultsLabel,
-  resultsLabelPlacement = "before-sort",
   combineChipsAndSort = false,
   hideChipsOnMobile = false,
 }: BrowseResultsToolbarProps) {
@@ -103,7 +101,7 @@ export function BrowseResultsToolbar({
     })}
   </div> : null;
 
-  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}${resultsLabelPlacement === "after-sort" ? " market-toolbar--results-after-sort" : ""}${combineChipsAndSort ? " market-toolbar--combined-chips" : ""}`}>
+  return <div className={`market-toolbar${hideChipsOnMobile ? " market-toolbar--hide-chips-mobile" : ""}${combineChipsAndSort ? " market-toolbar--combined-chips" : ""}`}>
     <div className="market-toolbar-top">
       {showViewToggle ? <div className="view-toggle" aria-label={t("viewMode")}>
         <button className={viewMode === "list" ? "is-selected" : ""} type="button" aria-label={t("listView")} aria-pressed={viewMode === "list"} onClick={() => onViewModeChange("list")}>
@@ -116,11 +114,13 @@ export function BrowseResultsToolbar({
 
       {combineChipsAndSort ? <div className="market-toolbar-chip-rail">{chipRow}{sortRow}</div> : chipRow}
 
-      {resultsLabelPlacement === "before-sort" ? resultsTools : null}
-
       {combineChipsAndSort ? null : sortRow}
-
-      {resultsLabelPlacement === "after-sort" ? resultsTools : null}
     </div>
+
+    {/* Outside the scrolling row on purpose: the count is a readout, not
+        another thing to scroll past, so it stays pinned to the trailing edge
+        at every width. Three surfaces each used to re-solve this with their
+        own grid, and none of them covered Community. */}
+    {resultsTools}
   </div>;
 }
