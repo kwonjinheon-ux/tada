@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ gr
   if (!supabase || !user) return apiFailure("UNAUTHORIZED", "Sign in to update payment status.", 401);
   const body = await request.json().catch(() => null) as { orderId?: string; paid?: boolean } | null;
   if (!body?.orderId || typeof body.paid !== "boolean") return apiFailure("BAD_REQUEST", "Invalid payment update.", 400);
-  const { error } = await supabase.from("group_buy_orders").update({ paid_at: body.paid ? new Date().toISOString() : null, paid_by: body.paid ? user.id : null }).eq("id", body.orderId).eq("group_buy_id", groupBuyId);
-  if (error) return apiFailure("FORBIDDEN", "Only the group buy owner can update payment status.", 403);
-  return apiSuccess({ paid: body.paid });
+  const { data, error } = await supabase.from("group_buy_orders").update({ paid_at: body.paid ? new Date().toISOString() : null, paid_by: body.paid ? user.id : null }).eq("id", body.orderId).eq("group_buy_id", groupBuyId).select("id,paid_at").single();
+  if (error || !data) return apiFailure("FORBIDDEN", "Only the group buy owner can update payment status.", 403);
+  return apiSuccess({ orderId: data.id, paid: Boolean(data.paid_at) });
 }

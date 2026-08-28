@@ -42,6 +42,9 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
   const [showUnpaidOnly, setShowUnpaidOnly] = useState(false);
+  const [paymentStates, setPaymentStates] = useState<Record<string, boolean>>(() => Object.fromEntries(orders.map((order) => [order.id, Boolean(order.paid_at)])));
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState("");
 
   const itemsById = useMemo(() => new Map(groupBuy.items.map((item) => [item.id, item])), [groupBuy.items]);
   const rows = useMemo(() => orders.map((order) => {
@@ -49,10 +52,31 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
     return { order, lines, subtotalCents: order.subtotal_cents, deliveryCents: order.delivery_cents, totalCents: order.total_cents };
   }), [itemsById, orders]);
 
-  const visibleRows = showUnpaidOnly ? rows.filter((row) => !row.order.paid_at) : rows;
+  const isPaid = (order: SellerOrder) => paymentStates[order.id] ?? Boolean(order.paid_at);
+  const visibleRows = showUnpaidOnly ? rows.filter((row) => !isPaid(row.order)) : rows;
   const grandTotalCents = rows.reduce((sum, row) => sum + row.totalCents, 0);
-  const unpaidCount = rows.filter((row) => !row.order.paid_at).length;
+  const unpaidCount = rows.filter((row) => !isPaid(row.order)).length;
   const deliveryCount = rows.filter((row) => row.order.fulfilment === "delivery").length;
+
+  const markPaid = async (orderId: string) => {
+    if (updatingOrderId) return;
+    setUpdatingOrderId(orderId);
+    setPaymentError("");
+    try {
+      const response = await fetch(`/api/groupbuy/${groupBuy.id}/orders`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, paid: true }),
+      });
+      const result = await response.json().catch(() => null) as { error?: { message?: string } } | null;
+      if (!response.ok) throw new Error(result?.error?.message ?? text.paymentUpdateFailed);
+      setPaymentStates((current) => ({ ...current, [orderId]: true }));
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : text.paymentUpdateFailed);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
   // What to bake: every order collapsed down to a quantity per item.
   const packingList = useMemo(() => groupBuy.items.map((item) => ({
@@ -73,7 +97,7 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
       (subtotalCents / 100).toFixed(2),
       (deliveryCents / 100).toFixed(2),
       (totalCents / 100).toFixed(2),
-      order.paid_at ? text.paid : text.awaitingPayment,
+      isPaid(order) ? text.paid : text.awaitingPayment,
       new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(order.created_at)),
     ]);
     // The BOM is what makes Excel read the Korean columns as UTF-8 rather than
@@ -129,6 +153,7 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
             <span>{isKorean ? "입금 대기만 보기" : "Awaiting payment only"}</span>
           </label>
         </header>
+        {paymentError ? <p className="groupbuy-payment-error" role="alert">{paymentError}</p> : null}
 
         <div className="groupbuy-table-scroll">
           <table className="groupbuy-table">
@@ -166,7 +191,15 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
                     {order.buyer_note ? <small>{order.buyer_note}</small> : null}
                   </td>
                   <td className="groupbuy-table-total">{formatMarketPrice(totalCents)}</td>
-                  <td><span className={order.paid_at ? "groupbuy-paid is-paid" : "groupbuy-paid"}>{order.paid_at ? text.paid : text.awaitingPayment}</span></td>
+                  <td>
+                    {isPaid(order) ? (
+                      <span className="groupbuy-paid is-paid">{text.paid}</span>
+                    ) : (
+                      <button className="groupbuy-paid" type="button" onClick={() => void markPaid(order.id)} disabled={updatingOrderId !== null} aria-label={`${text.awaitingPayment}: ${order.reference}`}>
+                        {updatingOrderId === order.id ? text.confirmingPayment : text.awaitingPayment}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
