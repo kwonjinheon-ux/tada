@@ -1,7 +1,7 @@
 import { groupBuyCreateRequestSchema } from "@/contracts/api";
 import type { GroupBuy } from "@/data/groupBuy";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createBearerSupabaseClient, createServerSupabaseClient } from "@/lib/supabase/server";
 
 const fallbackImage = "/images/home/journey-market.png";
 
@@ -65,9 +65,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerSupabaseClient(request.headers.get("authorization"));
+  const accessToken = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1] ?? null;
+  const supabase = accessToken ? createBearerSupabaseClient(accessToken) : await createServerSupabaseClient();
   if (!supabase) return apiFailure("UNAVAILABLE", "Group buys are unavailable right now.", 503);
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser(accessToken ?? undefined);
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to start a group buy.", 401);
   const parsed = groupBuyCreateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", parsed.error.issues[0]?.message ?? "Invalid group buy.", 400);
