@@ -118,6 +118,7 @@ export function GroupBuyCreateClient() {
     if (!supabase) { setSubmitError(isKorean ? "서비스 연결을 확인할 수 없습니다." : "Unable to connect to Tada."); return; }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login?redirectTo=" + encodeURIComponent("/market/groupbuy/create")); return; }
+    const { data: { session } } = await supabase.auth.getSession();
     setIsSubmitting(true);
     setSubmitError("");
     try {
@@ -130,9 +131,13 @@ export function GroupBuyCreateClient() {
         if (error) throw new Error(isKorean ? "사진을 업로드하지 못했습니다." : "Unable to upload a photo.");
         paths.set(item.id, path);
       }
-      const response = await fetch("/api/groupbuy", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      const closesAt = new Date(read("closes"));
+      const handoverAt = new Date(read("handover"));
+      if (Number.isNaN(closesAt.getTime()) || Number.isNaN(handoverAt.getTime())) throw new Error(isKorean ? "주문 마감과 수령 일정을 입력해 주세요." : "Enter the order closing and handover dates.");
+      if (handoverAt <= closesAt) throw new Error(isKorean ? "수령 일정은 주문 마감 이후여야 합니다." : "Handover must be after the order closes.");
+      const response = await fetch("/api/groupbuy", { method: "POST", headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }, body: JSON.stringify({
         title: read("title"), summary: read("summary"), description: read("description"), referencePrefix: prefix,
-        closesAt: new Date(read("closes")).toISOString(), handoverAt: new Date(read("handover")).toISOString(),
+        closesAt: closesAt.toISOString(), handoverAt: handoverAt.toISOString(),
         pickup: { available: offersPickup, address: read("pickupAddress"), window: read("pickupWindow"), note: read("pickupNote") },
         delivery: { available: offersDelivery, feeCents: cents("deliveryFee") ?? 0, freeOverCents: cents("deliveryFree"), areas: read("deliveryAreas").split(",").map((area) => area.trim()).filter(Boolean) },
         bank: { accountName: read("accountName"), accountNumber: read("accountNumber") }, minimumOrderCents: cents("minimum"),
@@ -140,7 +145,8 @@ export function GroupBuyCreateClient() {
       }) });
       const result = await readApiResponse(response, groupBuyCreateResponseSchema);
       if (!result.data) throw new Error(result.error?.message ?? (isKorean ? "공동구매를 게시하지 못했습니다." : "Unable to publish group buy."));
-      router.push("/market/groupbuy/" + result.data.id);
+      router.replace("/market/groupbuy/" + result.data.id);
+      router.refresh();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : (isKorean ? "공동구매를 게시하지 못했습니다." : "Unable to publish group buy."));
     } finally { setIsSubmitting(false); }
@@ -197,15 +203,15 @@ export function GroupBuyCreateClient() {
           {/* Picking any other type hands back to the market form, the same way
               picking Group Buy there brings the seller here. */}
           <PostShopTypeSelector activeShopType="groupbuy" onSelect={(value) => { if (value !== "groupbuy") router.push(`/market/create?type=${value}`); }} />
-          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" required minLength={4} maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" required minLength={4} maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" required minLength={20} maxLength={5000} rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
           {/* Dates are deliberately never carried over — they are the one thing
               that must change, and a prefilled old date is worse than none. */}
           <div className={template ? "groupbuy-field-grid groupbuy-dates-needed" : "groupbuy-field-grid"}>
             {template ? <p className="groupbuy-dates-flag"><i className="ms ms-schedule" aria-hidden="true" /> {text.datesNeeded}</p> : null}
-            <div className="post-field"><label htmlFor="groupbuy-closes">{text.closesAt}</label><input id="groupbuy-closes" name="closes" type="datetime-local" /></div>
-            <div className="post-field"><label htmlFor="groupbuy-handover">{text.handover}</label><input id="groupbuy-handover" name="handover" type="datetime-local" /></div>
+            <div className="post-field"><label htmlFor="groupbuy-closes">{text.closesAt}</label><input id="groupbuy-closes" name="closes" type="datetime-local" required /></div>
+            <div className="post-field"><label htmlFor="groupbuy-handover">{text.handover}</label><input id="groupbuy-handover" name="handover" type="datetime-local" required /></div>
           </div>
         </section>
 
@@ -286,7 +292,7 @@ export function GroupBuyCreateClient() {
           <div className="groupbuy-field-grid">
             <div className="post-field">
               <label htmlFor="groupbuy-prefix">{isKorean ? "레퍼런스 앞글자" : "Reference prefix"}</label>
-              <input id="groupbuy-prefix" name="prefix" maxLength={4} placeholder="BR" value={prefix} onChange={(event) => setPrefix(event.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase())} />
+              <input id="groupbuy-prefix" name="prefix" required minLength={2} maxLength={4} placeholder="BR" value={prefix} onChange={(event) => setPrefix(event.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase())} />
             </div>
             <div className="post-field"><label htmlFor="groupbuy-account-name">{text.accountName}</label><input id="groupbuy-account-name" name="accountName" defaultValue={template?.bank.accountName ?? ""} placeholder={isKorean ? "예: 해밀턴 홈베이커리" : "e.g. Hamilton Home Bakery"} /></div>
             <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-account-number">{text.accountNumber}</label><input id="groupbuy-account-number" name="accountNumber" defaultValue={template?.bank.accountNumber ?? ""} placeholder="12-3456-0789012-00" /></div>
@@ -300,7 +306,7 @@ export function GroupBuyCreateClient() {
         </section>
 
         <div className="post-submit-row">
-          <label className="terms-row"><input type="checkbox" /><span>{isKorean ? "직접 판매하는 상품이며 Tada 가이드라인을 지킵니다." : "I sell these items myself and follow Tada's guidelines."}</span></label>
+          <label className="terms-row"><input type="checkbox" required /><span>{isKorean ? "직접 판매하는 상품이며 Tada 가이드라인을 지킵니다." : "I sell these items myself and follow Tada's guidelines."}</span></label>
           {submitError ? <p className="post-create-status" role="alert">{submitError}</p> : null}
           <button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "게시 중…" : "Publishing…") : text.publish}</span></button>
         </div>

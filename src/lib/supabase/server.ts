@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-export const createServerSupabaseClient = cache(async () => {
+export const createServerSupabaseClient = cache(async (authorization?: string | null) => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
@@ -17,6 +17,7 @@ export const createServerSupabaseClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(url, publishableKey, {
+    global: authorization ? { headers: { Authorization: authorization } } : undefined,
     cookies: {
       getAll() {
         return cookieStore.getAll();

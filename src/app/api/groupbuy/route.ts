@@ -65,7 +65,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient(request.headers.get("authorization"));
   if (!supabase) return apiFailure("UNAVAILABLE", "Group buys are unavailable right now.", 503);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiFailure("UNAUTHORIZED", "Please log in to start a group buy.", 401);
@@ -83,13 +83,17 @@ export async function POST(request: Request) {
     delivery_free_over_cents: data.delivery.available ? data.delivery.freeOverCents : null, delivery_areas: data.delivery.available ? data.delivery.areas : [],
     bank_account_name: data.bank.accountName, bank_account_number: data.bank.accountNumber, minimum_order_cents: data.minimumOrderCents,
   }).select("id").single();
-  if (error || !groupBuy) return apiFailure("INTERNAL", "Unable to create this group buy.", 500);
+  if (error || !groupBuy) {
+    console.error("Unable to create group buy", error);
+    return apiFailure("INTERNAL", "Unable to create this group buy. Please check your profile and try again.", 500);
+  }
   const { error: itemError } = await supabase.from("group_buy_items").insert(data.items.map((item, display_order) => ({
     group_buy_id: groupBuy.id, name: item.name, note: item.note, price_cents: item.priceCents, unit_label: item.unitLabel,
     limit_per_person: item.limitPerPerson, photo_path: item.photoPath, photo_alt: item.photoAlt || null, display_order,
   })));
   if (itemError) {
     await supabase.from("group_buys").delete().eq("id", groupBuy.id).eq("owner_id", user.id);
+    console.error("Unable to create group buy items", itemError);
     return apiFailure("INTERNAL", "Unable to save group buy items.", 500);
   }
   return apiSuccess({ id: groupBuy.id }, { status: 201 });
