@@ -11945,12 +11945,18 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* ==========================================================================
    Browse shell gutters
    Every desktop browse surface — Market, Community, Services, a service
-   profile, service creation — measures the same from here. The right rail
-   matches the left: the same 272px column, sitting flush to the page edge with
-   the same 16px of padding inside it, rather than a wider column eaten into by
-   an outer margin. The centre column owns the gap to each rail, and that gap
-   is 16px on both sides. Where the centre meets the viewport rather than a
-   rail — the right edge of a two-column page — the page gutter still applies.
+   profile, service creation — measures the same from here, and the centre
+   column owns the gap to each rail: 16px on both sides. Where the centre meets
+   the viewport rather than a rail — the right edge of a two-column page — the
+   page gutter still applies.
+
+   Both rails show a 272px panel, matching the left rail. Community's sits
+   flush to the page edge because it is a bordered card that reads as one; the
+   Services rails carry loose cards with no rail surface behind them, so they
+   take a 16px margin from the edge instead — without it the cards look pinned
+   to the side of the screen. The rail column is widened by that margin rather
+   than the panel narrowed by it, which is what used to make the right rail
+   read as the smaller of the two.
 
    This block sits last on purpose: the spacing used to be decided page by
    page, in rules spread across the file, and each surface measured slightly
@@ -11960,25 +11966,25 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .marketplace-page > .market-results { padding-left: var(--space-4); }
 
   /* The profile keeps its own three-column shell at this width. */
-  .marketplace-page.services-page.service-profile-page { grid-template-columns: 272px minmax(0, 1fr) 272px; }
+  .marketplace-page.services-page.service-profile-page { grid-template-columns: 272px minmax(0, 1fr) 288px; }
   .marketplace-page.services-page.service-profile-page > .market-results { padding: var(--space-4) var(--space-4) var(--space-7); }
-  .marketplace-page > .service-profile-support-rail { margin-block: var(--space-3); margin-inline: 0; padding: var(--space-4); }
+  .marketplace-page > .service-profile-support-rail { align-self: start; margin: var(--space-3) var(--space-4) var(--space-3) 0; padding: 0; }
 }
 
 @media (min-width: 1200px) {
-  .marketplace-page.community-page,
-  .marketplace-page.services-page { grid-template-columns: 272px minmax(0, 1fr) 272px; }
+  .marketplace-page.community-page { grid-template-columns: 272px minmax(0, 1fr) 272px; }
+  .marketplace-page.services-page { grid-template-columns: 272px minmax(0, 1fr) 288px; }
 
   .marketplace-page.community-page > .market-results,
   .marketplace-page.services-page:not(.service-create-page) > .market-results { padding-right: var(--space-4); }
 
-  .marketplace-page > .community-recent-panel,
-  .marketplace-page > .services-side-rail { align-self: start; margin-block: var(--space-3); margin-inline: 0; padding: var(--space-4); }
+  .marketplace-page > .community-recent-panel { align-self: start; margin-block: var(--space-3); margin-inline: 0; padding: var(--space-4); }
+  .marketplace-page > .services-side-rail { align-self: start; margin: var(--space-3) var(--space-4) var(--space-3) 0; padding: 0; }
 }
 
 /* Service creation gains its support rail a breakpoint later than the rest. */
 @media (min-width: 1280px) {
-  .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr) 272px; }
+  .marketplace-page.services-page.service-create-page { grid-template-columns: 272px minmax(0, 1fr) 288px; }
   .marketplace-page.service-create-page > .market-results { padding-right: var(--space-4); }
-  .marketplace-page > .service-create-support-rail { align-self: start; margin-block: var(--space-3); margin-inline: 0; padding: var(--space-4); }
+  .marketplace-page > .service-create-support-rail { align-self: start; margin: var(--space-3) var(--space-4) var(--space-3) 0; padding: 0; }
 }
