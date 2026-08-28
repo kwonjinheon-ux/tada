@@ -123,7 +123,7 @@ export function GroupBuyCreateClient() {
       return fail(isKorean ? "제목, 한 줄 소개, 안내를 모두 입력해 주세요." : "Enter the title, summary, and description.");
     }
     if (!postItems.length) return fail(isKorean ? "공동구매 상품을 하나 이상 입력해 주세요." : "Add at least one item.");
-    if (postItems.some((item) => item.name.trim().length < 2 || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0 || !item.unit.trim())) {
+    if (postItems.some((item) => !item.name.trim() || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0 || !item.unit.trim())) {
       return fail(isKorean ? "각 상품의 이름, 가격, 단위를 모두 입력해 주세요." : "Complete every item's name, price, and unit.");
     }
     if (offersPickup && (!read("pickupAddress") || !read("pickupWindow"))) return fail(isKorean ? "직접 수령 주소와 시간을 입력해 주세요." : "Enter the pickup address and time.");
