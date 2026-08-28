@@ -3,7 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
+import { PostShopTypeSelector } from "@/components/post-ad/PostShopTypeSelector";
 import { isAcceptedMarketListingImage } from "@/lib/media/market-listing-image";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyReference, groupBuyText, groupBuys, type GroupBuy } from "@/data/groupBuy";
@@ -35,6 +37,7 @@ function draftFromGroupBuy(groupBuy: GroupBuy): DraftItem[] {
  *  The reference prefix gets its own step because it is the one field that
  *  decides whether the seller can reconcile their bank statement afterwards. */
 export function GroupBuyCreateClient() {
+  const router = useRouter();
   const { locale } = useLanguage();
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
@@ -146,6 +149,9 @@ export function GroupBuyCreateClient() {
       <form className="post-ad-form groupbuy-form" key={formKey} onSubmit={(event) => event.preventDefault()}>
         <section className="post-description-field">
           <div className="post-section-heading"><span>1</span><h2>{text.basics}</h2></div>
+          {/* Picking any other type hands back to the market form, the same way
+              picking Group Buy there brings the seller here. */}
+          <PostShopTypeSelector activeShopType="groupbuy" onSelect={(value) => { if (value !== "groupbuy") router.push(`/market/create?type=${value}`); }} />
           <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
           <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
           <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>

@@ -4552,7 +4552,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-shop-type-options button:hover:not(.is-selected) { border-color: var(--neutral-300); background: var(--neutral-150); }
 .post-shop-type-options button.is-selected { border-color: var(--primary); background: var(--primary); color: var(--neutral-50); }
 .post-shop-type-options button.is-selected > i { color: currentColor; }
-.post-coming-soon-hint { padding: var(--space-4); border: 1px dashed var(--neutral-250); border-radius: var(--radius-md); background: var(--neutral-150); color: var(--blue-soft-650); text-align: center; }
 
 .bargain-sale-items,
 .bargain-sale-items-empty {

@@ -3,6 +3,8 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PostShopTypeSelector } from "@/components/post-ad/PostShopTypeSelector";
+import { type ShopTypeValue } from "@/data/postShopTypes";
 import { z } from "zod";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
@@ -102,16 +104,6 @@ const meetingPlaces: SelectOption[] = [
   { label: "Pickup from home", value: "home" },
 ];
 
-type ShopTypeValue = "secondhand" | "garage-sale" | "moving-sale" | "2dollarshop" | "groupbuy";
-
-const postShopTypeOptions: Array<{ value: ShopTypeValue; label: string; icon: string }> = [
-  { value: "secondhand", label: "Second Hands", icon: "ms-storefront" },
-  { value: "garage-sale", label: "Garage Sale", icon: "ms-warehouse" },
-  { value: "moving-sale", label: "Moving Sale", icon: "ms-local-shipping" },
-  { value: "2dollarshop", label: "2 Dollar Shop", icon: "ms-savings" },
-  { value: "groupbuy", label: "Group Buy", icon: "ms-groups" },
-];
-
 const dollarShopTierValues: BargainListingType[] = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"];
 
 const maxPhotoCount = marketListingImagePolicy.maxCount;
@@ -179,12 +171,11 @@ function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
 }
 
 
-export function PostAdPageClient({ initialListing, listingSpace = "market" }: { initialListing?: EditableListingInitialValues; listingSpace?: "market" | "bargain" }) {
+export function PostAdPageClient({ initialListing, listingSpace = "market", initialShopType }: { initialListing?: EditableListingInitialValues; listingSpace?: "market" | "bargain"; initialShopType?: ShopTypeValue }) {
   const router = useRouter();
   const { locale } = useLanguage();
   const isEditing = Boolean(initialListing);
   const [activeSpace, setActiveSpace] = useState<"market" | "bargain">(listingSpace);
-  const [showGroupBuyNotice, setShowGroupBuyNotice] = useState(false);
   const isBargainListing = isEditing ? listingSpace === "bargain" : activeSpace === "bargain";
   const listingTable = isBargainListing ? "bargain_listings" : "market_listings";
   const photoTable = isBargainListing ? "bargain_listing_photos" : "market_listing_photos";
@@ -674,7 +665,6 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (showGroupBuyNotice) return;
     const formElement = event.currentTarget;
     setIsSubmitting(true);
     setSubmitProgress(6);
@@ -964,9 +954,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     if (maximumPriceCents !== null) setPrice((maximumPriceCents / 100).toFixed(0));
   };
 
-  const activeShopType: ShopTypeValue = showGroupBuyNotice
-    ? "groupbuy"
-    : !isBargainListing
+  const appliedInitialShopType = useRef(false);
+  const activeShopType: ShopTypeValue = !isBargainListing
       ? "secondhand"
       : bargainType === "garage-sale" || bargainType === "moving-sale"
         ? bargainType
@@ -999,11 +988,13 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     setError(null);
     setNotice(null);
 
+    // Group Buy is posted on its own route: it collects a list of items with
+    // their own prices and a handover arrangement, none of which this form has
+    // a field for. The draft above is cleared first so nothing is left behind.
     if (nextShopType === "groupbuy") {
-      setShowGroupBuyNotice(true);
+      router.push("/market/groupbuy/create");
       return;
     }
-    setShowGroupBuyNotice(false);
 
     if (nextShopType === "secondhand") {
       setActiveSpace("market");
@@ -1085,14 +1076,19 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
     void generateItemDescriptions();
   }, [eventInventoryPhotos, generateItemDescriptions, isGeneratingItemDescriptions, isMultiItemSale]);
 
-  const createHeading = showGroupBuyNotice
-    ? "Group Buy"
-    : isMultiItemSale
+  useEffect(() => {
+    if (appliedInitialShopType.current || !initialShopType || isEditing) return;
+    appliedInitialShopType.current = true;
+    changeShopType(initialShopType);
+    // Runs once on mount; changeShopType is stable enough for that and adding it
+    // here would re-run the effect on every keystroke in the form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialShopType, isEditing]);
+
+  const createHeading = isMultiItemSale
       ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
       : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
-  const createDescription = showGroupBuyNotice
-    ? "This feature isn't available yet."
-    : isMultiItemSale
+  const createDescription = isMultiItemSale
       ? "Add a cover photo, then price and describe every item for local bargain hunters."
       : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
 
@@ -1107,21 +1103,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
         <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full post-title-field">
-              <div className="post-section-heading"><span>1</span><h2>{showGroupBuyNotice ? "Basics" : isMultiItemSale ? "Event details" : "Basics"}</h2></div>
-              {!isEditing && <div className="post-shop-type-field">
-                <span className="post-shop-type-label">Shop Type</span>
-                <div className="post-shop-type-options">
-                  {postShopTypeOptions.map(({ value, label, icon }) => (
-                    <button key={value} type="button" className={`post-shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`} onClick={() => changeShopType(value)}>
-                      <i className={`ms ${icon}`} aria-hidden="true" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>}
-              {showGroupBuyNotice ? (
-                <p className="post-field-hint post-coming-soon-hint">Group Buy isn&apos;t available yet — check back soon!</p>
-              ) : <>
+              <div className="post-section-heading"><span>1</span><h2>{isMultiItemSale ? "Event details" : "Basics"}</h2></div>
+              {!isEditing && <PostShopTypeSelector activeShopType={activeShopType} onSelect={changeShopType} />}
                 <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
                 <input id="post-title" name="title" type="text" minLength={2} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
                 {isMultiItemSale ? <>
@@ -1139,10 +1122,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
                 </> : (isBargainListing ? (
                   <SelectMenu id="bargain-type" name="bargain_type" label="Deal tier" icon="ms-sell" placeholder="Select deal tier" options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
                 ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
-              </>}
             </div>
 
-            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-form-grid post-form-grid-three post-category-fields">
+            {!isMultiItemSale && <div className="post-form-grid post-form-grid-three post-category-fields">
               <div className="post-section-heading"><span>3</span><h2>{isMultiItemSale ? "Sale settings" : "Pricing & category"}</h2></div>
               <div className="post-field post-price-field">
                 <label htmlFor="listing-price">Price (NZD)</label>
@@ -1157,7 +1139,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="ms-workspace-premium" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
             </div>}
 
-            {!showGroupBuyNotice && <fieldset
+            {<fieldset
               className={`photo-fieldset post-photo-field ${isDraggingPhotos ? "is-dragging" : ""}`}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -1240,9 +1222,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               </section>}
             </fieldset>}
 
-            {!showGroupBuyNotice && isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
+            {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
 
-            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-field post-field-full post-description-field">
+            {!isMultiItemSale && <div className="post-field post-field-full post-description-field">
               <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
               <div className="post-editor">
                 <div className="post-editor-toolbar" aria-label="Description formatting">
@@ -1318,20 +1300,20 @@ export function PostAdPageClient({ initialListing, listingSpace = "market" }: { 
               )}
             </div>}
 
-            {!showGroupBuyNotice && !isMultiItemSale && <div className="post-form-grid post-location-grid">
+            {!isMultiItemSale && <div className="post-form-grid post-location-grid">
               <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? "Event location & trade" : "Location & trade"}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
               <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="ms-local-shipping" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
               <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="ms-apartment" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
             </div>}
 
-            {!showGroupBuyNotice && (notice || error) && (
+            {(notice || error) && (
               <p className={`post-create-status ${error ? "is-error" : "is-success"}`} role="status">
                 {error ?? notice}
               </p>
             )}
 
-            {!showGroupBuyNotice && <div className="post-submit-row">
+            {<div className="post-submit-row">
               <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
               <PostSubmitButton
                 type="submit"
