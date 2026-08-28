@@ -108,12 +108,28 @@ export function GroupBuyCreateClient() {
   const submit = async (form: HTMLFormElement) => {
     const values = new FormData(form);
     const read = (name: string) => String(values.get(name) ?? "").trim();
+    const postItems = items.filter((item) => item.name.trim() || item.note.trim() || item.price.trim() || item.unit.trim() !== "each" || item.limit.trim() || item.photo);
     const cents = (name: string) => {
       const raw = read(name);
       if (!raw) return null;
       const value = Math.round(Number(raw) * 100);
       return Number.isFinite(value) ? value : null;
     };
+    const fail = (message: string) => {
+      setSubmitError(message);
+      return null;
+    };
+    if (read("title").length < 4 || read("summary").length < 4 || read("description").length < 20) {
+      return fail(isKorean ? "제목, 한 줄 소개, 안내를 모두 입력해 주세요." : "Enter the title, summary, and description.");
+    }
+    if (!postItems.length) return fail(isKorean ? "공동구매 상품을 하나 이상 입력해 주세요." : "Add at least one item.");
+    if (postItems.some((item) => item.name.trim().length < 2 || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0 || !item.unit.trim())) {
+      return fail(isKorean ? "각 상품의 이름, 가격, 단위를 모두 입력해 주세요." : "Complete every item's name, price, and unit.");
+    }
+    if (offersPickup && (!read("pickupAddress") || !read("pickupWindow"))) return fail(isKorean ? "직접 수령 주소와 시간을 입력해 주세요." : "Enter the pickup address and time.");
+    if (!offersPickup && !offersDelivery) return fail(isKorean ? "직접 수령 또는 배달 중 하나를 선택해 주세요." : "Choose pickup or delivery.");
+    if (prefix.length < 2 || !read("accountName") || !read("accountNumber")) return fail(isKorean ? "레퍼런스 앞글자와 입금 계좌 정보를 입력해 주세요." : "Enter the reference prefix and bank details.");
+    if (!values.get("terms")) return fail(isKorean ? "Tada 가이드라인 동의가 필요합니다." : "Please agree to Tada's guidelines.");
     const supabase = createBrowserSupabaseClient();
     if (!supabase) { setSubmitError(isKorean ? "서비스 연결을 확인할 수 없습니다." : "Unable to connect to Tada."); return; }
     const { data: { user } } = await supabase.auth.getUser();
@@ -123,7 +139,7 @@ export function GroupBuyCreateClient() {
     setSubmitError("");
     try {
       const paths = new Map<string, string | null>();
-      for (const item of items) {
+      for (const item of postItems) {
         if (!item.photo?.file) { paths.set(item.id, null); continue; }
         const extension = item.photo.file.name.split(".").pop()?.toLowerCase() || "webp";
         const path = user.id + "/group-buy/" + crypto.randomUUID() + "." + extension;
@@ -142,7 +158,7 @@ export function GroupBuyCreateClient() {
         pickup: { available: offersPickup, address: read("pickupAddress"), window: read("pickupWindow"), note: read("pickupNote") },
         delivery: { available: offersDelivery, feeCents: cents("deliveryFee") ?? 0, freeOverCents: cents("deliveryFree"), areas: read("deliveryAreas").split(",").map((area) => area.trim()).filter(Boolean) },
         bank: { accountName: read("accountName"), accountNumber: read("accountNumber") }, minimumOrderCents: cents("minimum"),
-        items: items.map((item) => ({ name: item.name.trim(), note: item.note.trim(), priceCents: Math.round(Number(item.price) * 100), unitLabel: item.unit.trim(), limitPerPerson: item.limit ? Number(item.limit) : null, photoPath: paths.get(item.id) ?? null, photoAlt: item.photo?.name ?? "" })),
+        items: postItems.map((item) => ({ name: item.name.trim(), note: item.note.trim(), priceCents: Math.round(Number(item.price) * 100), unitLabel: item.unit.trim(), limitPerPerson: item.limit ? Number(item.limit) : null, photoPath: paths.get(item.id) ?? null, photoAlt: item.photo?.name ?? "" })),
       }) });
       const result = await readApiResponse(response, groupBuyCreateResponseSchema);
       if (!result.data) throw new Error(result.error?.message ?? (isKorean ? "공동구매를 게시하지 못했습니다." : "Unable to publish group buy."));
@@ -198,7 +214,7 @@ export function GroupBuyCreateClient() {
           can hold a stale value. */}
       <input ref={photoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptPhoto(event.target.files); event.currentTarget.value = ""; }} />
 
-      <form className="post-ad-form groupbuy-form" key={formKey} onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
+      <form className="post-ad-form groupbuy-form" key={formKey} noValidate onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
         <section className="post-description-field">
           <div className="post-section-heading"><span>1</span><h2>{text.basics}</h2></div>
           {/* Picking any other type hands back to the market form, the same way
@@ -307,7 +323,7 @@ export function GroupBuyCreateClient() {
         </section>
 
         <div className="post-submit-row">
-          <label className="terms-row"><input type="checkbox" required /><span>{isKorean ? "직접 판매하는 상품이며 Tada 가이드라인을 지킵니다." : "I sell these items myself and follow Tada's guidelines."}</span></label>
+          <label className="terms-row"><input type="checkbox" name="terms" /><span>{isKorean ? "직접 판매하는 상품이며 Tada 가이드라인을 지킵니다." : "I sell these items myself and follow Tada's guidelines."}</span></label>
           {submitError ? <p className="post-create-status" role="alert">{submitError}</p> : null}
           <button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "게시 중…" : "Publishing…") : text.publish}</span></button>
         </div>
