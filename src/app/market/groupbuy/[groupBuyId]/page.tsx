@@ -3,7 +3,7 @@ import { GroupBuyDetailClient } from "@/components/groupbuy/GroupBuyDetailClient
 import { GroupBuyShell } from "@/components/groupbuy/GroupBuyShell";
 import type { GroupBuy } from "@/data/groupBuy";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export default async function GroupBuyDetailRoute({ params }: { params: Promise<{ groupBuyId: string }> }) {
   const { groupBuyId } = await params;
@@ -13,9 +13,10 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
   if (!data) notFound();
   const { data: sellerProfile } = await supabase
     .from("profiles")
-    .select("display_name,region_city,region_suburb")
+    .select("display_name,avatar_path,region_city,region_suburb")
     .eq("id", data.owner_id)
     .maybeSingle();
+  const sellerAvatarUrl = sellerProfile?.avatar_path ? await getSignedStorageImage("profile-avatars", sellerProfile.avatar_path, "avatar") : null;
   const itemRows = (data.group_buy_items ?? []) as Array<{ id: string; name: string; note: string; price_cents: number; unit_label: string; limit_per_person: number | null; photo_path: string | null; photo_alt: string | null; display_order: number }>;
   const signedImages = await getSignedStorageImages("group-buy-images", itemRows.flatMap((item) => item.photo_path ? [item.photo_path] : []), "thumbnail");
   const millisecondsUntilClose = new Date(data.closes_at).getTime() - Date.now();
@@ -28,6 +29,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
       location: [sellerProfile?.region_suburb, sellerProfile?.region_city].filter(Boolean).join(", ") || "New Zealand",
       phone: "",
       joinedLabel: "Tada group buy host",
+      avatarUrl: sellerAvatarUrl,
     },
     pickup: { available: data.pickup_available, address: data.pickup_address ?? "", window: data.pickup_window ?? "", note: data.pickup_note ?? "" },
     delivery: { available: data.delivery_available, feeCents: data.delivery_fee_cents, freeOverCents: data.delivery_free_over_cents, areas: data.delivery_areas ?? [], note: "" },

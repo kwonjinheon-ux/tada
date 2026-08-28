@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { encodeGroupBuyBasket } from "@/lib/market/group-buy-basket";
 import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
+import { Avatar } from "@/components/ui/Avatar";
 
 /** The list, and the basket built from it.
  *
@@ -53,7 +54,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
           <h1>{groupBuy.title}</h1>
           <p className="groupbuy-hero-summary">{groupBuy.summary}</p>
           <p className="groupbuy-hero-seller">
-            <i className="ms ms-storefront" aria-hidden="true" />
+            <Avatar className="groupbuy-seller-avatar" src={groupBuy.seller.avatarUrl} name={groupBuy.seller.name} alt={`${groupBuy.seller.name} profile`} colored />
             <span><strong>{groupBuy.seller.name}</strong><small>{groupBuy.seller.location} · {groupBuy.seller.joinedLabel}</small></span>
           </p>
           <dl className="groupbuy-hero-facts">

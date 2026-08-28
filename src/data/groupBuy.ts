@@ -32,7 +32,7 @@ export type GroupBuy = {
   referencePrefix: string;
   coverImage: string;
   coverAlt: string;
-  seller: { name: string; location: string; phone: string; joinedLabel: string };
+  seller: { name: string; location: string; phone: string; joinedLabel: string; avatarUrl?: string | null };
   pickup: { available: boolean; address: string; window: string; note: string };
   delivery: { available: boolean; feeCents: number; freeOverCents: number | null; areas: string[]; note: string };
   closesLabel: string;
