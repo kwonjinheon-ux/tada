@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import { GroupBuyCard } from "@/components/groupbuy/GroupBuyCard";
 import { groupBuys, groupBuyText, type GroupBuyStatus } from "@/data/groupBuy";
@@ -40,14 +41,16 @@ export function GroupBuyBrowseClient() {
         ))}
       </aside>
 
-      <div className="groupbuy-filter-row" role="group" aria-label={locale === "ko" ? "상태로 거르기" : "Filter by status"}>
-        {filters.map((value) => (
-          <button key={value} type="button" className={value === status ? "is-selected" : ""} aria-pressed={value === status} onClick={() => setStatus(value)}>
-            {value === "all" ? t("all") : text.status[value]}
-          </button>
-        ))}
-        <span className="groupbuy-filter-count">{text.count(visible.length)}</span>
-      </div>
+      <BrowseResultsToolbar
+        viewMode="grid"
+        onViewModeChange={() => undefined}
+        showViewToggle={false}
+        chips={filters.map((value) => ({ value, label: value === "all" ? t("all") : text.status[value] }))}
+        activeChipValue={status}
+        onChipSelect={(value) => setStatus(value as GroupBuyStatus | "all")}
+        chipStyle="sort"
+        resultsLabel={text.count(visible.length)}
+      />
 
       <div className="groupbuy-grid">
         {visible.map((groupBuy) => <GroupBuyCard key={groupBuy.id} groupBuy={groupBuy} />)}
