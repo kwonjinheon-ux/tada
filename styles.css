@@ -11994,7 +11994,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .groupbuy-item-media { position: relative; width: 72px; height: 72px; overflow: hidden; border-radius: var(--radius-sm); background: var(--color-surface-sunken); }
 .groupbuy-item-media > img { object-fit: cover; }
 .groupbuy-item-media { padding: 0; border: 0; cursor: zoom-in; }
-.groupbuy-photo-dialog { display: grid; place-items: center; padding: var(--space-4); }
+.groupbuy-photo-dialog { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: var(--space-4); background: color-mix(in srgb, var(--color-ink) 72%, transparent); }
 .groupbuy-photo-dialog-content { position: relative; width: min(760px, 100%); max-height: 88vh; padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-xl); }
 .groupbuy-photo-dialog-content > img { display: block; width: 100%; max-height: calc(88vh - 32px); object-fit: contain; }
 .groupbuy-photo-dialog-content .ui-icon-button { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; }

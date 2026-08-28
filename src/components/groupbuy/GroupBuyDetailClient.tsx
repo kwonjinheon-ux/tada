@@ -16,7 +16,7 @@ import { DialogOverlay } from "@/components/ui/DialogOverlay";
  *  A group buy has no stock to hold and Tada takes no payment, so there is
  *  nothing to reserve server-side between picking items and submitting the
  *  form — the basket is genuinely just the shape of the request. */
-export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
+export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: GroupBuy; isOwner?: boolean }) {
   const { locale } = useLanguage();
   const text = groupBuyText(locale);
   const isKorean = locale === "ko";
@@ -132,7 +132,11 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
         </div>
 
         {/* The basket stays in view while the reader works down the list. */}
-        <aside className="groupbuy-basket ui-card" aria-label={text.yourOrder}>
+        {isOwner ? <aside className="groupbuy-basket ui-card" aria-label={isKorean ? "판매자 관리" : "Seller management"}>
+          <h2>{isKorean ? "판매자 관리" : "Seller management"}</h2>
+          <p className="groupbuy-basket-empty">{isKorean ? "판매자는 상품을 주문하지 않습니다. 참여자의 주문과 개인정보를 주문 관리에서 확인하세요." : "Sellers do not place an order. View participant orders and details in order management."}</p>
+          <Link className="ui-button ui-button--primary ui-button--block" href={`/market/groupbuy/${groupBuy.id}/orders`}>{isKorean ? "주문 관리" : "Manage orders"}</Link>
+        </aside> : <aside className="groupbuy-basket ui-card" aria-label={text.yourOrder}>
           <h2>{text.yourOrder}</h2>
           {lines.length ? (
             <ul className="groupbuy-basket-lines">
@@ -159,7 +163,7 @@ export function GroupBuyDetailClient({ groupBuy }: { groupBuy: GroupBuy }) {
             {isClosed ? text.status.closed : text.reviewOrder}
           </Link>
           <p className="groupbuy-basket-note"><i className="ms ms-payments" aria-hidden="true" /> {isKorean ? "Tada는 결제를 대행하지 않습니다. 판매자에게 직접 입금합니다." : "Tada takes no payment. You transfer to the seller directly."}</p>
-        </aside>
+        </aside>}
       </div>
       {previewItem ? <DialogOverlay className="groupbuy-photo-dialog" onClose={() => setPreviewItemId(null)} aria-label={isKorean ? "상품 사진 크게 보기" : "Item photo preview"}><div className="groupbuy-photo-dialog-content"><button className="ui-icon-button" type="button" onClick={() => setPreviewItemId(null)} aria-label={isKorean ? "닫기" : "Close"}><i className="ms ms-close" aria-hidden="true" /></button><Image src={previewItem.image} alt={previewItem.imageAlt} width={1200} height={1200} sizes="(max-width: 767px) 92vw, 760px" /></div></DialogOverlay> : null}
     </section>

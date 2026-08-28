@@ -11,6 +11,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
   if (!supabase) notFound();
   const { data } = await supabase.from("group_buys").select("*,group_buy_items(*)").eq("id", groupBuyId).maybeSingle();
   if (!data) notFound();
+  const { data: { user } } = await supabase.auth.getUser();
   const { data: sellerProfile } = await supabase
     .from("profiles")
     .select("display_name,avatar_path,region_city,region_suburb")
@@ -40,5 +41,5 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
     items: itemRows.sort((a, b) => a.display_order - b.display_order).map((item) => ({ id: item.id, name: item.name, note: item.note, priceCents: item.price_cents, unitLabel: item.unit_label, limitPerPerson: item.limit_per_person, image: item.photo_path ? signedImages.get(item.photo_path) ?? "/images/home/journey-market.png" : "/images/home/journey-market.png", imageAlt: item.photo_alt ?? item.name, orderedCount: 0 })),
   };
   if (!groupBuy) notFound();
-  return <GroupBuyShell><GroupBuyDetailClient groupBuy={groupBuy} /></GroupBuyShell>;
+  return <GroupBuyShell><GroupBuyDetailClient groupBuy={groupBuy} isOwner={user?.id === data.owner_id} /></GroupBuyShell>;
 }
