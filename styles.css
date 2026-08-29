@@ -11434,6 +11434,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .mobile-notifications, .mobile-language-button { display: grid; }
 }
 
+@media (min-width: 768px) {
+  .market-filter-panel .filter-list button,
+  .market-filter-panel .filter-list a { font-size: var(--text-md); }
+}
+
 /* Mobile keeps the desktop Market rail's hierarchy: Market type is the
    primary browse mode, while Categories are a quieter secondary filter.
    The drawer still uses compact touch rows and mobile type sizes. */
