@@ -10777,9 +10777,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
      stamp beside the text rather than the card's main image, and it shrank
      against the copy as the phone got wider. */
   grid-template-columns: minmax(116px, 36%) minmax(0, 1fr);
-  grid-template-areas:
-    "media body"
-    "more  more";
+  grid-template-areas: "media body";
   /* Border, radius and surface come from .ui-card. */
   overflow: hidden;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
@@ -10814,9 +10812,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 /* Logo, then name: the two together are the provider's identity, so they sit
-   on one line and everything else hangs beneath them. The right inset clears
-   the save button, which on a phone row overlaps this line rather than the
-   photo. */
+   on one line and everything else hangs beneath them. */
 .services-listing-identity {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -10875,21 +10871,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   font-size: var(--text-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* The provider's own introduction. Two lines and then an ellipsis, so a long
-   description cannot push one card out of step with the rest of the grid. */
-.services-listing-summary {
-  display: -webkit-box;
-  min-width: 0;
-  overflow: hidden;
-  margin: 0;
-  color: var(--color-ink-soft);
-  font-size: var(--text-sm);
-  line-height: 1.45;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
 }
 
 /* Rating and reviews are the reason a reader picks one provider over another,
@@ -10963,52 +10944,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   font-size: var(--text-sm);
 }
 
-/* The number is the label, and it carries no phone glyph: a ten-digit NZ
-   mobile needs the whole half to itself, and beside an icon it was cut to
-   "0211234…", which is worse than no icon. It still shortens rather than
-   pushing the button wider, and the tel: link and the accessible name always
-   carry it in full. */
 .services-listing-call { border-color: var(--color-line); color: var(--color-ink-soft); }
-.services-listing-call > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .services-listing-call:hover { border-color: var(--color-primary); color: var(--color-primary-strong); }
+.services-listing-call .ms { flex: 0 0 auto; font-size: var(--text-lg); }
 .services-listing-message .ms { flex: 0 0 auto; font-size: var(--text-lg); }
-
-/* The footer bar carries the two things a reader does with a card they like:
-   open it, or keep the provider's details. Splitting the existing full-width
-   bar in two adds the second without crowding the actions above it. */
-.services-listing-footer {
-  grid-area: more;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  border-top: 1px solid var(--color-line-soft);
-}
-
-.services-listing-details-link,
-.services-listing-card-save {
-  display: flex;
-  min-width: 0;
-  min-height: var(--control-h-xl);
-  gap: var(--space-1);
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding-inline: var(--space-3);
-  border: 0;
-  background: transparent;
-  color: var(--color-primary);
-  font: inherit;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.services-listing-details-link:hover,
-.services-listing-card-save:hover { background: var(--color-primary-soft); }
-.services-listing-card-save { border-left: 1px solid var(--color-line-soft); color: var(--color-ink-soft); }
-.services-listing-card-save:disabled { color: var(--color-muted); cursor: wait; }
 
 .services-listing-save {
   --save-button-size: var(--control-h-md);
