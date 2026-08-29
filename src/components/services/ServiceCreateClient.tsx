@@ -139,6 +139,7 @@ export function ServiceCreateClient() {
       const foundedYear = foundedYearValue ? Number(foundedYearValue) : null;
       const detailFields = serviceDetailFields(category, locale);
       const detailValues = Object.fromEntries(detailFields.map((field) => [field.key, String(formData.get(`service-detail-${field.key}`) ?? "").trim()]));
+      const languages = formData.getAll("service-language").map((value) => String(value)).filter(Boolean).slice(0, 5);
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
       if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
@@ -174,6 +175,8 @@ export function ServiceCreateClient() {
       founded_year: foundedYear,
       price_from: priceFrom,
       price_unit: priceUnit,
+      languages: languages.length ? languages : ["English"],
+      show_exact_address: formData.get("show-exact-address") === "on",
       service_details: detailValues,
       // The column defaults to 'pending', and nothing in the product moves a
       // service off that state — there is no moderation queue for services the

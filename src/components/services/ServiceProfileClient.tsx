@@ -15,10 +15,10 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 type ServiceProfile = {
   id: string; ownerId: string | null; provider: string; businessName: string; category: ServiceCategoryId; description: string;
   providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[];
-  phone: string; email: string | null; website: string | null; streetAddress: string | null;
+  phone: string; email: string | null; website: string | null; streetAddress: string | null; showExactAddress: boolean;
   weekdayHours: string | null; saturdayHours: string | null; sundayHours: string | null;
   foundedYear: number | null; rating: number; reviewCount: number; priceFrom: number | null;
-  priceUnit: string | null; serviceDetails: Record<string, unknown>; logo: string | null;
+  priceUnit: string | null; languages: string[]; serviceDetails: Record<string, unknown>; logo: string | null;
   images: string[]; badges: ServiceBadge[];
 };
 
@@ -30,9 +30,9 @@ function previewProfile(serviceId: string, isKorean: boolean): ServiceProfile | 
     description: isKorean ? "지역 고객에게 믿을 수 있는 서비스를 제공하는 Tada 서비스 제공자입니다. 필요한 내용을 편하게 문의해 주세요." : "A trusted local Tada provider ready to help with your next job. Get in touch to discuss what you need.",
     providerType: service.providerType === "businesses" ? "business" : "sole_trader",
     serviceAreas: ["Hamilton"], suburbs: [], phone: service.phone, email: null, website: null,
-    streetAddress: null, weekdayHours: null, saturdayHours: null, sundayHours: null,
+    streetAddress: null, showExactAddress: false, weekdayHours: null, saturdayHours: null, sundayHours: null,
     foundedYear: null, rating: service.rating, reviewCount: service.reviewCount, priceFrom: null,
-    priceUnit: null, serviceDetails: {}, logo: null, images: [service.image], badges: service.badges,
+    priceUnit: null, languages: ["English"], serviceDetails: {}, logo: null, images: [service.image], badges: service.badges,
   };
 }
 
@@ -58,7 +58,7 @@ function ServiceProfileContactCard({
         </div>
       </header>
       <p><i className="ms ms-location-on" aria-hidden="true" /> {location}</p>
-      {profile.streetAddress ? <p><i className="ms ms-my-location" aria-hidden="true" /> {profile.streetAddress}</p> : null}
+      {profile.streetAddress && profile.showExactAddress ? <p><i className="ms ms-my-location" aria-hidden="true" /> {profile.streetAddress}</p> : null}
       {directionsHref ? <a className="ui-button ui-button--primary service-profile-directions" href={directionsHref} target="_blank" rel="noreferrer"><i className="ms ms-directions" aria-hidden="true" /> {isKorean ? "길찾기" : "Get directions"}</a> : null}
       <p><i className="ms ms-work" aria-hidden="true" /> {profile.providerType === "business" ? (isKorean ? "지역 업체" : "Local business") : (isKorean ? "개인 사업자" : "Sole trader")}</p>
       <p><i className="ms ms-call" aria-hidden="true" /> <a href={`tel:${profile.phone.replace(/\s/g, "")}`}>{profile.phone}</a></p>
@@ -89,7 +89,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
       if (!supabase) { if (isCurrent) setIsLoading(false); return; }
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,show_exact_address,weekday_hours,saturday_hours,sunday_hours,founded_year,rating,review_count,price_from,price_unit,languages,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
         .eq("id", serviceId).maybeSingle();
       if (error || !data || !isCurrent) { if (isCurrent) setIsLoading(false); return; }
       const photos = [...(data.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
@@ -105,10 +105,10 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
         id: data.id, ownerId: data.owner_id, provider: data.provider_name, businessName: data.business_name ?? data.provider_name, category: data.category_slug as ServiceCategoryId,
         description: data.description, providerType: data.provider_type, serviceAreas: data.service_areas ?? [],
         suburbs: data.suburbs ?? [], phone: data.phone, email: data.email, website: data.website,
-        streetAddress: data.street_address, weekdayHours: data.weekday_hours, saturdayHours: data.saturday_hours,
+        streetAddress: data.street_address, showExactAddress: data.show_exact_address ?? true, weekdayHours: data.weekday_hours, saturdayHours: data.saturday_hours,
         sundayHours: data.sunday_hours, foundedYear: data.founded_year, rating: Number(data.rating),
         reviewCount: data.review_count, priceFrom: data.price_from === null ? null : Number(data.price_from),
-        priceUnit: data.price_unit, serviceDetails: data.service_details && typeof data.service_details === "object" && !Array.isArray(data.service_details) ? data.service_details : {},
+        priceUnit: data.price_unit, languages: data.languages ?? ["English"], serviceDetails: data.service_details && typeof data.service_details === "object" && !Array.isArray(data.service_details) ? data.service_details : {},
         logo: logoPath ? urlsByPath.get(logoPath) ?? null : null,
         images: galleryPaths.map((path) => urlsByPath.get(path)).filter((url): url is string => Boolean(url)),
         badges: Number(data.rating) >= 4.5 ? ["highlyRated"] : ["new"],

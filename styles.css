@@ -11093,6 +11093,20 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-create-page .post-location-grid { order: 5; }
 .service-create-page .service-trust-requirements { order: 6; }
 .service-create-page .post-submit-row { order: 7; }
+.service-create-page .post-ad-form { gap: var(--space-4); }
+.service-create-page .post-ad-form > section, .service-create-page .post-ad-form > fieldset { padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: none; }
+.service-create-page .post-ad-form > .post-title-field { border-color: var(--green-150); background: linear-gradient(135deg, var(--green-soft-50), var(--color-surface) 70%); }
+.service-create-page .post-ad-form .post-section-heading { align-items: center; margin-bottom: var(--space-4); }
+.service-create-page .post-ad-form .post-section-heading > span:first-child { width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--radius-circle); background: var(--color-primary-strong); color: var(--color-surface); font-size: var(--text-xs); font-weight: var(--weight-bold); }
+.service-create-page .post-ad-form .post-section-heading h2 { font-size: var(--text-lg); letter-spacing: -.01em; }
+.service-create-page .post-ad-form .post-description-field { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.service-create-page .post-ad-form .post-description-field > .post-section-heading, .service-create-page .post-ad-form .post-description-field > .post-field:nth-of-type(3), .service-create-page .post-ad-form .post-description-field > .service-category-details { grid-column: 1 / -1; }
+.service-create-page .post-ad-form .service-logo-field { display: grid; gap: var(--space-3); }
+.service-create-page .post-ad-form .service-create-photo { margin: 0; }
+.service-create-page .post-ad-form .service-create-contact { background: var(--color-surface-soft); }
+.service-create-page .service-create-submit { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: calc(var(--space-4) + 26px) var(--space-4) var(--space-4); border: 1px solid var(--green-150); border-radius: var(--radius-md); background: var(--green-soft-50); }
+.service-create-page .service-create-submit::before { content: "Review & publish"; position: absolute; top: var(--space-4); left: var(--space-4); color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -.01em; }
+html[lang="ko"] .service-create-page .service-create-submit::before { content: "검토 및 등록"; }
 .service-create-page textarea { width: 100%; min-height: 132px; resize: vertical; padding: var(--space-3); border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--color-ink); font: inherit; font-size: var(--text-base); line-height: 1.5; outline: none; }
 .service-create-page textarea:focus { border-color: rgba(0, 88, 176, .58); box-shadow: 0 0 0 3px rgba(0, 113, 227, .1); }
 .service-create-contact { display: grid; gap: var(--space-3); }
@@ -11106,6 +11120,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-category-details-heading strong { color: var(--color-ink); font-size: var(--text-md); }
 .service-category-details-heading p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.45; }
 .service-category-details-grid { gap: var(--space-3); }
+.service-language-field, .service-address-privacy-field { display: grid; gap: var(--space-2); margin: 0; padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface-soft); }
+.service-language-field legend, .service-address-privacy-field legend { padding: 0; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.service-language-field > p, .service-address-privacy-field > p { margin: 0; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.45; }
+.service-language-field > div { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.service-language-field label { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-circle); background: var(--color-surface); color: var(--color-ink-soft); font-size: var(--text-xs); cursor: pointer; }
+.service-language-field input, .service-address-privacy-field input { width: 14px; height: 14px; margin: 0; accent-color: var(--color-primary); }
+.service-address-privacy-field label { display: flex; align-items: center; gap: var(--space-2); color: var(--color-ink-soft); font-size: var(--text-sm); cursor: pointer; }
 .service-profile-details { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); margin: 0; }
 .service-profile-details > div { display: grid; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-surface-soft); }
 .service-profile-details dt { color: var(--color-muted); font-size: var(--text-xs); }
@@ -11130,6 +11151,16 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .service-create-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .service-create-contact .post-section-heading { grid-column: 1 / -1; }
   .service-trust-requirements > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767.98px) {
+  .service-create-page .post-ad-form > section, .service-create-page .post-ad-form > fieldset { padding: var(--space-3); }
+  .service-create-page .post-ad-form .post-section-heading { margin-bottom: var(--space-3); }
+  .service-create-page .post-ad-form .post-section-heading h2 { font-size: var(--text-md); }
+  .service-create-page .post-ad-form .post-description-field { grid-template-columns: 1fr; }
+  .service-create-page .post-ad-form .post-description-field > * { grid-column: auto; }
+  .service-create-page .service-create-submit { grid-template-columns: 1fr; padding: calc(var(--space-3) + 24px) var(--space-3) var(--space-3); }
+  .service-create-page .service-create-submit::before { top: var(--space-3); left: var(--space-3); font-size: var(--text-md); }
 }
 
 @media (min-width: 768px) {
