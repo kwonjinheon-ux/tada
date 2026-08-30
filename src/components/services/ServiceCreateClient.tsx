@@ -36,7 +36,7 @@ export function ServiceCreateClient() {
   const { locale } = useLanguage();
   const isKorean = locale === "ko";
   const categoryLabels = servicesCategoryLabels(locale);
-  const [category, setCategory] = useState<ServiceCategoryId | "">("");
+  const [category, setCategory] = useState<ServiceCategoryId | "">("cleaning");
   const [serviceDetailValues, setServiceDetailValues] = useState<Record<string, string>>({});
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [logo, setLogo] = useState<PhotoPreview | null>(null);
