@@ -11108,6 +11108,25 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .service-create-page .post-ad-form .service-create-contact { background: var(--color-surface-soft); }
 .service-create-page .service-create-submit { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: calc(var(--space-5) + 30px) var(--space-5) var(--space-5); border: 1px solid var(--green-150); border-radius: var(--radius-md); background: var(--green-soft-50); }
 .service-create-page .service-create-submit::before { content: "Review & publish"; position: absolute; top: var(--space-5); left: var(--space-5); color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -.012em; }.service-create-page .service-create-submit::after { content: "Confirm the details above, then submit your listing for review."; position: absolute; top: calc(var(--space-5) + 25px); left: var(--space-5); color: var(--color-muted); font-size: var(--text-xs); }html[lang="ko"] .service-create-page .service-create-submit::before { content: "검토 및 등록"; } html[lang="ko"] .service-create-page .service-create-submit::after { content: "입력한 내용을 확인한 뒤 등록 심사를 신청해 주세요."; }
+
+/* The registration editor keeps the app shell intact and adds an in-context progress rail only inside the central authoring surface. */
+@media (min-width: 1024px) {
+  .service-create-page .post-ad-card { min-width: 0; }
+  .service-create-page .post-ad-form { position: relative; display: grid; grid-template-columns: 168px minmax(0, 1fr); column-gap: var(--space-5); align-items: start; }
+  .service-create-page .post-ad-form::before { content: "01  Provider identity\A\A02  About\A\A03  Service details & pricing\A\A04  Business information\A\A05  Work gallery\A\A06  Service area\A\A07  Trust & safety"; grid-column: 1; grid-row: 1 / span 7; align-self: stretch; white-space: pre-wrap; color: var(--color-muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.65; }
+  .service-create-page .post-ad-form::after { content: ""; position: absolute; top: 30px; bottom: 84px; left: 14px; width: 1px; background: var(--color-line-soft); pointer-events: none; }
+  .service-create-page .post-ad-form > section, .service-create-page .post-ad-form > fieldset, .service-create-page .post-ad-form > .post-submit-row { grid-column: 2; }
+  .service-create-page .post-ad-form > .post-title-field { position: relative; }
+  .service-create-page .post-ad-form > .post-title-field::before { content: ""; position: absolute; left: calc(var(--space-5) * -1 - 183px); top: 15px; width: 28px; height: 28px; border: 5px solid var(--color-surface); border-radius: var(--radius-circle); background: var(--color-primary-strong); box-shadow: 0 0 0 1px var(--green-150); }
+}
+
+.service-create-page .post-ad-intro { max-width: none; padding: var(--space-2) 0 var(--space-3); border-bottom: 1px solid var(--color-line-soft); }
+.service-create-page .service-create-information { margin-top: var(--space-4); border-color: color-mix(in srgb, var(--color-primary-strong) 16%, var(--color-line)); background: linear-gradient(90deg, var(--green-soft-50), var(--color-surface)); }
+.service-create-page .post-shop-type-options { gap: var(--space-2); }
+.service-create-page .post-shop-type-options button { min-height: var(--control-h-md); border-radius: var(--radius-sm); font-size: var(--text-sm); }
+.service-create-page .post-field > label, .service-create-page .select-menu-label { color: var(--color-ink-soft); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.service-create-page .post-field input, .service-create-page .select-menu-trigger { min-height: var(--control-h-md); border-radius: var(--radius-xs); font-size: var(--text-sm); }
+.service-create-page textarea { min-height: 112px; border-radius: var(--radius-xs); font-size: var(--text-sm); }
 .service-create-page textarea { width: 100%; min-height: 132px; resize: vertical; padding: var(--space-3); border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--color-ink); font: inherit; font-size: var(--text-base); line-height: 1.5; outline: none; }
 .service-create-page textarea:focus { border-color: rgba(0, 88, 176, .58); box-shadow: 0 0 0 3px rgba(0, 113, 227, .1); }
 .service-create-contact { display: grid; gap: var(--space-3); }
