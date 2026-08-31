@@ -7,12 +7,13 @@ import { drawServiceCard, preferredServiceCardFormat, serviceCardFormatLabel, se
 type ServiceCardPreviewProps = {
   content: ServiceCardContent;
   className?: string;
+  titleId?: string;
 };
 
 /** The provider's card, drawn once and used twice: this canvas is the preview,
  *  and saving hands the very same canvas to `toBlob`. See
  *  `lib/media/service-card-image` for the artwork itself. */
-export function ServiceCardPreview({ content, className = "" }: ServiceCardPreviewProps) {
+export function ServiceCardPreview({ content, className = "", titleId = "service-card-preview-title" }: ServiceCardPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Server and client must agree on the first render, so the phone's portrait
   // default is applied after mount rather than guessed during it.
@@ -42,11 +43,11 @@ export function ServiceCardPreview({ content, className = "" }: ServiceCardPrevi
   const { width, height } = serviceCardSizes[format];
 
   return (
-    <section className={`service-card-preview ${className}`.trim()} aria-labelledby="service-card-preview-title">
+    <section className={`service-card-preview ${className}`.trim()} aria-labelledby={titleId}>
       <header>
         <div>
           <p className="service-profile-eyebrow">{isKorean ? "미리보기" : "Preview"}</p>
-          <h2 id="service-card-preview-title">{isKorean ? "저장용 업체 카드" : "Saveable provider card"}</h2>
+          <h2 id={titleId}>{isKorean ? "저장용 업체 카드" : "Saveable provider card"}</h2>
         </div>
         <div className="service-card-preview-formats" role="group" aria-label={isKorean ? "카드 형식" : "Card format"}>
           {serviceCardFormats.map((option) => (

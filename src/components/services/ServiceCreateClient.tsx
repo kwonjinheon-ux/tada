@@ -5,6 +5,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SelectMenu } from "@/components/ui/SelectMenu";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { IconButton } from "@/components/ui/IconButton";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
 import { ServiceCardPreview } from "@/components/services/ServiceCardPreview";
@@ -45,6 +47,7 @@ export function ServiceCreateClient() {
   const [isDraggingPhotos, setIsDraggingPhotos] = useState(false);
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [serviceArea, setServiceArea] = useState("Hamilton");
   const [suburb, setSuburb] = useState("");
@@ -66,6 +69,14 @@ export function ServiceCreateClient() {
   useEffect(() => { photosRef.current = photos; }, [photos]);
   useEffect(() => { logoRef.current = logo; }, [logo]);
   useEffect(() => () => { photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.url)); logoRef.current && URL.revokeObjectURL(logoRef.current.url); }, []);
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsPreviewOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [isPreviewOpen]);
 
   const addLogo = (files: FileList | null) => {
     const file = Array.from(files ?? []).find(isAcceptedMarketListingImage);
@@ -253,7 +264,7 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={(next) => { setServiceArea(next); setSuburb(""); }} onSuburbChange={setSuburb} />
+        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={(next) => { setServiceArea(next); setSuburb(""); }} onSuburbChange={setSuburb} />
         <form className="post-ad-form service-create-legacy-form" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>
           <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{isKorean ? "서비스명" : "Service name"}</label><input id="service-name" name="service-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: 수학 과외 또는 잔디 관리" : "e.g. Maths tutoring or lawn care"} /></div><div className="post-field"><label htmlFor="business-name">{isKorean ? "업체명" : "Business name"}</label><input id="business-name" name="business-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: Hamilton Maths Academy" : "e.g. Hamilton Maths Academy"} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" name="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div><ServiceCategoryDetailsFields key={category} category={category} locale={locale} values={serviceDetailValues} onValueChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} /></section>
@@ -269,5 +280,6 @@ export function ServiceCreateClient() {
       </div>
       </section>
       <aside className="post-ad-sidebar service-create-sidebar service-create-support-rail" aria-label={isKorean ? "서비스 등록 도움말" : "Service registration help"}><ServiceCardPreview content={previewContent} className="ui-card service-create-card-preview" /><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["ms ms-checklist", "ms ms-location-on", "ms ms-security"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="ms ms-security" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["ms ms-description", "ms ms-badge", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="ms ms-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
+      {isPreviewOpen ? <DialogOverlay className="service-create-preview-dialog" onClose={() => setIsPreviewOpen(false)} aria-labelledby="service-create-preview-dialog-title"><section className="service-create-preview-dialog-panel"><IconButton className="service-create-preview-dialog-close" type="button" autoFocus onClick={() => setIsPreviewOpen(false)} aria-label={isKorean ? "미리보기 닫기" : "Close preview"}><i className="ms ms-close" aria-hidden="true" /></IconButton><p className="service-create-preview-dialog-dismiss"><i className="ms ms-info" aria-hidden="true" />{isKorean ? "팝업 바깥을 누르면 미리보기가 닫힙니다." : "Tap outside the preview to close it."}</p><ServiceCardPreview content={previewContent} className="service-create-dialog-card-preview" titleId="service-create-preview-dialog-title" /></section></DialogOverlay> : null}
   </main>;
 }
