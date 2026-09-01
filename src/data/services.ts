@@ -1,7 +1,7 @@
 // Services preview data and copy. It lives outside the components so the page
 // and its filter rail can share one source without importing each other.
 
-export type ServiceCategoryId = "cleaning" | "cleaningServices" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto" | "computerIt";
+export type ServiceCategoryId = "cleaning" | "cleaningServices" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto" | "computerIt" | "realEstate" | "travelStudy";
 export type ServiceId = "sparkle-clean" | "fixit-furniture" | "math-mentors" | "moving-help" | "garden-lawn" | "beauty-services" | "happy-paws" | "auto-repair";
 export type TrustPointId = "verified" | "payments" | "support";
 export type ServiceBadge = "verified" | "highlyRated" | "topRated" | "fastResponder" | "new" | "sponsored" | "popular";
@@ -41,12 +41,14 @@ export type ServiceListing = {
 export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> = [
   { id: "cleaning", icon: "ms-restaurant" },
   { id: "cleaningServices", icon: "ms-home" },
+  { id: "realEstate", icon: "ms-apartment" },
   { id: "computerIt", icon: "ms-computer" },
   { id: "handyman", icon: "ms-handyman" },
   { id: "moving", icon: "ms-local-shipping" },
   { id: "auto", icon: "ms-directions-car" },
   { id: "gardening", icon: "ms-yard" },
   { id: "tutoring", icon: "ms-school" },
+  { id: "travelStudy", icon: "ms-flight-takeoff" },
   { id: "beauty", icon: "ms-content-cut" },
   { id: "petCare", icon: "ms-pets" },
 ];
@@ -55,10 +57,12 @@ const serviceCategoryLabels = {
   en: {
     cleaning: "Food & Catering", cleaningServices: "Cleaning & Home Services", handyman: "Home & Trades", moving: "Moving & Transport", auto: "Automotive",
     gardening: "Gardening", tutoring: "Education & Tutoring", beauty: "Beauty", petCare: "Pet Care", computerIt: "Computer & IT",
+    realEstate: "Real Estate & Housing", travelStudy: "Travel & Study Abroad",
   },
   ko: {
     cleaning: "음식·케이터링", cleaningServices: "청소·생활서비스", handyman: "집수리·전문기술", moving: "이사·운송", auto: "자동차",
     gardening: "정원 관리", tutoring: "교육·과외", beauty: "뷰티", petCare: "펫 케어", computerIt: "컴퓨터·IT",
+    realEstate: "부동산·주거", travelStudy: "여행·유학",
   },
 } as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 
@@ -302,6 +306,26 @@ const serviceDetailDefinitions: Record<ServiceCategoryId, readonly ServiceDetail
     { key: "support_type", input: "select", label: localized("Support method", "지원 방식"), options: [option("onsite", "On-site visit", "방문 지원"), option("remote", "Remote support", "원격 지원"), option("workshop", "At my workshop", "작업실 방문"), option("mixed", "On-site or remote", "방문·원격 모두 가능")] },
     { key: "turnaround", input: "select", label: localized("Typical turnaround", "일반적인 작업 시간"), options: [option("same-day", "Same day", "당일"), option("one-three-days", "1–3 days", "1–3일"), option("one-week", "Within a week", "1주 이내"), option("quote", "Depends on the job", "작업에 따라 다름")] },
     ...priceFields([option("hour", "Per hour", "시간당"), option("visit", "Per visit", "방문당"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  realEstate: [
+    { key: "service_type", input: "select", label: localized("Property service", "부동산 서비스 유형"), options: [option("sales", "Buying and selling", "매매 중개"), option("rentals", "Rental and tenancy", "임대·렌트 중개"), option("property-management", "Property management", "부동산 관리"), option("flatmate", "Flatmate and room matching", "룸메이트·쉐어 알선"), option("inspection", "Building or pre-purchase inspection", "건물·사전 점검"), option("staging", "Home staging and photography", "홈스테이징·촬영"), option("settlement", "Relocation and settlement help", "정착 지원")] },
+    { key: "property_type", input: "select", label: localized("Property type", "매물 유형"), options: [option("house", "House", "주택"), option("apartment", "Apartment or unit", "아파트·유닛"), option("townhouse", "Townhouse", "타운하우스"), option("room", "Room or flatshare", "방·쉐어"), option("commercial", "Commercial", "상업용"), option("land", "Land", "토지")] },
+    { key: "client_type", input: "select", label: localized("Who you work with", "주요 고객"), options: [option("buyers", "Buyers", "매수자"), option("sellers", "Sellers", "매도자"), option("landlords", "Landlords", "임대인"), option("tenants", "Tenants", "임차인"), option("all", "All of the above", "모두 가능")] },
+    // Real estate agency work is licensed under the REA Act, so the licence
+    // is the first thing a customer checks. Ask for it up front.
+    { key: "licence", input: "select", label: localized("Licence or registration", "자격·등록"), options: [option("rea-agent", "REA licensed salesperson or agent", "REA 등록 중개인"), option("property-manager", "Registered property manager", "등록 부동산 관리인"), option("inspector", "Qualified building inspector", "건물 점검 자격 보유"), option("none", "Not required for this service", "해당 없음")] },
+    { key: "languages_spoken", input: "text", label: localized("Languages you advise in", "상담 가능 언어"), placeholder: localized("e.g. English, Korean", "예: 한국어, 영어") },
+    ...priceFields([option("commission", "Commission", "수수료율"), option("week", "Per week", "주당"), option("property", "Per property", "매물당"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  travelStudy: [
+    { key: "service_type", input: "select", label: localized("Travel or study service", "여행·유학 서비스 유형"), options: [option("study-abroad", "Study abroad placement", "유학 상담·수속"), option("language-school", "Language school enrolment", "어학연수 등록"), option("visa", "Visa and immigration paperwork", "비자·이민 서류"), option("flights", "Flights and ticketing", "항공권 예약"), option("tours", "Tours and travel packages", "여행 패키지·투어"), option("accommodation", "Homestay and accommodation", "홈스테이·숙소 알선"), option("airport", "Airport pickup and transfers", "공항 픽업·이동")] },
+    { key: "destination", input: "select", label: localized("Main destination", "주요 지역"), options: [option("new-zealand", "Within New Zealand", "뉴질랜드 국내"), option("australia", "Australia", "호주"), option("korea", "Korea", "한국"), option("asia", "Rest of Asia", "기타 아시아"), option("europe-americas", "Europe or the Americas", "유럽·미주"), option("worldwide", "Worldwide", "전 세계")] },
+    { key: "consultation_format", input: "select", label: localized("Consultation format", "상담 방식"), options: [option("in-person", "In person", "대면 상담"), option("video-phone", "Video or phone", "화상·전화"), option("email", "Email or chat", "이메일·채팅"), option("mixed", "In person or online", "대면·온라인 모두")] },
+    // Immigration advice in New Zealand is restricted to licensed advisers,
+    // so a provider has to declare where they sit before we publish them.
+    { key: "licence", input: "select", label: localized("Licence or accreditation", "자격·인증"), options: [option("iaa", "Licensed Immigration Adviser (IAA)", "IAA 라이선스 이민 상담사"), option("lawyer", "NZ lawyer", "뉴질랜드 변호사"), option("education-agent", "Accredited education agent", "공인 유학원"), option("travel-agent", "Travel agent (TAANZ or IATA)", "여행사 (TAANZ·IATA)"), option("none", "No immigration advice given", "이민 상담 미제공")] },
+    { key: "languages_spoken", input: "text", label: localized("Languages you advise in", "상담 가능 언어"), placeholder: localized("e.g. English, Korean", "예: 한국어, 영어") },
+    ...priceFields([option("person", "Per person", "1인 기준"), option("booking", "Per booking", "예약당"), option("consultation", "Per consultation", "상담당"), option("application", "Per application", "수속 건당"), option("quote", "Quote", "견적")]),
   ],
   handyman: [
     { key: "service_type", input: "select", label: localized("Specialty", "전문 서비스"), options: [option("repairs", "Repairs", "수리"), option("assembly", "Assembly", "조립"), option("painting", "Painting", "페인트"), option("electrical", "Electrical", "전기"), option("plumbing", "Plumbing", "배관")] },
