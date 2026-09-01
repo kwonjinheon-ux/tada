@@ -12410,12 +12410,33 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 /* Submit footer: terms on one line, actions grouped and evenly sized. */
 .service-create-page .service-editor-submit > label { align-items: center; line-height: 1.35; }
 .service-create-page .service-editor-submit > label input { flex: 0 0 auto; margin: 0; }
-.service-create-page .service-editor-submit button { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+.service-create-page .service-editor-submit button { display: inline-flex; align-items: center; justify-content: center; }
 
 @media (max-width: 767.98px) {
   .service-create-page .service-editor-submit { gap: var(--space-3); padding: var(--space-3); }
-  .service-create-page .service-editor-submit > div { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-  /* Secondary actions share a row; the primary CTA owns the one below it. */
-  .service-create-page .service-editor-submit .service-editor-preview-button { grid-column: 1; }
-  .service-create-page .service-editor-submit button[type="submit"] { grid-column: 1 / -1; min-height: 44px; }
+  .service-create-page .service-editor-submit > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  /* Every action fills its own track edge to edge. min-width: 0 stops a long
+     label (e.g. "업체 카드 미리보기") from widening its track and pushing the
+     row past the card's right edge. */
+  .service-create-page .service-editor-submit > div > button,
+  .service-create-page .service-editor-submit > div > .ui-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-xs);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: center;
+    line-height: 1.25;
+    gap: 6px;
+  }
+  .service-create-page .service-editor-submit > div > button > i { flex: 0 0 auto; }
+  /* Secondary actions share the top row; the primary CTA owns the one below. */
+  .service-create-page .service-editor-submit .service-editor-preview-button { grid-column: 1; background: var(--color-surface); }
+  .service-create-page .service-editor-submit button[type="submit"] { grid-column: 1 / -1; }
 }
