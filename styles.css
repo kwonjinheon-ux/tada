@@ -12374,3 +12374,48 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(6) { grid-column: 2; order: 0; }
   .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(7) { grid-column: 1; order: 0; }
 }
+
+/* ---------------------------------------------------------------------------
+   Business information (step 4) and the submit footer: one clean layout pass.
+   Earlier patches stacked conflicting grid-column / order overrides on the
+   business grid, so on mobile the fields fell into a ragged two-column mess.
+   These rules replace that behaviour outright instead of nudging it further.
+   --------------------------------------------------------------------------- */
+
+/* Mobile: every business field is a single full-width row in DOM order —
+   Location, Street address, Address visibility, Phone, Email, Website, Year. */
+@media (max-width: 767.98px) {
+  .service-create-page .service-editor-business-rebuilt .service-editor-business {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+  .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(n) {
+    grid-column: 1;
+    order: 0;
+    min-width: 0;
+  }
+  .service-create-page .service-editor-business-rebuilt .service-editor-address-visibility {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .service-create-page .service-editor-business-rebuilt .service-editor-address-visibility label {
+    width: auto;
+    min-height: 38px;
+    justify-content: flex-start;
+    line-height: 1.25;
+  }
+}
+
+/* Submit footer: terms on one line, actions grouped and evenly sized. */
+.service-create-page .service-editor-submit > label { align-items: center; line-height: 1.35; }
+.service-create-page .service-editor-submit > label input { flex: 0 0 auto; margin: 0; }
+.service-create-page .service-editor-submit button { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+
+@media (max-width: 767.98px) {
+  .service-create-page .service-editor-submit { gap: var(--space-3); padding: var(--space-3); }
+  .service-create-page .service-editor-submit > div { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  /* Secondary actions share a row; the primary CTA owns the one below it. */
+  .service-create-page .service-editor-submit .service-editor-preview-button { grid-column: 1; }
+  .service-create-page .service-editor-submit button[type="submit"] { grid-column: 1 / -1; min-height: 44px; }
+}
