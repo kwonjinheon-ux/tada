@@ -1,7 +1,7 @@
 // Services preview data and copy. It lives outside the components so the page
 // and its filter rail can share one source without importing each other.
 
-export type ServiceCategoryId = "cleaning" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto";
+export type ServiceCategoryId = "cleaning" | "cleaningServices" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto" | "computerIt";
 export type ServiceId = "sparkle-clean" | "fixit-furniture" | "math-mentors" | "moving-help" | "garden-lawn" | "beauty-services" | "happy-paws" | "auto-repair";
 export type TrustPointId = "verified" | "payments" | "support";
 export type ServiceBadge = "verified" | "highlyRated" | "topRated" | "fastResponder" | "new" | "sponsored" | "popular";
@@ -40,6 +40,8 @@ export type ServiceListing = {
 
 export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> = [
   { id: "cleaning", icon: "ms-restaurant" },
+  { id: "cleaningServices", icon: "ms-home" },
+  { id: "computerIt", icon: "ms-computer" },
   { id: "handyman", icon: "ms-handyman" },
   { id: "moving", icon: "ms-local-shipping" },
   { id: "auto", icon: "ms-directions-car" },
@@ -51,12 +53,12 @@ export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> =
 
 const serviceCategoryLabels = {
   en: {
-    cleaning: "Food & Catering", handyman: "Home & Trades", moving: "Moving & Transport", auto: "Automotive",
-    gardening: "Gardening", tutoring: "Tutoring", beauty: "Beauty", petCare: "Pet Care",
+    cleaning: "Food & Catering", cleaningServices: "Cleaning & Home Services", handyman: "Home & Trades", moving: "Moving & Transport", auto: "Automotive",
+    gardening: "Gardening", tutoring: "Tutoring", beauty: "Beauty", petCare: "Pet Care", computerIt: "Computer & IT",
   },
   ko: {
-    cleaning: "음식·케이터링", handyman: "집수리·전문기술", moving: "이사·운송", auto: "자동차",
-    gardening: "정원 관리", tutoring: "과외", beauty: "뷰티", petCare: "펫 케어",
+    cleaning: "음식·케이터링", cleaningServices: "청소·생활서비스", handyman: "집수리·전문기술", moving: "이사·운송", auto: "자동차",
+    gardening: "정원 관리", tutoring: "과외", beauty: "뷰티", petCare: "펫 케어", computerIt: "컴퓨터·IT",
   },
 } as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 
@@ -286,6 +288,20 @@ const serviceDetailDefinitions: Record<ServiceCategoryId, readonly ServiceDetail
     { key: "service_type", input: "select", label: localized("Catering service", "케이터링 서비스"), options: [option("catering", "Catering", "케이터링"), option("private-chef", "Private chef", "프라이빗 셰프"), option("meal-prep", "Meal preparation", "식사 준비"), option("food-stall", "Food stall", "푸드 스톨")] },
     { key: "minimum_guests", input: "number", label: localized("Minimum guests or orders", "최소 인원 또는 주문 수"), placeholder: localized("e.g. 10", "예: 10"), min: 1, step: 1 },
     ...priceFields([option("person", "Per person", "1인 기준"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  cleaningServices: [
+    { key: "service_type", input: "select", label: localized("Cleaning service", "청소 서비스 유형"), options: [option("regular-home", "Regular home cleaning", "정기 가정 청소"), option("deep-clean", "Deep cleaning", "대청소"), option("move-clean", "Move-in / move-out cleaning", "입주·퇴거 청소"), option("office", "Office or commercial cleaning", "사무실·상업 공간 청소"), option("windows", "Window cleaning", "창문 청소"), option("carpet", "Carpet or upholstery cleaning", "카펫·소파 청소")] },
+    { key: "space_type", input: "select", label: localized("Space type", "공간 유형"), options: [option("house", "House", "주택"), option("apartment", "Apartment", "아파트"), option("office", "Office", "사무실"), option("holiday-rental", "Holiday rental", "숙박시설"), option("other", "Other space", "기타 공간")] },
+    { key: "cleaning_frequency", input: "select", label: localized("Cleaning frequency", "이용 빈도"), options: [option("one-off", "One-off", "1회성"), option("weekly", "Weekly", "주 1회"), option("fortnightly", "Fortnightly", "2주 1회"), option("monthly", "Monthly", "월 1회"), option("custom", "Custom schedule", "맞춤 일정")] },
+    { key: "bedrooms_or_rooms", input: "number", label: localized("Bedrooms or rooms", "침실 또는 작업 공간 수"), placeholder: localized("e.g. 3", "예: 3"), min: 1, step: 1 },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("visit", "Per visit", "방문당"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
+  ],
+  computerIt: [
+    { key: "service_type", input: "select", label: localized("IT service", "IT 서비스 유형"), options: [option("computer-repair", "Computer repair", "컴퓨터 수리"), option("setup", "Device setup", "기기 설치·세팅"), option("network", "Wi-Fi and network support", "와이파이·네트워크 지원"), option("software", "Software support", "소프트웨어 지원"), option("data-recovery", "Data recovery and backup", "데이터 복구·백업"), option("training", "Tech help or training", "기기 사용 교육")] },
+    { key: "device_type", input: "select", label: localized("Device type", "기기 유형"), options: [option("desktop", "Desktop computer", "데스크톱"), option("laptop", "Laptop", "노트북"), option("phone-tablet", "Phone or tablet", "휴대폰·태블릿"), option("printer", "Printer or peripherals", "프린터·주변기기"), option("smart-home", "Smart home devices", "스마트홈 기기"), option("other", "Other device", "기타 기기")] },
+    { key: "support_type", input: "select", label: localized("Support method", "지원 방식"), options: [option("onsite", "On-site visit", "방문 지원"), option("remote", "Remote support", "원격 지원"), option("workshop", "At my workshop", "작업실 방문"), option("mixed", "On-site or remote", "방문·원격 모두 가능")] },
+    { key: "turnaround", input: "select", label: localized("Typical turnaround", "일반적인 작업 시간"), options: [option("same-day", "Same day", "당일"), option("one-three-days", "1–3 days", "1–3일"), option("one-week", "Within a week", "1주 이내"), option("quote", "Depends on the job", "작업에 따라 다름")] },
+    ...priceFields([option("hour", "Per hour", "시간당"), option("visit", "Per visit", "방문당"), option("job", "Per job", "건당"), option("quote", "Quote", "견적")]),
   ],
   handyman: [
     { key: "service_type", input: "select", label: localized("Specialty", "전문 서비스"), options: [option("repairs", "Repairs", "수리"), option("assembly", "Assembly", "조립"), option("painting", "Painting", "페인트"), option("electrical", "Electrical", "전기"), option("plumbing", "Plumbing", "배관")] },
