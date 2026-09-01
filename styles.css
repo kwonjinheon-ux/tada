@@ -12365,3 +12365,12 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(7) { order: 3; }
   .service-create-page .service-editor-business-rebuilt .service-editor-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Final mobile comment adjustments for the rebuilt service editor. */
+.service-create-page .service-editor-category button { font-weight: var(--weight-regular); }
+@media (max-width: 767.98px) {
+  .service-create-page .service-editor-business-rebuilt .service-editor-address-visibility { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+  .service-create-page .service-editor-business-rebuilt .service-editor-address-visibility label { width: 100%; justify-content: flex-start; }
+  .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(6) { grid-column: 2; order: 0; }
+  .service-create-page .service-editor-business-rebuilt .service-editor-business > :nth-child(7) { grid-column: 1; order: 0; }
+}
