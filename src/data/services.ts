@@ -54,11 +54,11 @@ export const serviceCategories: Array<{ id: ServiceCategoryId; icon: string }> =
 const serviceCategoryLabels = {
   en: {
     cleaning: "Food & Catering", cleaningServices: "Cleaning & Home Services", handyman: "Home & Trades", moving: "Moving & Transport", auto: "Automotive",
-    gardening: "Gardening", tutoring: "Tutoring", beauty: "Beauty", petCare: "Pet Care", computerIt: "Computer & IT",
+    gardening: "Gardening", tutoring: "Education & Tutoring", beauty: "Beauty", petCare: "Pet Care", computerIt: "Computer & IT",
   },
   ko: {
     cleaning: "음식·케이터링", cleaningServices: "청소·생활서비스", handyman: "집수리·전문기술", moving: "이사·운송", auto: "자동차",
-    gardening: "정원 관리", tutoring: "과외", beauty: "뷰티", petCare: "펫 케어", computerIt: "컴퓨터·IT",
+    gardening: "정원 관리", tutoring: "교육·과외", beauty: "뷰티", petCare: "펫 케어", computerIt: "컴퓨터·IT",
   },
 } as const satisfies Record<"en" | "ko", Record<ServiceCategoryId, string>>;
 

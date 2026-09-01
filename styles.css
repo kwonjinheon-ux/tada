@@ -12407,36 +12407,117 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   }
 }
 
-/* Submit footer: terms on one line, actions grouped and evenly sized. */
-.service-create-page .service-editor-submit > label { align-items: center; line-height: 1.35; }
-.service-create-page .service-editor-submit > label input { flex: 0 0 auto; margin: 0; }
-.service-create-page .service-editor-submit button { display: inline-flex; align-items: center; justify-content: center; }
+/* ---------------------------------------------------------------------------
+   Submit footer — one authoritative design for both breakpoints. Earlier rules
+   left the preview button on its .passkey-button sizing while the other two
+   used the footer's own, so the row never lined up. Everything below is sized
+   from the footer so the three actions are siblings in look as well as markup.
+   --------------------------------------------------------------------------- */
+.service-create-page .service-editor-submit {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.service-create-page .service-editor-submit > label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+  cursor: pointer;
+}
+.service-create-page .service-editor-submit > label input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-primary-strong);
+}
+
+.service-create-page .service-editor-submit > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Shared shape for all three actions; only colour separates them. */
+.service-create-page .service-editor-submit > div > button,
+.service-create-page .service-editor-submit > div > .ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 42px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.service-create-page .service-editor-submit > div > button > i { flex: 0 0 auto; font-size: 18px; }
+.service-create-page .service-editor-submit > div > button:hover { border-color: var(--color-primary); color: var(--color-primary-strong); }
+
+.service-create-page .service-editor-submit .service-editor-preview-button {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary-strong);
+}
+.service-create-page .service-editor-submit .service-editor-preview-button:hover { background: var(--color-surface-soft); }
+
+.service-create-page .service-editor-submit button[type="submit"] {
+  min-width: 168px;
+  border-color: var(--color-primary-strong);
+  background: var(--color-primary-strong);
+  color: var(--color-surface);
+}
+.service-create-page .service-editor-submit button[type="submit"]:hover { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-surface); }
+.service-create-page .service-editor-submit button[type="submit"]:disabled { opacity: .6; cursor: not-allowed; }
 
 @media (max-width: 767.98px) {
-  .service-create-page .service-editor-submit { gap: var(--space-3); padding: var(--space-3); }
+  .service-create-page .service-editor-submit {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+  /* Two equal tracks, so a long label wraps inside its own button instead of
+     widening its track and pushing the row past the card's right edge. */
   .service-create-page .service-editor-submit > div {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
   }
-  /* Every action fills its own track edge to edge. min-width: 0 stops a long
-     label (e.g. "업체 카드 미리보기") from widening its track and pushing the
-     row past the card's right edge. */
   .service-create-page .service-editor-submit > div > button,
   .service-create-page .service-editor-submit > div > .ui-button {
     width: 100%;
-    min-width: 0;
     min-height: 44px;
     padding-inline: var(--space-2);
-    border-radius: var(--radius-xs);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    text-align: center;
-    line-height: 1.25;
-    gap: 6px;
+    font-size: var(--text-xs);
   }
-  .service-create-page .service-editor-submit > div > button > i { flex: 0 0 auto; }
-  /* Secondary actions share the top row; the primary CTA owns the one below. */
-  .service-create-page .service-editor-submit .service-editor-preview-button { grid-column: 1; background: var(--color-surface); }
-  .service-create-page .service-editor-submit button[type="submit"] { grid-column: 1 / -1; }
+  .service-create-page .service-editor-submit > div > button > i { font-size: 16px; }
+  .service-create-page .service-editor-submit .service-editor-preview-button { grid-column: 1; }
+  /* The primary action gets a full-width row of its own. */
+  .service-create-page .service-editor-submit button[type="submit"] {
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 48px;
+    font-size: var(--text-sm);
+  }
 }
