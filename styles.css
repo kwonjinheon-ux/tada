@@ -12577,3 +12577,112 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     margin-inline: auto;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Service create — hover states, one language for the whole form.
+
+   The form was built control by control and most of them had no hover at all,
+   so nothing on the page told you what was clickable until you clicked it.
+   These follow the primitives in MD/design/foundations.md rather than inventing
+   a per-control effect:
+
+     neutral control  ->  --color-surface-soft fill, ink text   (.ui-button--ghost)
+     accent control   ->  --color-primary-soft fill, primary border/text
+                                                              (.ui-button--secondary)
+     filled primary   ->  --color-primary-hover                (.ui-button--primary)
+     destructive      ->  --color-danger-soft fill, danger border/text
+     text field       ->  border firms up to --color-primary, no ring; the ring
+                          stays the focus signal so the two never read alike
+
+   Nothing here moves or resizes on hover: a control that shifts under the
+   cursor makes a dense form feel unstable. Everything is behind (hover: hover)
+   so a tap on a phone does not leave a control stuck in its hover state.
+   --------------------------------------------------------------------------- */
+
+/* Transitions belong on the control, not the hover rule, so the state eases
+   out as well as in. */
+.service-create-page .service-editor-card input:not([type="checkbox"]):not([type="radio"]),
+.service-create-page .service-editor-card textarea,
+.service-create-page .service-editor-card button,
+.service-create-page .service-editor-card summary,
+.service-create-page .service-editor-card .post-select-trigger,
+.service-create-page .service-editor-card .service-editor-address-visibility label,
+.service-create-page .service-editor-card .service-editor-languages label,
+.service-create-page .service-editor-card .service-editor-fields fieldset label,
+.service-create-page .service-editor-card .service-editor-area fieldset label,
+.service-create-page .service-editor-card .service-editor-area-selection span {
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+@media (hover: hover) {
+  /* Text fields and selects — the border firms up, nothing else. */
+  .service-create-page .service-editor-card input:not([type="checkbox"]):not([type="radio"]):hover:not(:disabled),
+  .service-create-page .service-editor-card textarea:hover:not(:disabled),
+  .service-create-page .service-editor-card .post-select-trigger:hover,
+  .service-create-page .service-editor-card .service-editor-days-picker summary:hover {
+    border-color: var(--color-primary);
+  }
+
+  /* Neutral chips and toggles — category, languages, provider type, service
+     area, and the day checkboxes inside the picker. */
+  .service-create-page .service-editor-card .service-editor-category button:not(.is-selected):hover,
+  .service-create-page .service-editor-card .service-editor-languages label:hover,
+  .service-create-page .service-editor-card .service-editor-fields fieldset label:hover,
+  .service-create-page .service-editor-card .service-editor-area fieldset label:hover,
+  .service-create-page .service-editor-card .service-editor-address-visibility label:hover,
+  .service-create-page .service-editor-card .service-editor-days-picker label:hover {
+    background: var(--color-surface-soft);
+    color: var(--color-ink);
+  }
+  /* A disabled day is already taken by another row; it must not invite a click. */
+  .service-create-page .service-editor-card .service-editor-days-picker label:has(input:disabled):hover {
+    background: transparent;
+    color: var(--color-muted);
+  }
+
+  /* An already-selected chip deepens instead of going neutral, so hovering it
+     never looks like deselecting it. */
+  .service-create-page .service-editor-card .service-editor-category button.is-selected:hover,
+  .service-create-page .service-editor-card .service-editor-area-selection span:hover {
+    background: var(--green-soft-200);
+  }
+
+  /* Accent actions — the dashed "add" controls and the logo picker. */
+  .service-create-page .service-editor-card .service-editor-add-photo:hover,
+  .service-create-page .service-editor-card .service-editor-logo > button:hover,
+  .service-create-page .service-editor-card .service-editor-hours-rebuilt > button:hover,
+  .service-create-page .service-editor-card .service-editor-area-selection > button:hover,
+  .service-create-page .service-editor-card .service-editor-languages button:hover,
+  .service-create-page .service-additional-service-button:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary-strong);
+  }
+
+  /* Remove controls state their consequence before the click, not after. */
+  .service-create-page .service-editor-card .service-editor-hours-rebuilt > div > button:hover,
+  .service-create-page .service-editor-card .service-price-actions .icon-button:hover,
+  .service-create-page .service-additional-service > button:hover {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+
+  /* Photo tiles: the cover choice lifts the image, the remove badge turns
+     destructive like every other remove on the page. */
+  .service-create-page .service-editor-card .service-editor-gallery figure:hover { border-color: var(--color-primary); }
+  .service-create-page .service-editor-card .service-editor-gallery figure > button:first-child:hover img { opacity: .88; }
+  .service-create-page .service-editor-card .service-editor-gallery figure > button:last-child:hover {
+    background: var(--color-danger);
+    color: var(--color-on-danger);
+  }
+
+  /* The chip's own little × sits inside a hovered chip, so it needs a state of
+     its own to read as separately clickable. */
+  .service-create-page .service-editor-card .service-editor-area-selection span button:hover { color: var(--color-danger); }
+
+  /* Consent row: the whole label is the hit area, so it should say so. */
+  .service-create-page .service-editor-submit > label:hover { color: var(--color-ink); }
+}
+
+.service-create-page .service-editor-card .service-editor-gallery img { transition: opacity var(--transition-fast); }
