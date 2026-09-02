@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-const serviceCategories = new Set(["cleaning", "handyman", "moving", "auto", "gardening", "tutoring", "beauty", "petCare"]);
+const serviceCategories = new Set(["cleaning", "cleaningServices", "computerIt", "handyman", "moving", "auto", "gardening", "tutoring", "beauty", "petCare", "realEstate", "travelStudy"]);
 const providerTypes = new Set(["business", "sole_trader"]);
 
 function optionalText(value: unknown, maxLength: number) {
@@ -62,17 +62,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
   const email = optionalText(payload.email, 254);
   const website = optionalText(payload.website, 500);
   const foundedYear = typeof payload.foundedYear === "number" && Number.isInteger(payload.foundedYear) && payload.foundedYear >= 1800 && payload.foundedYear <= 2100 ? payload.foundedYear : null;
+  const summary = optionalText(payload.summary, 100);
+  const languages = Array.isArray(payload.languages) ? payload.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0 && value.trim().length <= 80).map((value) => value.trim()).slice(0, 20) : [];
+  const addressVisibility = payload.addressVisibility === "exact" ? "exact" : "area";
+  const serviceDetails = payload.serviceDetails && typeof payload.serviceDetails === "object" && !Array.isArray(payload.serviceDetails) ? payload.serviceDetails : null;
 
   if (!providerName || !businessName || !description || !phone || !category || !providerType || !serviceAreas.length || !streetAddress || !weekdayHours) {
     return NextResponse.json({ error: "Complete the required service details before saving." }, { status: 400 });
   }
 
   const { serviceId } = await params;
-  const { data: listing, error } = await supabase.from("service_listings").update({
+  const updatePayload: Record<string, unknown> = {
     category_slug: category, provider_name: providerName, business_name: businessName, description, provider_type: providerType,
     service_areas: serviceAreas, suburbs, phone, email, website, street_address: streetAddress,
     weekday_hours: weekdayHours, saturday_hours: saturdayHours, sunday_hours: sundayHours, founded_year: foundedYear,
-  }).eq("id", serviceId).eq("owner_id", user.id).select("id").maybeSingle();
+  };
+  if (Object.prototype.hasOwnProperty.call(payload, "summary")) updatePayload.service_summary = summary;
+  if (Object.prototype.hasOwnProperty.call(payload, "languages")) updatePayload.languages = languages;
+  if (Object.prototype.hasOwnProperty.call(payload, "addressVisibility")) updatePayload.address_visibility = addressVisibility;
+  if (serviceDetails) updatePayload.service_details = serviceDetails;
+  const { data: listing, error } = await supabase.from("service_listings").update(updatePayload).eq("id", serviceId).eq("owner_id", user.id).select("id").maybeSingle();
   if (error || !listing) return NextResponse.json({ error: "Unable to update this service right now." }, { status: 403 });
   return NextResponse.json({ serviceId: listing.id });
 }

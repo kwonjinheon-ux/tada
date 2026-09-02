@@ -149,8 +149,18 @@ export function ServiceCreateClient() {
       const sundayHours = String(formData.get("service-sunday-hours") ?? "").trim();
       const foundedYearValue = String(formData.get("service-founded-year") ?? "").trim();
       const foundedYear = foundedYearValue ? Number(foundedYearValue) : null;
+      const summary = String(formData.get("service-summary") ?? "").trim();
+      const languages = formData.getAll("service-languages").map((value) => String(value).trim()).filter(Boolean).slice(0, 20);
+      const addressVisibility = String(formData.get("address-visibility") ?? "area") === "exact" ? "exact" : "area";
       const detailFields = serviceDetailFields(category, locale);
       const detailValues = Object.fromEntries(detailFields.map((field) => [field.key, String(formData.get(`service-detail-${field.key}`) ?? "").trim()]));
+      const additionalServices = [...formData.entries()].reduce<Record<string, Record<string, string>>>((rows, [key, value]) => {
+        const match = key.match(/^additional-service-(\d+)-(.+)$/);
+        if (!match || typeof value !== "string" || !value.trim()) return rows;
+        const [, rowId, fieldKey] = match;
+        rows[rowId] = { ...(rows[rowId] ?? {}), [fieldKey]: value.trim() };
+        return rows;
+      }, {});
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
       if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
@@ -164,6 +174,10 @@ export function ServiceCreateClient() {
 
       delete detailValues.price_from;
       delete detailValues.price_unit;
+      const serviceOptions = [
+        { ...detailValues, price_from: String(priceFrom), price_unit: priceUnit },
+        ...Object.values(additionalServices),
+      ];
 
       setIsSubmitting(true);
       setNotice("");
@@ -184,9 +198,12 @@ export function ServiceCreateClient() {
       saturday_hours: saturdayHours || null,
       sunday_hours: sundayHours || null,
       founded_year: foundedYear,
+      service_summary: summary || null,
+      languages,
+      address_visibility: addressVisibility,
       price_from: priceFrom,
       price_unit: priceUnit,
-      service_details: detailValues,
+      service_details: { ...detailValues, services: serviceOptions },
       // The column defaults to 'pending', and nothing in the product moves a
       // service off that state — there is no moderation queue for services the
       // way there is for market listings. Left to the default, a service is
