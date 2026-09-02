@@ -2019,16 +2019,22 @@ a {
     font-size: var(--text-md);
   }
 
-  /* Market categories carry their own mint identity; the text remains dark
-     so the long list stays readable at the smaller desktop-sidebar size. */
-  .market-filter-panel:not(.is-open) .category-filter .filter-list button > i {
+  /* Category is a long secondary list under the market-type rail. Giving its
+     twenty-odd glyphs a hue each would out-shout the five rows above, so this
+     one list stays monotone and the rail keeps the colour. */
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button:not(.is-selected) > i {
     font-size: var(--text-lg);
-    color: var(--color-market-category);
+    color: var(--color-muted);
+  }
+
+  .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected > i {
+    font-size: var(--text-lg);
+    color: var(--color-ink);
   }
 
   .market-filter-panel:not(.is-open) .category-filter .filter-list button.is-selected {
-    background: var(--color-market-category-soft);
-    box-shadow: inset 3px 0 0 var(--color-market-category);
+    background: var(--color-primary-soft);
+    box-shadow: inset 3px 0 0 var(--color-primary);
     color: var(--color-ink);
   }
 
@@ -11530,8 +11536,10 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
     gap: var(--space-1);
   }
 
-  /* Keep the Market category mint consistent in the mobile filter drawer. */
-  .market-filter-panel.is-open .category-filter .filter-list button > i { color: var(--color-market-category); }
+  /* Same monotone treatment inside the drawer, so the list does not change
+     character between the rail and the mobile sheet. */
+  .market-filter-panel.is-open .category-filter .filter-list button:not(.is-selected) > i { color: var(--color-muted); }
+  .market-filter-panel.is-open .category-filter .filter-list button.is-selected > i { color: var(--color-ink); }
 
   .market-filter-panel.is-open .category-filter .filter-list button {
     min-height: var(--control-h-sm);
@@ -11542,8 +11550,8 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
   }
 
   .market-filter-panel.is-open .category-filter .filter-list button.is-selected {
-    background: var(--color-market-category-soft);
-    box-shadow: inset 3px 0 0 var(--color-market-category);
+    background: var(--color-primary-soft);
+    box-shadow: inset 3px 0 0 var(--color-primary);
     color: var(--color-ink);
     font-weight: var(--weight-bold);
   }
