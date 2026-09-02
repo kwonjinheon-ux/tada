@@ -83,6 +83,9 @@
   --success-100: #eaf7ee;
   --success-500: #248a3d;
   --success-700: #1c6e31;
+  /* market — Supabase mint reserved for Market category navigation. */
+  --market-100: #e6f9f1;
+  --market-500: #3ecf8e;
   /* Legacy hue-named aliases. `styles.css` still reaches for these palette
      steps directly; they resolve onto the accent ramp above so the whole
      surface moves together. Point new work at `--accent-*` instead. */
@@ -289,6 +292,10 @@
 
   --color-success: var(--success-500);
   --color-success-soft: var(--success-100);
+
+  /* Vertical identity belongs to the Market category controls only. */
+  --color-market-category: var(--market-500);
+  --color-market-category-soft: var(--market-100);
 
   /* The footer is the one dark surface in the app and needs its own ink. */
   --color-footer-surface: var(--teal-955);
