@@ -12521,3 +12521,46 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     font-size: var(--text-sm);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   One control height for the whole service editor. The location select comes
+   from the shared post-select component at --control-h-xl, while the editor's
+   own inputs sat at 38px, the price rows at --control-h-lg and the "add hours"
+   button at 34px — so no two rows lined up. Every control now shares the tallest
+   of those, since the shared select cannot shrink without diverging from the
+   component it is borrowed from.
+   --------------------------------------------------------------------------- */
+.service-create-page .service-editor-card input:not([type="checkbox"]):not([type="radio"]),
+.service-create-page .service-editor-card select,
+.service-create-page .service-editor-card .post-select-trigger,
+.service-create-page .service-editor-card .service-editor-days-picker summary,
+.service-create-page .service-editor-card .service-editor-address-visibility label,
+.service-create-page .service-editor-card .service-editor-hours-rebuilt > div > button,
+.service-create-page .service-editor-card .service-editor-hours-rebuilt > button,
+.service-create-page .service-editor-card .service-price-row input:not([type="checkbox"]):not([type="radio"]),
+.service-create-page .service-editor-card .service-price-row .post-select-trigger {
+  min-height: var(--control-h-xl);
+  border-radius: var(--radius-sm);
+}
+
+/* Chips and toggles are not text fields; they keep their own compact height but
+   share the radius so the card reads as one set of controls. */
+.service-create-page .service-editor-card .service-editor-languages label,
+.service-create-page .service-editor-card .service-editor-languages button,
+.service-create-page .service-editor-card .service-editor-area fieldset label { border-radius: var(--radius-sm); }
+
+/* The two visibility options sit in a one-third column, where the longer label
+   used to wrap and push the block past its neighbours. */
+.service-create-page .service-editor-card .service-editor-address-visibility label {
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  padding-inline: var(--space-2);
+}
+
+.service-create-page .service-editor-card .service-price-actions { min-height: var(--control-h-xl); }
+.service-create-page .service-editor-card .service-price-actions .icon-button { width: var(--control-h-md); height: var(--control-h-md); border-radius: var(--radius-sm); }
+
+@media (max-width: 767.98px) {
+  /* Stacked full width, so the longer label has room to sit on one line. */
+  .service-create-page .service-editor-card .service-editor-address-visibility label { justify-content: flex-start; }
+}
