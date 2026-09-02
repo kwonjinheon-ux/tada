@@ -83,7 +83,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
     router.push(marketShopTypes.find(({ value }) => value === nextShopType)?.href ?? "/market");
   };
 
-  return <main className="marketplace-page bargain-page market-page-with-bottom-dock">
+  return <main className="market-theme marketplace-page bargain-page market-page-with-bottom-dock">
     <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open filters" closeLabel="Close filters">
       <MarketFilterSidebar
         activeShopType={shopType}

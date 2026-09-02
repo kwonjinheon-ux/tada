@@ -91,7 +91,7 @@ export function BargainSaleDetailClient({ sale }: { sale: BargainSaleDetail }) {
     finally { setBusyId(null); }
   };
 
-  return <main className="bargain-sale-detail-page"><PageContainer>
+  return <main className="market-theme bargain-sale-detail-page"><PageContainer>
     <div className="listing-detail-back-row" aria-label={t("bargainNavigation")}><Link className="listing-detail-back" href="/market"><i className="ms ms-arrow-back" aria-hidden="true" /> {t("bargainBackToListings")}</Link><nav className="listing-detail-category-path" aria-label={t("marketType")}><Link href="/market">{t("market")}</Link><span aria-hidden="true">/</span><Link href={typeHref}>{typeLabel}</Link></nav></div>
     <div className="bargain-sale-detail-layout">
       <section className="bargain-sale-detail-overview"><div className="bargain-sale-detail-hero"><Image src={sale.coverImage.src} alt={sale.coverImage.alt} fill priority unoptimized sizes="(max-width: 1200px) 100vw, 780px" /><div className="bargain-sale-detail-hero-shade" /><div className="bargain-sale-detail-hero-content"><span className="bargain-sale-detail-type">{typeLabel}</span><h1>{sale.title}</h1><p>{sale.description}</p></div></div>

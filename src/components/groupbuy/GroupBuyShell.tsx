@@ -16,7 +16,7 @@ export function GroupBuyShell({ children }: { children: ReactNode }) {
   const [subLocation, setSubLocation] = useState("");
 
   return (
-    <main className="marketplace-page market-page-with-bottom-dock groupbuy-shell">
+    <main className="market-theme marketplace-page market-page-with-bottom-dock groupbuy-shell">
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
         <MarketFilterSidebar
           activeShopType="groupbuy"

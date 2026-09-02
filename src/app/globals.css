@@ -78,6 +78,40 @@
   --accent-soft-650: #6e7a8b;
   --accent-soft-800: #4a5566;
   --accent-soft-900: #3d4757;
+  /* mint — the Market ramp. Market is a vertical, not a state, so it gets its
+     own hue rather than a step on the accent ramp. Steps mirror the accent
+     ramp position for position and, more importantly, lightness for lightness,
+     so anything scoped to .market-theme keeps the contrast it was built with
+     when the ramp swaps underneath it.
+
+     Green reads lighter than blue at equal saturation, which is the whole
+     difficulty here: a naive hue rotation of the accent ramp lands every ink
+     step around 3:1. The 450-750 steps are therefore darker than they look
+     like they should be. #3ecf8e is the reference colour and lives at 400,
+     where the accent ramp keeps its bright fill step — it is a fill and a
+     rule, never ink (2.0:1 on white). */
+  --mint-150: #d7f5e7;
+  --mint-200: #c6f0dc;
+  --mint-250: #ade7ca;
+  --mint-300: #93dfba;
+  --mint-350: #66d5a4;
+  --mint-400: #3ecf8e;
+  --mint-450: #17805a;
+  --mint-500: #14764f;
+  --mint-550: #1a8c62;
+  --mint-600: #126b48;
+  --mint-650: #106041;
+  --mint-700: #0e563a;
+  --mint-750: #0c4c33;
+  --mint-800: #0a422c;
+  --mint-850: #093a27;
+  --mint-900: #073122;
+  --mint-950: #06291c;
+  --mint-975: #041d14;
+  /* mint-soft — the tints that carry fills, borders and hover states. */
+  --mint-soft-50: #eefaf4;
+  --mint-soft-200: #dcf2e7;
+  --mint-soft-250: #c8e8d9;
   /* success — a real green, kept apart from the accent ramp so a positive
      state still reads as positive after the accent moved to blue. */
   --success-100: #eaf7ee;
@@ -378,6 +412,61 @@
   --transition-fast: 160ms ease;
   --transition-slow: 220ms ease;
 }
+
+/* --- Market theme --------------------------------------------------------
+   Market runs on mint instead of the accent blue. Rather than restyling each
+   market surface, the scope re-points the accent ramp itself: the role tokens
+   (--color-primary and friends) and the legacy --green-* aliases are all
+   var(--accent-*) references, and a custom property resolves where it is used,
+   so every descendant follows without a single component rule.
+
+   Only the chromatic steps move. --accent-soft-350 and darker are the near
+   neutral blue-greys that carry borders and muted ink; tinting those would put
+   a green cast on body text, which is not what a vertical accent is for.
+
+   Applied by adding the market-theme class to a market page root. Anything
+   that is not market — community, services, the dashboards they share — keeps
+   the accent.
+   -------------------------------------------------------------------------- */
+.market-theme {
+  --accent-150: var(--mint-150);
+  --accent-200: var(--mint-200);
+  --accent-250: var(--mint-250);
+  --accent-300: var(--mint-300);
+  --accent-350: var(--mint-350);
+  --accent-400: var(--mint-400);
+  --accent-450: var(--mint-450);
+  --accent-500: var(--mint-500);
+  --accent-550: var(--mint-550);
+  --accent-600: var(--mint-600);
+  --accent-650: var(--mint-650);
+  --accent-700: var(--mint-700);
+  --accent-750: var(--mint-750);
+  --accent-800: var(--mint-800);
+  --accent-850: var(--mint-850);
+  --accent-900: var(--mint-900);
+  --accent-950: var(--mint-950);
+  --accent-975: var(--mint-975);
+  --accent-soft-50: var(--mint-soft-50);
+  --accent-soft-200: var(--mint-soft-200);
+  --accent-soft-250: var(--mint-soft-250);
+
+  /* Shadows and rings carry the hue as a literal rgb(), so they cannot ride
+     the ramp and are restated here. */
+  --shadow-primary: 0 6px 16px rgb(23 128 90 / 24%);
+  --ring-focus: 0 0 0 3px rgb(23 128 90 / 22%);
+  --ring-focus-strong: 0 0 0 4px rgb(23 128 90 / 30%);
+}
+
+/* The reference green is a fill with dark ink on it, not a fill with white ink
+   — white on #3ecf8e is 2.0:1 and unreadable. The primary button is the one
+   place that fill belongs, so it is stated once here rather than pushed into a
+   ramp step that also has to work as text elsewhere. */
+.market-theme .ui-button--primary {
+  background: var(--mint-400);
+  color: var(--mint-975);
+}
+.market-theme .ui-button--primary:hover:not(:disabled) { background: var(--mint-350); }
 
 /* ==========================================================================
    4. Layout scale

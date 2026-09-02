@@ -3765,7 +3765,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   transform: translateY(-1px) scale(1.05);
 }
 
-.listing-detail-seller-profile-link:focus-visible { outline: 3px solid var(--blue-400); outline-offset: 2px; }
+.listing-detail-seller-profile-link:focus-visible { outline: 3px solid var(--accent-450); outline-offset: 2px; }
 
 .listing-detail-seller-card .listing-safety-actions {
   justify-content: center;
@@ -8597,7 +8597,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-meta.has-photo-grid .listing-detail-mobile-dots { display: none; }
   .listing-detail-mobile-meta.has-photo-stack .listing-detail-mobile-dots { display: none; }
   .listing-detail-mobile-dots span { width: 9px; height: 9px; border-radius: var(--radius-circle); background: var(--blue-soft-150); }
-  .listing-detail-mobile-dots span.is-active { background: var(--blue-550); }
+  .listing-detail-mobile-dots span.is-active { background: var(--accent-450); }
   .listing-detail-mobile-meta h1 { margin: 0; color: var(--blue-950); font-size: var(--text-3xl); line-height: 1.2; }
   .listing-detail-mobile-price-row { display: flex; align-items: center; gap: 12px; margin-top: 13px; }
   .listing-detail-mobile-price-row strong { color: var(--green-700); font-size: var(--text-5xl); line-height: 1; }
@@ -8623,17 +8623,17 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
   .listing-detail-mobile-seller-actions > a,
   .listing-detail-mobile-seller-actions .listing-safety-buttons button { width: 34px; min-width: 34px; height: 34px; min-height: var(--control-h-sm); display: inline-grid; place-items: center; padding: 0; border: 1px solid var(--neutral-250); border-radius: var(--radius-circle); background: var(--neutral-100); color: var(--blue-500); font-size: var(--text-md); text-decoration: none; transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease; }
-  .listing-detail-mobile-seller-actions > a { color: var(--blue-400); background: var(--neutral-200); border-color: var(--blue-soft-150); }
+  .listing-detail-mobile-seller-actions > a { color: var(--accent-450); background: var(--neutral-200); border-color: var(--blue-soft-150); }
   .listing-detail-mobile-seller-actions .listing-safety-actions { display: block; margin: 0; padding: 0; border: 0; }
   .listing-detail-mobile-seller-actions .listing-safety-buttons { display: flex; gap: 7px; }
   .listing-detail-mobile-seller-actions .listing-safety-buttons button:last-child { color: var(--red-700); }
   .listing-detail-mobile-seller-actions > a:focus-visible,
-  .listing-detail-mobile-seller-actions .listing-safety-buttons button:focus-visible { outline: 3px solid var(--blue-400); outline-offset: 2px; transform: translateY(-1px) scale(1.08); box-shadow: 0 6px 14px rgb(0 88 176 / .18); }
+  .listing-detail-mobile-seller-actions .listing-safety-buttons button:focus-visible { outline: 3px solid var(--accent-450); outline-offset: 2px; transform: translateY(-1px) scale(1.08); box-shadow: 0 6px 14px rgb(0 88 176 / .18); }
   @media (hover: hover) {
     .listing-detail-mobile-seller-actions > a:hover,
     .listing-detail-mobile-seller-actions .listing-safety-buttons button:hover { transform: translateY(-1px) scale(1.08); box-shadow: 0 6px 14px rgb(0 88 176 / .18); }
     .listing-detail-mobile-seller-actions > a:hover,
-    .listing-detail-mobile-seller-actions .listing-safety-buttons button:first-child:hover { border-color: var(--blue-200); background: var(--blue-soft-100); color: var(--blue-400); }
+    .listing-detail-mobile-seller-actions .listing-safety-buttons button:first-child:hover { border-color: var(--blue-200); background: var(--blue-soft-100); color: var(--accent-450); }
     .listing-detail-mobile-seller-actions .listing-safety-buttons button:last-child:hover { border-color: var(--red-350); background: var(--neutral-200); color: var(--red-750); }
   }
   .listing-detail-mobile-seller-actions .listing-safety-actions > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -10430,7 +10430,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .listing-detail-bargain-offers article p { margin: 4px 0 0; color: var(--blue-soft-650); font-size: var(--text-sm); line-height: 1.4; }
 .listing-detail-bargain-offers article > span { display: flex; gap: 6px; }
 .listing-detail-bargain-offers button { min-height: 32px; padding: 0 10px; border: 1px solid var(--green-550); border-radius: var(--radius-xs); background: var(--green-550); color: var(--neutral-50); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-extrabold); cursor: pointer; }
-.listing-detail-bargain-offers button + button { border-color: var(--neutral-300); background: var(--neutral-50); color: var(--blue-650); }
+.listing-detail-bargain-offers button + button { border-color: var(--neutral-300); background: var(--neutral-50); color: var(--accent-700); }
 .listing-detail-bargain-offers button:disabled { cursor: wait; opacity: .72; }
 
 .home-reference-hero::before { display: none; }

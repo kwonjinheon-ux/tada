@@ -234,7 +234,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     router.push(marketShopTypes.find(({ value }) => value === nextShopType)?.href ?? "/market");
   };
   return (
-    <main className="marketplace-page market-page-with-bottom-dock">
+    <main className="market-theme marketplace-page market-page-with-bottom-dock">
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
         <MarketFilterSidebar
           activeShopType={shopType}

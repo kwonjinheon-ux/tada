@@ -447,7 +447,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   }, [isBargainListing, isOwner, isSaved]);
 
   return (
-    <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
+    <main className={`market-theme listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
         {listing.category ? <nav className="detail-breadcrumb" aria-label="Listing category"><Link href={listingHomePath}>Market</Link><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><i className="ms ms-chevron-right" aria-hidden="true" /><span>{listing.category.subcategory.label}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="ms ms-arrow-back" aria-hidden="true" /> Back to listings</Link>}
       </div>

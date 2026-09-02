@@ -1093,7 +1093,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
       : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
 
   return (
-    <main className={`post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
+    <main className={`market-theme post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
       <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ms ms-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
       <header className="post-ad-intro">
         <h1>{createHeading}</h1>
