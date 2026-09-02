@@ -11201,6 +11201,9 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .service-create-workspace { display: block; }
 .service-create-filter-rail { display: none; }
 .service-create-main { min-width: 0; }
+.market-create-filter-rail { display: none; }
+.market-create-main { min-width: 0; }
+.marketplace-page.market-create-page { display: block; padding: 0; }
 .service-category-details { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft); }
 .service-category-details-heading { display: grid; grid-template-columns: var(--control-h-lg) minmax(0, 1fr); gap: var(--space-2); align-items: start; }
 .service-category-details-heading > i { width: var(--control-h-lg); height: var(--control-h-lg); display: grid; place-items: center; border-radius: var(--radius-sm); background: var(--color-primary-soft); }
@@ -11280,6 +11283,18 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
   .service-profile-main { min-width: 0; }
   .service-profile-filter-rail { display: grid; }
   .service-profile-support-rail { position: static; }
+
+  /* Market creation remains inside the same desktop browse shell as the feed:
+     the persistent filter rail stays put while the composer owns the canvas. */
+  .marketplace-page.market-create-page { display: grid; grid-template-columns: 272px minmax(0, 1fr); gap: 0; }
+  .market-create-filter-rail { display: grid; align-self: stretch; height: calc(100dvh - var(--desktop-header-height)); max-height: none; }
+  .market-create-main { min-height: 0; padding: 0; background: transparent; }
+  .market-create-main .post-ad-page { min-height: 0; padding: var(--space-6) var(--space-4) var(--space-8); background: transparent; }
+  .market-create-main .post-ad-create-bar,
+  .market-create-main .post-ad-intro,
+  .market-create-main .post-ad-layout { width: 100%; margin-inline: 0; }
+  .market-create-main .post-ad-layout { display: block; }
+  .market-create-main .post-ad-sidebar { display: none; }
 }
 
 @media (min-width: 1280px) {

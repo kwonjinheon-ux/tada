@@ -4,6 +4,7 @@ import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } fro
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PostShopTypeSelector } from "@/components/post-ad/PostShopTypeSelector";
+import { MarketFilterSidebar } from "@/components/market/MarketFilterSidebar";
 import { type ShopTypeValue } from "@/data/postShopTypes";
 import { z } from "zod";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -1093,7 +1094,31 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
       : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
 
   return (
-    <main className={`market-theme post-ad-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
+    <main className={`marketplace-page market-create-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
+      <aside className="market-filter-panel market-create-filter-rail" aria-label="Market navigation and filters">
+        <MarketFilterSidebar
+          activeShopType={activeShopType}
+          activeCategory={mainCategory || "all"}
+          onCategorySelect={(nextCategory) => {
+            setMainCategory(nextCategory === "all" ? "" : nextCategory);
+            setSubCategory("");
+          }}
+          mainLocation={location.mainLocation}
+          subLocation={location.subLocation}
+          onLocationChange={(mainLocation, subLocation = "") => setLocation((current) => ({
+            ...current,
+            mainLocation,
+            subLocation,
+            locality: null,
+            rawSuburb: null,
+            region: null,
+            latitude: null,
+            longitude: null,
+          }))}
+        />
+      </aside>
+      <section className="market-results market-create-main">
+      <div className="post-ad-page">
       <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ms ms-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
       <header className="post-ad-intro">
         <h1>{createHeading}</h1>
@@ -1337,6 +1362,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
           </section>
         </aside>
       </div>
+      </div>
+      </section>
     </main>
   );
 }
