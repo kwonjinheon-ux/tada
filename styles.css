@@ -12564,3 +12564,16 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   /* Stacked full width, so the longer label has room to sit on one line. */
   .service-create-page .service-editor-card .service-editor-address-visibility label { justify-content: flex-start; }
 }
+
+/* Mobile: the footer's contents sit centred as one block. The action grid keeps
+   filling the width on a phone, but stops stretching once the viewport is wide
+   enough that full-bleed buttons would look stranded. */
+@media (max-width: 767.98px) {
+  .service-create-page .service-editor-submit { justify-items: center; }
+  .service-create-page .service-editor-submit > label { justify-content: center; text-align: center; }
+  .service-create-page .service-editor-submit > div {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+}
