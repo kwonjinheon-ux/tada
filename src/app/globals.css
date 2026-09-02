@@ -83,6 +83,18 @@
   --success-100: #eaf7ee;
   --success-500: #248a3d;
   --success-700: #1c6e31;
+  /* mint — the Market category ramp. Its own hue rather than a step on the
+     accent ramp, because it marks one vertical: a category row should be
+     recognisable as a category row and not as "the selected thing", which is
+     what the accent already means everywhere else. 400 is the fill from the
+     reference; text never sits in it (1.9:1 on white) — 700 carries the ink. */
+  --mint-50: #f2fcf8;
+  --mint-100: #e6f9f1;
+  --mint-200: #c8f0de;
+  --mint-300: #8ee0bb;
+  --mint-400: #3ecf8e;
+  --mint-500: #24b277;
+  --mint-700: #10704a;
   /* Legacy hue-named aliases. `styles.css` still reaches for these palette
      steps directly; they resolve onto the accent ramp above so the whole
      surface moves together. Point new work at `--accent-*` instead. */
@@ -290,6 +302,16 @@
   --color-success: var(--success-500);
   --color-success-soft: var(--success-100);
 
+  /* Market category identity. Scoped to the market category list — nothing
+     else should reach for these; a second vertical gets its own roles here
+     rather than borrowing this hue. */
+  --color-market-category: var(--mint-400);
+  --color-market-category-strong: var(--mint-500);
+  --color-market-category-ink: var(--mint-700);
+  --color-market-category-soft: var(--mint-100);
+  --color-market-category-soft-hover: var(--mint-50);
+  --color-market-category-line: var(--mint-200);
+  --ring-market-category: 0 0 0 3px rgb(62 207 142 / 32%);
   /* The footer is the one dark surface in the app and needs its own ink. */
   --color-footer-surface: var(--teal-955);
   --color-footer-surface-mid: var(--teal-965);
