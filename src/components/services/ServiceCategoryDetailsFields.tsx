@@ -33,7 +33,7 @@ export function ServiceCategoryDetailsFields({ category, locale, values, onValue
     setServiceRows((current) => current.map((row) => row.id === rowId ? { ...row, customFields: { ...row.customFields, [fieldKey]: isCustom }, values: { ...row.values, [fieldKey]: "" } } : row));
     if (rowId === 0) onValueChange(fieldKey, "");
   };
-  const addRow = () => setServiceRows((current) => [...current, { id: nextRowId.current++, values: {}, customFields: {} }]);
+  const addRow = () => setServiceRows((current) => current.length >= 20 ? current : [...current, { id: nextRowId.current++, values: {}, customFields: {} }]);
   const removeRow = (rowId: number) => setServiceRows((current) => current.length === 1 ? current : current.filter((row) => row.id !== rowId));
 
   return (
@@ -56,7 +56,7 @@ export function ServiceCategoryDetailsFields({ category, locale, values, onValue
           return <label key={field.key}>{field.label}<input id={name} name={name} type={field.input} required={rowIndex === 0} min={field.min} step={field.step} inputMode={field.input === "number" ? "decimal" : undefined} placeholder={field.placeholder} value={row.values[field.key] ?? ""} onChange={(event) => updateRowValue(row.id, field.key, event.target.value)} /></label>;
         })}<div className="service-price-actions">{serviceRows.length > 1 ? <IconButton type="button" aria-label={isKorean ? "서비스 삭제" : "Remove service"} onClick={() => removeRow(row.id)}><i className="ms ms-delete" aria-hidden="true" /></IconButton> : null}</div></div>)}
       </div>
-      <button className="service-additional-service-button" type="button" onClick={() => addRow()}><i className="ms ms-add" aria-hidden="true" /> {isKorean ? "서비스 추가" : "Add another service"}</button>
+      <button className="service-additional-service-button" type="button" onClick={() => addRow()} disabled={serviceRows.length >= 20} aria-disabled={serviceRows.length >= 20}><i className="ms ms-add" aria-hidden="true" /> {isKorean ? "서비스 추가" : "Add another service"} <small>({serviceRows.length}/20)</small></button>
     </div>
   );
 }
