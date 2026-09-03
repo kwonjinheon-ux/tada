@@ -11982,12 +11982,36 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .service-profile-page .service-profile-business-details { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
 .service-profile-page .service-profile-business-details h3,
 .service-profile-page .service-profile-additional-service h3 { margin: 0; color: var(--color-ink); font-size: var(--text-md); }
-.service-profile-page .service-profile-business-details dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
+.service-profile-page .service-profile-business-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.service-profile-page .service-profile-business-columns > dl { display: grid; align-content: start; gap: var(--space-3); margin: 0; }
+.service-profile-page .service-profile-business-columns > dl + dl { padding-left: var(--space-5); border-left: 1px solid var(--color-line); }
 .service-profile-page .service-profile-business-details dl > div { display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); align-items: start; }
 .service-profile-page .service-profile-business-details dl > div > i { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-md); }
 .service-profile-page .service-profile-business-details dt { color: var(--color-muted); font-size: var(--text-xs); }
-.service-profile-page .service-profile-business-details dd { margin: var(--space-1) 0 0; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1.4; }
-.service-profile-page .service-profile-pricing > .service-profile-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.service-profile-page .service-profile-business-details dd { margin: var(--space-1) 0 0; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1.4; white-space: pre-line; }
+.service-profile-page .service-profile-price-table-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: var(--radius-md); }
+.service-profile-page .service-profile-price-table { width: 100%; min-width: 34rem; border-collapse: collapse; text-align: left; }
+.service-profile-page .service-profile-price-table th,
+.service-profile-page .service-profile-price-table td { padding: var(--space-3); border-bottom: 1px solid var(--color-line); vertical-align: top; }
+.service-profile-page .service-profile-price-table thead th { color: var(--color-muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.service-profile-page .service-profile-price-table tbody th { width: 30%; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.service-profile-page .service-profile-price-table tbody td { color: var(--color-ink-soft); font-size: var(--text-sm); line-height: 1.45; }
+.service-profile-page .service-profile-price-table tbody td:nth-child(3) { width: 22%; color: var(--color-ink); font-weight: var(--weight-semibold); white-space: nowrap; }
+.service-profile-page .service-profile-price-table tbody td:last-child { width: var(--control-h-sm); padding-inline: var(--space-2); color: var(--color-muted); text-align: center; }
+.service-profile-page .service-profile-price-table tbody tr:last-child > * { border-bottom: 0; }
+.service-profile-page .service-profile-price-table tbody tr:hover > * { background: var(--color-surface-soft); }
+.service-profile-page .service-profile-area-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--space-4); align-items: stretch; }
+.service-profile-page .service-profile-area-details { display: grid; align-content: center; gap: var(--space-4); }
+.service-profile-page .service-profile-area-details > div { display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); align-items: start; }
+.service-profile-page .service-profile-area-details > div > i { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-md); }
+.service-profile-page .service-profile-area-details dl { margin: 0; }
+.service-profile-page .service-profile-area-details dt { color: var(--color-muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.service-profile-page .service-profile-area-details dd { margin: var(--space-1) 0 0; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.service-profile-page .service-profile-area-details .service-profile-area-chips { display: flex; gap: var(--space-1); }
+.service-profile-page .service-profile-area-chips span { border-radius: var(--radius-xs); }
+.service-profile-page .service-profile-area-layout .service-profile-map { position: relative; min-height: 154px; overflow: hidden; border: 1px solid var(--color-line); background: var(--color-primary-soft); }
+.service-profile-page .service-profile-area-layout .service-profile-map::before { content: ""; position: absolute; inset: -35%; background: repeating-linear-gradient(35deg, transparent 0 24px, var(--color-surface) 25px 27px, transparent 28px 52px); opacity: .7; transform: rotate(-10deg); }
+.service-profile-page .service-profile-area-layout .service-profile-map > * { position: relative; }
 .service-profile-page .service-profile-additional-service { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
 .service-profile-page .service-profile-gallery-section .service-profile-gallery img { border: 1px solid var(--color-line); object-fit: cover; }
 .service-profile-shell.is-section-details .service-profile-content > .service-profile-pricing { display: grid; }
@@ -11999,8 +12023,13 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
   .service-profile-page .service-profile-summary { font-size: var(--text-sm); }
   .service-profile-page .service-profile-keyfacts { gap: var(--space-2); font-size: var(--text-xs); }
   .service-profile-page .service-profile-section > header { gap: var(--space-2); }
-  .service-profile-page .service-profile-business-details dl,
-  .service-profile-page .service-profile-pricing > .service-profile-details { grid-template-columns: minmax(0, 1fr); }
+  .service-profile-page .service-profile-business-columns { grid-template-columns: minmax(0, 1fr); }
+  .service-profile-page .service-profile-price-table { min-width: 31rem; }
+  .service-profile-page .service-profile-price-table th,
+  .service-profile-page .service-profile-price-table td { padding: var(--space-2); font-size: var(--text-xs); }
+  .service-profile-page .service-profile-area-layout { grid-template-columns: minmax(0, 1fr); }
+  .service-profile-page .service-profile-area-layout .service-profile-map { min-height: 132px; }
+  .service-profile-page .service-profile-business-columns > dl + dl { padding: var(--space-3) 0 0; border-top: 1px solid var(--color-line); border-left: 0; }
   .service-profile-page .service-profile-business-details dl > div { grid-template-columns: 28px minmax(0, 1fr); }
   .service-profile-page .service-profile-business-details dl > div > i { width: 28px; height: 28px; font-size: var(--text-sm); }
   .service-profile-page .service-profile-price-from { font-size: var(--text-sm); white-space: nowrap; }
