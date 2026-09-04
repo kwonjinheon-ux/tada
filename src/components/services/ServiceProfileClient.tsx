@@ -23,6 +23,16 @@ type ServiceProfile = {
   images: string[]; badges: ServiceBadge[];
 };
 
+type ServiceReview = { id: string; reviewerId: string; rating: number; comment: string; createdAt: string; reviewerName: string };
+
+function reviewAgeLabel(createdAt: string, isKorean: boolean) {
+  const elapsedDays = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000));
+  if (elapsedDays < 1) return isKorean ? "오늘" : "Today";
+  if (elapsedDays < 7) return isKorean ? `${elapsedDays}일 전` : `${elapsedDays}d ago`;
+  if (elapsedDays < 30) return isKorean ? `${Math.floor(elapsedDays / 7)}주 전` : `${Math.floor(elapsedDays / 7)}w ago`;
+  return isKorean ? `${Math.floor(elapsedDays / 30)}개월 전` : `${Math.floor(elapsedDays / 30)}mo ago`;
+}
+
 function previewProfile(serviceId: string, isKorean: boolean): ServiceProfile | null {
   const service = services.find((item) => item.id === serviceId);
   if (!service) return null;
@@ -82,6 +92,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
   const [filters, setFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [activeSection, setActiveSection] = useState<"about" | "details" | "gallery" | "area">("about");
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviews, setReviews] = useState<ServiceReview[]>([]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -115,10 +126,17 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
         images: galleryPaths.map((path) => urlsByPath.get(path)).filter((url): url is string => Boolean(url)),
         badges: Number(data.rating) >= 4.5 ? ["highlyRated"] : ["new"],
       });
+      const { data: reviewRows } = await supabase.from("service_reviews").select("id,reviewer_id,rating,comment,created_at").eq("service_id", serviceId).order("created_at", { ascending: false }).limit(20);
+      if (reviewRows?.length && isCurrent) {
+        const reviewerIds = reviewRows.map((review) => review.reviewer_id);
+        const { data: reviewerProfiles } = await supabase.from("profiles").select("id,display_name").in("id", reviewerIds);
+        const names = new Map((reviewerProfiles ?? []).map((reviewer) => [reviewer.id, reviewer.display_name]));
+        setReviews(reviewRows.map((review) => ({ id: review.id, reviewerId: review.reviewer_id, rating: review.rating, comment: review.comment, createdAt: review.created_at, reviewerName: names.get(review.reviewer_id) || (isKorean ? "Tada 이용자" : "Tada member") })));
+      }
       setIsLoading(false);
     })();
     return () => { isCurrent = false; };
-  }, [serviceId]);
+  }, [isKorean, serviceId]);
 
   if (isLoading && !profile) return <main className="service-profile-page"><p className="service-profile-loading">{isKorean ? "서비스 정보를 불러오는 중…" : "Loading service profile…"}</p></main>;
   if (!profile) return <main className="service-profile-page"><section className="service-profile-empty ui-card"><h1>{isKorean ? "서비스를 찾을 수 없습니다." : "Service not found."}</h1><p>{isKorean ? "삭제되었거나 공개되지 않은 서비스입니다." : "This service is no longer available or has not been published."}</p><Link className="ui-button ui-button--primary" href="/services">{isKorean ? "서비스 목록으로" : "Back to services"}</Link></section></main>;
@@ -160,6 +178,8 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
   const hasGallery = profile.images.length > 0;
   const basedIn = profile.serviceAreas[0] ?? location;
   const servedAreas = [...profile.suburbs, ...profile.serviceAreas].filter((area, index, list) => Boolean(area) && list.indexOf(area) === index && area !== basedIn);
+  const reviewDistribution = [5, 4, 3, 2, 1].map((rating) => ({ rating, count: reviews.filter((review) => review.rating === rating).length }));
+  const reviewDistributionPeak = Math.max(1, ...reviewDistribution.map(({ count }) => count));
 
   return (
     <main className="marketplace-page services-page service-profile-page">
@@ -192,7 +212,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
             {hasServiceDetails ? <article className="service-profile-section service-profile-pricing ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 및 가격" : "Services & pricing"}</p></header><div className="service-profile-price-table-wrap"><table className="service-profile-price-table"><thead><tr>{serviceFields.map((field) => <th key={field.key} scope="col">{field.label}</th>)}</tr></thead><tbody>{servicePricingRows.map((row, rowIndex) => <tr key={rowIndex}>{row.map((value, columnIndex) => columnIndex === 0 ? <th key={`${rowIndex}-${serviceFields[columnIndex].key}`} scope="row">{value}</th> : <td key={`${rowIndex}-${serviceFields[columnIndex].key}`}>{value}</td>)}</tr>)}</tbody></table></div></article> : null}
             {hasGallery ? <article className="service-profile-section service-profile-gallery-section ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "작업 사진" : "Work gallery"}</p></header><div className="service-profile-gallery">{profile.images.map((image, index) => <img key={image} src={image} alt={`${profile.provider} ${index + 1}`} />)}</div></article> : null}
             <article className="service-profile-section service-profile-area ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 지역" : "Service area"}</p></header><div className="service-profile-area-layout"><div className="service-profile-area-details"><div><i className="ms ms-location-on" aria-hidden="true" /><dl><dt>{isKorean ? "기준 지역" : "Based in"}</dt><dd>{basedIn}</dd></dl></div><div><i className="ms ms-map" aria-hidden="true" /><dl><dt>{isKorean ? "서비스 제공 지역" : "Serves"}</dt><dd><span className="service-profile-area-chips">{(servedAreas.length ? servedAreas : [basedIn]).slice(0, 5).map((area) => <span key={area}>{area}</span>)}{servedAreas.length > 5 ? <span>+ {servedAreas.length - 5} {isKorean ? "곳" : "more"}</span> : null}</span></dd></dl></div></div><div className="service-profile-map" aria-label={location}><i className="ms ms-location-on" aria-hidden="true" /><span>{basedIn}</span></div></div></article>
-            <article className="service-profile-section service-profile-reviews ui-card"><header className="service-profile-reviews-heading"><p className="service-profile-eyebrow">{isKorean ? "후기" : "Reviews"}</p><button className="service-review-open" type="button" onClick={() => setIsReviewOpen(true)}><i className="ms ms-star" aria-hidden="true" /> {isKorean ? "후기 등록하기" : "Write a review"}</button></header><div className="service-profile-review-summary"><strong>{profile.rating.toFixed(1)}</strong><span><i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /> <i className="ms ms-star" aria-hidden="true" /></span><small>{profile.reviewCount} {isKorean ? "개의 후기" : "reviews"}</small></div><p>{isKorean ? "Tada의 실제 이용자 후기가 이곳에 표시됩니다." : "Reviews from local Tada customers appear here."}</p>{isReviewOpen ? <ServiceReviewDialog inline serviceId={profile.id} providerName={profile.provider} isKorean={isKorean} onClose={() => setIsReviewOpen(false)} onSubmitted={() => { setProfile((current) => current ? { ...current, reviewCount: current.reviewCount + 1 } : current); setIsReviewOpen(false); }} /> : null}</article>
+            <article className="service-profile-section service-profile-reviews ui-card"><header className="service-profile-reviews-heading"><p className="service-profile-eyebrow">{isKorean ? "지역 이용자 후기" : "What locals say"}</p><button className="service-review-open" type="button" onClick={() => setIsReviewOpen(true)}><i className="ms ms-star" aria-hidden="true" /> {isKorean ? "후기 등록하기" : "Write a review"}</button></header><div className="service-profile-reviews-layout"><section className="service-profile-review-overview" aria-label={isKorean ? "후기 요약" : "Review summary"}><strong>{profile.rating.toFixed(1)}</strong><span className="service-profile-review-stars" aria-label={`${profile.rating.toFixed(1)} out of 5`}><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /></span><small>{profile.reviewCount} {isKorean ? "개의 후기" : "reviews"}</small></section><section className="service-profile-review-distribution" aria-label={isKorean ? "별점 분포" : "Rating distribution"}>{reviewDistribution.map(({ rating, count }) => <div key={rating}><span>{rating} <i className="ms ms-star" aria-hidden="true" /></span><span><i style={{ width: `${(count / reviewDistributionPeak) * 100}%` }} /></span><small>{count}</small></div>)}</section><section className="service-profile-review-list" aria-label={isKorean ? "최근 후기" : "Recent reviews"}>{reviews.slice(0, 2).map((review) => <article key={review.id}><span className="service-profile-review-avatar" aria-hidden="true">{review.reviewerName.slice(0, 1).toUpperCase()}</span><div><header><strong>{review.reviewerName}</strong><span className="service-profile-review-stars"><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /><i className="ms ms-star" aria-hidden="true" /></span><time dateTime={review.createdAt}>{reviewAgeLabel(review.createdAt, isKorean)}</time></header><p>{review.comment}</p></div></article>)}{reviews.length === 0 ? <p className="service-profile-review-empty">{isKorean ? "아직 작성된 후기가 없습니다. 첫 후기를 남겨 주세요." : "No written reviews yet. Be the first to share your experience."}</p> : null}</section></div>{profile.reviewCount > 2 ? <button className="service-profile-review-all" type="button">{isKorean ? `후기 ${profile.reviewCount}개 모두 보기` : `View all ${profile.reviewCount} reviews`}</button> : null}{isReviewOpen ? <ServiceReviewDialog inline serviceId={profile.id} providerName={profile.provider} isKorean={isKorean} onClose={() => setIsReviewOpen(false)} onSubmitted={() => { setProfile((current) => current ? { ...current, reviewCount: current.reviewCount + 1 } : current); setIsReviewOpen(false); }} /> : null}</article>
           </section>
         </div>
       </section>
