@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { communityWishlistResponseSchema, marketConversationResponseSchema, marketWishlistResponseSchema, serviceWishlistResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { Button } from "@/components/ui/Button";
 
 export type WishlistItem = {
   id: string;
@@ -33,6 +35,10 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
+  const [deleteTargets, setDeleteTargets] = useState<WishlistItem[] | null>(null);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState("");
+  const categoryName = { all: "전체", market: "마켓", community: "커뮤니티", service: "서비스" }[filter];
   const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market" || item.space === "bargain") ? ["market" as const] : []), ...(items.some((item) => item.space === "community") ? ["community" as const] : []), "service"], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
@@ -54,6 +60,8 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
       });
       const result = await readApiResponse(response, item.space === "community" ? communityWishlistResponseSchema : item.space === "service" ? serviceWishlistResponseSchema : marketWishlistResponseSchema);
       return !result.error && result.data.saved === saved;
+    } catch {
+      return false;
     } finally {
       setUpdatingIds((current) => {
         const next = new Set(current);
@@ -66,6 +74,20 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const removeItem = async (item: WishlistItem) => {
     setItems((current) => current.filter((candidate) => candidate.id !== item.id));
     if (!await updateSavedListing(item, false)) setItems((current) => [...current, item]);
+  };
+
+  const removeCategory = async () => {
+    if (!deleteTargets || deletingAll) return;
+    setDeletingAll(true);
+    let failed = 0;
+    for (const item of deleteTargets) {
+      if (await updateSavedListing(item, false)) {
+        setItems((current) => current.filter((candidate) => itemKey(candidate) !== itemKey(item)));
+      } else failed++;
+    }
+    setDeletingAll(false);
+    setDeleteTargets(null);
+    setDeleteNotice(failed ? `${failed}개의 찜을 삭제하지 못했습니다. 다시 시도해 주세요.` : "선택한 카테고리의 찜을 모두 삭제했습니다.");
   };
 
   const openConversation = async (listingId: string) => {
@@ -96,6 +118,16 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
           {filters.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} onClick={() => setFilter(option)}>{filterLabels[option]}</button>)}
         </div>
       </header>
+      <Button variant="ghost" className="bulk-action-button is-danger" disabled={!visibleItems.length || updatingIds.size > 0 || deletingAll} onClick={() => { setDeleteNotice(""); setDeleteTargets([...visibleItems]); }}><i className="ms ms-delete" aria-hidden="true" />완전 삭제</Button>
+      {deleteNotice ? <p role="status">{deleteNotice}</p> : null}
+      {deleteTargets ? <DialogOverlay onClose={() => setDeleteTargets(null)} isDismissible={!deletingAll} aria-labelledby="wishlist-delete-title" aria-describedby="wishlist-delete-description">
+        <section className="service-delete-dialog-panel" onKeyDown={(event) => { if (event.key === "Escape" && !deletingAll) setDeleteTargets(null); }}>
+          <h2 id="wishlist-delete-title">{categoryName} 찜을 모두 삭제할까요?</h2>
+          <p id="wishlist-delete-description">{categoryName} 카테고리의 찜 {deleteTargets.length}개가 위시리스트에서 모두 사라집니다. 게시글 원본은 삭제되지 않습니다. 삭제 후 필요하면 게시글에서 다시 찜해야 합니다.</p>
+          <p>{deletingAll ? "찜을 삭제하고 있습니다. 잠시 기다려 주세요." : "팝업 바깥을 누르면 닫힙니다."}</p>
+          <div><Button variant="ghost" autoFocus disabled={deletingAll} onClick={() => setDeleteTargets(null)}>취소</Button><Button variant="ghost" className="is-danger" disabled={deletingAll} onClick={() => void removeCategory()}>{deletingAll ? "삭제 중…" : "완전 삭제"}</Button></div>
+        </section>
+      </DialogOverlay> : null}
 
       {visibleItems.length ? <section className="wishlist-list" aria-label="Saved items">
         {visibleItems.map((item) => <article className={`listing-row wishlist-item wishlist-item--${item.space} ${item.status === "Sold" ? "is-sold" : ""}`} key={itemKey(item)}>
