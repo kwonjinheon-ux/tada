@@ -37,6 +37,8 @@ export type GroupBuy = {
   delivery: { available: boolean; feeCents: number; freeOverCents: number | null; areas: string[]; note: string };
   closesLabel: string;
   handoverLabel: string;
+  closesAt?: string;
+  handoverAt?: string;
   bank: { accountName: string; accountNumber: string };
   minimumOrderCents: number | null;
   participantCount: number;

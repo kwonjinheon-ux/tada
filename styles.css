@@ -12124,7 +12124,8 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .groupbuy-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
 
 .groupbuy-card { position: relative; min-width: 0; display: grid; grid-template-columns: minmax(116px, 36%) minmax(0, 1fr); grid-template-areas: "media body" "more more"; overflow: hidden; transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast); }
-.groupbuy-card:hover { border-color: var(--color-line); box-shadow: var(--shadow-md); }
+.groupbuy-card { will-change: transform; }
+.groupbuy-card:hover, .groupbuy-card:focus-within, .groupbuy-card:active { border-color: var(--color-primary); background: var(--color-surface-soft); box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .groupbuy-card-media { position: relative; grid-area: media; min-height: 116px; overflow: hidden; background: var(--color-surface-sunken); }
 .groupbuy-card-media > img { object-fit: cover; }
 .groupbuy-card-media .groupbuy-status { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 1; }
@@ -12152,6 +12153,8 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .groupbuy-card-price { display: flex; gap: var(--space-2); align-items: baseline; margin: auto 0 0; padding-top: var(--space-2); border-top: 1px solid var(--color-line-soft); }
 .groupbuy-card-price small { color: var(--color-muted); font-size: var(--text-xs); }
 .groupbuy-card-price strong { color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-semibold); letter-spacing: -0.02em; }
+.groupbuy-card-countdown { margin-left: auto; color: var(--color-primary-strong); font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; }
+.groupbuy-date-mobile { display: none; }
 
 /* --- Detail ------------------------------------------------------------- */
 .groupbuy-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); overflow: hidden; padding: 0 0 var(--space-4); }
@@ -12439,6 +12442,11 @@ button.groupbuy-item-photo:hover { border-color: var(--amber-550); color: var(--
   .groupbuy-item-remove { align-self: center; }
   .groupbuy-create-layout { grid-template-columns: minmax(0, 1fr) 300px; }
   .groupbuy-create-preview { position: sticky; top: calc(var(--desktop-header-height) + var(--space-4)); }
+}
+
+@media (max-width: 767.98px) {
+  .groupbuy-date-full { display: none; }
+  .groupbuy-date-mobile { display: inline; }
 }
 
 @media (min-width: 1200px) {

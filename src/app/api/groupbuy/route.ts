@@ -42,6 +42,8 @@ async function toGroupBuyCard(row: {
     delivery: { available: row.delivery_available, feeCents: row.delivery_fee_cents, freeOverCents: null, areas: [], note: "" },
     closesLabel: formatDate(row.closes_at),
     handoverLabel: formatDate(row.handover_at),
+    closesAt: row.closes_at,
+    handoverAt: row.handover_at,
     bank: { accountName: "", accountNumber: "" },
     minimumOrderCents: null,
     participantCount: row.participant_count,
