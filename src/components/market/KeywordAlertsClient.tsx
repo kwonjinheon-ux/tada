@@ -6,6 +6,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 export type KeywordAlert = { id: string; keyword: string; categorySlug: string | null };
 
+const keywordRemovalDelayMs = 160;
+
 function getAlertCategory(alert: KeywordAlert) {
   const categorySlug = alert.categorySlug ?? suggestCategoryFromTitle(alert.keyword)?.mainCategory ?? null;
   const category = marketplaceCategories.find(({ value }) => value === categorySlug);
@@ -22,6 +24,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [leavingId, setLeavingId] = useState<string | null>(null);
 
   const addKeyword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,6 +51,10 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
     if (removingId) return;
     const previous = alerts;
     setRemovingId(id);
+    setLeavingId(id);
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, keywordRemovalDelayMs));
+    }
     setAlerts((current) => current.filter((alert) => alert.id !== id));
     try {
       const response = await fetch("/api/market/keywords", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
@@ -60,6 +67,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
       setAlerts(previous);
       setError("Unable to reach keyword alerts right now.");
     } finally {
+      setLeavingId(null);
       setRemovingId(null);
     }
   };
@@ -74,7 +82,7 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
     <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2></div>
       {alerts.length ? <div className="keywords-chip-list">{alerts.map((alert) => {
         const category = getAlertCategory(alert);
-        return <div className={`keyword-chip ${category.tone}`} key={alert.id} title={category.label}>
+        return <div className={`keyword-chip ${category.tone}${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id} title={category.label}>
           <span>{alert.keyword}</span>
           <small>{category.label}</small>
           <button type="button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`}><i className="ms ms-close" aria-hidden="true" /></button>
