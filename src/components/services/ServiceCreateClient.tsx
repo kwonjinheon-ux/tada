@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { IconButton } from "@/components/ui/IconButton";
+import { Button } from "@/components/ui/Button";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
 import { ServicesFilterSidebar, type ServiceFilterState } from "@/components/services/ServicesFilterSidebar";
 import { ServiceCardPreview } from "@/components/services/ServiceCardPreview";
@@ -48,6 +49,7 @@ export function ServiceCreateClient() {
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [errorDialog, setErrorDialog] = useState<string | null>(null);
   const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [serviceArea, setServiceArea] = useState("Hamilton");
   const [suburb, setSuburb] = useState("");
@@ -118,23 +120,28 @@ export function ServiceCreateClient() {
     back: "Back to services", title: "List your service", description: "Tell local customers about the help you offer.", information: [["ms ms-credit-card", "No payments on Tada", "You deal directly with customers."], ["ms ms-security", "Listings are reviewed", "We check for safety and quality."], ["ms ms-check-circle", "Verification is through your Profile", "It isn’t automatic when you list a service."]], category: "Service category", details: "Service details", name: "Business or service name", namePlaceholder: "e.g. Hamilton Handy Helpers", descriptionLabel: "About your service", descriptionPlaceholder: "Tell customers what you offer and a little about your experience.", logo: "Business logo", logoHint: "Add your logo in any shape. It is fitted whole, never cropped, beside your business name.", photos: "Work photos", photoHint: "Add up to five photos of your work.", contact: "Contact and service area", serviceArea: "Service area", suburb: "Suburb (optional)", address: "Street address", addressPlaceholder: "e.g. 33c Bruce McLaren Rd, Henderson", weekdayHours: "Weekday hours", saturdayHours: "Saturday hours (optional)", sundayHours: "Sunday and public holiday hours (optional)", foundedYear: "Established year (optional)", providerType: "Provider type", localBusiness: "Local business", soleTrader: "Sole trader", phone: "Contact phone", email: "Email (optional)", website: "Website or social link (optional)", trustTitle: "Trust & safety requirements", trustDescription: "Help us keep Tada safe and trustworthy for everyone.", trust: [["ms ms-work", "Real business or genuine service only", "List active services you provide."], ["ms ms-badge", "Accurate contact details required", "Customers need reliable ways to reach you."], ["ms ms-security", "No prohibited or unsafe services", "Illegal, unsafe, or misleading services are not allowed."], ["ms ms-assignment-turned-in", "All listings reviewed before going live", "We review every listing to protect our community."]], trustAlert: "Listings that don’t meet Tada guidelines may be declined or removed.", publish: "Submit service listing", note: "Service listings are reviewed before they go live.", terms: "I agree to Tada’s Terms and Community Guidelines.", tipsTitle: "Tips for a great listing", tips: ["Be clear about the help you can provide.", "Add your service area so nearby customers can find you.", "An accurate introduction and contact details build trust."], verifiedTitle: "Verified badge", verifiedIntro: "Verification is managed through your Profile, not during listing.", verifiedSteps: [["1", "Create your listing", "Add your service details and submit."], ["2", "Complete Profile verification", "Add your ID, business information, and documents."], ["3", "Tada reviews and applies the badge", "Once approved, your listing can show as Verified."]], verificationAction: "Go to Profile verification", verificationStatus: "Status: Verification not started", sent: "Your service listing is ready to submit. Full service registration is coming soon.",
   };
 
+  const showErrorDialog = (message: string) => {
+    setNotice(message);
+    setErrorDialog(message);
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (isSubmitting) return;
     if (!category) {
-      setNotice(isKorean ? "서비스 종류를 선택해 주세요." : "Choose a service category to continue.");
+      showErrorDialog(isKorean ? "서비스 종류를 선택해 주세요." : "Choose a service category to continue.");
       return;
     }
     if (!acceptedTerms) {
-      setNotice(isKorean ? "이용약관 및 커뮤니티 가이드라인에 동의해 주세요." : "Agree to the Terms and Community Guidelines to continue.");
+      showErrorDialog(isKorean ? "이용약관 및 커뮤니티 가이드라인에 동의해 주세요." : "Agree to the Terms and Community Guidelines to continue.");
       return;
     }
     try {
       const supabase = createBrowserSupabaseClient();
-      if (!supabase) { setNotice(isKorean ? "서비스 등록을 지금 사용할 수 없습니다." : "Service registration is unavailable right now."); return; }
+      if (!supabase) { showErrorDialog(isKorean ? "서비스 등록을 지금 사용할 수 없습니다." : "Service registration is unavailable right now."); return; }
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) { setNotice(isKorean ? "서비스를 등록하려면 로그인해 주세요." : "Please sign in to list your service."); return; }
+      if (userError || !user) { showErrorDialog(isKorean ? "서비스를 등록하려면 로그인해 주세요." : "Please sign in to list your service."); return; }
 
       const formData = new FormData(form);
       const providerName = String(formData.get("service-name") ?? "").trim();
@@ -164,11 +171,11 @@ export function ServiceCreateClient() {
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
       if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
-        setNotice(isKorean ? "전화번호를 7자리 이상 입력해 주세요." : "Enter a phone number with at least 7 digits.");
+        showErrorDialog(isKorean ? "전화번호를 7자리 이상 입력해 주세요." : "Enter a phone number with at least 7 digits.");
         return;
       }
       if (!providerName || !businessName || !description || !address || !weekdayHours || detailFields.some((field) => !detailValues[field.key]) || !Number.isFinite(priceFrom) || priceFrom < 0 || !priceUnit || (foundedYear !== null && (!Number.isInteger(foundedYear) || foundedYear < 1800 || foundedYear > new Date().getFullYear()))) {
-        setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.");
+        showErrorDialog(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.");
         return;
       }
 
@@ -239,11 +246,11 @@ export function ServiceCreateClient() {
         uploadErrors.push(error instanceof Error ? error.message : "upload failed");
       }
       }
-      if (uploadErrors.length) { setNotice(isKorean ? "서비스 등록은 접수됐지만 일부 사진을 저장하지 못했습니다." : "Your service was submitted, but some photos could not be saved."); return; }
+      if (uploadErrors.length) { showErrorDialog(isKorean ? "서비스 등록은 접수됐지만 일부 사진을 저장하지 못했습니다." : "Your service was submitted, but some photos could not be saved."); return; }
       router.push("/services?submitted=pending");
       router.refresh();
     } catch (error) {
-      setNotice(submissionErrorMessage(error, isKorean));
+      showErrorDialog(submissionErrorMessage(error, isKorean));
     } finally {
       setIsSubmitting(false);
     }
@@ -281,8 +288,9 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={(next) => { setServiceArea(next); setSuburb(""); }} onSuburbChange={setSuburb} />
-        <form className="post-ad-form service-create-legacy-form" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)} onInvalidCapture={() => setNotice(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.")}>
+        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInvalid={showErrorDialog} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={(next) => { setServiceArea(next); setSuburb(""); }} onSuburbChange={setSuburb} />
+        <form className="post-ad-form service-create-legacy-form" hidden aria-hidden="true" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)}>
+          <fieldset disabled>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>
           <section className="post-description-field"><div className="post-section-heading"><span>2</span><h2>{copy.details}</h2></div><div className="post-field"><label htmlFor="service-name">{isKorean ? "서비스명" : "Service name"}</label><input id="service-name" name="service-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: 수학 과외 또는 잔디 관리" : "e.g. Maths tutoring or lawn care"} /></div><div className="post-field"><label htmlFor="business-name">{isKorean ? "업체명" : "Business name"}</label><input id="business-name" name="business-name" required minLength={2} maxLength={100} placeholder={isKorean ? "예: Hamilton Maths Academy" : "e.g. Hamilton Maths Academy"} /></div><div className="post-field"><label htmlFor="service-description">{copy.descriptionLabel}</label><textarea id="service-description" name="service-description" required minLength={20} maxLength={2000} placeholder={copy.descriptionPlaceholder} /></div><ServiceCategoryDetailsFields key={category} category={category} locale={locale} values={serviceDetailValues} onValueChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} /></section>
           <section className="post-description-field service-logo-field"><div className="post-section-heading"><span>3</span><h2>{copy.logo}</h2></div><input ref={logoInputRef} className="post-photo-input" id="service-logo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { addLogo(event.target.files); event.currentTarget.value = ""; }} />{logo ? <div className="service-logo-preview"><img src={logo.url} alt={isKorean ? "업체 로고 미리보기" : "Business logo preview"} /><div><strong>{logo.file.name}</strong><span>{copy.logoHint}</span></div><button className="post-photo-remove" type="button" aria-label={isKorean ? "로고 삭제" : "Remove logo"} onClick={removeLogo}><i className="ms ms-close" aria-hidden="true" /></button></div> : <button className="service-logo-upload" type="button" onClick={() => logoInputRef.current?.click()}><i className="ms ms-image" aria-hidden="true" /><span>{isKorean ? "로고 추가" : "Add logo"}</span><small>{copy.logoHint}</small></button>}</section>
@@ -291,6 +299,7 @@ export function ServiceCreateClient() {
           <section className="service-trust-requirements"><div className="post-section-heading"><span>6</span><h2>{copy.trustTitle}</h2></div><p>{copy.trustDescription}</p><div>{copy.trust.map(([, title, body], index) => <article key={title}><i className={["ms ms-work", "ms ms-badge", "ms ms-security", "ms ms-assignment-turned-in"][index]} aria-hidden="true" /><span><strong>{title}</strong><small>{body}</small></span></article>)}</div><aside><i className="ms ms-warning" aria-hidden="true" /> {copy.trustAlert}</aside></section>
           {notice ? <p className="post-create-status" role="status">{notice}</p> : null}
           <div className="post-submit-row service-create-submit"><label className="terms-row"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /><span>{isKorean ? <><Link href="/terms">이용약관</Link> 및 <Link href="/community">커뮤니티 가이드라인</Link>에 동의합니다.</> : <>I agree to Tada’s <Link href="/terms">Terms</Link> and <Link href="/community">Community Guidelines</Link>.</>}</span></label><button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "등록 중..." : "Submitting...") : copy.publish}</span></button></div>
+          </fieldset>
         </form>
       </section>
     </div>
@@ -298,5 +307,6 @@ export function ServiceCreateClient() {
       </section>
       <aside className="post-ad-sidebar service-create-sidebar service-create-support-rail" aria-label={isKorean ? "서비스 등록 도움말" : "Service registration help"}><ServiceCardPreview content={previewContent} className="ui-card service-create-card-preview" /><section className="post-ad-tips"><h2>{copy.tipsTitle}</h2>{copy.tips.map((tip, index) => <article key={tip}><i className={["ms ms-checklist", "ms ms-location-on", "ms ms-security"][index]} aria-hidden="true" /><p>{tip}</p></article>)}</section><section className="service-verification-card"><header><h2>{copy.verifiedTitle}</h2><i className="ms ms-security" aria-hidden="true" /></header><p>{copy.verifiedIntro}</p><ol>{copy.verifiedSteps.map(([number, title, body], index) => <li key={title}><span>{number}</span><i className={["ms ms-description", "ms ms-badge", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><small>{body}</small></div></li>)}</ol><Link href="/market/dashboard/profile">{copy.verificationAction}</Link><footer><i className="ms ms-circle" aria-hidden="true" /> {copy.verificationStatus}</footer></section></aside>
       {isPreviewOpen ? <DialogOverlay className="service-create-preview-dialog" onClose={() => setIsPreviewOpen(false)} aria-labelledby="service-create-preview-dialog-title"><section className="service-create-preview-dialog-panel"><IconButton className="service-create-preview-dialog-close" type="button" autoFocus onClick={() => setIsPreviewOpen(false)} aria-label={isKorean ? "미리보기 닫기" : "Close preview"}><i className="ms ms-close" aria-hidden="true" /></IconButton><p className="service-create-preview-dialog-dismiss"><i className="ms ms-info" aria-hidden="true" />{isKorean ? "팝업 바깥을 누르면 미리보기가 닫힙니다." : "Tap outside the preview to close it."}</p><ServiceCardPreview content={previewContent} className="service-create-dialog-card-preview" titleId="service-create-preview-dialog-title" /></section></DialogOverlay> : null}
+      {errorDialog ? <DialogOverlay className="service-create-error-dialog" onClose={() => setErrorDialog(null)} aria-labelledby="service-create-error-dialog-title"><section className="service-create-error-dialog-panel"><IconButton className="service-create-error-dialog-close" type="button" autoFocus onClick={() => setErrorDialog(null)} aria-label={isKorean ? "오류 안내 닫기" : "Close error message"}><i className="ms ms-close" aria-hidden="true" /></IconButton><i className="ms ms-warning" aria-hidden="true" /><h2 id="service-create-error-dialog-title">{isKorean ? "입력 내용을 확인해 주세요" : "Check your details"}</h2><p role="alert">{errorDialog}</p><small><i className="ms ms-info" aria-hidden="true" />{isKorean ? "팝업 바깥을 누르면 닫힙니다." : "Tap outside this message to close it."}</small><Button type="button" onClick={() => setErrorDialog(null)}>{isKorean ? "확인" : "OK"}</Button></section></DialogOverlay> : null}
   </main>;
 }

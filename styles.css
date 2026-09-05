@@ -12812,3 +12812,71 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 }
 
 .service-create-page .service-editor-card .service-editor-gallery img { transition: opacity var(--transition-fast); }
+
+/* Service listing validation guidance and the shared error dialog. */
+.service-create-page .service-editor-required-note,
+.service-create-page .service-editor-details-note,
+.service-create-page .service-editor-field-hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  line-height: var(--line-height-normal);
+}
+.service-create-page .service-editor-required-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+.service-create-page .service-editor-required-note > span,
+.service-create-page .service-editor-card label:has(> input:required)::before,
+.service-create-page .service-editor-submit > label:has(> input:required)::before,
+.service-create-page .service-editor-category > label::before {
+  color: var(--color-danger);
+  content: "*";
+  font-weight: var(--weight-bold);
+}
+.service-create-page .service-editor-card label:has(> input:required),
+.service-create-page .service-editor-submit > label:has(> input:required),
+.service-create-page .service-editor-category > label { position: relative; }
+.service-create-page .service-editor-card label:has(> input:required)::before,
+.service-create-page .service-editor-submit > label:has(> input:required)::before {
+  position: absolute;
+  top: 0;
+  left: calc(var(--space-2) * -1);
+}
+.service-create-page .service-editor-category > label::before { margin-right: 2px; }
+.service-create-page .service-editor-field-hint { font-weight: var(--weight-regular); }
+.service-create-error-dialog { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: var(--space-4); }
+.service-create-error-dialog-panel {
+  position: relative;
+  width: min(100%, 30rem);
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+.service-create-error-dialog-panel > i {
+  display: grid;
+  width: var(--space-10);
+  height: var(--space-10);
+  place-items: center;
+  border-radius: var(--radius-circle);
+  background: var(--amber-soft-50);
+  color: var(--amber-700);
+  font-size: var(--text-xl);
+}
+.service-create-error-dialog-panel h2,
+.service-create-error-dialog-panel p { margin: 0; }
+.service-create-error-dialog-panel h2 { color: var(--color-ink); font-size: var(--text-lg); }
+.service-create-error-dialog-panel p { color: var(--color-ink-soft); font-size: var(--text-sm); line-height: var(--line-height-normal); }
+.service-create-error-dialog-panel small { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); }
+.service-create-error-dialog-panel .ui-button { min-width: 5rem; justify-content: center; }
+.service-create-error-dialog-close { position: absolute; top: var(--space-3); right: var(--space-3); }
+@media (max-width: 767.98px) {
+  .service-create-error-dialog { padding: var(--space-3); }
+  .service-create-error-dialog-panel { padding: var(--space-4); }
+}
