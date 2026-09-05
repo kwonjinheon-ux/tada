@@ -12346,6 +12346,15 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .groupbuy-create-footnote { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
 
 .groupbuy-form { display: grid; gap: var(--space-5); }
+.groupbuy-create-layout { display: grid; gap: var(--space-5); align-items: start; }
+.groupbuy-create-preview { min-width: 0; }
+.groupbuy-live-preview { display: grid; gap: var(--space-3); }
+.groupbuy-live-preview-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--color-muted); }
+.groupbuy-live-preview-heading > div { display: grid; gap: var(--space-1); }
+.groupbuy-live-preview-heading span { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; }
+.groupbuy-live-preview-heading strong { color: var(--color-ink); font-size: var(--text-md); }
+.groupbuy-live-preview-heading > i { color: var(--amber-750); font-size: var(--text-lg); }
+.groupbuy-live-preview-card .groupbuy-card a { pointer-events: none; }
 .groupbuy-cover-field { display: grid; gap: var(--space-2); max-width: 520px; }
 .groupbuy-cover-field .field-label-row { margin: 0; }
 .groupbuy-cover-preview { position: relative; min-height: 220px; overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface-soft); }
@@ -12420,6 +12429,8 @@ button.groupbuy-item-photo:hover { border-color: var(--amber-550); color: var(--
   .groupbuy-item-photo { align-self: center; }
   .groupbuy-item-index,
   .groupbuy-item-remove { align-self: center; }
+  .groupbuy-create-layout { grid-template-columns: minmax(0, 1fr) 300px; }
+  .groupbuy-create-preview { position: sticky; top: calc(var(--desktop-header-height) + var(--space-4)); }
 }
 
 @media (min-width: 1200px) {

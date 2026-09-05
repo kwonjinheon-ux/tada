@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PostShopTypeSelector } from "@/components/post-ad/PostShopTypeSelector";
@@ -12,11 +12,20 @@ import { groupBuyReference, groupBuyText, groupBuys, type GroupBuy } from "@/dat
 import { groupBuyCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { GroupBuyLivePreview } from "@/components/groupbuy/GroupBuyLivePreview";
 
 type DraftPhoto = { url: string; name: string; isUploaded: boolean; file?: File };
 type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string; photo: DraftPhoto | null };
+type PreviewFields = { title: string; summary: string; description: string; closes: string; handover: string; pickupAddress: string; pickupWindow: string; deliveryFee: string; deliveryFree: string; deliveryAreas: string };
 
 const emptyItem = (): DraftItem => ({ id: crypto.randomUUID(), name: "", note: "", price: "", unit: "each", limit: "", photo: null });
+
+function formatGroupBuyPreviewDate(value: string, isKorean: boolean) {
+  if (!value) return isKorean ? "날짜 선택" : "Choose a date";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return isKorean ? "날짜 선택" : "Choose a date";
+  return new Intl.DateTimeFormat(isKorean ? "ko-NZ" : "en-NZ", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+}
 
 /** A previous round, flattened into the shape the editor holds. Photos come
  *  back as the stored URL rather than a fresh upload, so reusing a round does
@@ -55,6 +64,7 @@ export function GroupBuyCreateClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [coverPhoto, setCoverPhoto] = useState<DraftPhoto | null>(null);
+  const [previewFields, setPreviewFields] = useState<PreviewFields>({ title: "", summary: "", description: "", closes: "", handover: "", pickupAddress: "", pickupWindow: "", deliveryFee: "", deliveryFree: "", deliveryAreas: "" });
   const photoInputRef = useRef<HTMLInputElement>(null);
   const coverPhotoInputRef = useRef<HTMLInputElement>(null);
   const photoTargetRef = useRef<string | null>(null);
@@ -102,6 +112,7 @@ export function GroupBuyCreateClient() {
     setOffersPickup(groupBuy.pickup.available);
     setOffersDelivery(groupBuy.delivery.available);
     setTemplate(groupBuy);
+    setPreviewFields({ title: groupBuy.title, summary: groupBuy.summary, description: groupBuy.description.join("\n\n"), closes: "", handover: "", pickupAddress: groupBuy.pickup.address, pickupWindow: groupBuy.pickup.window, deliveryFee: (groupBuy.delivery.feeCents / 100).toFixed(2), deliveryFree: groupBuy.delivery.freeOverCents === null ? "" : (groupBuy.delivery.freeOverCents / 100).toFixed(2), deliveryAreas: groupBuy.delivery.areas.join(", ") });
     setFormKey((current) => current + 1);
   };
 
@@ -112,8 +123,17 @@ export function GroupBuyCreateClient() {
     setOffersPickup(true);
     setOffersDelivery(true);
     setTemplate(null);
+    setPreviewFields({ title: "", summary: "", description: "", closes: "", handover: "", pickupAddress: "", pickupWindow: "", deliveryFee: "", deliveryFree: "", deliveryAreas: "" });
     setFormKey((current) => current + 1);
   };
+
+  const updatePreviewField = (field: keyof PreviewFields, value: string) => setPreviewFields((current) => ({ ...current, [field]: value }));
+  const previewGroupBuy = useMemo<GroupBuy>(() => {
+    const previewItems = items.filter((item) => item.name.trim() || item.price.trim() || item.note.trim() || item.photo).map((item, index) => ({ id: item.id, name: item.name.trim() || (isKorean ? `상품 ${index + 1}` : `Item ${index + 1}`), note: item.note.trim(), priceCents: Math.max(0, Math.round(Number(item.price) * 100) || 0), unitLabel: item.unit.trim() || (isKorean ? "개" : "each"), limitPerPerson: item.limit.trim() ? Number(item.limit) : null, image: item.photo?.url || "/images/home/journey-market.png", imageAlt: item.photo?.name || "Group buy item", orderedCount: 0 }));
+    return {
+      id: "group-buy-preview", title: previewFields.title.trim() || (isKorean ? "공동구매 제목" : "Your group buy title"), summary: previewFields.summary.trim() || (isKorean ? "공동구매 한 줄 소개가 표시됩니다." : "Your one-line summary will appear here."), description: previewFields.description ? previewFields.description.split(/\n+/).filter(Boolean) : [], status: "open", referencePrefix: prefix || "BR", coverImage: coverPhoto?.url || "/images/home/journey-market.png", coverAlt: coverPhoto?.name || "Group buy cover", seller: { name: isKorean ? "내 업체명" : "Your business", location: isKorean ? "지역" : "Your location", phone: "", joinedLabel: "" }, pickup: { available: offersPickup, address: previewFields.pickupAddress, window: previewFields.pickupWindow || (isKorean ? "수령 시간" : "Pickup window"), note: "" }, delivery: { available: offersDelivery, feeCents: Math.max(0, Math.round(Number(previewFields.deliveryFee) * 100) || 0), freeOverCents: previewFields.deliveryFree ? Math.max(0, Math.round(Number(previewFields.deliveryFree) * 100) || 0) : null, areas: previewFields.deliveryAreas.split(",").map((area) => area.trim()).filter(Boolean), note: "" }, closesLabel: formatGroupBuyPreviewDate(previewFields.closes, isKorean), handoverLabel: formatGroupBuyPreviewDate(previewFields.handover, isKorean), bank: { accountName: "", accountNumber: "" }, minimumOrderCents: null, participantCount: 0, items: previewItems.length ? previewItems : [{ id: "empty-preview-item", name: isKorean ? "첫 상품" : "Your first item", note: "", priceCents: 0, unitLabel: isKorean ? "개" : "each", limitPerPerson: null, image: "/images/home/journey-market.png", imageAlt: "Group buy item", orderedCount: 0 }],
+    };
+  }, [coverPhoto, isKorean, items, offersDelivery, offersPickup, prefix, previewFields]);
 
   const namedItems = items.filter((item) => item.name.trim()).length;
   // Math.min of an empty list is Infinity, which is truthy and would reach the
@@ -236,6 +256,7 @@ export function GroupBuyCreateClient() {
       <input ref={photoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptPhoto(event.target.files); event.currentTarget.value = ""; }} />
       <input ref={coverPhotoInputRef} className="post-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { acceptCoverPhoto(event.target.files); event.currentTarget.value = ""; }} />
 
+      <div className="groupbuy-create-layout">
       <form className="post-ad-form groupbuy-form" key={formKey} noValidate onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
         <section className="post-description-field">
           <div className="post-section-heading"><span>1</span><h2>{text.basics}</h2></div>
@@ -256,15 +277,15 @@ export function GroupBuyCreateClient() {
             )}
             <p className="post-upload-hint"><strong>{isKorean ? "공동구매 카드에 표시될 대표 사진을 추가해 주세요." : "Add one image to show on the group buy card."}</strong><span>JPEG, PNG, WebP</span></p>
           </div>
-          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" required minLength={4} maxLength={100} defaultValue={template?.title ?? ""} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" required minLength={4} maxLength={140} defaultValue={template?.summary ?? ""} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
-          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" required minLength={20} maxLength={5000} rows={4} defaultValue={template?.description.join("\n\n") ?? ""} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-title">{isKorean ? "공동구매 제목" : "Group buy title"}</label><input id="groupbuy-title" name="title" required minLength={4} maxLength={100} defaultValue={template?.title ?? ""} onInput={(event) => updatePreviewField("title", event.currentTarget.value)} placeholder={isKorean ? "예: 해밀턴 수제빵 공동구매 12주차" : "e.g. Hamilton bakery run — week 12"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-summary">{isKorean ? "한 줄 소개" : "One-line summary"}</label><input id="groupbuy-summary" name="summary" required minLength={4} maxLength={140} defaultValue={template?.summary ?? ""} onInput={(event) => updatePreviewField("summary", event.currentTarget.value)} placeholder={isKorean ? "예: 목요일 밤 마감, 금요일 수령" : "e.g. Order by Thursday night, collect Friday"} /></div>
+          <div className="post-field"><label htmlFor="groupbuy-description">{isKorean ? "안내" : "About this round"}</label><textarea id="groupbuy-description" name="description" required minLength={20} maxLength={5000} rows={4} defaultValue={template?.description.join("\n\n") ?? ""} onInput={(event) => updatePreviewField("description", event.currentTarget.value)} placeholder={isKorean ? "어떻게 진행되는지, 언제 준비되는지 적어 주세요." : "How the round works and when it is ready."} /></div>
           {/* Dates are deliberately never carried over — they are the one thing
               that must change, and a prefilled old date is worse than none. */}
           <div className={template ? "groupbuy-field-grid groupbuy-dates-needed" : "groupbuy-field-grid"}>
             {template ? <p className="groupbuy-dates-flag"><i className="ms ms-schedule" aria-hidden="true" /> {text.datesNeeded}</p> : null}
-            <div className="post-field"><label htmlFor="groupbuy-closes">{text.closesAt}</label><input id="groupbuy-closes" name="closes" type="datetime-local" required /></div>
-            <div className="post-field"><label htmlFor="groupbuy-handover">{text.handover}</label><input id="groupbuy-handover" name="handover" type="datetime-local" required /></div>
+            <div className="post-field"><label htmlFor="groupbuy-closes">{text.closesAt}</label><input id="groupbuy-closes" name="closes" type="datetime-local" required onInput={(event) => updatePreviewField("closes", event.currentTarget.value)} /></div>
+            <div className="post-field"><label htmlFor="groupbuy-handover">{text.handover}</label><input id="groupbuy-handover" name="handover" type="datetime-local" required onInput={(event) => updatePreviewField("handover", event.currentTarget.value)} /></div>
           </div>
         </section>
 
@@ -320,8 +341,8 @@ export function GroupBuyCreateClient() {
           </label>
           {offersPickup ? (
             <div className="groupbuy-field-grid groupbuy-switch-body">
-              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-pickup-address">{isKorean ? "수령 주소" : "Pickup address"}</label><input id="groupbuy-pickup-address" name="pickupAddress" defaultValue={template?.pickup.address ?? ""} placeholder={isKorean ? "예: 12 Grey Street, Hamilton East" : "e.g. 12 Grey Street, Hamilton East"} /></div>
-              <div className="post-field"><label htmlFor="groupbuy-pickup-window">{isKorean ? "수령 시간" : "Pickup window"}</label><input id="groupbuy-pickup-window" name="pickupWindow" defaultValue={template?.pickup.window ?? ""} placeholder={isKorean ? "예: 금요일 15:00–18:00" : "e.g. Friday 3pm – 6pm"} /></div>
+              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-pickup-address">{isKorean ? "수령 주소" : "Pickup address"}</label><input id="groupbuy-pickup-address" name="pickupAddress" defaultValue={template?.pickup.address ?? ""} onInput={(event) => updatePreviewField("pickupAddress", event.currentTarget.value)} placeholder={isKorean ? "예: 12 Grey Street, Hamilton East" : "e.g. 12 Grey Street, Hamilton East"} /></div>
+              <div className="post-field"><label htmlFor="groupbuy-pickup-window">{isKorean ? "수령 시간" : "Pickup window"}</label><input id="groupbuy-pickup-window" name="pickupWindow" defaultValue={template?.pickup.window ?? ""} onInput={(event) => updatePreviewField("pickupWindow", event.currentTarget.value)} placeholder={isKorean ? "예: 금요일 15:00–18:00" : "e.g. Friday 3pm – 6pm"} /></div>
               <div className="post-field"><label htmlFor="groupbuy-pickup-note">{isKorean ? "수령 안내 (선택)" : "Pickup note (optional)"}</label><input id="groupbuy-pickup-note" name="pickupNote" defaultValue={template?.pickup.note ?? ""} placeholder={isKorean ? "예: 옆문으로 오세요." : "e.g. Come to the side door."} /></div>
             </div>
           ) : null}
@@ -332,9 +353,9 @@ export function GroupBuyCreateClient() {
           </label>
           {offersDelivery ? (
             <div className="groupbuy-field-grid groupbuy-switch-body">
-              <div className="post-field"><label htmlFor="groupbuy-delivery-fee">{isKorean ? "배송비 (NZD)" : "Delivery fee (NZD)"}</label><input id="groupbuy-delivery-fee" name="deliveryFee" inputMode="decimal" defaultValue={template?.delivery.feeCents ? (template.delivery.feeCents / 100).toFixed(2) : ""} placeholder="6.00" /></div>
-              <div className="post-field"><label htmlFor="groupbuy-delivery-free">{isKorean ? "무료 배송 기준 (선택)" : "Free over (optional)"}</label><input id="groupbuy-delivery-free" name="deliveryFree" inputMode="decimal" defaultValue={template?.delivery.freeOverCents ? (template.delivery.freeOverCents / 100).toFixed(2) : ""} placeholder="80.00" /></div>
-              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-delivery-areas">{isKorean ? "배송 가능 지역" : "Delivery areas"}</label><input id="groupbuy-delivery-areas" name="deliveryAreas" defaultValue={template?.delivery.areas.join(", ") ?? ""} placeholder={isKorean ? "예: Hamilton East, Rototuna" : "e.g. Hamilton East, Rototuna"} /></div>
+              <div className="post-field"><label htmlFor="groupbuy-delivery-fee">{isKorean ? "배송비 (NZD)" : "Delivery fee (NZD)"}</label><input id="groupbuy-delivery-fee" name="deliveryFee" inputMode="decimal" defaultValue={template?.delivery.feeCents ? (template.delivery.feeCents / 100).toFixed(2) : ""} onInput={(event) => updatePreviewField("deliveryFee", event.currentTarget.value)} placeholder="6.00" /></div>
+              <div className="post-field"><label htmlFor="groupbuy-delivery-free">{isKorean ? "무료 배송 기준 (선택)" : "Free over (optional)"}</label><input id="groupbuy-delivery-free" name="deliveryFree" inputMode="decimal" defaultValue={template?.delivery.freeOverCents ? (template.delivery.freeOverCents / 100).toFixed(2) : ""} onInput={(event) => updatePreviewField("deliveryFree", event.currentTarget.value)} placeholder="80.00" /></div>
+              <div className="post-field groupbuy-field-wide"><label htmlFor="groupbuy-delivery-areas">{isKorean ? "배송 가능 지역" : "Delivery areas"}</label><input id="groupbuy-delivery-areas" name="deliveryAreas" defaultValue={template?.delivery.areas.join(", ") ?? ""} onInput={(event) => updatePreviewField("deliveryAreas", event.currentTarget.value)} placeholder={isKorean ? "예: Hamilton East, Rototuna" : "e.g. Hamilton East, Rototuna"} /></div>
             </div>
           ) : null}
         </section>
@@ -364,6 +385,10 @@ export function GroupBuyCreateClient() {
           <button className="post-submit-button" type="submit" disabled={isSubmitting}><span>{isSubmitting ? (isKorean ? "게시 중…" : "Publishing…") : text.publish}</span></button>
         </div>
       </form>
+      <aside className="groupbuy-create-preview" aria-label={isKorean ? "공동구매 게시물 미리보기" : "Group buy listing preview"}>
+        <GroupBuyLivePreview groupBuy={previewGroupBuy} />
+      </aside>
+      </div>
 
       {namedItems && pricedCents.length ? (
         <p className="groupbuy-create-footnote">
