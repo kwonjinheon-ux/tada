@@ -5684,7 +5684,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-sale-detail-inventory > header { display: grid; gap: var(--space-3); margin-bottom: var(--space-4); }
 .bargain-sale-detail-inventory h2, .bargain-sale-event-card h2 { margin: 0; color: var(--color-ink); font-size: var(--text-xl); }
 .bargain-sale-detail-inventory header p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-md); }
-.bargain-sale-category-tabs { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
+.bargain-sale-category-tabs { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
+.bargain-sale-category-tabs::-webkit-scrollbar { display: none; }
 .bargain-sale-category-tabs button { min-height: var(--control-h-sm); padding: 0 var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink-soft); font: inherit; font-size: var(--text-xs); white-space: nowrap; cursor: pointer; }
 .bargain-sale-category-tabs button.is-selected { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
 .bargain-sale-detail-items { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
@@ -12139,6 +12140,13 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .groupbuy-card-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .groupbuy-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface-sunken); color: var(--color-ink-soft); font-size: var(--text-2xs); font-weight: var(--weight-semibold); white-space: nowrap; }
 .groupbuy-tag .ms { color: var(--color-muted); font-size: var(--text-md); }
+.groupbuy-tag.is-pickup { background: var(--green-soft-50); color: var(--green-750); }
+.groupbuy-tag.is-pickup .ms { color: var(--green-750); }
+.groupbuy-tag.is-delivery { background: var(--blue-soft-100); color: var(--blue-700); }
+.groupbuy-tag.is-delivery .ms { color: var(--blue-700); }
+.groupbuy-tag.is-pickup-only { background: var(--amber-50); color: var(--amber-750); }
+.groupbuy-tag.is-participants { background: var(--violet-soft-100); color: var(--violet-750); }
+.groupbuy-tag.is-participants .ms { color: var(--violet-750); }
 .groupbuy-card-price { display: flex; gap: var(--space-2); align-items: baseline; margin: auto 0 0; padding-top: var(--space-2); border-top: 1px solid var(--color-line-soft); }
 .groupbuy-card-price small { color: var(--color-muted); font-size: var(--text-xs); }
 .groupbuy-card-price strong { color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-semibold); letter-spacing: -0.02em; }

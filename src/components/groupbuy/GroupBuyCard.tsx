@@ -31,11 +31,11 @@ export function GroupBuyCard({ groupBuy, isPreview = false }: { groupBuy: GroupB
           <div><dt>{text.handover}</dt><dd>{groupBuy.handoverLabel}</dd></div>
         </dl>
         <div className="groupbuy-card-tags">
-          {groupBuy.pickup.available ? <span className="groupbuy-tag"><i className="ms ms-storefront" aria-hidden="true" />{text.pickup}</span> : null}
+          {groupBuy.pickup.available ? <span className="groupbuy-tag is-pickup"><i className="ms ms-storefront" aria-hidden="true" />{text.pickup}</span> : null}
           {groupBuy.delivery.available
-            ? <span className="groupbuy-tag"><i className="ms ms-local-shipping" aria-hidden="true" />{text.delivery} {formatMarketPrice(groupBuy.delivery.feeCents)}</span>
-            : <span className="groupbuy-tag">{text.pickupOnly}</span>}
-          <span className="groupbuy-tag"><i className="ms ms-groups" aria-hidden="true" />{text.participants(groupBuy.participantCount)}</span>
+            ? <span className="groupbuy-tag is-delivery"><i className="ms ms-local-shipping" aria-hidden="true" />{text.delivery} {formatMarketPrice(groupBuy.delivery.feeCents)}</span>
+            : <span className="groupbuy-tag is-pickup-only">{text.pickupOnly}</span>}
+          <span className="groupbuy-tag is-participants"><i className="ms ms-groups" aria-hidden="true" />{text.participants(groupBuy.participantCount)}</span>
         </div>
         <p className="groupbuy-card-price"><small>{locale === "ko" ? "최저" : "From"}</small><strong>{formatMarketPrice(cheapest)}</strong></p>
       </div>
