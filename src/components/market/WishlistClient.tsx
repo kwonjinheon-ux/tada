@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { communityWishlistResponseSchema, marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
+import { communityWishlistResponseSchema, marketConversationResponseSchema, marketWishlistResponseSchema, serviceWishlistResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 export type WishlistItem = {
   id: string;
-  space: "market" | "bargain" | "community";
+  space: "market" | "bargain" | "community" | "service";
   title: string;
   price: string;
   category: string;
@@ -18,13 +18,13 @@ export type WishlistItem = {
 };
 
 type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[] };
-type Filter = "all" | "market" | "community";
-const filterLabels: Record<Filter, string> = { all: "All items", market: "Market", community: "Community" };
+type Filter = "all" | "market" | "service" | "community";
+const filterLabels: Record<Filter, string> = { all: "All items", market: "Market", service: "Services", community: "Community" };
 
 function matchesFilter(item: WishlistItem, filter: Filter) {
   if (filter === "all") return true;
-  if (filter === "market") return item.space !== "community";
-  return item.space === "community";
+  if (filter === "market") return item.space === "market" || item.space === "bargain";
+  return item.space === filter;
 }
 
 export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientProps) {
@@ -33,7 +33,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
-  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space !== "community") ? ["market" as const] : []), ...(items.some((item) => item.space === "community") ? ["community" as const] : [])], [items]);
+  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market" || item.space === "bargain") ? ["market" as const] : []), "service", ...(items.some((item) => item.space === "community") ? ["community" as const] : [])], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
   useEffect(() => {
@@ -47,12 +47,12 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
     if (updatingIds.has(key)) return false;
     setUpdatingIds((current) => new Set(current).add(key));
     try {
-      const response = await fetch(item.space === "community" ? "/api/community/wishlist" : `/api/${item.space}/wishlist`, {
+      const response = await fetch(item.space === "community" ? "/api/community/wishlist" : item.space === "service" ? "/api/services/wishlist" : `/api/${item.space}/wishlist`, {
         method: saved ? "POST" : "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item.space === "community" ? { postId: item.id } : { listingId: item.id }),
+        body: JSON.stringify(item.space === "community" ? { postId: item.id } : item.space === "service" ? { serviceId: item.id } : { listingId: item.id }),
       });
-      const result = await readApiResponse(response, item.space === "community" ? communityWishlistResponseSchema : marketWishlistResponseSchema);
+      const result = await readApiResponse(response, item.space === "community" ? communityWishlistResponseSchema : item.space === "service" ? serviceWishlistResponseSchema : marketWishlistResponseSchema);
       return !result.error && result.data.saved === saved;
     } finally {
       setUpdatingIds((current) => {
@@ -99,14 +99,14 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
 
       {visibleItems.length ? <section className="wishlist-list" aria-label="Saved items">
         {visibleItems.map((item) => <article className={`listing-row wishlist-item wishlist-item--${item.space} ${item.status === "Sold" ? "is-sold" : ""}`} key={itemKey(item)}>
-          <div className="listing-row-media"><img src={item.imageUrl} alt="" /></div>
+          <div className="listing-row-media">{item.space === "community" ? <span className="wishlist-text-only-icon" aria-label="Text-only community post"><i className="ms ms-description" aria-hidden="true" /></span> : <img src={item.imageUrl} alt="" />}</div>
           <div className="listing-row-body">
             <div className="listing-row-title"><h2>{item.title}</h2><span className={`is-${item.status.toLowerCase()}`}>{item.status}</span></div>
             <strong className="listing-row-price">{item.price}</strong>
             <small className="listing-row-meta">{item.category}</small>
           </div>
           <div className="listing-row-actions wishlist-item-actions">
-            <Link href={item.space === "community" ? `/community/${item.id}` : `/market/${item.id}`}>{item.space === "community" ? "View post" : "View listing"}</Link>
+            <Link href={item.space === "community" ? `/community/${item.id}` : item.space === "service" ? `/services/${item.id}` : `/market/${item.id}`}>{item.space === "community" ? "View post" : item.space === "service" ? "View service" : "View listing"}</Link>
             {item.space === "market" ? <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{messagingId === item.id ? "Opening..." : "Send message"}</button> : null}
             <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} onClick={() => void removeItem(item)}><i className="ms ms-close" aria-hidden="true" /> Remove</button>
           </div>
