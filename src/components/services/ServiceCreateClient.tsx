@@ -174,7 +174,7 @@ export function ServiceCreateClient() {
         showErrorDialog(isKorean ? "전화번호를 7자리 이상 입력해 주세요." : "Enter a phone number with at least 7 digits.");
         return;
       }
-      if (!providerName || !businessName || !description || !address || !weekdayHours || detailFields.some((field) => !detailValues[field.key]) || !Number.isFinite(priceFrom) || priceFrom < 0 || !priceUnit || (foundedYear !== null && (!Number.isInteger(foundedYear) || foundedYear < 1800 || foundedYear > new Date().getFullYear()))) {
+      if (!providerName || !businessName || !summary || !description || !weekdayHours || detailFields.some((field) => !detailValues[field.key]) || !Number.isFinite(priceFrom) || priceFrom < 0 || !priceUnit || (foundedYear !== null && (!Number.isInteger(foundedYear) || foundedYear < 1800 || foundedYear > new Date().getFullYear()))) {
         showErrorDialog(isKorean ? "필수 정보를 모두 입력해 주세요." : "Complete all required fields to continue.");
         return;
       }
