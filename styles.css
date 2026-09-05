@@ -7466,25 +7466,25 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .keywords-chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
 .keyword-chip { display: inline-flex; align-items: center; gap: 8px; min-height: var(--control-h-md); padding: 0 8px 0 12px; border: 1px solid color-mix(in srgb, currentColor 72%, transparent); border-radius: var(--radius-pill); font-size: var(--text-base); }
 .keyword-chip > span { font-weight: var(--weight-bold); }
-.keyword-chip small { padding-left: 8px; border-left: 1px solid color-mix(in srgb, currentColor 56%, transparent); font-size: var(--text-2xs); font-weight: var(--weight-regular); line-height: 1.2; opacity: .86; }
+.keyword-chip small { padding-left: 8px; border-left: 1px solid color-mix(in srgb, currentColor 56%, transparent); font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.2; opacity: .9; }
 .keyword-chip button { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: inherit; cursor: pointer; }
 .keyword-chip button:hover { background: rgba(255,255,255,.62); }
-.keyword-chip-general { background: var(--blue-soft-850); color: var(--neutral-50); }
-.keyword-chip-mobile-phones-tablets { background: var(--blue-650); color: var(--neutral-50); }
-.keyword-chip-computers-laptops { background: var(--blue-700); color: var(--neutral-50); }
-.keyword-chip-electronics-appliances { background: var(--teal-800); color: var(--neutral-50); }
-.keyword-chip-furniture-home-decor { background: var(--violet-850); color: var(--neutral-50); }
-.keyword-chip-home-kitchen { background: var(--amber-800); color: var(--neutral-50); }
-.keyword-chip-clothing-fashion { background: var(--rose-850); color: var(--neutral-50); }
-.keyword-chip-baby-kids { background: var(--amber-800); color: var(--neutral-50); }
-.keyword-chip-books-music-media { background: var(--green-900); color: var(--neutral-50); }
-.keyword-chip-hobbies-collectables { background: var(--amber-850); color: var(--neutral-50); }
-.keyword-chip-games-toys { background: var(--red-950); color: var(--neutral-50); }
-.keyword-chip-sports-leisure { background: var(--green-900); color: var(--neutral-50); }
-.keyword-chip-musical-instruments { background: var(--violet-850); color: var(--neutral-50); }
-.keyword-chip-garden-tools-diy { background: var(--green-850); color: var(--neutral-50); }
-.keyword-chip-pet-supplies { background: var(--red-950); color: var(--neutral-50); }
-.keyword-chip-health-beauty { background: var(--rose-850); color: var(--neutral-50); }
+.keyword-chip-general { background: var(--neutral-250); color: var(--blue-soft-850); }
+.keyword-chip-mobile-phones-tablets { background: var(--blue-100); color: var(--blue-650); }
+.keyword-chip-computers-laptops { background: var(--blue-50); color: var(--blue-700); }
+.keyword-chip-electronics-appliances { background: var(--teal-soft-150); color: var(--teal-800); }
+.keyword-chip-furniture-home-decor { background: var(--violet-250); color: var(--violet-850); }
+.keyword-chip-home-kitchen { background: var(--amber-150); color: var(--amber-800); }
+.keyword-chip-clothing-fashion { background: var(--rose-300); color: var(--rose-850); }
+.keyword-chip-baby-kids { background: var(--amber-150); color: var(--amber-800); }
+.keyword-chip-books-music-media { background: var(--green-soft-200); color: var(--green-900); }
+.keyword-chip-hobbies-collectables { background: var(--amber-soft-250); color: var(--amber-850); }
+.keyword-chip-games-toys { background: var(--red-200); color: var(--red-950); }
+.keyword-chip-sports-leisure { background: var(--green-soft-200); color: var(--green-900); }
+.keyword-chip-musical-instruments { background: var(--violet-250); color: var(--violet-850); }
+.keyword-chip-garden-tools-diy { background: var(--green-200); color: var(--green-850); }
+.keyword-chip-pet-supplies { background: var(--red-200); color: var(--red-950); }
+.keyword-chip-health-beauty { background: var(--violet-200); color: var(--rose-850); }
 .keywords-empty { min-height: 155px; display: grid; place-content: center; justify-items: center; gap: 7px; border: 1px dashed var(--neutral-300); border-radius: var(--radius-md); background: var(--neutral-100); color: var(--blue-soft-600); text-align: center; }
 .keywords-empty i { color: var(--green-550); font-size: var(--text-3xl); }.keywords-empty strong { color: var(--blue-850); font-size: var(--text-md); }.keywords-empty span { font-size: var(--text-sm); }
 .keywords-notice { display: flex; align-items: center; gap: 11px; margin-top: 34px; padding: 14px 16px; border-top: 1px solid var(--neutral-250); color: var(--blue-soft-650); font-size: var(--text-base); }
