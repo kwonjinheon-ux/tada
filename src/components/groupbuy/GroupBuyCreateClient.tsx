@@ -213,7 +213,7 @@ export function GroupBuyCreateClient() {
 
   return (
     <section className="market-results groupbuy-create" aria-label={text.createTitle}>
-      <MarketBreadcrumb current={isKorean ? "공동구매 열기" : "Start a group buy"} />
+      <MarketBreadcrumb />
 
       <div className="browse-intro">
         <div className="browse-intro-copy">

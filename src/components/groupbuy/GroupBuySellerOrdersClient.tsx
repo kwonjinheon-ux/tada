@@ -115,7 +115,7 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
 
   return (
     <section className="market-results groupbuy-orders" aria-label={text.sellerOrdersTitle}>
-      <MarketBreadcrumb current={locale === "ko" ? "주문 관리" : "Order management"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
+      <MarketBreadcrumb />
 
       <div className="browse-intro browse-intro--with-create">
         <div className="browse-intro-copy">

@@ -47,7 +47,7 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
 
   return (
     <section className="market-results groupbuy-detail" aria-label={groupBuy.title}>
-      <MarketBreadcrumb current={isKorean ? "상세 보기" : "Details"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
+      <MarketBreadcrumb />
 
       <header className="groupbuy-hero ui-card">
         <div className="groupbuy-hero-media">

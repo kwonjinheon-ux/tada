@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 
-export function MarketBreadcrumb({ current, groupBuyId, groupBuyTitle }: { current: string; groupBuyId?: string; groupBuyTitle?: string }) {
+export function MarketBreadcrumb() {
   const { locale } = useLanguage();
   const isKorean = locale === "ko";
 
@@ -12,9 +12,6 @@ export function MarketBreadcrumb({ current, groupBuyId, groupBuyTitle }: { curre
       <Link href="/market">{isKorean ? "마켓" : "Market"}</Link>
       <i className="ms ms-chevron-right" aria-hidden="true" />
       <Link href="/market/groupbuy">{isKorean ? "공동구매" : "Group buys"}</Link>
-      {groupBuyId && groupBuyTitle ? <><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={`/market/groupbuy/${groupBuyId}`}>{groupBuyTitle}</Link></> : null}
-      <i className="ms ms-chevron-right" aria-hidden="true" />
-      <span>{current}</span>
     </nav>
   );
 }

@@ -34,7 +34,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
   if (!lines.length) {
     return (
       <section className="market-results groupbuy-order" aria-label={text.orderTitle}>
-        <MarketBreadcrumb current={locale === "ko" ? "신청서" : "Order form"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
+        <MarketBreadcrumb />
         <div className="groupbuy-section ui-card">
           <h1>{text.orderTitle}</h1>
           <p>{text.emptyOrder}</p>
@@ -45,7 +45,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
 
   return (
     <section className="market-results groupbuy-order" aria-label={text.orderTitle}>
-      <MarketBreadcrumb current={locale === "ko" ? "신청서" : "Order form"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
+      <MarketBreadcrumb />
 
       <div className="browse-intro">
         <div className="browse-intro-copy">
