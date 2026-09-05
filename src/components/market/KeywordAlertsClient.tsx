@@ -3,8 +3,6 @@
 import { FormEvent, useState } from "react";
 import { marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { useLanguage } from "@/components/LanguageProvider";
-import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 
 export type KeywordAlert = { id: string; keyword: string; categorySlug: string | null };
 
@@ -13,6 +11,7 @@ function getAlertCategory(alert: KeywordAlert) {
   const category = marketplaceCategories.find(({ value }) => value === categorySlug);
   return {
     label: category?.label ?? "General",
+    tone: categorySlug ? `keyword-chip-${categorySlug}` : "keyword-chip-general",
   };
 }
 
@@ -66,34 +65,21 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
   };
 
   return <div className="dashboard-content keywords-content">
-    <header className="keywords-heading">
-      <div className="keywords-heading-icon"><i className="ms ms-notifications" aria-hidden="true" /></div>
-      <div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div>
-    </header>
-    <form className="keywords-add-panel ui-panel" onSubmit={addKeyword}>
-      <div className="keywords-add-copy">
-        <span><i className="ms ms-sell" aria-hidden="true" /> {t("marketplace")}</span>
-        <strong>{t("addKeyword")}</strong>
-        <p>{t("keywordNotice")}</p>
-      </div>
-      <label className="keywords-field" htmlFor="keyword-alert-input">
-        <span>{t("keywordInputLabel")}</span>
-        <div className="keywords-input-wrap"><i className="ms ms-search" aria-hidden="true" /><input id="keyword-alert-input" value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} maxLength={80} /></div>
-      </label>
-      <Button type="submit" className="keywords-add-button" disabled={!keyword.trim() || isSaving}>
-        <i className="ms ms-add" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}
-      </Button>
+    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="ms ms-notifications" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
+    <form className="keywords-add-panel" onSubmit={addKeyword}>
+      <div className="keywords-input-wrap"><i className="ms ms-search" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} aria-label={t("keywordInputLabel")} maxLength={80} /></div>
+      <button type="submit" disabled={!keyword.trim() || isSaving}><i className="ms ms-add" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
     </form>
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
-    <section className="keywords-saved" aria-labelledby="saved-keywords-title">
-      <div className="keywords-saved-heading"><div><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2><p>{t("addKeywordHint")}</p></div></div>
-      {alerts.length ? <ul className="keywords-list">{alerts.map((alert) => {
+    <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2></div>
+      {alerts.length ? <div className="keywords-chip-list">{alerts.map((alert) => {
         const category = getAlertCategory(alert);
-        return <li className="keyword-row ui-panel" key={alert.id}>
-          <div className="keyword-row-copy"><strong>{alert.keyword}</strong><span>{category.label}</span></div>
-          <IconButton className="keyword-remove-button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`} title={`Remove ${alert.keyword}`}><i className="ms ms-close" aria-hidden="true" /></IconButton>
-        </li>;
-      })}</ul> : <div className="keywords-empty ui-panel"><i className="ms ms-notifications-off" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
+        return <div className={`keyword-chip ${category.tone}`} key={alert.id} title={category.label}>
+          <span>{alert.keyword}</span>
+          <small>{category.label}</small>
+          <button type="button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={`Remove ${alert.keyword}`}><i className="ms ms-close" aria-hidden="true" /></button>
+        </div>;
+      })}</div> : <div className="keywords-empty"><i className="ms ms-notifications-off" aria-hidden="true" /><strong>{t("noKeywordAlerts")}</strong><span>{t("addKeywordHint")}</span></div>}
     </section>
     <section className="keywords-notice" aria-label={t("keywordNoticeLabel")}><i className="ms ms-lightbulb" aria-hidden="true" /><p>{t("keywordNotice")}</p></section>
   </div>;
