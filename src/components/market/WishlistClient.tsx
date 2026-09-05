@@ -33,7 +33,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();
-  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market" || item.space === "bargain") ? ["market" as const] : []), "service", ...(items.some((item) => item.space === "community") ? ["community" as const] : [])], [items]);
+  const filters = useMemo<Filter[]>(() => ["all", ...(items.some((item) => item.space === "market" || item.space === "bargain") ? ["market" as const] : []), ...(items.some((item) => item.space === "community") ? ["community" as const] : []), "service"], [items]);
   const visibleItems = useMemo(() => items.filter((item) => matchesFilter(item, filter)), [filter, items]);
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientP
         {visibleItems.map((item) => <article className={`listing-row wishlist-item wishlist-item--${item.space} ${item.status === "Sold" ? "is-sold" : ""}`} key={itemKey(item)}>
           <div className="listing-row-media">{item.space === "community" ? <span className="wishlist-text-only-icon" aria-label="Text-only community post"><i className="ms ms-description" aria-hidden="true" /></span> : <img src={item.imageUrl} alt="" />}</div>
           <div className="listing-row-body">
-            <div className="listing-row-title"><h2>{item.title}</h2><span className={`is-${item.status.toLowerCase()}`}>{item.status}</span></div>
+            <div className="listing-row-title"><h2>{item.title}</h2>{item.space !== "community" ? <span className={`is-${item.status.toLowerCase()}`}>{item.status}</span> : null}</div>
             <strong className="listing-row-price">{item.price}</strong>
             <small className="listing-row-meta">{item.category}</small>
           </div>
