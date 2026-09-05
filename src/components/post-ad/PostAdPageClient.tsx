@@ -19,7 +19,7 @@ import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { SelectMenu, type SelectMenuOption } from "@/components/ui/SelectMenu";
 import { appendUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
-import { ProductCard } from "@/components/ProductCard";
+import { MarketListingPreview } from "@/components/post-ad/MarketListingPreview";
 import type { Listing } from "@/data/listings";
 import { BargainSaleItemsEditor, type BargainSaleItemDraft } from "@/components/bargain/BargainSaleItemsEditor";
 import { BargainSaleCoverPreview } from "@/components/bargain/BargainSaleCoverPreview";
@@ -1353,7 +1353,16 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
         </section>
 
         <aside className="post-ad-sidebar" aria-label="Listing preview and posting tips">
-          <ProductCard className="post-ad-preview-card" listing={previewListing} imageSizes="240px" persistSave={false} isPreview />
+          <MarketListingPreview
+            listing={previewListing}
+            mainCategory={mainCategory}
+            subCategory={subCategory}
+            condition={conditions.find((option) => option.value === itemCondition)?.label ?? itemCondition}
+            tradeMethod={tradeMethods.find((option) => option.value === tradeMethod)?.label ?? tradeMethod}
+            meetingPlace={meetingPlaces.find((option) => option.value === meetingPlace)?.label ?? meetingPlace}
+            description={description}
+            smartphoneDetails={smartphoneSpecs}
+          />
           <section className="post-ad-tips" aria-label="Posting tips">
             <h2>Tips for a great listing</h2>
           <article><i className="ms ms-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
