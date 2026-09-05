@@ -24,6 +24,8 @@ type ServiceProfile = {
 };
 
 type ServiceReview = { id: string; reviewerId: string; rating: number; comment: string; createdAt: string; reviewerName: string };
+type BusinessContactAction = { href: string; icon: string; label: string; external?: boolean };
+type BusinessContactDetail = { icon: string; label: string; value: string; actions?: BusinessContactAction[] };
 
 function reviewAgeLabel(createdAt: string, isKorean: boolean) {
   const elapsedDays = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000));
@@ -158,12 +160,21 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
   const priceFromIndex = serviceFields.findIndex((field) => field.key === "price_from");
   const priceUnitIndex = serviceFields.findIndex((field) => field.key === "price_unit");
   const priceLabel = priceFromIndex < 0 || servicePricingRows[0]?.[priceFromIndex] === "—" ? null : `$${servicePricingRows[0][priceFromIndex]}${priceUnitIndex >= 0 && servicePricingRows[0]?.[priceUnitIndex] !== "—" ? ` · ${servicePricingRows[0][priceUnitIndex]}` : ""}`;
-  const businessContactDetails = [
+  const phoneHref = profile.phone ? `tel:${profile.phone.replace(/\s/g, "")}` : null;
+  const messageHref = profile.phone ? `sms:${profile.phone.replace(/\s/g, "")}` : null;
+  const businessContactDetails: BusinessContactDetail[] = [
     { icon: "ms-work", label: isKorean ? "제공자 유형" : "Provider type", value: profile.providerType === "business" ? (isKorean ? "지역 업체" : "Local business") : (isKorean ? "개인 사업자" : "Sole trader") },
-    profile.phone ? { icon: "ms-call", label: isKorean ? "전화" : "Phone", value: profile.phone } : null,
-    profile.email ? { icon: "ms-mail", label: isKorean ? "이메일" : "Email", value: profile.email } : null,
-    profile.website ? { icon: "ms-language", label: isKorean ? "웹사이트" : "Website", value: profile.website.replace(/^https?:\/\//, "") } : null,
-  ].filter((item): item is { icon: string; label: string; value: string } => Boolean(item));
+    profile.phone ? { icon: "ms-call", label: isKorean ? "전화" : "Phone", value: profile.phone, actions: [
+      { href: messageHref ?? "", icon: "ms-chat", label: isKorean ? "메시지 보내기" : "Send message" },
+      { href: phoneHref ?? "", icon: "ms-call", label: isKorean ? "전화하기" : "Call" },
+    ] } : null,
+    profile.email ? { icon: "ms-mail", label: isKorean ? "이메일" : "Email", value: profile.email, actions: [
+      { href: `mailto:${profile.email}`, icon: "ms-mail", label: isKorean ? "이메일 보내기" : "Send email" },
+    ] } : null,
+    profile.website ? { icon: "ms-language", label: isKorean ? "웹사이트" : "Website", value: profile.website.replace(/^https?:\/\//, ""), actions: [
+      { href: websiteHref ?? "", icon: "ms-open-in-new", label: isKorean ? "웹사이트 바로가기" : "Open website", external: true },
+    ] } : null,
+  ].filter((item): item is BusinessContactDetail => Boolean(item));
   const openingHours = [
     profile.weekdayHours ? `${isKorean ? "평일" : "Mon – Fri"}   ${profile.weekdayHours}` : null,
     profile.saturdayHours ? `${isKorean ? "토요일" : "Saturday"}   ${profile.saturdayHours}` : null,
@@ -208,7 +219,7 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
           </section>
           <nav className="service-profile-tabs" aria-label={isKorean ? "서비스 정보" : "Service information"}><a href="#about" aria-current={activeSection === "about" ? "page" : undefined}>{isKorean ? "소개" : "About"}</a>{hasServiceDetails ? <a href="#details" aria-current={activeSection === "details" ? "page" : undefined}>{isKorean ? "서비스 및 가격" : "Services & pricing"}</a> : null}{hasGallery ? <a href="#gallery" aria-current={activeSection === "gallery" ? "page" : undefined}>{isKorean ? "작업 사진" : "Work gallery"}</a> : null}<a href="#area" aria-current={activeSection === "area" ? "page" : undefined}>{isKorean ? "서비스 지역" : "Service area"}</a></nav>
           <section className="service-profile-content">
-            <article className="service-profile-section service-profile-about ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 소개" : "About"}</p></header><p>{profile.description}</p>{businessContactDetails.length || businessProfileDetails.length ? <section className="service-profile-business-details" aria-label={isKorean ? "업체 정보" : "Business information"}><h3>{isKorean ? "업체 정보" : "Business information"}</h3><div className="service-profile-business-columns"><dl>{businessContactDetails.map(({ icon, label, value }) => <div key={label}><i className={`ms ${icon}`} aria-hidden="true" /><div><dt>{label}</dt><dd>{value}</dd></div></div>)}</dl><dl>{businessProfileDetails.map(({ icon, label, value }) => <div key={label}><i className={`ms ${icon}`} aria-hidden="true" /><div><dt>{label}</dt><dd>{value}</dd></div></div>)}</dl></div></section> : null}</article>
+            <article className="service-profile-section service-profile-about ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 소개" : "About"}</p></header><p>{profile.description}</p>{businessContactDetails.length || businessProfileDetails.length ? <section className="service-profile-business-details" aria-label={isKorean ? "업체 정보" : "Business information"}><h3>{isKorean ? "업체 정보" : "Business information"}</h3><div className="service-profile-business-columns"><dl>{businessContactDetails.map(({ icon, label, value, actions }) => <div className={actions?.length ? "has-actions" : undefined} key={label}><i className={`ms ${icon}`} aria-hidden="true" /><div><dt>{label}</dt><dd>{value}</dd></div>{actions?.length ? <div className="service-profile-business-actions">{actions.map(({ href, icon: actionIcon, label: actionLabel, external }) => <a className="service-profile-business-action" href={href} aria-label={actionLabel} title={actionLabel} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} key={actionLabel}><i className={`ms ${actionIcon}`} aria-hidden="true" /></a>)}</div> : null}</div>)}</dl><dl>{businessProfileDetails.map(({ icon, label, value }) => <div key={label}><i className={`ms ${icon}`} aria-hidden="true" /><div><dt>{label}</dt><dd>{value}</dd></div></div>)}</dl></div></section> : null}</article>
             {hasServiceDetails ? <article className="service-profile-section service-profile-pricing ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 및 가격" : "Services & pricing"}</p></header><div className="service-profile-price-table-wrap"><table className="service-profile-price-table"><thead><tr>{serviceFields.map((field) => <th key={field.key} scope="col">{field.label}</th>)}</tr></thead><tbody>{servicePricingRows.map((row, rowIndex) => <tr key={rowIndex}>{row.map((value, columnIndex) => columnIndex === 0 ? <th key={`${rowIndex}-${serviceFields[columnIndex].key}`} scope="row">{value}</th> : <td key={`${rowIndex}-${serviceFields[columnIndex].key}`}>{value}</td>)}</tr>)}</tbody></table></div></article> : null}
             {hasGallery ? <article className="service-profile-section service-profile-gallery-section ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "작업 사진" : "Work gallery"}</p></header><div className="service-profile-gallery">{profile.images.map((image, index) => <img key={image} src={image} alt={`${profile.provider} ${index + 1}`} />)}</div></article> : null}
             <article className="service-profile-section service-profile-area ui-card"><header><p className="service-profile-eyebrow">{isKorean ? "서비스 지역" : "Service area"}</p></header><div className="service-profile-area-layout"><div className="service-profile-area-details"><div><i className="ms ms-location-on" aria-hidden="true" /><dl><dt>{isKorean ? "기준 지역" : "Based in"}</dt><dd>{basedIn}</dd></dl></div><div><i className="ms ms-map" aria-hidden="true" /><dl><dt>{isKorean ? "서비스 제공 지역" : "Serves"}</dt><dd><span className="service-profile-area-chips">{(servedAreas.length ? servedAreas : [basedIn]).slice(0, 5).map((area) => <span key={area}>{area}</span>)}{servedAreas.length > 5 ? <span>+ {servedAreas.length - 5} {isKorean ? "곳" : "more"}</span> : null}</span></dd></dl></div></div><div className="service-profile-map" aria-label={location}><i className="ms ms-location-on" aria-hidden="true" /><span>{basedIn}</span></div></div></article>

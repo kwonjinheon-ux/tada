@@ -11986,7 +11986,13 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .service-profile-page .service-profile-business-columns > dl { display: grid; align-content: start; gap: var(--space-3); margin: 0; }
 .service-profile-page .service-profile-business-columns > dl + dl { padding-left: var(--space-5); border-left: 1px solid var(--color-line); }
 .service-profile-page .service-profile-business-details dl > div { display: grid; grid-template-columns: var(--control-h-sm) minmax(0, 1fr); gap: var(--space-2); align-items: start; }
+.service-profile-page .service-profile-business-details dl > div.has-actions { grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; }
 .service-profile-page .service-profile-business-details dl > div > i { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-md); }
+.service-profile-business-actions { display: flex; gap: var(--space-1); align-items: center; }
+.service-profile-business-action { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); border: 1px solid var(--color-line); border-radius: var(--radius-circle); background: var(--color-surface); color: var(--color-primary); text-decoration: none; }
+.service-profile-business-action:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.service-profile-business-action:focus-visible { outline: 2px solid var(--ring-focus); outline-offset: 2px; }
+.service-profile-business-action .ms { font-size: var(--text-md); }
 .service-profile-page .service-profile-business-details dt { color: var(--color-muted); font-size: var(--text-xs); }
 .service-profile-page .service-profile-business-details dd { margin: var(--space-1) 0 0; color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1.4; white-space: pre-line; }
 .service-profile-page .service-profile-price-table-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: var(--radius-md); }
@@ -12057,6 +12063,7 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
   .service-profile-page .service-profile-review-list { grid-column: 1 / -1; }
   .service-profile-page .service-profile-business-columns > dl + dl { padding: var(--space-3) 0 0; border-top: 1px solid var(--color-line); border-left: 0; }
   .service-profile-page .service-profile-business-details dl > div { grid-template-columns: 28px minmax(0, 1fr); }
+  .service-profile-page .service-profile-business-details dl > div.has-actions { grid-template-columns: 28px minmax(0, 1fr) auto; }
   .service-profile-page .service-profile-business-details dl > div > i { width: 28px; height: 28px; font-size: var(--text-sm); }
   .service-profile-page .service-profile-price-from { font-size: var(--text-sm); white-space: nowrap; }
 }
