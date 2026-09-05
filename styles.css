@@ -12847,26 +12847,16 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   gap: var(--space-1);
 }
 .service-create-page .service-editor-required-note > span,
-.service-create-page .service-editor-required-mark,
-.service-create-page .service-editor-card label:has(> input:required)::before,
-.service-create-page .service-editor-submit > label:has(> input:required)::before {
+.service-create-page .service-editor-required-mark {
   color: var(--color-danger);
   content: "*";
   font-weight: var(--weight-bold);
 }
-.service-create-page .service-editor-card label:has(> input:required),
-.service-create-page .service-editor-submit > label:has(> input:required),
-.service-create-page .service-editor-category > label { position: relative; }
-.service-create-page .service-editor-card label:has(> input:required)::before,
-.service-create-page .service-editor-submit > label:has(> input:required)::before {
-  position: absolute;
-  top: 0;
-  left: calc(var(--space-2) * -1);
-}
-.service-create-page .service-editor-card label:has(.service-editor-required-mark)::before { content: none; }
 .service-create-page .service-editor-required-mark { margin-right: 2px; color: var(--color-danger); font-weight: var(--weight-bold); }
-.service-create-page .post-field > label:has(+ .post-select-wrap select:required)::after { margin-left: 2px; color: var(--color-danger); content: "*"; font-weight: var(--weight-bold); }
+.service-create-page .post-field > label:has(+ .post-select-wrap select:required)::before { margin-right: 2px; color: var(--color-danger); content: "*"; font-weight: var(--weight-bold); }
 .service-create-page .service-editor-field-hint { font-weight: var(--weight-regular); }
+.service-create-page .service-editor-business > label:not(:nth-child(2)) .service-editor-field-hint,
+.service-create-page .service-editor-card > .service-editor-field-hint { display: none; }
 .service-create-page .service-editor-address-visibility label { min-height: var(--control-h-xl); }
 .service-create-page .service-editor-gallery { flex-wrap: nowrap; align-items: stretch; }
 .service-create-page .service-editor-add-photo { flex: 0 0 84px; }
