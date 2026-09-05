@@ -37,18 +37,49 @@ export async function POST(request: Request, { params }: { params: Promise<{ gro
   if (error || !order) return apiFailure("INTERNAL", "Unable to submit this order.", 500);
   const { error: lineError } = await supabase.from("group_buy_order_items").insert(validLines.map((line) => ({ order_id: order.id, item_id: line.itemId, quantity: line.quantity, unit_price_cents: items.get(line.itemId)?.price_cents })));
   if (lineError) return apiFailure("INTERNAL", "Your order could not be completed.", 500);
-  await sendOrderEmail({ to: body.email, title: round.title ?? "Group buy", reference: order.reference, accountName: round.bank_account_name, accountNumber: round.bank_account_number, lines: validLines.map((line) => ({ name: (items.get(line.itemId) as { name?: string })?.name ?? "Item", quantity: line.quantity, unitPriceCents: items.get(line.itemId)?.price_cents ?? 0 })), totalCents: subtotal + delivery });
+  await sendGroupBuyOrderConfirmationEmail({
+    to: body.email,
+    buyerName: body.name,
+    title: round.title ?? "Group buy",
+    reference: order.reference,
+    accountName: round.bank_account_name,
+    accountNumber: round.bank_account_number,
+    fulfilment: body.fulfilment,
+    deliveryAddress: body.address,
+    buyerNote: body.note,
+    subtotalCents: subtotal,
+    deliveryCents: delivery,
+    lines: validLines.map((line) => ({ name: (items.get(line.itemId) as { name?: string })?.name ?? "Item", quantity: line.quantity, unitPriceCents: items.get(line.itemId)?.price_cents ?? 0 })),
+    totalCents: subtotal + delivery,
+  });
   return apiSuccess({ reference: order.reference }, { status: 201 });
 }
 
-async function sendOrderEmail(input: { to: string; title: string; reference: string; accountName: string; accountNumber: string; lines: Array<{ name: string; quantity: number; unitPriceCents: number }>; totalCents: number }) {
+async function sendGroupBuyOrderConfirmationEmail(input: {
+  to: string;
+  buyerName: string;
+  title: string;
+  reference: string;
+  accountName: string | null;
+  accountNumber: string | null;
+  fulfilment: "pickup" | "delivery";
+  deliveryAddress?: string;
+  buyerNote?: string;
+  subtotalCents: number;
+  deliveryCents: number;
+  lines: Array<{ name: string; quantity: number; unitPriceCents: number }>;
+  totalCents: number;
+}) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!apiKey || !from) { console.warn("Order saved without email delivery: configure RESEND_API_KEY and RESEND_FROM_EMAIL."); return; }
-  const escape = (value: string) => value.replace(/[&<>\"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&apos;" })[character] ?? character);
+  const escape = (value: string | null | undefined) => String(value ?? "").replace(/[&<>\"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&apos;" })[character] ?? character);
   const items = input.lines.map((line) => `<li>${escape(line.name)} × ${line.quantity} — NZ$${((line.unitPriceCents * line.quantity) / 100).toFixed(2)}</li>`).join("");
-  const html = `<h1>Group buy order ${escape(input.reference)}</h1><p>${escape(input.title)}</p><h2>Items</h2><ul>${items}</ul><p><strong>Total: NZ$${(input.totalCents / 100).toFixed(2)}</strong></p><h2>Bank transfer</h2><p>Account name: ${escape(input.accountName)}<br>Account number: ${escape(input.accountNumber)}<br>Reference: <strong>${escape(input.reference)}</strong></p>`;
-  try { const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [input.to], subject: `Your Tada group buy order ${input.reference}`, html }) }); if (!response.ok) console.error("Order email delivery failed", await response.text()); } catch (error) { console.error("Order email delivery failed", error); }
+  const fulfilment = input.fulfilment === "delivery" ? "Delivery" : "Pickup";
+  const deliveryDetails = input.fulfilment === "delivery" ? `<p><strong>Delivery address:</strong> ${escape(input.deliveryAddress)}</p>` : "";
+  const note = input.buyerNote ? `<p><strong>Your note:</strong> ${escape(input.buyerNote)}</p>` : "";
+  const html = `<h1>Tada group buy order confirmed</h1><p>Hi ${escape(input.buyerName)},</p><p>Your order for <strong>${escape(input.title)}</strong> has been received.</p><h2>Order ${escape(input.reference)}</h2><p><strong>Fulfilment:</strong> ${fulfilment}</p>${deliveryDetails}${note}<h2>Items</h2><ul>${items}</ul><p>Subtotal: NZ$${(input.subtotalCents / 100).toFixed(2)}<br>Delivery: NZ$${(input.deliveryCents / 100).toFixed(2)}<br><strong>Total: NZ$${(input.totalCents / 100).toFixed(2)}</strong></p><h2>Bank transfer</h2><p>Account name: ${escape(input.accountName)}<br>Account number: ${escape(input.accountNumber)}<br>Reference: <strong>${escape(input.reference)}</strong></p><p>Please include the reference when you make your bank transfer.</p>`;
+  try { const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [input.to], subject: `Tada order confirmed — ${input.reference}`, html }) }); if (!response.ok) console.error("Group buy confirmation email failed", await response.text()); } catch (error) { console.error("Group buy confirmation email failed", error); }
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ groupBuyId: string }> }) {
