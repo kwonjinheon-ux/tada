@@ -22,7 +22,7 @@ export function GroupBuyCard({ groupBuy, isPreview = false }: { groupBuy: GroupB
   const cardHandoverDateWithoutYear = groupBuy.handoverAt ? formatGroupBuyCardDate(groupBuy.handoverAt, locale, false) : groupBuy.handoverLabel;
 
   return (
-    <article className="groupbuy-card ui-card">
+    <article className={`groupbuy-card ui-card is-${groupBuy.status}`}>
       <Link className="groupbuy-card-media" href={`/market/groupbuy/${groupBuy.id}`} aria-label={groupBuy.title}>
         <Image src={groupBuy.coverImage} alt={groupBuy.coverAlt} fill sizes="(max-width: 767.98px) 116px, (max-width: 1199.98px) 33vw, 400px" unoptimized={isPreview} />
         <span className={`groupbuy-status is-${groupBuy.status}`}>{text.status[groupBuy.status]}</span>

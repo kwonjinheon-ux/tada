@@ -9,6 +9,7 @@ import { encodeGroupBuyBasket } from "@/lib/market/group-buy-basket";
 import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
 
 /** The list, and the basket built from it.
  *
@@ -46,7 +47,7 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
 
   return (
     <section className="market-results groupbuy-detail" aria-label={groupBuy.title}>
-      <Link className="groupbuy-back" href="/market/groupbuy"><i className="ms ms-arrow-back" aria-hidden="true" /> {isKorean ? "공동구매 목록" : "All group buys"}</Link>
+      <MarketBreadcrumb current={isKorean ? "상세 보기" : "Details"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
 
       <header className="groupbuy-hero ui-card">
         <div className="groupbuy-hero-media">
@@ -61,9 +62,9 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
             <span><strong>{groupBuy.seller.name}</strong><small>{groupBuy.seller.location} · {groupBuy.seller.joinedLabel}</small></span>
           </p>
           <dl className="groupbuy-hero-facts">
-            <div><dt><i className="ms ms-schedule" aria-hidden="true" />{text.closesAt}</dt><dd>{groupBuy.closesLabel}</dd></div>
-            <div><dt><i className="ms ms-inventory-2" aria-hidden="true" />{text.handover}</dt><dd>{groupBuy.handoverLabel}</dd></div>
-            <div><dt><i className="ms ms-groups" aria-hidden="true" />{isKorean ? "참여" : "Joined"}</dt><dd>{text.participants(groupBuy.participantCount)}</dd></div>
+              <div className="is-closes"><dt><i className="ms ms-schedule" aria-hidden="true" />{text.closesAt}</dt><dd>{groupBuy.closesLabel}</dd></div>
+              <div className="is-handover"><dt><i className="ms ms-inventory-2" aria-hidden="true" />{text.handover}</dt><dd>{groupBuy.handoverLabel}</dd></div>
+              <div className="is-participants"><dt><i className="ms ms-groups" aria-hidden="true" />{isKorean ? "참여" : "Joined"}</dt><dd>{text.participants(groupBuy.participantCount)}</dd></div>
           </dl>
         </div>
       </header>

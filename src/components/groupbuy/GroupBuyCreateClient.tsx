@@ -13,6 +13,7 @@ import { groupBuyCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { GroupBuyLivePreview } from "@/components/groupbuy/GroupBuyLivePreview";
+import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
 
 type DraftPhoto = { url: string; name: string; isUploaded: boolean; file?: File };
 type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string; photo: DraftPhoto | null };
@@ -212,7 +213,7 @@ export function GroupBuyCreateClient() {
 
   return (
     <section className="market-results groupbuy-create" aria-label={text.createTitle}>
-      <Link className="groupbuy-back" href="/market/groupbuy"><i className="ms ms-arrow-back" aria-hidden="true" /> {isKorean ? "공동구매 목록" : "All group buys"}</Link>
+      <MarketBreadcrumb current={isKorean ? "공동구매 열기" : "Start a group buy"} />
 
       <div className="browse-intro">
         <div className="browse-intro-copy">

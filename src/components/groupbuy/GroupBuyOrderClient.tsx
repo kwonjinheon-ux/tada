@@ -7,6 +7,7 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyOrders, groupBuyReference, groupBuyText, type GroupBuy, type GroupBuyFulfilment } from "@/data/groupBuy";
+import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
 
 /** The persisted order form. Tada holds no money, so the reference is what
  * ties a bank transfer to the buyer's order. */
@@ -33,7 +34,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
   if (!lines.length) {
     return (
       <section className="market-results groupbuy-order" aria-label={text.orderTitle}>
-        <Link className="groupbuy-back" href={`/market/groupbuy/${groupBuy.id}`}><i className="ms ms-arrow-back" aria-hidden="true" /> {text.backToGroupBuy}</Link>
+        <MarketBreadcrumb current={locale === "ko" ? "신청서" : "Order form"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
         <div className="groupbuy-section ui-card">
           <h1>{text.orderTitle}</h1>
           <p>{text.emptyOrder}</p>
@@ -44,7 +45,7 @@ export function GroupBuyOrderClient({ groupBuy, basket }: { groupBuy: GroupBuy; 
 
   return (
     <section className="market-results groupbuy-order" aria-label={text.orderTitle}>
-      <Link className="groupbuy-back" href={`/market/groupbuy/${groupBuy.id}`}><i className="ms ms-arrow-back" aria-hidden="true" /> {text.backToGroupBuy}</Link>
+      <MarketBreadcrumb current={locale === "ko" ? "신청서" : "Order form"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
 
       <div className="browse-intro">
         <div className="browse-intro-copy">

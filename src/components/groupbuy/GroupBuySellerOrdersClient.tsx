@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
+import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
 
 type SellerOrder = {
   id: string;
@@ -114,7 +115,7 @@ export function GroupBuySellerOrdersClient({ groupBuy, orders }: { groupBuy: Gro
 
   return (
     <section className="market-results groupbuy-orders" aria-label={text.sellerOrdersTitle}>
-      <Link className="groupbuy-back" href={`/market/groupbuy/${groupBuy.id}`}><i className="ms ms-arrow-back" aria-hidden="true" /> {text.backToGroupBuy}</Link>
+      <MarketBreadcrumb current={locale === "ko" ? "주문 관리" : "Order management"} groupBuyId={groupBuy.id} groupBuyTitle={groupBuy.title} />
 
       <div className="browse-intro browse-intro--with-create">
         <div className="browse-intro-copy">
