@@ -20,7 +20,7 @@ export function GroupBuyCard({ groupBuy, isPreview = false }: { groupBuy: GroupB
         <Image src={groupBuy.coverImage} alt={groupBuy.coverAlt} fill sizes="(max-width: 767.98px) 116px, (max-width: 1199.98px) 33vw, 400px" unoptimized={isPreview} />
         <span className={`groupbuy-status is-${groupBuy.status}`}>{text.status[groupBuy.status]}</span>
       </Link>
-      <div className="groupbuy-card-body">
+      <Link className="groupbuy-card-body" href={`/market/groupbuy/${groupBuy.id}`}>
         <header>
           <h3><Link href={`/market/groupbuy/${groupBuy.id}`}>{groupBuy.title}</Link></h3>
           <p className="groupbuy-card-seller"><i className="ms ms-storefront" aria-hidden="true" />{groupBuy.seller.name} · {groupBuy.seller.location}</p>
@@ -38,9 +38,6 @@ export function GroupBuyCard({ groupBuy, isPreview = false }: { groupBuy: GroupB
           <span className="groupbuy-tag is-participants"><i className="ms ms-groups" aria-hidden="true" />{text.participants(groupBuy.participantCount)}</span>
         </div>
         <p className="groupbuy-card-price"><small>{locale === "ko" ? "최저" : "From"}</small><strong>{formatMarketPrice(cheapest)}</strong></p>
-      </div>
-      <Link className="groupbuy-card-open" href={`/market/groupbuy/${groupBuy.id}`}>
-        {locale === "ko" ? "상품 보기" : "See the list"}<i className="ms ms-arrow-forward" aria-hidden="true" />
       </Link>
     </article>
   );
