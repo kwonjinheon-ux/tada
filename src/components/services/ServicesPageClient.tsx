@@ -218,6 +218,7 @@ export function ServicesPageClient() {
             // Verification is a listing-level trust mark; it still falls back to
             // the badge list so the seeded services keep their old behaviour.
             const isVerified = service.isVerified ?? service.badges.includes("verified");
+            const displayBadges = service.badges.filter((badge) => badge !== "new");
             const reviewsLabel = locale === "ko" ? "후기" : service.reviewCount === 1 ? "review" : "reviews";
             return <article className="services-listing ui-card" key={service.id} tabIndex={0} role="link" onClick={(event) => { if (!(event.target as HTMLElement).closest("a, button")) router.push(`/services/${service.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") router.push(`/services/${service.id}`); }}>
               {!service.isOwner ? <ServiceSaveButton serviceId={service.id} provider={service.provider} initialIsSaved={service.isSaved} /> : null}
@@ -244,8 +245,8 @@ export function ServicesPageClient() {
                   <span className="services-listing-place"><i className="ms ms-location-on" aria-hidden="true" /><span>{location}</span></span>
                 </div>
                 <div className="services-listing-badges">
-                  {service.badges.slice(0, 3).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
-                  {service.badges.length > 3 ? <span className="service-badge service-badge-more">+{service.badges.length - 3}</span> : null}
+                  {displayBadges.slice(0, 3).map((badge) => <span className={`service-badge is-${badge}`} key={badge}>{serviceBadgeLabel(badge, locale)}</span>)}
+                  {displayBadges.length > 3 ? <span className="service-badge service-badge-more">+{displayBadges.length - 3}</span> : null}
                 </div>
                 <p className="services-listing-price"><strong>{price}</strong></p>
                 <div className="services-listing-controls">
