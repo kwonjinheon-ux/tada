@@ -2216,7 +2216,6 @@ a {
   height: 100%;
   display: block;
   object-fit: cover;
-  transition: transform 160ms ease-out;
 }
 
 /* The tile that stands in for a photo — a listing or post published as text,
@@ -2273,10 +2272,6 @@ a {
 
 .product-media-text-only { --text-only-icon: var(--text-4xl); }
 .product-grid.is-list-view .product-media-text-only { --text-only-icon: var(--text-3xl); }
-
-.product-card:hover .product-media img {
-  transform: scale(1.1);
-}
 
 /* The single save-heart recipe. Every context — feed card, list row, listing
    detail, mobile dock — uses this look and this burst; only --save-button-size
@@ -2625,14 +2620,6 @@ a {
   height: 96px;
   aspect-ratio: auto;
   border-radius: 0;
-}
-
-.product-grid.is-list-view .product-media img {
-  transform: scale(1);
-}
-
-.product-grid.is-list-view .product-card:hover .product-media img {
-  transform: scale(1.1);
 }
 
 .product-grid.is-list-view .save-button {
@@ -13069,4 +13056,52 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     width: 100%;
     padding-inline: var(--space-4);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Card media hover — the one place it is defined.
+
+   Every card that shows a photo lifts it slightly under the cursor. The recipe
+   used to live only on the market card, so a community post, a group buy, a
+   service, a saved row and a sale item all sat still while the feed beside them
+   moved. One scale, one easing, one list of surfaces: adding a card means
+   adding its two selectors here, not copying the rule again.
+
+   The wrappers already clip (overflow: hidden), which is what turns the scale
+   into a zoom rather than an overflow. Behind (hover: hover) so a tap on a
+   phone does not leave a thumbnail stuck mid-zoom.
+   --------------------------------------------------------------------------- */
+:root { --card-media-zoom: 1.1; --card-media-zoom-transition: transform 160ms ease-out; }
+
+.product-media img,
+.community-post-media img,
+.community-recent-post-media img,
+.groupbuy-card-media > img,
+.services-listing-media > img,
+.listing-row-media img,
+.bargain-sale-detail-item-image img { transition: var(--card-media-zoom-transition); }
+
+/* The sale item clips on the card; its own wrapper did not. */
+.bargain-sale-detail-item-image { overflow: hidden; }
+
+@media (hover: hover) {
+  .product-card:hover .product-media img,
+  .community-post-card:hover .community-post-media img,
+  .community-recent-post:hover .community-recent-post-media img,
+  .groupbuy-card:hover .groupbuy-card-media > img,
+  .services-listing:hover .services-listing-media > img,
+  .listing-row:hover .listing-row-media img,
+  .bargain-sale-detail-item:hover .bargain-sale-detail-item-image img { transform: scale(var(--card-media-zoom)); }
+}
+
+/* Respect a reduced-motion preference: the card still highlights, the photo
+   just does not move. */
+@media (prefers-reduced-motion: reduce) {
+  .product-media img,
+  .community-post-media img,
+  .community-recent-post-media img,
+  .groupbuy-card-media > img,
+  .services-listing-media > img,
+  .listing-row-media img,
+  .bargain-sale-detail-item-image img { transition: none; transform: none; }
 }
