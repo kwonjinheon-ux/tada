@@ -8,7 +8,7 @@ import { formatMarketPrice } from "@/lib/market/format-price";
 import { encodeGroupBuyBasket } from "@/lib/market/group-buy-basket";
 import { groupBuyText, type GroupBuy } from "@/data/groupBuy";
 import { Avatar } from "@/components/ui/Avatar";
-import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { ImageGallery, ImageLightbox } from "@/components/ui/ImageGallery";
 import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
 
 /** The list, and the basket built from it.
@@ -51,7 +51,7 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
 
       <header className="groupbuy-hero ui-card">
         <div className="groupbuy-hero-media">
-          <Image src={groupBuy.coverImage} alt={groupBuy.coverAlt} fill sizes="(max-width: 767.98px) 100vw, 420px" />
+          <ImageGallery images={[{ src: groupBuy.coverImage, alt: groupBuy.coverAlt }]} priority />
           <span className={`groupbuy-status is-${groupBuy.status}`}>{text.status[groupBuy.status]}</span>
         </div>
         <div className="groupbuy-hero-copy">
@@ -166,7 +166,7 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
           <p className="groupbuy-basket-note"><i className="ms ms-payments" aria-hidden="true" /> {isKorean ? "Tada는 결제를 대행하지 않습니다. 판매자에게 직접 입금합니다." : "Tada takes no payment. You transfer to the seller directly."}</p>
         </aside>}
       </div>
-      {previewItem ? <DialogOverlay className="groupbuy-photo-dialog" onClose={() => setPreviewItemId(null)} aria-label={isKorean ? "상품 사진 크게 보기" : "Item photo preview"}><div className="groupbuy-photo-dialog-content"><button className="ui-icon-button" type="button" onClick={() => setPreviewItemId(null)} aria-label={isKorean ? "닫기" : "Close"}><i className="ms ms-close" aria-hidden="true" /></button><Image src={previewItem.image} alt={previewItem.imageAlt} width={1200} height={1200} sizes="(max-width: 767px) 92vw, 760px" /></div></DialogOverlay> : null}
+      {previewItem ? <ImageLightbox images={[{ src: previewItem.image, alt: previewItem.imageAlt }]} activeIndex={0} onSelect={() => undefined} onClose={() => setPreviewItemId(null)} /> : null}
     </section>
   );
 }

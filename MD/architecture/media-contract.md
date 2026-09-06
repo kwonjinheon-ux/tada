@@ -9,6 +9,10 @@
 
 ## Client rules
 
+- Detail media uses `src/components/ui/ImageGallery.tsx`: `ImageGallery` owns inline selection and `ImageLightbox` owns enlargement. Market, community, services and group-buy detail screens share this contract; bargain item previews reuse the same lightbox with a caption.
+- Preserve the original aspect ratio over a blurred backdrop. Show current/total count, provide photo selection, Escape/arrow-key navigation and focus restoration. Outside-photo clicks include the letterboxed region, not only the dialog boundary.
+- Navigation thumbnails, avatars, upload controls and listing-card links retain their separate roles; they must not unexpectedly open detail lightboxes.
+
 - Never use a public URL for a private bucket. Server routes/pages request signed URLs through `storage-image.ts`.
 - Web and native clients share the input policy; native implementations must emit the same WebP/edge limits before upload.
 - The next media step adds server-side malware/moderation checks and asynchronous derivative generation if image volume requires it.

@@ -1,16 +1,16 @@
 "use client";
 
-import Image from "next/image";
+import { ImageGallery } from "@/components/ui/ImageGallery";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { Avatar } from "@/components/ui/Avatar";
-import { DialogOverlay, PopupBackdrop } from "@/components/ui/DialogOverlay";
+import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
 import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
@@ -69,9 +69,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const isBargainListing = space === "bargain";
   const supportsBargainOffer = isBargainListing && listing.bargainType === "2-dollar-deals";
   const listingHomePath = "/market";
-  const [activeImage, setActiveImage] = useState(0);
-  const [imageTransition, setImageTransition] = useState<"next" | "previous">("next");
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [viewCount, setViewCount] = useState(listing.viewCount);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
@@ -93,12 +90,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isMarkingSold, setIsMarkingSold] = useState(false);
   const [listingStatus, setListingStatus] = useState(listing.status);
   const [isSellerOnline, setIsSellerOnline] = useState(false);
-  const swipeStartX = useRef<number | null>(null);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
   const [isUnconfirmedOpen, setIsUnconfirmedOpen] = useState(false);
   const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
-  const image = listing.images[activeImage] ?? listing.images[0];
   const ratingLabel = listing.seller.ratingCount
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
     : t("listingNoRatings");
@@ -108,26 +103,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     return () => document.body.classList.remove("listing-detail-screen");
   }, []);
 
-  useEffect(() => {
-    if (!isGalleryOpen) return;
-    document.body.classList.add("listing-gallery-open");
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsGalleryOpen(false);
-      if (event.key === "ArrowRight" && listing.images.length > 1) {
-        setImageTransition("next");
-        setActiveImage((current) => (current + 1) % listing.images.length);
-      }
-      if (event.key === "ArrowLeft" && listing.images.length > 1) {
-        setImageTransition("previous");
-        setActiveImage((current) => (current - 1 + listing.images.length) % listing.images.length);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.classList.remove("listing-gallery-open");
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isGalleryOpen, listing.images.length]);
 
   useEffect(() => {
     if (!isBargainListing) router.prefetch("/market/dashboard/messages");
@@ -180,36 +155,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     return () => { isCurrent = false; };
   }, [isOwner, listing.id, supportsBargainOffer]);
 
-  const showImage = (index: number) => {
-    const nextImage = (index + listing.images.length) % listing.images.length;
-    if (nextImage === activeImage) return;
-    setImageTransition(index > activeImage ? "next" : "previous");
-    setActiveImage(nextImage);
-  };
-
-  const closeGalleryWhenClickingOutsidePhoto = (event: MouseEvent<HTMLDivElement>) => {
-    const stage = event.currentTarget;
-    const photo = stage.querySelector<HTMLImageElement>(".listing-gallery-lightbox-photo");
-
-    if (!photo?.naturalWidth || !photo.naturalHeight) {
-      setIsGalleryOpen(false);
-      return;
-    }
-
-    const stageBounds = stage.getBoundingClientRect();
-    const imageRatio = photo.naturalWidth / photo.naturalHeight;
-    const stageRatio = stageBounds.width / stageBounds.height;
-    const renderedWidth = imageRatio >= stageRatio ? stageBounds.width : stageBounds.height * imageRatio;
-    const renderedHeight = imageRatio >= stageRatio ? stageBounds.width / imageRatio : stageBounds.height;
-    const imageLeft = stageBounds.left + (stageBounds.width - renderedWidth) / 2;
-    const imageTop = stageBounds.top + (stageBounds.height - renderedHeight) / 2;
-    const clickedOriginalPhoto = event.clientX >= imageLeft
-      && event.clientX <= imageLeft + renderedWidth
-      && event.clientY >= imageTop
-      && event.clientY <= imageTop + renderedHeight;
-
-    if (!clickedOriginalPhoto) setIsGalleryOpen(false);
-  };
   const saveListing = async () => {
     if (isBargainListing) return;
     const nextSaved = !isSaved;
@@ -450,35 +395,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </div>
 
       <div className="listing-detail-layout">
-        <section className="listing-detail-gallery has-mobile-photo-stack" aria-label={`${listing.title} photos`}>
-          <div className="listing-detail-main-image" role="button" tabIndex={0} aria-label={`Open photo ${activeImage + 1} of ${listing.images.length} in gallery`} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setIsGalleryOpen(true); } }} onPointerDown={(event) => { swipeStartX.current = event.clientX; }} onPointerUp={(event) => {
-            if ((event.target as HTMLElement).closest("button")) return;
-            if (swipeStartX.current === null) return;
-            const distance = event.clientX - swipeStartX.current;
-            swipeStartX.current = null;
-            if (Math.abs(distance) < 12) {
-              setIsGalleryOpen(true);
-              return;
-            }
-            if (Math.abs(distance) < 42 || listing.images.length < 2) return;
-            showImage(activeImage + (distance < 0 ? 1 : -1));
-          }} onPointerCancel={() => { swipeStartX.current = null; }}>
-            <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="(max-width: 900px) 100vw, 68vw" />
-            <Image key={`${image.src}-${activeImage}`} className={`listing-detail-main-photo is-entering-from-${imageTransition}`} src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
-            {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label={t("listingPhotoPrevious")} onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label={t("listingPhotoNext")} onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
-            <span className="listing-detail-image-count"><i className="ms ms-photo-library" aria-hidden="true" /> {listing.images.length}</span>
-          </div>
-          <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo, index) => <button type="button" key={photo.src} onClick={() => { setActiveImage(index); setIsGalleryOpen(true); }} aria-label={`Open photo ${index + 1} of ${listing.images.length} in gallery`}><img src={photo.src} alt={photo.alt} /></button>)}</div>
-          {listing.images.length > 1 ? (
-            <div className="listing-detail-thumbnails" aria-label={t("listingChoosePhoto")}>
-              {listing.images.map((photo, index) => (
-                <button className={index === activeImage ? "is-active" : ""} type="button" key={photo.src} onClick={() => showImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={index === activeImage}>
-                  <Image src={photo.src} alt="" fill sizes="96px" />
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </section>
+        <ImageGallery images={listing.images} priority />
 
         <aside className="listing-detail-summary">
           <div className="listing-detail-heading">
@@ -514,18 +431,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         </aside>
       </div>
 
-      {isGalleryOpen ? <PopupBackdrop className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}>
-        <Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" onClick={() => setIsGalleryOpen(false)} />
-        <button className="listing-gallery-lightbox-close" type="button" aria-label={t("listingCloseGallery")} onClick={() => setIsGalleryOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
-        <div className="listing-gallery-lightbox-stage" onClick={closeGalleryWhenClickingOutsidePhoto}>
-          <Image key={`lightbox-${image.src}-${activeImage}`} className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill priority sizes="100vw" />
-        </div>
-        {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label={t("listingPhotoPrevious")} onClick={() => showImage(activeImage - 1)}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label={t("listingPhotoNext")} onClick={() => showImage(activeImage + 1)}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
-        <span className="listing-gallery-lightbox-count">{activeImage + 1} / {listing.images.length}</span>
-      </PopupBackdrop> : null}
 
       <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-stack" : ""}`}>
-        <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listingStatus}`}>{listingStatus === "sold" ? t("soldOut") : listingStatus === "pending" ? t("pending") : t("available")}</span></div>
         <div className="listing-detail-mobile-location-row"><span><i className="ms ms-location-on" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="ms ms-visibility" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
