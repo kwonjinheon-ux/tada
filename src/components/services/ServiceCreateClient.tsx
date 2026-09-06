@@ -261,7 +261,7 @@ export function ServiceCreateClient() {
   ));
 
   const primaryPhoto = photos.find((photo) => photo.id === primaryPhotoId) ?? photos[0] ?? null;
-  const previewLocation = [suburb, serviceArea === allAreasValue ? (isKorean ? "뉴질랜드 전체" : "All New Zealand") : serviceArea].filter(Boolean).join(", ");
+  const previewLocation = serviceArea === allAreasValue ? (isKorean ? "뉴질랜드 전체" : "All New Zealand") : serviceArea;
   const previewPrice = category ? serviceDetailsSummary(category, serviceDetailValues, locale).find((row) => row.label === (isKorean ? "가격" : "Price"))?.value ?? null : null;
   const previewContent = {
     businessName: previewFields["business-name"]?.trim() || "",
