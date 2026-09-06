@@ -13013,3 +13013,26 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .route-skeleton--dashboard { grid-template-columns: 272px minmax(0, 1fr); }
   .route-skeleton-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* ---------------------------------------------------------------------------
+   Listing detail keeps the Market rail on desktop, so opening a listing from
+   the feed does not drop the navigation that got you there. Its own grid
+   rather than .marketplace-page: detail wants its full width below 1024px,
+   where the rail and its toggle stay out of the way entirely.
+   --------------------------------------------------------------------------- */
+.market-detail-shell { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--color-background); }
+.market-detail-shell-content { min-width: 0; }
+
+@media (max-width: 1023.98px) {
+  /* A filter control on a page with nothing to filter is noise. */
+  .market-detail-shell > .market-filter-panel,
+  .market-detail-shell > .floating-filter-button,
+  .market-detail-shell > .filter-backdrop { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .market-detail-shell { grid-template-columns: 272px minmax(0, 1fr); }
+  /* The detail column carries its own max-width, so it centres in what is
+     left rather than sitting against the rail. */
+  .market-detail-shell-content > .listing-detail-page { margin-inline: auto; }
+}

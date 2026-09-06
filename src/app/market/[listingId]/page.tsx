@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
 import { BargainSaleDetailClient } from "@/components/bargain/BargainSaleDetailClient";
+import { MarketDetailShell } from "@/components/market/MarketDetailShell";
 import { RelatedListings } from "@/components/market/RelatedListings";
 import type { Listing } from "@/data/listings";
 import { marketplaceCategories } from "@/data/marketplace-categories";
@@ -233,7 +234,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     const { data: savedRelatedListings } = user && relatedListings.length
       ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
       : { data: [] };
-    return <><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></>;
+    return <MarketDetailShell><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></MarketDetailShell>;
   }
 
   // A garage/moving sale or a $2–$10 deal doesn't live in market_listings — fall back
