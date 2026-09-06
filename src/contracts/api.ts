@@ -149,11 +149,17 @@ export const marketFeedListingSchema = z.object({
   title: z.string(),
   price: z.string(),
   location: z.string(),
-  image: z.string().url(),
+  // Either a signed storage URL or a local asset path — a group buy with no
+  // cover image falls back to one of the bundled images, which is relative.
+  image: z.string().min(1),
   imageAlt: z.string(),
-  categorySlug: z.string().nullable(),
-  subcategorySlug: z.string().nullable(),
-  badge: z.enum(["Newly Listed", "Promotion"]).optional(),
+  // Bargain and group-buy rows in the merged feed carry no category, so these
+  // are absent rather than null. Requiring them failed the whole response — the
+  // reason global search came back empty whenever the feed held one of those.
+  categorySlug: z.string().nullable().optional(),
+  subcategorySlug: z.string().nullable().optional(),
+  // Serialised as null, not omitted, when a listing has no badge.
+  badge: z.enum(["Newly Listed", "Promotion"]).nullable().optional(),
   status: z.enum(["available", "pending", "sold"]),
   isOwner: z.boolean().optional(),
   commentCount: z.number().int().nonnegative().optional(),

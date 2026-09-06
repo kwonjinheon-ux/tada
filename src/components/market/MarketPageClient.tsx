@@ -7,6 +7,7 @@ import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { ListPagination } from "@/components/ui/ListPagination";
+import { MarketRecentListingsPanel } from "@/components/market/MarketRecentListingsPanel";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
@@ -233,6 +234,8 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
 
         <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
       </section>
+
+      <MarketRecentListingsPanel shopType={shopType} />
     </main>
   );
 }

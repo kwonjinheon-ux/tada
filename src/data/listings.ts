@@ -11,7 +11,9 @@ export type Listing = {
   subcategorySlug?: string | null;
   bargainType?: string | null;
   eventDateRange?: string | null;
-  badge?: "Promotion" | "Newly Listed";
+  // Null when the feed serialises "no badge"; undefined when the source never
+  // sets one. Both mean the same thing to a card.
+  badge?: "Promotion" | "Newly Listed" | null;
   status: ListingStatus;
   isOwner?: boolean;
   commentCount?: number;
