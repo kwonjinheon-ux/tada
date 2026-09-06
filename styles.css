@@ -13030,9 +13030,10 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     align-self: start;
     position: sticky;
     top: calc(var(--desktop-header-height) + var(--space-3));
-    max-height: calc(100vh - var(--desktop-header-height) - var(--space-6));
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    /* Keep the summary as one readable surface. Its height follows its
+       contents instead of trapping seller details in a nested scrollbar. */
+    max-height: none;
+    overflow: visible;
   }
 }
 
