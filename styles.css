@@ -12896,9 +12896,16 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .service-create-page .service-editor-card > .service-editor-field-hint { display: none; }
 .service-create-page .service-editor-address .service-editor-field-hint { display: none; }
 .service-create-page .post-ad-intro {
-  width: calc(100% + (var(--space-4) * 2));
-  margin-inline: calc(var(--space-4) * -1);
-  padding-inline: 0;
+  width: 100%;
+  margin-inline: 0;
+  padding: var(--space-3) var(--space-5);
+}
+@media (max-width: 767.98px) {
+  .service-create-page .post-ad-intro {
+    width: calc(100% + (var(--space-4) * 2));
+    margin-inline: calc(var(--space-4) * -1);
+    padding-inline: var(--space-4);
+  }
 }
 .service-create-page .service-editor-address-visibility label { min-height: var(--control-h-xl); }
 .service-create-page .service-editor-gallery { flex-wrap: nowrap; align-items: stretch; }

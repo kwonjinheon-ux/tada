@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, RefObject, useState } from "react";
+import { FormEvent, RefObject, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
@@ -66,6 +66,10 @@ function BusinessInformationEditor({ isKorean, areaOptions, serviceArea, onAreaC
 export function ServiceCreateEditor(props: Props) {
   const { isKorean, category, categoryLabels } = props;
   const [selectedAreas, setSelectedAreas] = useState<string[]>(() => [props.serviceArea, props.suburb].filter(Boolean));
+  useEffect(() => {
+    props.logoInputRef.current = document.querySelector<HTMLInputElement>("#editor-logo");
+    props.photoInputRef.current = document.querySelector<HTMLInputElement>("#editor-photos");
+  }, [props.logoInputRef, props.photoInputRef]);
   const text = isKorean ? {
     identity: "제공자 정보", about: "서비스 소개", details: "서비스 상세 및 가격", business: "업체 정보", gallery: "작업 사진", area: "서비스 지역", safety: "안전 기준", category: "서비스 종류", logo: "로고", provider: "업체/제공자명", title: "서비스명", type: "제공자 유형", local: "지역 업체", sole: "개인 사업자", summary: "짧은 요약", description: "서비스 소개", phone: "전화번호", email: "이메일", website: "웹사이트", hours: "영업시간", year: "설립 연도", languages: "제공 가능 언어", address: "상세 주소", addressVisibility: "주소 공개 설정", publish: "검토 및 등록", preview: "업체 카드 미리보기", save: "임시 저장", upload: "로고 업로드", photos: "대표 사진과 추가 작업 사진을 올려 주세요", terms: "이용약관 및 커뮤니티 가이드라인에 동의합니다.", areaHelp: "고객에게 제공 가능한 지역을 설정하세요.", safetyHelp: "등록 전 Tada 안전 기준을 확인해 주세요.", identityHelp: "서비스 페이지 상단에 표시됩니다.", aboutHelp: "고객이 서비스를 빠르게 이해할 수 있게 작성하세요.", detailsHelp: "서비스 페이지의 상세 및 가격 영역에 표시됩니다.", businessHelp: "고객이 연락하고 신뢰할 수 있는 정보입니다.", galleryHelp: "실제 작업 사진은 문의 전환에 도움이 됩니다.", reviewed: "모든 서비스는 공개 전 검토됩니다.", contact: "정확한 연락처가 필요합니다.", genuine: "실제 제공하는 서비스만 등록할 수 있습니다.", prohibited: "위험하거나 금지된 서비스는 등록할 수 없습니다.", submit: "서비스 등록 신청",
   } : {
