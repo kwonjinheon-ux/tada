@@ -256,10 +256,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
         <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
-          hideChipsOnMobile
-          chips={marketShopTypes.map(({ labelKey, value }) => ({ label: t(labelKey), value, className: `market-type-${value}` }))}
-          activeChipValue={shopType}
-          onChipSelect={(value) => chooseShopType(value as ShopType)}
           sortValue={searchParams.get("sort") ?? "newest"}
           sortOptions={marketSortOptions(t)}
           onSortChange={changeSort}

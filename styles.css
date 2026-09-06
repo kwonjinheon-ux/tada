@@ -12922,3 +12922,36 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .service-create-error-dialog { padding: var(--space-3); }
   .service-create-error-dialog-panel { padding: var(--space-4); }
 }
+
+/* ---------------------------------------------------------------------------
+   Tablet (768–1023.98px) — the browse rail gets its column back.
+
+   The rail's sidebar rules live in the min-width: 768px block: from 768px up it
+   is display: grid, sticky, with a right border. The page grid that gives it a
+   column, though, sits in the min-width: 1024px block. Between the two the rail
+   rendered full width, stacked above the feed, with a border-right down the
+   middle of the page and a viewport-tall scroller in front of the listings —
+   and the floating filter button that would otherwise open it as a drawer is
+   hidden from 768px up, so there was no way back to the feed but to scroll.
+
+   Giving tablet the two-column layout is the smaller correction of the two: the
+   rail already behaves like a sidebar there, it just had nowhere to sit. :has()
+   keeps it to pages that actually render a rail, so a single-column marketplace
+   page is not squeezed into a sidebar column.
+   --------------------------------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .marketplace-page:has(> .market-filter-panel) {
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 0;
+  }
+
+  /* 232px against the desktop 272px: the feed keeps two full-width cards at
+     768px, which is what section 7 of the breakpoint standard asks for. */
+  .marketplace-page > .market-filter-panel {
+    padding: var(--space-4) var(--space-3) var(--space-8);
+    gap: var(--space-3);
+  }
+
+  /* The listing gap was 5.28px, which is on no scale. */
+  .product-grid { gap: var(--space-2); }
+}
