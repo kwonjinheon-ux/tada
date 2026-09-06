@@ -7910,13 +7910,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .dashboard-layout {
   --dashboard-sidebar-width-tablet: 220px;
   --dashboard-sidebar-width-desktop: 272px;
-  --dashboard-rail-top: 70px;
-  --dashboard-rail-height: calc(100dvh - 70px);
-  --dashboard-rail-min-height: calc(100vh - 70px);
+  --dashboard-rail-top: var(--desktop-header-height);
+  --dashboard-rail-height: calc(100dvh - var(--desktop-header-height));
+  --dashboard-rail-min-height: calc(100vh - var(--desktop-header-height));
 }
 
 .marketplace-page.dashboard-page.dashboard-layout {
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - var(--desktop-header-height));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
