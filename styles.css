@@ -2911,9 +2911,14 @@ a {
   font-weight: var(--weight-bold);
 }
 
+/* The summary column matches the right rail every other vertical carries —
+   Services and Community both run 272px | content | 288px — so a listing does
+   not present a differently proportioned page than the rest of the app. It is a
+   fixed track for the same reason theirs are: a fraction of the remaining space
+   made it 354px here and something else again on a narrower desktop. */
 .listing-detail-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr);
+  grid-template-columns: minmax(0, 1fr) 288px;
   gap: 32px;
   align-items: start;
 }
