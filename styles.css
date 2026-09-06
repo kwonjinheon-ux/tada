@@ -13124,19 +13124,23 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 }
 
 /* Listing detail lines up with the other verticals at the width Community and
-   Services share: a 272px rail, an 865px main column and a 288px sidebar. The
-   summary is nested inside the detail layout rather than being a third track of
-   the page grid, so the two columns are sized here and the leftover slack sits
-   between them — that is what keeps the numbers identical to a Community page
-   rather than merely close. */
+   Services share: a 272px rail, an 865px main column and a 288px sidebar
+   track. The summary is nested inside the detail layout rather than being a
+   third track of the page grid, so the two columns are sized here. */
 @media (min-width: 1200px) {
+  /* The gutter belongs to the columns, not the page, so the sidebar track can
+     reach the page edge the way Community's rail track does. The page keeps no
+     inline padding of its own; each child carries the same 16px instead. */
   .market-detail-shell-content > .listing-detail-page { padding-inline: 0; }
+  .market-detail-shell-content > .listing-detail-page > *:not(.listing-detail-layout) { padding-inline: var(--space-4); }
+  .market-detail-shell .listing-detail-gallery { padding-inline: var(--space-4); }
   .market-detail-shell .listing-detail-layout {
     grid-template-columns: minmax(0, 1fr) 288px;
     gap: 0;
   }
-  /* The gap lives inside the sidebar track, exactly as Community puts it inside
-     the rail track with a margin. That is what makes the main column land on
-     865px rather than 865 minus a gap. */
-  .market-detail-shell .listing-detail-summary { margin-left: var(--space-4); }
+  /* The separation sits inside the sidebar track as a margin, which is exactly
+     how Community insets its rail: a 288px track holding a 272px card with 16px
+     to the page edge. A grid gap instead would take those pixels off the main
+     column and leave the sidebar flush against the edge. */
+  .market-detail-shell .listing-detail-summary { margin: var(--space-3) var(--space-4) var(--space-3) 0; }
 }
