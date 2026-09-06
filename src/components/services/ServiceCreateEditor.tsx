@@ -53,6 +53,20 @@ function FieldHint({ children }: { children: string }) {
   return <small className="service-editor-field-hint">{children}</small>;
 }
 
+function invalidFieldMessage(field: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | undefined, isKorean: boolean) {
+  if (!field) return isKorean ? "필수 항목과 입력 형식을 확인해 주세요." : "Check the required fields and input formats.";
+  const parentLabel = field.closest("label");
+  const parentLabelText = Array.from(parentLabel?.childNodes ?? []).find((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim())?.textContent?.trim();
+  const label = parentLabel?.querySelector(".service-editor-field-label")?.textContent?.trim() || parentLabelText || field.labels?.[0]?.textContent?.trim() || (isKorean ? "이 항목" : "This field");
+  if (field.validity.valueMissing) return isKorean ? `${label}은(는) 필수 입력 항목입니다.` : `${label} is required.`;
+  if (field.validity.typeMismatch) return field.type === "email" ? (isKorean ? "이메일 주소 형식을 확인해 주세요." : "Enter a valid email address.") : (isKorean ? "웹사이트 주소를 https:// 뒤에 입력해 주세요." : "Enter the website address after https://.");
+  if (field.validity.patternMismatch) return isKorean ? "전화번호는 숫자 7~20자리로 입력해 주세요." : "Enter a phone number with 7–20 digits.";
+  if (field.validity.rangeUnderflow) return isKorean ? `${label}은(는) 0 이상으로 입력해 주세요.` : `Enter ${label} as 0 or more.`;
+  if (field.validity.rangeOverflow) return isKorean ? `${label}의 허용 범위를 확인해 주세요.` : `Check the allowed range for ${label}.`;
+  if (field.validity.tooShort || field.validity.tooLong) return isKorean ? `${label}의 글자 수 제한을 확인해 주세요.` : `Check the character limit for ${label}.`;
+  return isKorean ? `${label}의 입력 형식을 확인해 주세요.` : `Check the format for ${label}.`;
+}
+
 function BusinessInformationEditor({ isKorean, areaOptions, serviceArea, onAreaChange, suburb }: Pick<Props, "isKorean" | "areaOptions" | "serviceArea" | "onAreaChange" | "suburb">) {
   const [hours, setHours] = useState([{ id: crypto.randomUUID(), days: ["monday"], opens: "09:00", closes: "17:00" }]);
   const dayOptions = isKorean ? [["monday", "월요일"], ["tuesday", "화요일"], ["wednesday", "수요일"], ["thursday", "목요일"], ["friday", "금요일"], ["saturday", "토요일"], ["sunday", "일요일"], ["public-holidays", "공휴일"]] : [["monday", "Monday"], ["tuesday", "Tuesday"], ["wednesday", "Wednesday"], ["thursday", "Thursday"], ["friday", "Friday"], ["saturday", "Saturday"], ["sunday", "Sunday"], ["public-holidays", "Public holidays"]];
@@ -71,6 +85,21 @@ export function ServiceCreateEditor(props: Props) {
     props.logoInputRef.current = document.querySelector<HTMLInputElement>("#editor-logo");
     props.photoInputRef.current = document.querySelector<HTMLInputElement>("#editor-photos");
   }, [props.logoInputRef, props.photoInputRef]);
+  useEffect(() => {
+    const website = document.querySelector<HTMLInputElement>('input[name="service-website"]');
+    const prefix = "https://";
+    if (!website) return;
+    if (!website.value) website.value = prefix;
+    const keepPrefix = () => {
+      if (!website.value.startsWith(prefix)) website.value = `${prefix}${website.value.replace(/^https?:\/\//, "")}`;
+    };
+    const moveCursorAfterPrefix = () => {
+      if (website.selectionStart !== null && website.selectionStart < prefix.length) website.setSelectionRange(prefix.length, prefix.length);
+    };
+    website.addEventListener("input", keepPrefix);
+    website.addEventListener("focus", moveCursorAfterPrefix);
+    return () => { website.removeEventListener("input", keepPrefix); website.removeEventListener("focus", moveCursorAfterPrefix); };
+  }, []);
   const text = isKorean ? {
     identity: "제공자 정보", about: "서비스 소개", details: "서비스 상세 및 가격", business: "업체 정보", gallery: "작업 사진", area: "서비스 지역", safety: "안전 기준", category: "서비스 종류", logo: "로고", provider: "업체/제공자명", title: "서비스명", type: "제공자 유형", local: "지역 업체", sole: "개인 사업자", summary: "짧은 요약", description: "서비스 소개", phone: "전화번호", email: "이메일", website: "웹사이트", hours: "영업시간", year: "설립 연도", languages: "제공 가능 언어", address: "상세 주소", addressVisibility: "주소 공개 설정", publish: "검토 및 등록", preview: "업체 카드 미리보기", save: "임시 저장", upload: "로고 업로드", photos: "대표 사진과 추가 작업 사진을 올려 주세요", terms: "이용약관 및 커뮤니티 가이드라인에 동의합니다.", areaHelp: "고객에게 제공 가능한 지역을 설정하세요.", safetyHelp: "등록 전 Tada 안전 기준을 확인해 주세요.", identityHelp: "서비스 페이지 상단에 표시됩니다.", aboutHelp: "고객이 서비스를 빠르게 이해할 수 있게 작성하세요.", detailsHelp: "서비스 페이지의 상세 및 가격 영역에 표시됩니다.", businessHelp: "고객이 연락하고 신뢰할 수 있는 정보입니다.", galleryHelp: "실제 작업 사진은 문의 전환에 도움이 됩니다.", reviewed: "모든 서비스는 공개 전 검토됩니다.", contact: "정확한 연락처가 필요합니다.", genuine: "실제 제공하는 서비스만 등록할 수 있습니다.", prohibited: "위험하거나 금지된 서비스는 등록할 수 없습니다.", submit: "서비스 등록 신청",
   } : {
@@ -86,7 +115,7 @@ export function ServiceCreateEditor(props: Props) {
     if (!form.checkValidity()) {
       const invalidField = Array.from(form.elements).find((element): element is HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement => (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) && !element.disabled && !element.validity.valid);
       invalidField?.focus();
-      props.onInvalid(isKorean ? "필수 항목과 입력 형식을 확인해 주세요. 별표(*) 항목은 반드시 입력해야 합니다." : "Check the required fields and input formats. Fields marked with * are required.");
+      props.onInvalid(invalidFieldMessage(invalidField, isKorean));
       return;
     }
     props.onSubmit(event);
