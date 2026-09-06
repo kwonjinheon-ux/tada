@@ -5676,7 +5676,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-pickup-dialog-note i { color: var(--color-primary); }
 .bargain-pickup-dialog-error { display: flex; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-danger-soft); color: var(--color-danger); font-size: var(--text-sm); line-height: 1.45; }
 .bargain-pickup-result.is-error .bargain-pickup-dialog-icon { background: var(--color-danger-soft); color: var(--color-danger); }
-.bargain-pickup-dialog > div:last-child { display: flex; justify-content: flex-end; gap: var(--space-2); }
+/* The two actions split the dialog evenly rather than sitting right-aligned at
+   their own text widths: at 420px there is room, and a decision dialog reads
+   better when confirm and cancel are the same size. */
+.bargain-pickup-dialog > div:last-child { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.bargain-pickup-dialog > div:last-child > button { width: 100%; }
 .bargain-item-edit-page { padding: var(--space-6) 0 var(--space-12); }
 .bargain-item-edit-card, .bargain-item-offers { display: grid; gap: var(--space-4); margin-top: var(--space-4); padding: var(--space-5); }
 .bargain-item-edit-card h1, .bargain-item-offers h2 { margin: 0; color: var(--color-ink); font-size: var(--text-2xl); }
