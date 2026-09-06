@@ -19,10 +19,15 @@ import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 
 const priceFilterMaximum = 5000;
 
-export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings, savedListingIds = [], page = 1, totalPages = 1 }: {
+const emptyLabelKeys = {
+  "garage-sale": "marketEmptyGarageSale",
+  "moving-sale": "marketEmptyMovingSale",
+  "2dollarshop": "marketEmptyTwoDollar",
+} as const;
+
+export function MarketShopFeedClient({ shopType, basePath, listings, savedListingIds = [], page = 1, totalPages = 1 }: {
   shopType: Extract<ShopType, "garage-sale" | "moving-sale" | "2dollarshop">;
   basePath: string;
-  emptyLabel: string;
   listings: Listing[];
   savedListingIds?: string[];
   page?: number;
@@ -30,7 +35,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
@@ -87,7 +92,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
   };
 
   return <main className="marketplace-page bargain-page market-page-with-bottom-dock">
-    <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open filters" closeLabel="Close filters">
+    <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel={t("marketOpenFilters")} closeLabel={t("marketCloseFilters")}>
       <MarketFilterSidebar
         activeShopType={shopType}
         activeCategory={searchParams.get("category") ?? "all"}
@@ -99,7 +104,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
       />
     </BrowseFilterDrawer>
     {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
-    <section className="market-results bargain-results" aria-label="Listings">
+    <section className="market-results bargain-results" aria-label={t("marketFeedLabel")}>
       <MarketBrowseIntro shopType={shopType} />
       <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
       <BrowseResultsToolbar
@@ -109,12 +114,12 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
         sortOptions={marketSortOptions(t)}
         onSortChange={(value) => updateParams({ sort: value === "newest" ? null : value })}
         sortDisplay="chips"
-        resultsLabel={`Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
+        resultsLabel={locale === "ko" ? `${listings.length}개 매물` : `Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
       />
       {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
         {listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedIdSet.has(listing.id)} listingHref={`/market/${listing.id}`} wishlistEndpoint="/api/bargain/wishlist" />)}
-      </div> : <div className="market-search-empty" role="status"><i className="ms ms-sell" aria-hidden="true" /><strong>{emptyLabel}</strong><span>Try another category or nearby location.</span></div>}
-      <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
+      </div> : <div className="market-search-empty" role="status"><i className="ms ms-sell" aria-hidden="true" /><strong>{t(emptyLabelKeys[shopType])}</strong><span>{t("marketTryAnother")}</span></div>}
+      <ListPagination page={page} totalPages={totalPages} label={t("marketListingPages")} />
     </section>
   </main>;
 }

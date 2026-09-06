@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MarketFilterSidebar, marketShopTypes } from "@/components/market/MarketFilterSidebar";
 import { type MainLocation } from "@/data/nzLocations";
+import { useLanguage } from "@/components/LanguageProvider";
 
 /**
  * Listing detail inside the Market browse shell, so the rail stays put when a
@@ -16,6 +17,7 @@ import { type MainLocation } from "@/data/nzLocations";
  * page with nothing to filter is noise.
  */
 export function MarketDetailShell({ children, shopTypeHref }: { children: ReactNode; shopTypeHref?: string }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // A bargain listing knows which shop-type route it came from, so the rail can
@@ -29,7 +31,7 @@ export function MarketDetailShell({ children, shopTypeHref }: { children: ReactN
 
   return (
     <div className="market-detail-shell">
-      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
+      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel={t("marketOpenFilters")} closeLabel={t("marketCloseFilters")}>
         <MarketFilterSidebar
           activeShopType={activeShopType}
           activeCategory="all"

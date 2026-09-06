@@ -16,6 +16,7 @@ import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/mark
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type ListingDetail = {
   id: string;
@@ -38,11 +39,6 @@ export type ListingDetail = {
   bargainType?: string | null;
 };
 
-const statusLabel = {
-  available: "Available",
-  pending: "Pending",
-  sold: "Sold out",
-} as const;
 
 function descriptionParagraphs(description: string) {
   const plainText = description
@@ -69,6 +65,7 @@ type BargainOffer = { id: string; buyer_id: string; amount_cents: number; note: 
 
 export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const isBargainListing = space === "bargain";
   const supportsBargainOffer = isBargainListing && listing.bargainType === "2-dollar-deals";
   const listingHomePath = "/market";
@@ -104,7 +101,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const image = listing.images[activeImage] ?? listing.images[0];
   const ratingLabel = listing.seller.ratingCount
     ? `${listing.seller.ratingAverage.toFixed(1)} seller rating (${listing.seller.ratingCount})`
-    : "No ratings yet";
+    : t("listingNoRatings");
 
   useEffect(() => {
     document.body.classList.add("listing-detail-screen");
@@ -240,7 +237,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       await copyCurrentPageLink();
       window.dispatchEvent(new Event("listing-share-copied"));
     } catch {
-      setMessageError("Unable to copy this listing link. Please try again.");
+      setMessageError(t("listingCopyLinkFailed"));
     }
   };
 
@@ -279,7 +276,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
   const openOfferDialog = () => {
     if (listing.status === "sold") {
-      setMessageError("This listing has already been sold.");
+      setMessageError(t("listingAlreadySold"));
       return;
     }
     setOfferError(null);
@@ -291,13 +288,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const submitOffer = async () => {
     if (isSubmittingOffer) return;
     if (listing.status === "sold") {
-      setOfferError("This listing has already been sold.");
+      setOfferError(t("listingAlreadySold"));
       return;
     }
     const amount = Number(offerAmount);
     const amountCents = Math.round(amount * 100);
     if (!isBargainListing && (!Number.isFinite(amount) || amount < 0 || amountCents < 0)) {
-      setOfferError("Enter a valid offer amount.");
+      setOfferError(t("listingOfferInvalid"));
       return;
     }
     setIsSubmittingOffer(true);
@@ -317,7 +314,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         if (response.status < 500 || attempt === 1) break;
         await new Promise((resolve) => window.setTimeout(resolve, 350));
       }
-      if (!response) throw new Error("Offer request did not start");
+      if (!response) throw new Error(t("listingOfferFailed"));
       if (response.status === 401) {
         router.push(`/login?redirectTo=${encodeURIComponent(`/market/${listing.id}`)}`);
         return;
@@ -328,7 +325,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       }
       setIsOfferDialogOpen(false);
       if (supportsBargainOffer) {
-        setMessageError("Offer sent to the seller.");
+        setMessageError(t("listingOfferSent"));
         return;
       }
       if (!payload?.conversationId) {
@@ -449,7 +446,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   return (
     <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
-        {listing.category ? <nav className="detail-breadcrumb" aria-label="Listing category"><Link href={listingHomePath}>Market</Link><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><i className="ms ms-chevron-right" aria-hidden="true" /><span>{listing.category.subcategory.label}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="ms ms-arrow-back" aria-hidden="true" /> Back to listings</Link>}
+        {listing.category ? <nav className="detail-breadcrumb" aria-label={t("listingCategoryNav")}><Link href={listingHomePath}>{t("listingBreadcrumbMarket")}</Link><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><i className="ms ms-chevron-right" aria-hidden="true" /><span>{listing.category.subcategory.label}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="ms ms-arrow-back" aria-hidden="true" /> Back to listings</Link>}
       </div>
 
       <div className="listing-detail-layout">
@@ -468,12 +465,12 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           }} onPointerCancel={() => { swipeStartX.current = null; }}>
             <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="(max-width: 900px) 100vw, 68vw" />
             <Image key={`${image.src}-${activeImage}`} className={`listing-detail-main-photo is-entering-from-${imageTransition}`} src={image.src} alt={image.alt} fill priority sizes="(max-width: 900px) 100vw, 68vw" />
-            {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
+            {listing.images.length > 1 ? <><button className="listing-detail-gallery-arrow is-previous" type="button" aria-label={t("listingPhotoPrevious")} onClick={(event) => { event.stopPropagation(); showImage(activeImage - 1); }}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-detail-gallery-arrow is-next" type="button" aria-label={t("listingPhotoNext")} onClick={(event) => { event.stopPropagation(); showImage(activeImage + 1); }}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
             <span className="listing-detail-image-count"><i className="ms ms-photo-library" aria-hidden="true" /> {listing.images.length}</span>
           </div>
           <div className="listing-detail-mobile-photo-stack listing-detail-mobile-only">{listing.images.map((photo, index) => <button type="button" key={photo.src} onClick={() => { setActiveImage(index); setIsGalleryOpen(true); }} aria-label={`Open photo ${index + 1} of ${listing.images.length} in gallery`}><img src={photo.src} alt={photo.alt} /></button>)}</div>
           {listing.images.length > 1 ? (
-            <div className="listing-detail-thumbnails" aria-label="Choose photo">
+            <div className="listing-detail-thumbnails" aria-label={t("listingChoosePhoto")}>
               {listing.images.map((photo, index) => (
                 <button className={index === activeImage ? "is-active" : ""} type="button" key={photo.src} onClick={() => showImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={index === activeImage}>
                   <Image src={photo.src} alt="" fill sizes="96px" />
@@ -486,29 +483,29 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <aside className="listing-detail-summary">
           <div className="listing-detail-heading">
             <div>
-              <div className="listing-detail-status-row"><span className={`listing-status status-${listingStatus}`}>{statusLabel[listingStatus]}</span><span>{listing.createdAt}</span></div>
+              <div className="listing-detail-status-row"><span className={`listing-status status-${listingStatus}`}>{listingStatus === "sold" ? t("soldOut") : listingStatus === "pending" ? t("pending") : t("available")}</span><span>{listing.createdAt}</span></div>
               <h1>{listing.title}</h1>
             </div>
-            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label="Delete listing" onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button> : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? "Remove from saved items" : "Save listing"} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
+            {isOwner ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label={t("listingDelete")} onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button> : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? t("listingUnsave") : t("listingSave")} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
           </div>
           <strong className="listing-detail-price">{listing.price}</strong>
           <p className="listing-detail-location"><i className="ms ms-location-on" aria-hidden="true" /> {listing.location}</p>
 
           {(isOwner || !isBargainListing || supportsBargainOffer) ? <div className={`listing-detail-actions ${isBargainListing && !isOwner ? "listing-detail-actions--single" : ""}`}>
-            {isOwner ? <><button type="button" className="listing-detail-message" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}><i className="ms ms-sell" aria-hidden="true" /> {listingStatus === "sold" ? "Sold out" : isMarkingSold ? "Marking sold..." : "Mark as sold"}</button><button type="button" className="listing-detail-offer" onClick={editListing} disabled={listingStatus === "sold"}><i className="ms ms-edit" aria-hidden="true" /> Edit listing</button></> : <>{!isBargainListing ? <button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="ms ms-chat" aria-hidden="true" /> {isOpeningMessage ? "Opening chat..." : "Message"}</button> : null}<button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="ms ms-sell" aria-hidden="true" /> Make an offer</button></>}
+            {isOwner ? <><button type="button" className="listing-detail-message" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}><i className="ms ms-sell" aria-hidden="true" /> {listingStatus === "sold" ? "Sold out" : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</button><button type="button" className="listing-detail-offer" onClick={editListing} disabled={listingStatus === "sold"}><i className="ms ms-edit" aria-hidden="true" /> Edit listing</button></> : <>{!isBargainListing ? <button type="button" className="listing-detail-message" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}><i className="ms ms-chat" aria-hidden="true" /> {isOpeningMessage ? t("listingOpeningChat") : t("listingMessage")}</button> : null}<button type="button" className="listing-detail-offer" onClick={openOfferDialog}><i className="ms ms-sell" aria-hidden="true" /> Make an offer</button></>}
           </div> : null}
           {messageError ? <p className="listing-detail-message-error" role="alert">{messageError}</p> : null}
-          {supportsBargainOffer && isOwner ? <section className="listing-detail-bargain-offers" aria-live="polite"><div><h2>Offers</h2><span>{isLoadingBargainOffers ? "Loading…" : `${bargainOffers.length} pending`}</span></div>{bargainOfferActionError ? <p role="alert">{bargainOfferActionError}</p> : null}{bargainOffers.map((offer) => <article key={offer.id}><div><strong>${(offer.amount_cents / 100).toFixed(2)}</strong>{offer.note ? <p>{offer.note}</p> : null}</div><span><button type="button" onClick={() => void respondToBargainOffer(offer.id, "accept")} disabled={respondingBargainOfferId !== null}>{respondingBargainOfferId === offer.id ? "Saving…" : "Accept"}</button><button type="button" onClick={() => void respondToBargainOffer(offer.id, "decline")} disabled={respondingBargainOfferId !== null}>Decline</button></span></article>)}</section> : null}
+          {supportsBargainOffer && isOwner ? <section className="listing-detail-bargain-offers" aria-live="polite"><div><h2>{t("listingOffers")}</h2><span>{isLoadingBargainOffers ? "Loading…" : `${bargainOffers.length} pending`}</span></div>{bargainOfferActionError ? <p role="alert">{bargainOfferActionError}</p> : null}{bargainOffers.map((offer) => <article key={offer.id}><div><strong>${(offer.amount_cents / 100).toFixed(2)}</strong>{offer.note ? <p>{offer.note}</p> : null}</div><span><button type="button" onClick={() => void respondToBargainOffer(offer.id, "accept")} disabled={respondingBargainOfferId !== null}>{respondingBargainOfferId === offer.id ? "Saving…" : t("listingAccept")}</button><button type="button" onClick={() => void respondToBargainOffer(offer.id, "decline")} disabled={respondingBargainOfferId !== null}>{t("listingDecline")}</button></span></article>)}</section> : null}
 
           <dl className="listing-detail-facts">
-            <div><dt>Condition</dt><dd>{listing.condition}</dd></div>
-            <div><dt>Delivery</dt><dd>{listing.tradeMethod}</dd></div>
-            {listing.meetingPlace ? <div><dt>Meet at</dt><dd>{listing.meetingPlace}</dd></div> : null}
+            <div><dt>{t("condition")}</dt><dd>{listing.condition}</dd></div>
+            <div><dt>{t("listingDelivery")}</dt><dd>{listing.tradeMethod}</dd></div>
+            {listing.meetingPlace ? <div><dt>{t("listingMeetAt")}</dt><dd>{listing.meetingPlace}</dd></div> : null}
           </dl>
 
           <section className="listing-detail-seller-card">
             <div className="listing-detail-seller">
-              <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-seller-avatar" /></span>
+              <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-seller-avatar" /></span>
               <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
               {!isBargainListing && listing.seller.id ? <Link className="listing-detail-seller-profile-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View seller profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}
             </div>
@@ -519,24 +516,24 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
       {isGalleryOpen ? <PopupBackdrop className="listing-gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${listing.title} photo gallery`} onClose={() => setIsGalleryOpen(false)}>
         <Image className="listing-gallery-lightbox-backdrop" src={image.src} alt="" fill aria-hidden="true" sizes="100vw" onClick={() => setIsGalleryOpen(false)} />
-        <button className="listing-gallery-lightbox-close" type="button" aria-label="Close photo gallery" onClick={() => setIsGalleryOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
+        <button className="listing-gallery-lightbox-close" type="button" aria-label={t("listingCloseGallery")} onClick={() => setIsGalleryOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
         <div className="listing-gallery-lightbox-stage" onClick={closeGalleryWhenClickingOutsidePhoto}>
           <Image key={`lightbox-${image.src}-${activeImage}`} className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill priority sizes="100vw" />
         </div>
-        {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label="Previous photo" onClick={() => showImage(activeImage - 1)}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label="Next photo" onClick={() => showImage(activeImage + 1)}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
+        {listing.images.length > 1 ? <><button className="listing-gallery-lightbox-arrow is-previous" type="button" aria-label={t("listingPhotoPrevious")} onClick={() => showImage(activeImage - 1)}><i className="ms ms-chevron-left" aria-hidden="true" /></button><button className="listing-gallery-lightbox-arrow is-next" type="button" aria-label={t("listingPhotoNext")} onClick={() => showImage(activeImage + 1)}><i className="ms ms-chevron-right" aria-hidden="true" /></button></> : null}
         <span className="listing-gallery-lightbox-count">{activeImage + 1} / {listing.images.length}</span>
       </PopupBackdrop> : null}
 
       <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-stack" : ""}`}>
         <div className="listing-detail-mobile-dots" aria-label={`Photo ${activeImage + 1} of ${listing.images.length}`}>{listing.images.map((photo, index) => <span className={index === activeImage ? "is-active" : ""} key={photo.src} />)}</div>
         <h1>{listing.title}</h1>
-        <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listingStatus}`}>{statusLabel[listingStatus]}</span></div>
+        <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listingStatus}`}>{listingStatus === "sold" ? t("soldOut") : listingStatus === "pending" ? t("pending") : t("available")}</span></div>
         <div className="listing-detail-mobile-location-row"><span><i className="ms ms-location-on" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="ms ms-visibility" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
       <TextSizeSection
         className="listing-detail-description"
-        title="Description"
+        title={t("listingDescription")}
         sizeStep={descriptionTextSizeStep}
         headerAction={<ListingDescriptionTranslation description={listing.description} onChange={setTranslatedDescription} />}
       >
@@ -544,7 +541,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           ? descriptionParagraphs(translatedDescription).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
           : prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
         {unconfirmed.length ? (
-          <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label="Details the seller has not confirmed">
+          <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label={t("listingUnconfirmed")}>
             <button type="button" className="listing-unconfirmed-toggle" aria-expanded={isUnconfirmedOpen} onClick={() => setIsUnconfirmedOpen((current) => !current)}>
               <span>{UNCONFIRMED_DETAILS_HEADING}</span>
               <i className="ms ms-expand-more" aria-hidden="true" />
@@ -562,15 +559,15 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />
       {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? "Seller is online" : "Seller is offline"}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>Local member</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
       </section> : null}
 
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
 
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
-      {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? "Request to buy" : "Make an offer"}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : isBargainListing ? "Send request" : "Send offer"}</button></div></section></DialogOverlay> : null}
-      {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="ms ms-delete" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="ms ms-delete" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? "Deleting..." : "Delete listing"}</button></div></section></DialogOverlay> : null}
+      {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? t("listingRequestToBuy") : t("listingMakeOffer")}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>{t("listingOfferAmount")}</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder={t("listingPickupNote")} onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>{t("cancel")}</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? t("listingSending") : isBargainListing ? t("listingSendRequest") : t("listingSendOffer")}</button></div></section></DialogOverlay> : null}
+      {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="ms ms-delete" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="ms ms-delete" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>{t("cancel")}</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? t("listingDeleting") : "Delete listing"}</button></div></section></DialogOverlay> : null}
     </main>
   );
 }

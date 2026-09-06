@@ -194,7 +194,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   };
   return (
     <main className="marketplace-page market-page-with-bottom-dock">
-      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
+      <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel={t("marketOpenFilters")} closeLabel={t("marketCloseFilters")}>
         <MarketFilterSidebar
           activeShopType={shopType}
           activeCategory={selectedCategory}
@@ -207,7 +207,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
       </BrowseFilterDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
-      <section className="market-results" aria-label="Fresh finds">
+      <section className="market-results" aria-label={t("marketFreshFinds")}>
         <MarketBrowseIntro shopType={shopType} />
 
         <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
@@ -231,7 +231,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           ])}
         </div> : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
-        <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
+        <ListPagination page={page} totalPages={totalPages} label={t("marketListingPages")} />
       </section>
     </main>
   );

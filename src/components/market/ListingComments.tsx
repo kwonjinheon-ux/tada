@@ -5,6 +5,7 @@ import { CommunityVoteArrow } from "@/components/community/CommunityVoteArrow";
 import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
 import { invalidateComments, loadComments as fetchComments, readCachedComments, type CommentRecord, type CommentSpace } from "@/lib/comment-cache";
+import { useLanguage } from "@/components/LanguageProvider";
 
 // Draws the reply-thread connector as smooth SVG curves from the parent
 // comment's avatar centre to each reply's avatar centre, measured from the
@@ -64,10 +65,10 @@ function CommentThreadConnector({ signature }: { signature: string }) {
 
 type ListingComment = CommentRecord;
 
-function relativeTime(value: string) {
+function relativeTime(value: string, justNow: string) {
   const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
   const minutes = Math.floor(elapsed / 60_000);
-  if (minutes < 1) return "Just now";
+  if (minutes < 1) return justNow;
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
@@ -76,6 +77,7 @@ function relativeTime(value: string) {
 }
 
 export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: CommentSpace }) {
+  const { t } = useLanguage();
   const apiBase = `/api/${space}`;
   const resource = space === "community" ? "posts" : "listings";
   const cached = readCachedComments(listingId, space);
@@ -110,11 +112,11 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       setCurrentUserId(payload.currentUserId);
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load comments right now.");
+      setError(loadError instanceof Error ? loadError.message : t("listingCommentLoadFailed"));
     } finally {
       setIsLoading(false);
     }
-  }, [listingId, space]);
+  }, [listingId, space, t]);
 
   useEffect(() => {
     setIsLoading(!readCachedComments(listingId, space));
@@ -173,8 +175,8 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     try {
       const response = await fetch(`${apiBase}/${resource}/${listingId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
-      if (response.status === 401) throw new Error("Please log in to post a comment.");
-      if (!response.ok) throw new Error(payload?.error || "Unable to post your comment right now.");
+      if (response.status === 401) throw new Error(t("listingCommentLoginPost"));
+      if (!response.ok) throw new Error(payload?.error || t("listingCommentPostFailed"));
       invalidateComments(listingId, space);
       void refreshComments({ force: true });
     } catch (submitError) {
@@ -185,7 +187,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       } else {
         setDraft(body);
       }
-      setError(submitError instanceof Error ? submitError.message : "Unable to post your comment right now.");
+      setError(submitError instanceof Error ? submitError.message : t("listingCommentPostFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -193,7 +195,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
 
   const vote = async (comment: ListingComment, value: -1 | 1) => {
     if (!currentUserId) {
-      setError("Please log in to vote on a comment.");
+      setError(t("listingCommentLoginVote"));
       return;
     }
     if (busyCommentId) return;
@@ -202,11 +204,11 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       const targetValue = comment.myVote === value ? 0 : value;
       const response = await fetch(`${apiBase}/comments/${comment.id}/vote`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: targetValue }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error || "Unable to record your vote.");
+      if (!response.ok) throw new Error(payload?.error || t("listingCommentVoteFailed"));
       invalidateComments(listingId, space);
       await refreshComments({ force: true });
     } catch (voteError) {
-      setError(voteError instanceof Error ? voteError.message : "Unable to record your vote.");
+      setError(voteError instanceof Error ? voteError.message : t("listingCommentVoteFailed"));
     } finally {
       setBusyCommentId(null);
     }
@@ -219,28 +221,28 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     try {
       const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error || "Unable to update this comment.");
+      if (!response.ok) throw new Error(payload?.error || t("listingCommentUpdateFailed"));
       setEditingId(null);
       invalidateComments(listingId, space);
       await refreshComments({ force: true });
     } catch (editError) {
-      setError(editError instanceof Error ? editError.message : "Unable to update this comment.");
+      setError(editError instanceof Error ? editError.message : t("listingCommentUpdateFailed"));
     } finally {
       setBusyCommentId(null);
     }
   };
 
   const deleteComment = async (comment: ListingComment) => {
-    if (!window.confirm("Delete this comment? Replies will remain visible.")) return;
+    if (!window.confirm(t("listingCommentDeleteConfirm"))) return;
     setBusyCommentId(comment.id);
     try {
       const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "DELETE" });
       const payload = await response.json().catch(() => null) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error || "Unable to delete this comment.");
+      if (!response.ok) throw new Error(payload?.error || t("listingCommentDeleteFailed"));
       invalidateComments(listingId, space);
       await refreshComments({ force: true });
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Unable to delete this comment.");
+      setError(deleteError instanceof Error ? deleteError.message : t("listingCommentDeleteFailed"));
     } finally {
       setBusyCommentId(null);
     }
@@ -257,13 +259,13 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     return <article className={`listing-comment depth-${comment.depth}`} key={comment.id}>
       <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
       <div className="listing-comment-content">
-        <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">Edited</span> : null}</div>
-        {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label="Edit comment" /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>Save</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>Cancel</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? "This comment was deleted." : comment.body}</p>}
-        {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={`is-upvote ${comment.myVote === 1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label="Upvote comment"><CommunityVoteArrow direction="up" /></button><span className="listing-comment-vote-score">{comment.score}</span><button type="button" className={`is-downvote ${comment.myVote === -1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label="Downvote comment"><CommunityVoteArrow direction="down" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); expandThread(comment.id); }}>Reply</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>Edit</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>Delete</button></> : null}</div> : null}
-        {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => setReplyDraft(event.target.value)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>Cancel</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? "Posting..." : "Reply"}</button></div></form> : null}
+        <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt, t("listingCommentJustNow"))}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">{t("listingCommentEdited")}</span> : null}</div>
+        {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label={t("listingCommentEdit")} /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>{t("save")}</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>{t("cancel")}</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? t("listingCommentDeleted") : comment.body}</p>}
+        {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={`is-upvote ${comment.myVote === 1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label={t("listingCommentUpvote")}><CommunityVoteArrow direction="up" /></button><span className="listing-comment-vote-score">{comment.score}</span><button type="button" className={`is-downvote ${comment.myVote === -1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label={t("listingCommentDownvote")}><CommunityVoteArrow direction="down" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); expandThread(comment.id); }}>{t("listingCommentReply")}</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>{t("edit")}</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>{t("delete")}</button></> : null}</div> : null}
+        {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => setReplyDraft(event.target.value)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>{t("cancel")}</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Reply"}</button></div></form> : null}
         {children.length ? <button type="button" className="listing-comment-thread-toggle" aria-expanded={isThreadOpen} onClick={() => toggleThread(comment.id)}>
           <i className={`ms ${isThreadOpen ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" />
-          {isThreadOpen ? "Hide replies" : `${children.length} ${children.length === 1 ? "reply" : "replies"}`}
+          {isThreadOpen ? t("listingCommentHideReplies") : `${children.length} ${children.length === 1 ? "reply" : "replies"}`}
         </button> : null}
         {children.length && isThreadOpen ? <div className="listing-comment-children">
           <CommentThreadConnector signature={children.map((child) => child.id).join(",")} />
@@ -274,9 +276,9 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   };
 
   return <section className={`listing-comments is-${space}`} aria-labelledby="listing-comments-title" style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
-    <div className="listing-comments-heading"><h2 id="listing-comments-title">Comments</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div>
-    <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="ms ms-person" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder="Ask a question or leave a comment..." onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? "Posting..." : "Post"}</button></div></div></form>
+    <div className="listing-comments-heading"><h2 id="listing-comments-title">{t("listingCommentsTitle")}</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div>
+    <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="ms ms-person" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder={t("listingCommentPlaceholder")} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
-    {isLoading ? <div className="listing-comments-skeleton" aria-label="Loading comments"><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
+    {isLoading ? <div className="listing-comments-skeleton" aria-label={t("listingCommentLoading")}><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
   </section>;
 }

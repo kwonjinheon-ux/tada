@@ -23,12 +23,12 @@ export default async function TwoDollarShopRoute({ searchParams }: { searchParam
     condition: typeof rawParams.condition === "string" ? rawParams.condition : undefined,
   });
   const supabase = await createServerSupabaseClient();
-  if (!supabase) return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" emptyLabel="No deals found yet" listings={[]} />;
+  if (!supabase) return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" listings={[]} />;
   const { data: { user } } = await supabase.auth.getUser();
   const { feed, page, totalPages } = await loadPagedFeed(
     typeof rawParams.page === "string" ? rawParams.page : undefined,
     MARKET_PAGE_SIZE,
     (target) => getBargainFeed(supabase, query, user?.id, { bargainTypes: ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"], pageSize: MARKET_PAGE_SIZE, page: target }),
   );
-  return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" emptyLabel="No deals found yet" listings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
+  return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" listings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
 }
