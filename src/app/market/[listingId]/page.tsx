@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
 import { BargainSaleDetailClient } from "@/components/bargain/BargainSaleDetailClient";
+import { bargainTypeRoutes } from "@/lib/bargain/get-bargain-listing-detail";
 import { MarketDetailShell } from "@/components/market/MarketDetailShell";
 import { RelatedListings } from "@/components/market/RelatedListings";
 import type { Listing } from "@/data/listings";
@@ -244,7 +245,9 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   if (!bargainResult) notFound();
 
   if (bargainResult.kind === "multi") {
-    return <BargainSaleDetailClient sale={bargainResult.sale} />;
+    // Garage and moving sales keep the browse rail too; they are a market
+    // surface like any other listing.
+    return <MarketDetailShell shopTypeHref={bargainTypeRoutes[bargainResult.sale.type]}><BargainSaleDetailClient sale={bargainResult.sale} /></MarketDetailShell>;
   }
 
   const { data: savedListing } = user

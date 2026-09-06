@@ -23,7 +23,7 @@ const tradeMethodLabels = { pickup_delivery: "Pickup or delivery", pickup: "Pick
 // Kept for parity with the pre-restructure page, which linked a single-item bargain
 // listing's category chip back to the /bargain?bargain= filter. Now points at the
 // dedicated shop-type route instead.
-const bargainTypeRoutes: Record<BargainListingType, string> = {
+export const bargainTypeRoutes: Record<BargainListingType, string> = {
   "2-dollar-deals": "/market/2dollarshop",
   "5-dollar-deals": "/market/2dollarshop",
   "10-dollar-deals": "/market/2dollarshop",
