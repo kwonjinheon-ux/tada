@@ -22,7 +22,7 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
 
-export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1, nextCursor = null }: { page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
+export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1 }: { page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[] }) {
   const { locale, t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();

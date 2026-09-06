@@ -2775,13 +2775,6 @@ a {
   font-size: var(--text-sm);
 }
 
-.market-list-load-more {
-  grid-column: 1 / -1;
-  width: 100%;
-  height: 1px;
-  pointer-events: none;
-}
-
 /* Centred while the next page loads, so the feed does not grow a band of empty
    space at the bottom just to hold a message. Fixed and click-through: the
    list keeps scrolling underneath. */
@@ -3854,131 +3847,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   font-size: calc(var(--text-base) * var(--text-scale, 1));
   line-height: 1.7;
   white-space: pre-line;
-}
-
-.infinite-market-list {
-  display: grid;
-  gap: 18px;
-}
-
-.infinite-market-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-}
-
-.infinite-market-card {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--neutral-250);
-  border-radius: var(--radius-md);
-  background: var(--neutral-50);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, .06);
-}
-
-.infinite-market-media {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--neutral-200);
-}
-
-.infinite-market-media img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.infinite-market-body {
-  display: grid;
-  gap: 7px;
-  padding: 13px;
-}
-
-.infinite-market-body strong {
-  color: var(--green-700);
-  font-size: var(--text-2xl);
-  line-height: 1;
-}
-
-.infinite-market-body h2 {
-  margin: 0;
-  color: var(--blue-975);
-  font-size: var(--text-lg);
-  line-height: 1.25;
-}
-
-.infinite-market-body time {
-  color: var(--blue-soft-650);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.infinite-market-card.is-skeleton .infinite-market-media,
-.infinite-market-card.is-skeleton .infinite-market-body span {
-  border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%);
-  background-size: 220% 100%;
-  animation: infinite-market-shimmer 1.1s ease-in-out infinite;
-}
-
-.infinite-market-card.is-skeleton .infinite-market-body span {
-  height: 14px;
-}
-
-.infinite-market-card.is-skeleton .infinite-market-body span:first-child {
-  width: 42%;
-  height: 20px;
-}
-
-.infinite-market-card.is-skeleton .infinite-market-body span:nth-child(2) {
-  width: 86%;
-}
-
-.infinite-market-card.is-skeleton .infinite-market-body span:nth-child(3) {
-  width: 54%;
-}
-
-.infinite-market-state {
-  margin: 0;
-  padding: 14px;
-  border: 1px solid var(--neutral-250);
-  border-radius: var(--radius-md);
-  background: var(--neutral-50);
-  color: var(--blue-soft-650);
-  text-align: center;
-  font-size: var(--text-base);
-  font-weight: var(--weight-extrabold);
-}
-
-.infinite-market-state.is-error {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-color: var(--rose-250);
-  background: var(--neutral-200);
-  color: var(--red-900);
-}
-
-.infinite-market-state button {
-  min-height: var(--control-h-sm);
-  padding: 0 13px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--red-900);
-  color: var(--neutral-50);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-extrabold);
-  cursor: pointer;
-}
-
-.infinite-market-sentinel {
-  width: 100%;
-  height: 1px;
 }
 
 @keyframes infinite-market-shimmer {
@@ -7382,11 +7250,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     gap: 5.28px;
   }
 
-  .infinite-market-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
-
   .auth-page {
     padding-block: 42px 30px;
   }
@@ -7430,11 +7293,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6.6px;
-  }
-
-  .infinite-market-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 24px;
   }
 
   .category-grid {
@@ -13125,22 +12983,54 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 
 /* Listing detail lines up with the other verticals at the width Community and
    Services share: a 272px rail, an 865px main column and a 288px sidebar
-   track. The summary is nested inside the detail layout rather than being a
-   third track of the page grid, so the two columns are sized here. */
+   track. */
 @media (min-width: 1200px) {
-  /* The gutter belongs to the columns, not the page, so the sidebar track can
-     reach the page edge the way Community's rail track does. The page keeps no
-     inline padding of its own; each child carries the same 16px instead. */
-  .market-detail-shell-content > .listing-detail-page { padding-inline: 0; }
-  .market-detail-shell-content > .listing-detail-page > *:not(.listing-detail-layout) { padding-inline: var(--space-4); }
-  .market-detail-shell .listing-detail-gallery { padding-inline: var(--space-4); }
-  .market-detail-shell .listing-detail-layout {
+  /* The page itself becomes the two-column grid and the layout wrapper steps
+     out of the way with display: contents. A sticky element can only travel
+     inside its containing block, and that wrapper is only as tall as the
+     gallery — the summary would come unstuck a few hundred pixels down.
+     Spanning the page grid instead gives it the whole article to follow. */
+  .market-detail-shell-content > .listing-detail-page {
+    display: grid;
     grid-template-columns: minmax(0, 1fr) 288px;
-    gap: 0;
+    align-content: start;
+    column-gap: 0;
+    padding-inline: 0;
   }
-  /* The separation sits inside the sidebar track as a margin, which is exactly
-     how Community insets its rail: a 288px track holding a 272px card with 16px
-     to the page edge. A grid gap instead would take those pixels off the main
-     column and leave the sidebar flush against the edge. */
-  .market-detail-shell .listing-detail-summary { margin: var(--space-3) var(--space-4) var(--space-3) 0; }
+  .market-detail-shell .listing-detail-layout { display: contents; }
+
+  /* The gutter belongs to the columns, not the page, so the sidebar track can
+     reach the page edge the way Community's rail track does. */
+  .market-detail-shell-content > .listing-detail-page > *:not(.listing-detail-summary),
+  .market-detail-shell .listing-detail-gallery { grid-column: 1; padding-inline: var(--space-4); }
+
+  /* Description and comments are the same column as the photos, so they take
+     its width rather than the 760px reading measure they use on their own. */
+  .market-detail-shell .listing-detail-description,
+  .market-detail-shell .listing-comments { width: 100%; }
+
+  /* span, not "/ -1": these rows are implicit, and -1 resolves to the end of
+     the explicit grid, which would drop the summary back onto row 1. Row 2 is
+     the photo row, so the summary starts level with the gallery. */
+  .market-detail-shell .listing-detail-summary {
+    grid-column: 2;
+    grid-row: 2 / span 99;
+    /* No vertical margin: the summary starts on the gallery's line and ends
+       where its own content ends. */
+    margin: 0 var(--space-4) 0 0;
+    /* The summary is the page's standing controls — price, contact, save — so
+       it follows the reader through the description and the comments. start,
+       not stretch: an item stretched to its whole grid area has no room left to
+       travel and never sticks. */
+    align-self: start;
+    position: sticky;
+    top: calc(var(--desktop-header-height) + var(--space-3));
+    max-height: calc(100vh - var(--desktop-header-height) - var(--space-6));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
+
+/* Related listings close the page on the same surface as the article above it
+   rather than on the page's grey. */
+.related-listings { background: var(--color-surface); }
