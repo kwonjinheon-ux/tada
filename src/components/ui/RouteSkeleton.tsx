@@ -1,3 +1,6 @@
+import { CommunityPostListSkeleton } from "@/components/community/CommunityPostListSkeleton";
+import { PageContainer } from "@/components/layout/PageContainer";
+
 /**
  * The shell a route paints while its server component is still fetching.
  *
@@ -12,11 +15,38 @@
  * One component with variants rather than a skeleton per route — the shapes
  * only differ in which shell they mirror.
  */
-export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "form" | "dashboard" }) {
+export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "community" | "services" | "home" | "form" | "dashboard" }) {
+  if (variant === "home") {
+    return <main className="home-reference" aria-busy="true" aria-label="Loading home">
+      <PageContainer className="home-reference-content">
+        <section className="home-reference-hero" aria-hidden="true">
+          <div className="home-reference-hero-copy route-skeleton-body"><div className="route-skeleton-heading" /><span className="route-skeleton-line" /><div className="route-skeleton-field" /></div>
+          <div className="home-reference-hero-art route-skeleton-tile" />
+        </section>
+        <section className="home-reference-destinations" aria-hidden="true"><div className="home-reference-destination-grid">
+          {[0, 1, 2].map((id) => <div key={id} className="home-reference-destination ui-card"><span className="route-skeleton-field" /><span className="route-skeleton-line" /></div>)}
+        </div></section>
+        <section className="home-reference-listing-section route-skeleton-body" aria-hidden="true">
+          <div className="route-skeleton-heading" /><div className="home-reference-listing-grid">
+            {Array.from({ length: 6 }, (_, id) => <div className="route-skeleton-card ui-card" key={id}><div className="route-skeleton-tile" /><span className="route-skeleton-line" /><span className="route-skeleton-line is-title" /></div>)}
+          </div>
+        </section>
+      </PageContainer>
+    </main>;
+  }
+  // The parent layout already renders the main landmark and dashboard rail.
+  if (variant === "dashboard") {
+    return <div className="dashboard-content route-skeleton-body" role="status" aria-label="Loading dashboard" aria-busy="true">
+      <div className="route-skeleton-heading" />
+      <div className="route-skeleton-rows" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, row) => <div className="route-skeleton-card ui-panel" key={row}><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></div>)}
+      </div>
+    </div>;
+  }
   if (variant === "form") {
     return <main className="route-skeleton route-skeleton--form" aria-busy="true" aria-label="Loading">
       <div className="route-skeleton-heading" />
-      {[0, 1, 2].map((section) => <section key={section} className="route-skeleton-card">
+      {[0, 1, 2].map((section) => <section key={section} className="route-skeleton-card ui-panel">
         <span className="route-skeleton-line is-title" />
         <span className="route-skeleton-line" />
         <span className="route-skeleton-field" />
@@ -25,9 +55,7 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "fo
     </main>;
   }
 
-  const isDashboard = variant === "dashboard";
-
-  return <main className={`route-skeleton route-skeleton--${variant}`} aria-busy="true" aria-label="Loading">
+  return <main className={`marketplace-page route-skeleton route-skeleton--browse route-skeleton--${variant}`} aria-busy="true" aria-label="Loading">
     <aside className="route-skeleton-rail">
       {Array.from({ length: 7 }, (_, row) => <span key={row} className="route-skeleton-line" />)}
     </aside>
@@ -36,9 +64,14 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "fo
         <span className="route-skeleton-line is-title" />
         <span className="route-skeleton-line" />
       </div>
-      <div className={isDashboard ? "route-skeleton-rows" : "route-skeleton-grid"}>
-        {Array.from({ length: isDashboard ? 6 : 8 }, (_, cell) => <article key={cell} className="route-skeleton-tile" />)}
-      </div>
+      {variant === "community" ? <CommunityPostListSkeleton /> : <div className={variant === "services" ? "services-card-grid" : "product-grid"} aria-hidden="true">
+        {Array.from({ length: 8 }, (_, cell) => <article key={cell} className="route-skeleton-card ui-card">
+          <div className="route-skeleton-tile" />
+          <span className="route-skeleton-line is-title" />
+          <span className="route-skeleton-line" />
+          <span className="route-skeleton-line is-title" />
+        </article>)}
+      </div>}
     </section>
   </main>;
 }

@@ -12912,15 +12912,13 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .route-skeleton-rail { display: none; }
 .route-skeleton-body { min-width: 0; display: grid; align-content: start; gap: var(--space-4); }
 .route-skeleton-toolbar { display: grid; gap: var(--space-2); }
-.route-skeleton-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .route-skeleton-rows { display: grid; gap: var(--space-2); }
-.route-skeleton-rows .route-skeleton-tile { min-height: var(--control-h-2xl); }
 .route-skeleton-heading { width: min(320px, 70%); height: var(--control-h-lg); border-radius: var(--radius-sm); }
-.route-skeleton-card { display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); }
+.route-skeleton-card { display: grid; align-content: start; gap: var(--space-3); padding: var(--space-4); }
 .route-skeleton-line { display: block; height: var(--space-3); border-radius: var(--radius-xs); }
 .route-skeleton-line.is-title { width: 40%; height: var(--space-5); }
 .route-skeleton-field { display: block; height: var(--control-h-xl); border-radius: var(--radius-sm); }
-.route-skeleton-tile { min-height: 168px; margin: 0; border-radius: var(--radius-md); }
+.route-skeleton-tile { aspect-ratio: 4 / 3; margin: 0; border-radius: var(--radius-md); }
 
 /* One shimmer for every shape, reusing the market card timing so a skeleton
    next to a still-loading card list beats in step. */
@@ -12946,16 +12944,13 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .route-skeleton--form { max-width: var(--page-inner-reading-max-width); margin-inline: auto; }
 
 @media (min-width: 768px) {
-  .route-skeleton--browse,
-  .route-skeleton--dashboard { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-4); }
+  .route-skeleton--browse { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-4); }
   .route-skeleton-rail { display: grid; align-content: start; gap: var(--space-3); }
   .route-skeleton-rail > span { height: var(--control-h-md); border-radius: var(--radius-sm); }
 }
 
 @media (min-width: 1024px) {
-  .route-skeleton--browse,
-  .route-skeleton--dashboard { grid-template-columns: 272px minmax(0, 1fr); }
-  .route-skeleton-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .route-skeleton--browse { grid-template-columns: 272px minmax(0, 1fr); }
 }
 
 /* ---------------------------------------------------------------------------

@@ -49,7 +49,10 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
 
   const removeKeyword = async (id: string) => {
     if (removingId) return;
-    const previous = alerts;
+    const removedAlert = alerts.find((alert) => alert.id === id);
+    if (!removedAlert) return;
+    const restoreRemovedAlert = () => setAlerts((current) => current.some((alert) => alert.id === id) ? current : [removedAlert, ...current]);
+    setError(null);
     setRemovingId(id);
     setLeavingId(id);
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -59,12 +62,12 @@ export function KeywordAlertsClient({ initialAlerts }: { initialAlerts: KeywordA
     try {
       const response = await fetch("/api/market/keywords", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
       if (!response.ok) {
-        setAlerts(previous);
+        restoreRemovedAlert();
         const payload = await response.json().catch(() => null) as { error?: string } | null;
         setError(payload?.error ?? "Unable to remove this keyword right now.");
       }
     } catch {
-      setAlerts(previous);
+      restoreRemovedAlert();
       setError("Unable to reach keyword alerts right now.");
     } finally {
       setLeavingId(null);

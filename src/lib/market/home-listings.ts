@@ -132,26 +132,26 @@ export async function getHomeListingRails(
     getNearbyRows(supabase, city?.trim() || null, suburb?.trim() || null),
     getPublishedRows(supabase, FETCH_SIZE),
   ]);
-  const [nearbyListings, latestListings] = await Promise.all([
-    toListings(supabase, nearbyRows),
-    toListings(supabase, latestRows),
-  ]);
-
-  const nearby = nearbyListings.slice(0, RAIL_SIZE);
+  // Select visible rows before fetching photos or signing URLs.
+  const nearby = nearbyRows.slice(0, RAIL_SIZE);
   const nearbyIds = new Set(nearby.map((listing) => listing.id));
-  const justListed = latestListings.filter((listing) => !nearbyIds.has(listing.id)).slice(0, RAIL_SIZE);
-  const shownListingIds = [...nearby, ...justListed].map((listing) => listing.id);
-  const savedListingIds = userId && shownListingIds.length
-    ? ((await supabase
+  const justListed = latestRows.filter((listing) => !nearbyIds.has(listing.id)).slice(0, RAIL_SIZE);
+  const shownRows = [...nearby, ...justListed];
+  const shownListingIds = shownRows.map((listing) => listing.id);
+  const [listings, saved] = await Promise.all([
+    toListings(supabase, shownRows),
+    userId && shownListingIds.length
+    ? supabase
       .from("market_wishlist")
       .select("listing_id")
       .eq("user_id", userId)
-      .in("listing_id", shownListingIds)).data ?? []).map((row) => row.listing_id as string)
-    : [];
+      .in("listing_id", shownListingIds)
+    : Promise.resolve({ data: [] }),
+  ]);
 
   return {
-    nearbyListings: nearby,
-    justListedListings: justListed,
-    savedListingIds,
+    nearbyListings: listings.slice(0, nearby.length),
+    justListedListings: listings.slice(nearby.length),
+    savedListingIds: (saved.data ?? []).map((row) => row.listing_id as string),
   };
 }
