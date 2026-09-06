@@ -47,7 +47,7 @@ export function ServiceCardPreview({ content, className = "", titleId = "service
       <header>
         <div>
           <p className="service-profile-eyebrow">{isKorean ? "미리보기" : "Preview"}</p>
-          <h2 id={titleId}>{isKorean ? "저장용 업체 카드" : "Saveable provider card"}</h2>
+          <h2 id={titleId}>{isKorean ? "업체 소개 카드" : "Saveable provider card"}</h2>
         </div>
         <div className="service-card-preview-formats" role="group" aria-label={isKorean ? "카드 형식" : "Card format"}>
           {serviceCardFormats.map((option) => (

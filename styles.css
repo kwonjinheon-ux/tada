@@ -12884,10 +12884,17 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   font-weight: var(--weight-bold);
 }
 .service-create-page .service-editor-required-mark { margin-right: 2px; color: var(--color-danger); font-weight: var(--weight-bold); }
+.service-create-page .service-editor-field-label { display: inline-flex; align-items: baseline; }
 .service-create-page .post-field > label:has(+ .post-select-wrap select:required)::before { margin-right: 2px; color: var(--color-danger); content: "*"; font-weight: var(--weight-bold); }
 .service-create-page .service-editor-field-hint { font-weight: var(--weight-regular); }
 .service-create-page .service-editor-business > label:not(:nth-child(2)) .service-editor-field-hint,
 .service-create-page .service-editor-card > .service-editor-field-hint { display: none; }
+.service-create-page .service-editor-address .service-editor-field-hint { display: none; }
+.service-create-page .post-ad-intro {
+  width: calc(100% + (var(--space-4) * 2));
+  margin-inline: calc(var(--space-4) * -1);
+  padding-inline: 0;
+}
 .service-create-page .service-editor-address-visibility label { min-height: var(--control-h-xl); }
 .service-create-page .service-editor-gallery { flex-wrap: nowrap; align-items: stretch; }
 .service-create-page .service-editor-add-photo { flex: 0 0 84px; }
