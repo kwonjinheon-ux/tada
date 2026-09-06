@@ -6,8 +6,7 @@ import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDra
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { MarketRecentListingsPanel } from "@/components/market/MarketRecentListingsPanel";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
@@ -233,9 +232,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
         </div> : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
         <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
-      </section>
-
-      <MarketRecentListingsPanel shopType={shopType} />
+      </section>
     </main>
   );
 }
