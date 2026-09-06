@@ -47,9 +47,12 @@ function formatTimeRange(start: string | null, end: string | null) {
 function formatCreatedDate(value: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
+// "Bargain" is no longer a category a shopper can browse — the shop types it
+// used to group sit at the top level of Market now. The crumb goes straight to
+// the deal tier, which is where its href already pointed.
 function getBargainCategory(type: BargainListingType) {
   const bargainType = bargainListingTypes.find((option) => option.value === type);
-  return bargainType ? { label: "Bargain", href: bargainTypeRoutes[type], subcategory: { label: bargainType.label, href: bargainTypeRoutes[type] } } : null;
+  return bargainType ? { label: bargainType.label, href: bargainTypeRoutes[type], subcategory: null } : null;
 }
 
 export type BargainListingDetailResult =

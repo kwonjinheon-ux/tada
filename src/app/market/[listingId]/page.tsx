@@ -250,5 +250,5 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const { data: savedListing } = user
     ? await supabase.from("bargain_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", bargainResult.listing.id).maybeSingle()
     : { data: null };
-  return <ListingDetailClient listing={bargainResult.listing} initialIsSaved={Boolean(savedListing)} isOwner={bargainResult.isOwner} descriptionTextSizeStep={descriptionTextSizeStep} space="bargain" />;
+  return <MarketDetailShell shopTypeHref={bargainResult.listing.category?.href}><ListingDetailClient listing={bargainResult.listing} initialIsSaved={Boolean(savedListing)} isOwner={bargainResult.isOwner} descriptionTextSizeStep={descriptionTextSizeStep} space="bargain" /></MarketDetailShell>;
 }

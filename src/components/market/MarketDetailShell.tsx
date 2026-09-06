@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
-import { MarketFilterSidebar } from "@/components/market/MarketFilterSidebar";
+import { MarketFilterSidebar, marketShopTypes } from "@/components/market/MarketFilterSidebar";
 import { type MainLocation } from "@/data/nzLocations";
 
 /**
@@ -15,9 +15,12 @@ import { type MainLocation } from "@/data/nzLocations";
  * below 1024px the detail page needs its full width, and a filter button on a
  * page with nothing to filter is noise.
  */
-export function MarketDetailShell({ children }: { children: ReactNode }) {
+export function MarketDetailShell({ children, shopTypeHref }: { children: ReactNode; shopTypeHref?: string }) {
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // A bargain listing knows which shop-type route it came from, so the rail can
+  // mark it rather than always sitting on "All".
+  const activeShopType = marketShopTypes.find(({ href }) => href === shopTypeHref)?.value ?? "all";
 
   const browse = (params: Record<string, string>) => {
     const query = new URLSearchParams(params).toString();
@@ -28,7 +31,7 @@ export function MarketDetailShell({ children }: { children: ReactNode }) {
     <div className="market-theme market-detail-shell">
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
         <MarketFilterSidebar
-          activeShopType="all"
+          activeShopType={activeShopType}
           activeCategory="all"
           onCategorySelect={(categorySlug) => browse(categorySlug === "all" ? {} : { category: categorySlug })}
           mainLocation=""
