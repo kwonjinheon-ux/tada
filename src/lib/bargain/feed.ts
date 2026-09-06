@@ -27,9 +27,9 @@ export async function getBargainFeed(
   rawQuery: BargainQuery,
   userId?: string,
   options?: { bargainTypes?: string[]; pageSize?: number },
-): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
   const query = bargainFeedQuerySchema.parse(rawQuery);
-  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null, total: 0 };
   const pageSize = options?.pageSize ?? defaultPageSize;
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;
@@ -38,7 +38,7 @@ export async function getBargainFeed(
   const cursor = decodeCursor(query.cursor);
   let request = supabase
     .from("bargain_listings")
-    .select("id,owner_id,title,price_cents,bargain_type,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,event_start_date,event_end_date,status,created_at")
+    .select("id,owner_id,title,price_cents,bargain_type,main_location,sub_location,region_city,region_suburb,category_slug,subcategory_slug,event_start_date,event_end_date,status,created_at", { count: "exact" })
     .in("status", ["published", "pending", "sold"]);
 
   if (query.mainLocation) request = request.eq("main_location", query.mainLocation);
@@ -59,7 +59,8 @@ export async function getBargainFeed(
   }
   request = request.order(sortColumn, { ascending }).order("id", { ascending });
 
-  const { data } = await request.limit(pageSize + 1);
+  const { data, count } = await request.limit(pageSize + 1);
+  const total = count ?? 0;
   const allRows = (data ?? []) as BargainRow[];
   const rows = allRows.slice(0, pageSize);
   const ids = rows.map((row) => row.id);
@@ -111,5 +112,6 @@ export async function getBargainFeed(
     }),
     savedListingIds,
     nextCursor,
+    total,
   };
 }

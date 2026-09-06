@@ -13,6 +13,9 @@ import { containsProhibitedMarketplaceContent } from "@/lib/market/prohibited-it
 import { newlyListedBadge } from "./newly-listed";
 
 const PAGE_SIZE = 24;
+
+/** Listings on one numbered page of /market. */
+export const MARKET_PAGE_SIZE = 48;
 type FeedQuery = z.infer<typeof marketFeedQuerySchema>;
 type Row = { id: string; owner_id: string; title: string; price_cents: number; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; item_condition: "brand_new" | "like_new" | "excellent" | "good" | "fair"; status: "published" | "pending" | "sold"; category_slug: string | null; subcategory_slug: string | null; created_at: string };
 type Photo = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
@@ -21,16 +24,16 @@ function formatLocation(city: string | null, suburb: string | null) { return [su
 function safeSearch(value: string) { return value.replace(/[,%()]/g, " ").trim(); }
 function exactFilterValue(value: string) { return JSON.stringify(value); }
 
-export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
   const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
-  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null, total: 0 };
   const category = query.category && query.category !== "all" ? query.category : null;
   const subcategory = query.subcategory && query.subcategory !== "all" ? query.subcategory : null;
   const sortColumn = query.sort === "priceAsc" || query.sort === "priceDesc" ? "price_cents" : "created_at";
   const ascending = query.sort === "priceAsc";
   const cursor = decodeCursor(query.cursor);
-  let request = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,main_location,sub_location,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+  let request = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,main_location,sub_location,item_condition,status,category_slug,subcategory_slug,created_at", { count: "exact" }).in("status", ["published", "pending", "sold"]);
   if (category) request = request.eq("category_slug", category);
   if (subcategory) request = request.eq("subcategory_slug", subcategory);
   if (query.maxPrice) request = request.lte("price_cents", query.maxPrice * 100);
@@ -45,11 +48,12 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   }
   const primaryResult = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1);
   let data = primaryResult.data as Row[] | null;
+  let total = primaryResult.count ?? 0;
   // Deployments can temporarily run newer application code before the additive
   // location migration. Fall back to the legacy columns instead of presenting an
   // empty marketplace while the migration is applied.
   if (primaryResult.error && ["42703", "PGRST204"].includes(primaryResult.error.code)) {
-    let legacyRequest = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at").in("status", ["published", "pending", "sold"]);
+    let legacyRequest = supabase.from("market_listings").select("id,owner_id,title,price_cents,region_city,region_suburb,item_condition,status,category_slug,subcategory_slug,created_at", { count: "exact" }).in("status", ["published", "pending", "sold"]);
     if (category) legacyRequest = legacyRequest.eq("category_slug", category);
     if (subcategory) legacyRequest = legacyRequest.eq("subcategory_slug", subcategory);
     if (query.maxPrice) legacyRequest = legacyRequest.lte("price_cents", query.maxPrice * 100);
@@ -58,7 +62,9 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     if (query.subLocation) legacyRequest = legacyRequest.eq("region_suburb", query.subLocation);
     if (search) legacyRequest = legacyRequest.or(`title.ilike.%${search}%,region_city.ilike.%${search}%,region_suburb.ilike.%${search}%`);
     if (cursor) { const operator = ascending ? "gt" : "lt"; legacyRequest = legacyRequest.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`); }
-    data = (await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1)).data as Row[] | null;
+    const legacyResult = await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1);
+    data = legacyResult.data as Row[] | null;
+    total = legacyResult.count ?? 0;
   }
   const rows = ((data ?? []) as Row[]);
   const page = rows.slice(0, pageSize);
@@ -82,7 +88,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     return { id: row.id, title: row.title, price: formatMarketPrice(row.price_cents), location: formatLocation(row.main_location ?? row.region_city, row.sub_location ?? row.region_suburb), image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE, imageAlt: photo?.original_name ?? row.title, categorySlug: row.category_slug, subcategorySlug: row.subcategory_slug, badge: newlyListedBadge(row.status, row.created_at), status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available", isOwner: row.owner_id === userId, commentCount: commentCounts.get(row.id) ?? 0, sortValue: query.sort === "priceAsc" || query.sort === "priceDesc" ? row.price_cents : row.created_at } satisfies Listing;
   });
   const last = page.at(-1);
-  return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "priceAsc" || query.sort === "priceDesc" ? last.price_cents : last.created_at, last.id) : null };
+  return { listings, savedListingIds, nextCursor: rows.length > pageSize && last ? encodeCursor(query.sort === "priceAsc" || query.sort === "priceDesc" ? last.price_cents : last.created_at, last.id) : null, total };
 }
 
 const allBargainTypes = ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals", "moving-sale", "garage-sale"];
@@ -108,21 +114,21 @@ function formatGroupBuyPeriod(closesAt: string, handoverAt: string) {
   return `${format(closesAt)} – ${format(handoverAt)}`;
 }
 
-async function getGroupBuyFeed(supabase: SupabaseClient, query: FeedQuery, cursor: Cursor | null, pageSize: number): Promise<{ listings: Listing[]; nextCursor: string | null }> {
-  let request = supabase.from("group_buys").select("id,title,closes_at,handover_at,pickup_address,delivery_areas,cover_image_path,cover_image_alt,group_buy_items(photo_path,photo_alt,display_order),created_at").eq("status", "open");
+async function getGroupBuyFeed(supabase: SupabaseClient, query: FeedQuery, cursor: Cursor | null, pageSize: number): Promise<{ listings: Listing[]; nextCursor: string | null; total: number }> {
+  let request = supabase.from("group_buys").select("id,title,closes_at,handover_at,pickup_address,delivery_areas,cover_image_path,cover_image_alt,group_buy_items(photo_path,photo_alt,display_order),created_at", { count: "exact" }).eq("status", "open");
   if (query.q) request = request.ilike("title", `%${safeSearch(query.q)}%`);
   // Group buys predate the marketplace location fields and store their place as
   // free-form pickup text. Do not drop them from the All feed when the user's
   // profile location filter is active; the card still shows the seller's place.
   if (cursor) request = request.or(`created_at.lt.${cursor.value},and(created_at.eq.${cursor.value},id.lt.${cursor.id})`);
-  const { data } = await request.order("created_at", { ascending: false }).order("id", { ascending: false }).limit(pageSize + 1);
+  const { data, count } = await request.order("created_at", { ascending: false }).order("id", { ascending: false }).limit(pageSize + 1);
   const rows = (data ?? []) as GroupBuyFeedRow[];
   const page = rows.slice(0, pageSize);
   const coverPathFor = (row: GroupBuyFeedRow) => row.cover_image_path ?? [...row.group_buy_items].sort((a, b) => a.display_order - b.display_order).find((item) => item.photo_path)?.photo_path ?? null;
   const signedImages = await getSignedStorageImages("group-buy-images", page.flatMap((row) => { const path = coverPathFor(row); return path ? [path] : []; }), "thumbnail");
   const listings = page.map((row) => { const coverPath = coverPathFor(row); const fallbackItem = [...row.group_buy_items].sort((a, b) => a.display_order - b.display_order).find((item) => item.photo_path); return { id: row.id, title: row.title, price: "", location: row.pickup_address ?? (row.delivery_areas.join(", ") || "New Zealand"), image: coverPath ? signedImages.get(coverPath) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE, imageAlt: row.cover_image_alt ?? fallbackItem?.photo_alt ?? row.title, bargainType: "groupbuy", eventDateRange: formatGroupBuyPeriod(row.closes_at, row.handover_at), status: "available" as const, isOwner: false, sortValue: row.created_at } satisfies Listing; });
   const last = page.at(-1);
-  return { listings, nextCursor: rows.length > pageSize && last ? encodeCursor(last.created_at, last.id) : null };
+  return { listings, nextCursor: rows.length > pageSize && last ? encodeCursor(last.created_at, last.id) : null, total: count ?? 0 };
 }
 
 // The "All" shop-type feed for /market. Combines today's secondhand listings with every
@@ -132,17 +138,25 @@ async function getGroupBuyFeed(supabase: SupabaseClient, query: FeedQuery, curso
 // cursor tracks, per source, the last item actually shown (not merely fetched), so any
 // unshown "leftover" candidates from a source that lost out this round get re-fetched
 // (not skipped) the next time that source's cursor is used.
-export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null }> {
+export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number; page?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
   const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
-  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null };
-  const mergedCursor = decodeMergedCursor(query.cursor);
+  if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null, total: 0 };
+  // Numbered paging cannot ride the merged cursor: the cursor is per source and
+  // only ever moves forward, while a page number has to be reachable directly.
+  // For a numbered page each source is read from the top and the merged run is
+  // sliced, which is why the sources are asked for the whole run up to the page
+  // rather than one page of it.
+  const pageNumber = options.page && options.page > 1 ? options.page : 1;
+  const isPaged = typeof options.page === "number";
+  const runLength = isPaged ? pageNumber * pageSize : pageSize;
+  const mergedCursor = isPaged ? null : decodeMergedCursor(query.cursor);
   const marketCursor = mergedCursor?.market ?? null;
   const bargainCursor = mergedCursor?.bargain ?? null;
   const groupBuyCursor = mergedCursor?.groupBuy ?? null;
 
   const [marketResult, bargainResult, groupBuyResult] = await Promise.all([
-    getMarketFeed(supabase, { ...query, cursor: marketCursor ? encodeCursor(marketCursor.value, marketCursor.id) : undefined }, userId, { pageSize }),
+    getMarketFeed(supabase, { ...query, cursor: marketCursor ? encodeCursor(marketCursor.value, marketCursor.id) : undefined }, userId, { pageSize: runLength }),
     getBargainFeed(supabase, {
       q: query.q,
       sort: query.sort,
@@ -154,8 +168,8 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
       condition: query.condition,
       bargain: "all",
       cursor: bargainCursor ? encodeCursor(bargainCursor.value, bargainCursor.id) : undefined,
-    }, userId, { bargainTypes: allBargainTypes, pageSize }),
-    getGroupBuyFeed(supabase, query, groupBuyCursor, pageSize),
+    }, userId, { bargainTypes: allBargainTypes, pageSize: runLength }),
+    getGroupBuyFeed(supabase, query, groupBuyCursor, runLength),
   ]);
 
   const ascending = query.sort === "priceAsc";
@@ -165,6 +179,13 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
     if (a === b) return 0;
     return ascending ? (a < b ? -1 : 1) : (a > b ? -1 : 1);
   });
+  const total = marketResult.total + bargainResult.total + groupBuyResult.total;
+  if (isPaged) {
+    const listings = merged.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+    const shown = new Set(listings.map((listing) => listing.id));
+    const savedListingIds = [...marketResult.savedListingIds, ...bargainResult.savedListingIds].filter((id) => shown.has(id));
+    return { listings, savedListingIds, nextCursor: null, total };
+  }
   const page = merged.slice(0, pageSize);
   const marketIds = new Set(marketResult.listings.map((listing) => listing.id));
   const bargainIds = new Set(bargainResult.listings.map((listing) => listing.id));
@@ -181,5 +202,6 @@ export async function getMergedMarketFeed(supabase: SupabaseClient, rawQuery: Fe
     listings: page,
     savedListingIds: [...marketResult.savedListingIds, ...bargainResult.savedListingIds],
     nextCursor: hasNextPage ? encodeMergedCursor({ market: nextMarketCursor, bargain: nextBargainCursor, groupBuy: nextGroupBuyCursor }) : null,
+    total,
   };
 }

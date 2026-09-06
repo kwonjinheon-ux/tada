@@ -2,11 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { marketFeedResponseSchema } from "@/contracts/api";
 import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
@@ -15,7 +15,6 @@ import { marketSortOptions } from "@/lib/market/sort-options";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { readApiResponse } from "@/lib/api/client";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
@@ -23,7 +22,7 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
 
-export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], nextCursor = null }: { shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
+export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1, nextCursor = null }: { page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[]; nextCursor?: string | null }) {
   const { locale, t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,10 +40,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   const [subLocation, setSubLocation] = useState(searchParams.get("subLocation") ?? "");
   const [listings, setListings] = useState(postedListings);
   const [savedIds, setSavedIds] = useState(savedListingIds);
-  const [nextPageCursor, setNextPageCursor] = useState<string | null>(nextCursor);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const isLoadRequestInFlight = useRef(false);
   const savedListingIdSet = useMemo(() => new Set(savedIds), [savedIds]);
 
   useEffect(() => {
@@ -64,8 +59,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   useEffect(() => {
     setListings(postedListings);
     setSavedIds(savedListingIds);
-    setNextPageCursor(nextCursor);
-  }, [nextCursor, postedListings, savedListingIds]);
+  }, [postedListings, savedListingIds]);
 
   useEffect(() => {
     const updateSearch = (event: Event) => setSearchQuery(typeof (event as CustomEvent<string>).detail === "string" ? (event as CustomEvent<string>).detail : "");
@@ -152,41 +146,6 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     return () => window.removeEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
   }, []);
 
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-    if (!sentinel || !nextPageCursor || isLoadingMore) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting && !isLoadRequestInFlight.current) {
-          isLoadRequestInFlight.current = true;
-          setIsLoadingMore(true);
-          const params = new URLSearchParams(searchParams.toString());
-          params.set("cursor", nextPageCursor);
-          if (shopType === "all") params.set("shopType", "all");
-          void fetch(`/api/market/listings?${params.toString()}`)
-            .then((response) => readApiResponse(response, marketFeedResponseSchema))
-            .then((result) => {
-              if (!result.data) return;
-              setListings((current) => [...current, ...result.data.listings.filter((listing) => !current.some((item) => item.id === listing.id))]);
-              setSavedIds((current) => [...new Set([...current, ...result.data.savedListingIds])]);
-              setNextPageCursor(result.data.nextCursor);
-            })
-            .finally(() => {
-              isLoadRequestInFlight.current = false;
-              setIsLoadingMore(false);
-            });
-        }
-      },
-      // Fire well before the sentinel is actually on screen — about a viewport and a
-      // half of scroll lead-time — so the next page is already in by the time the
-      // user reaches the bottom. No spinner, no message: it should just never run out.
-      { rootMargin: "1200px 0px" },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [isLoadingMore, nextPageCursor, searchParams, shopType]);
-
   const chooseView = (mode: ListingViewMode) => {
     setViewMode(mode);
     saveListingViewPreference(mode);
@@ -270,9 +229,9 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />,
             (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,
           ])}
-          {nextPageCursor ? <div ref={loadMoreRef} className="market-list-load-more" aria-hidden="true" /> : null}
         </div> : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
+        <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
       </section>
     </main>
   );
