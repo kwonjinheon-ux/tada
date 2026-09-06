@@ -172,25 +172,29 @@ a {
 /* Tablet uses the same compact navigation model as phones. Keeping the search
    on its own row avoids a cramped hybrid of desktop links and touch controls. */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  :root { --desktop-header-height: 118px; }
+  :root { --desktop-header-height: 64px; }
 
   .site-header { border-bottom: 0; background: var(--neutral-50); }
+  /* One row, the way every other breakpoint reads it: brand on the left, the
+     search in the middle, account controls on the right. The stacked variant
+     this replaces centred the logo over a full-width search row, which cost
+     the tablet 54px of header before any content had a chance to show. */
   .site-nav.global-shell {
     position: relative;
-    grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;
-    grid-template-rows: 58px 48px auto;
+    grid-template-columns: 38px auto minmax(0, 1fr) 38px 38px 38px;
+    grid-template-rows: 58px auto;
     grid-template-areas:
-      "menu logo notification language profile"
-      "search search search search search"
-      "mobile mobile mobile mobile mobile";
+      "menu logo search notification language profile"
+      "mobile mobile mobile mobile mobile mobile";
     row-gap: 4px;
-    column-gap: 8px;
+    column-gap: var(--space-2);
+    align-items: center;
     min-height: 0;
     padding: 3px 24px;
   }
 
-  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; transform: translateX(-50%); }
-  .nav-search { grid-area: search; width: auto; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
+  .site-logo { grid-area: logo; position: static; align-self: center; transform: none; }
+  .nav-search { grid-area: search; justify-self: center; width: min(100%, 460px); min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
   .nav-search svg { width: 21px; height: 21px; }
   .nav-search-submit { display: none; }
 
@@ -12954,4 +12958,58 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 
   /* The listing gap was 5.28px, which is on no scale. */
   .product-grid { gap: var(--space-2); }
+}
+
+/* ---------------------------------------------------------------------------
+   Route skeletons — the shell a dynamic route paints while its data loads.
+   Shapes mirror the real shell so nothing jumps when the page arrives.
+   --------------------------------------------------------------------------- */
+.route-skeleton { width: 100%; min-height: calc(100vh - 70px); display: grid; gap: var(--space-4); margin: 0; padding: var(--space-4); background: var(--color-background); }
+.route-skeleton-rail { display: none; }
+.route-skeleton-body { min-width: 0; display: grid; align-content: start; gap: var(--space-4); }
+.route-skeleton-toolbar { display: grid; gap: var(--space-2); }
+.route-skeleton-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.route-skeleton-rows { display: grid; gap: var(--space-2); }
+.route-skeleton-rows .route-skeleton-tile { min-height: var(--control-h-2xl); }
+.route-skeleton-heading { width: min(320px, 70%); height: var(--control-h-lg); border-radius: var(--radius-sm); }
+.route-skeleton-card { display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); }
+.route-skeleton-line { display: block; height: var(--space-3); border-radius: var(--radius-xs); }
+.route-skeleton-line.is-title { width: 40%; height: var(--space-5); }
+.route-skeleton-field { display: block; height: var(--control-h-xl); border-radius: var(--radius-sm); }
+.route-skeleton-tile { min-height: 168px; margin: 0; border-radius: var(--radius-md); }
+
+/* One shimmer for every shape, reusing the market card timing so a skeleton
+   next to a still-loading card list beats in step. */
+.route-skeleton-heading,
+.route-skeleton-line,
+.route-skeleton-field,
+.route-skeleton-tile,
+.route-skeleton-rail > span {
+  background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%);
+  background-size: 220% 100%;
+  animation: infinite-market-shimmer 1.1s ease-in-out infinite;
+}
+
+/* Respect a reduced-motion preference: the shape still reads as pending. */
+@media (prefers-reduced-motion: reduce) {
+  .route-skeleton-heading,
+  .route-skeleton-line,
+  .route-skeleton-field,
+  .route-skeleton-tile,
+  .route-skeleton-rail > span { animation: none; }
+}
+
+.route-skeleton--form { max-width: var(--page-inner-reading-max-width); margin-inline: auto; }
+
+@media (min-width: 768px) {
+  .route-skeleton--browse,
+  .route-skeleton--dashboard { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-4); }
+  .route-skeleton-rail { display: grid; align-content: start; gap: var(--space-3); }
+  .route-skeleton-rail > span { height: var(--control-h-md); border-radius: var(--radius-sm); }
+}
+
+@media (min-width: 1024px) {
+  .route-skeleton--browse,
+  .route-skeleton--dashboard { grid-template-columns: 272px minmax(0, 1fr); }
+  .route-skeleton-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
