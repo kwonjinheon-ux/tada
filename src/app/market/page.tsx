@@ -1,7 +1,7 @@
 import { marketFeedQuerySchema } from "@/contracts/api";
 import { MarketPageClient } from "@/components/market/MarketPageClient";
 import { MARKET_PAGE_SIZE, getMergedMarketFeed } from "@/lib/market/feed";
-import { parsePageParam, totalPageCount } from "@/lib/list-pagination";
+import { loadPagedFeed } from "@/lib/market/paged-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Market" };
@@ -25,14 +25,10 @@ export default async function MarketRoute({ searchParams }: { searchParams: Prom
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <MarketPageClient shopType="all" basePath="/market" />;
   const { data: { user } } = await supabase.auth.getUser();
-  // The page is read before the total is known, so an out-of-range ?page= is
-  // clamped once the count comes back rather than rendering an empty grid.
-  const requestedPage = Number.parseInt(typeof rawParams.page === "string" ? rawParams.page : "1", 10);
-  const firstPass = await getMergedMarketFeed(supabase, query, user?.id, { pageSize: MARKET_PAGE_SIZE, page: Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1 });
-  const totalPages = totalPageCount(firstPass.total, MARKET_PAGE_SIZE);
-  const page = parsePageParam(typeof rawParams.page === "string" ? rawParams.page : undefined, totalPages);
-  const feed = page === (Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1)
-    ? firstPass
-    : await getMergedMarketFeed(supabase, query, user?.id, { pageSize: MARKET_PAGE_SIZE, page });
+  const { feed, page, totalPages } = await loadPagedFeed(
+    typeof rawParams.page === "string" ? rawParams.page : undefined,
+    MARKET_PAGE_SIZE,
+    (target) => getMergedMarketFeed(supabase, query, user?.id, { pageSize: MARKET_PAGE_SIZE, page: target }),
+  );
   return <MarketPageClient shopType="all" basePath="/market" postedListings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
 }

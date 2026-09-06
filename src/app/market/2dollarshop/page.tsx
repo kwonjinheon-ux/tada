@@ -1,6 +1,8 @@
 import { bargainFeedQuerySchema } from "@/contracts/api";
 import { MarketShopFeedClient } from "@/components/market/MarketShopFeedClient";
 import { getBargainFeed } from "@/lib/bargain/feed";
+import { MARKET_PAGE_SIZE } from "@/lib/market/feed";
+import { loadPagedFeed } from "@/lib/market/paged-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "2 Dollar Shop | Tada" };
@@ -23,6 +25,10 @@ export default async function TwoDollarShopRoute({ searchParams }: { searchParam
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" emptyLabel="No deals found yet" listings={[]} />;
   const { data: { user } } = await supabase.auth.getUser();
-  const feed = await getBargainFeed(supabase, query, user?.id, { bargainTypes: ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"] });
-  return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" emptyLabel="No deals found yet" listings={feed.listings} savedListingIds={feed.savedListingIds} />;
+  const { feed, page, totalPages } = await loadPagedFeed(
+    typeof rawParams.page === "string" ? rawParams.page : undefined,
+    MARKET_PAGE_SIZE,
+    (target) => getBargainFeed(supabase, query, user?.id, { bargainTypes: ["2-dollar-deals", "5-dollar-deals", "10-dollar-deals"], pageSize: MARKET_PAGE_SIZE, page: target }),
+  );
+  return <MarketShopFeedClient shopType="2dollarshop" basePath="/market/2dollarshop" emptyLabel="No deals found yet" listings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
 }

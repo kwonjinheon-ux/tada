@@ -26,7 +26,7 @@ export async function getBargainFeed(
   supabase: SupabaseClient,
   rawQuery: BargainQuery,
   userId?: string,
-  options?: { bargainTypes?: string[]; pageSize?: number },
+  options?: { bargainTypes?: string[]; pageSize?: number; page?: number },
 ): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
   const query = bargainFeedQuerySchema.parse(rawQuery);
   if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null, total: 0 };
@@ -59,7 +59,12 @@ export async function getBargainFeed(
   }
   request = request.order(sortColumn, { ascending }).order("id", { ascending });
 
-  const { data, count } = await request.limit(pageSize + 1);
+  // A numbered page is addressed by offset; the cursor only walks forward and
+  // cannot land on page N directly.
+  const page = options?.page && options.page > 0 ? options.page : null;
+  const { data, count } = page
+    ? await request.range((page - 1) * pageSize, page * pageSize - 1)
+    : await request.limit(pageSize + 1);
   const total = count ?? 0;
   const allRows = (data ?? []) as BargainRow[];
   const rows = allRows.slice(0, pageSize);

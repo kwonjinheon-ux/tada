@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { ProductCard } from "@/components/ProductCard";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
@@ -18,12 +19,14 @@ import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 
 const priceFilterMaximum = 5000;
 
-export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings, savedListingIds = [] }: {
+export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings, savedListingIds = [], page = 1, totalPages = 1 }: {
   shopType: Extract<ShopType, "garage-sale" | "moving-sale" | "2dollarshop">;
   basePath: string;
   emptyLabel: string;
   listings: Listing[];
   savedListingIds?: string[];
+  page?: number;
+  totalPages?: number;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -111,6 +114,7 @@ export function MarketShopFeedClient({ shopType, basePath, emptyLabel, listings,
       {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
         {listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedIdSet.has(listing.id)} listingHref={`/market/${listing.id}`} wishlistEndpoint="/api/bargain/wishlist" />)}
       </div> : <div className="market-search-empty" role="status"><i className="ms ms-sell" aria-hidden="true" /><strong>{emptyLabel}</strong><span>Try another category or nearby location.</span></div>}
+      <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
     </section>
   </main>;
 }

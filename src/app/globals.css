@@ -630,6 +630,15 @@ button { cursor: pointer; }
 .product-body > p > .ms,
 .product-event-date > .ms { color: inherit; }
 
+/* The category rail is a list of controls, not a gallery of subjects. Twelve
+   subject hues stacked in one column compete with each other and with the
+   selected row, so the glyphs there follow the label instead — the same
+   reasoning the metadata rows above are built on. */
+.category-filter .filter-list .ms,
+.category-filter-list .ms { color: var(--color-muted); }
+.category-filter .filter-list .is-selected .ms,
+.category-filter-list .is-selected .ms { color: inherit; }
+
 /* A toggle glyph earns its hue only in the on state. A hollow-but-pink heart
    reads as already saved, which is the opposite of what it means. */
 .ms--outline { color: inherit; }

@@ -1,6 +1,8 @@
 import { bargainFeedQuerySchema } from "@/contracts/api";
 import { MarketShopFeedClient } from "@/components/market/MarketShopFeedClient";
 import { getBargainFeed } from "@/lib/bargain/feed";
+import { MARKET_PAGE_SIZE } from "@/lib/market/feed";
+import { loadPagedFeed } from "@/lib/market/paged-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Moving Sales | Tada" };
@@ -23,6 +25,10 @@ export default async function MovingSalesRoute({ searchParams }: { searchParams:
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <MarketShopFeedClient shopType="moving-sale" basePath="/market/moving-sales" emptyLabel="No moving sales found yet" listings={[]} />;
   const { data: { user } } = await supabase.auth.getUser();
-  const feed = await getBargainFeed(supabase, query, user?.id, { bargainTypes: ["moving-sale"] });
-  return <MarketShopFeedClient shopType="moving-sale" basePath="/market/moving-sales" emptyLabel="No moving sales found yet" listings={feed.listings} savedListingIds={feed.savedListingIds} />;
+  const { feed, page, totalPages } = await loadPagedFeed(
+    typeof rawParams.page === "string" ? rawParams.page : undefined,
+    MARKET_PAGE_SIZE,
+    (target) => getBargainFeed(supabase, query, user?.id, { bargainTypes: ["moving-sale"], pageSize: MARKET_PAGE_SIZE, page: target }),
+  );
+  return <MarketShopFeedClient shopType="moving-sale" basePath="/market/moving-sales" emptyLabel="No moving sales found yet" listings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
 }

@@ -1,6 +1,7 @@
 import { marketFeedQuerySchema } from "@/contracts/api";
 import { MarketPageClient } from "@/components/market/MarketPageClient";
-import { getMarketFeed } from "@/lib/market/feed";
+import { MARKET_PAGE_SIZE, getMarketFeed } from "@/lib/market/feed";
+import { loadPagedFeed } from "@/lib/market/paged-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Second Hands" };
@@ -24,6 +25,10 @@ export default async function MarketSecondhandsRoute({ searchParams }: { searchP
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <MarketPageClient shopType="secondhand" basePath="/market/secondhands" />;
   const { data: { user } } = await supabase.auth.getUser();
-  const feed = await getMarketFeed(supabase, query, user?.id);
-  return <MarketPageClient shopType="secondhand" basePath="/market/secondhands" postedListings={feed.listings} savedListingIds={feed.savedListingIds} nextCursor={feed.nextCursor} />;
+  const { feed, page, totalPages } = await loadPagedFeed(
+    typeof rawParams.page === "string" ? rawParams.page : undefined,
+    MARKET_PAGE_SIZE,
+    (target) => getMarketFeed(supabase, query, user?.id, { pageSize: MARKET_PAGE_SIZE, page: target }),
+  );
+  return <MarketPageClient shopType="secondhand" basePath="/market/secondhands" postedListings={feed.listings} savedListingIds={feed.savedListingIds} page={page} totalPages={totalPages} />;
 }

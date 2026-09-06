@@ -24,7 +24,7 @@ function formatLocation(city: string | null, suburb: string | null) { return [su
 function safeSearch(value: string) { return value.replace(/[,%()]/g, " ").trim(); }
 function exactFilterValue(value: string) { return JSON.stringify(value); }
 
-export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
+export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuery, userId?: string, options: { pageSize?: number; page?: number } = {}): Promise<{ listings: Listing[]; savedListingIds: string[]; nextCursor: string | null; total: number }> {
   const pageSize = options.pageSize ?? PAGE_SIZE;
   const query = marketFeedQuerySchema.parse(rawQuery);
   if (query.q && containsProhibitedMarketplaceContent(query.q)) return { listings: [], savedListingIds: [], nextCursor: null, total: 0 };
@@ -46,7 +46,12 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     const operator = ascending ? "gt" : "lt";
     request = request.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`);
   }
-  const primaryResult = await request.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1);
+  // A numbered page is addressed by offset; the cursor only walks forward.
+  const pageNumber = options.page && options.page > 0 ? options.page : null;
+  const ordered = request.order(sortColumn, { ascending }).order("id", { ascending });
+  const primaryResult = pageNumber
+    ? await ordered.range((pageNumber - 1) * pageSize, pageNumber * pageSize - 1)
+    : await ordered.limit(pageSize + 1);
   let data = primaryResult.data as Row[] | null;
   let total = primaryResult.count ?? 0;
   // Deployments can temporarily run newer application code before the additive
@@ -62,7 +67,10 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
     if (query.subLocation) legacyRequest = legacyRequest.eq("region_suburb", query.subLocation);
     if (search) legacyRequest = legacyRequest.or(`title.ilike.%${search}%,region_city.ilike.%${search}%,region_suburb.ilike.%${search}%`);
     if (cursor) { const operator = ascending ? "gt" : "lt"; legacyRequest = legacyRequest.or(`${sortColumn}.${operator}.${cursor.value},and(${sortColumn}.eq.${cursor.value},id.${operator}.${cursor.id})`); }
-    const legacyResult = await legacyRequest.order(sortColumn, { ascending }).order("id", { ascending }).limit(pageSize + 1);
+    const legacyOrdered = legacyRequest.order(sortColumn, { ascending }).order("id", { ascending });
+    const legacyResult = pageNumber
+      ? await legacyOrdered.range((pageNumber - 1) * pageSize, pageNumber * pageSize - 1)
+      : await legacyOrdered.limit(pageSize + 1);
     data = legacyResult.data as Row[] | null;
     total = legacyResult.count ?? 0;
   }
