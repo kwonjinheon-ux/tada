@@ -52,6 +52,7 @@ export function ServiceCreateClient() {
   const [errorDialog, setErrorDialog] = useState<string | null>(null);
   const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [serviceArea, setServiceArea] = useState("Hamilton");
+  const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>(["Hamilton"]);
   const [suburb, setSuburb] = useState("");
   const allAreasValue = "__all_nz__";
   // The form stays uncontrolled — it is read with FormData on submit — so the
@@ -67,6 +68,21 @@ export function ServiceCreateClient() {
     : NZ_MAIN_LOCATIONS.includes(serviceArea as (typeof NZ_MAIN_LOCATIONS)[number])
       ? getSubLocations(serviceArea as (typeof NZ_MAIN_LOCATIONS)[number])
       : [];
+  const addServiceArea = (next: string) => {
+    setServiceArea(next);
+    setSuburb("");
+    setSelectedServiceAreas((current) => next === allAreasValue
+      ? [allAreasValue]
+      : [...current.filter((area) => area !== allAreasValue && area !== next), next]);
+  };
+  const removeServiceArea = (area: string) => {
+    const next = selectedServiceAreas.filter((selectedArea) => selectedArea !== area);
+    setSelectedServiceAreas(next);
+    if (serviceArea === area) {
+      setServiceArea(next[0] ?? "");
+      setSuburb("");
+    }
+  };
 
   useEffect(() => { photosRef.current = photos; }, [photos]);
   useEffect(() => { logoRef.current = logo; }, [logo]);
@@ -195,7 +211,7 @@ export function ServiceCreateClient() {
       business_name: businessName,
       description,
       provider_type: formData.get("provider-type") === "sole-trader" ? "sole_trader" : "business",
-      service_areas: serviceArea === allAreasValue ? ["All New Zealand"] : [serviceArea],
+      service_areas: selectedServiceAreas.map((area) => area === allAreasValue ? "All New Zealand" : area),
       suburbs: suburb ? [suburb] : [],
       phone,
       email: email || null,
@@ -280,7 +296,7 @@ export function ServiceCreateClient() {
   };
 
   return <main className="marketplace-page services-page service-create-page">
-      <aside className="market-filter-panel services-filter-rail service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { setServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
+      <aside className="market-filter-panel services-filter-rail service-create-filter-rail" aria-label={isKorean ? "서비스 등록 설정" : "Service listing settings"}><ServicesFilterSidebar activeCategory={category || "all"} onCategorySelect={(next) => setCategory(next === "all" ? "" : next)} mainLocation={serviceArea === allAreasValue ? "" : serviceArea as MainLocation} subLocation={suburb} onLocationChange={(nextMainLocation, nextSubLocation = "") => { addServiceArea(nextMainLocation || allAreasValue); setSuburb(nextSubLocation); }} filters={sidebarFilters} onFilterChange={(key, value) => setSidebarFilters((current) => ({ ...current, [key]: value }))} onApply={() => undefined} compact /></aside>
       <section className="market-results services-results service-create-main">
     <div className="post-ad-page service-create-content">
     <div className="post-ad-create-bar"><Link href="/services"><i className="ms ms-arrow-back" aria-hidden="true" /> {copy.back}</Link></div>
@@ -288,7 +304,7 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInvalid={showErrorDialog} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={(next) => { setServiceArea(next); setSuburb(""); }} onSuburbChange={setSuburb} />
+        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInvalid={showErrorDialog} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} selectedServiceAreas={selectedServiceAreas} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={addServiceArea} onServiceAreaAdd={addServiceArea} onServiceAreaRemove={removeServiceArea} onSuburbChange={setSuburb} />
         <form className="post-ad-form service-create-legacy-form" hidden aria-hidden="true" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)}>
           <fieldset disabled>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>

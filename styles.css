@@ -12873,6 +12873,18 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 }
 
 .service-create-page .service-editor-card .service-editor-gallery img { transition: opacity var(--transition-fast); }
+.service-create-page .service-editor-card .service-editor-gallery .service-editor-cover-choice {
+  position: absolute;
+  right: var(--space-1);
+  bottom: var(--space-1);
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--neutral-975) 82%, transparent);
+  color: var(--neutral-50);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+}
+.service-create-page .service-editor-card .service-editor-gallery figure.is-cover .service-editor-cover-choice { background: var(--color-primary-strong); color: var(--color-on-primary); }
 
 /* Service listing validation guidance and the shared error dialog. */
 .service-create-page .service-editor-required-note,
