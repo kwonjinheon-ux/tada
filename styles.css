@@ -13058,3 +13058,15 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .groupbuy-hero-media .shared-image-gallery .listing-detail-main-image { height: 100%; border-radius: 0; }
 .shared-image-lightbox .listing-gallery-lightbox-count { pointer-events: none; text-align: center; }
 .shared-image-lightbox .listing-gallery-lightbox-stage { cursor: zoom-out; }
+
+/* A sale inside the browse shell is already in a column, so its PageContainer
+   must not re-apply the page shell's 90% width on top of it — that started the
+   sale 42px further in than every other detail body. It takes the same 16px
+   gutter the listing detail children carry instead. */
+@media (min-width: 1024px) {
+  .market-detail-shell-content > .bargain-sale-detail-page > .page-container,
+  .market-detail-shell-content > .bargain-sale-detail-page > .global-shell {
+    width: 100%;
+    padding-inline: var(--space-4);
+  }
+}
