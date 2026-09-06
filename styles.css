@@ -8594,7 +8594,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .listing-edit-form footer button { border: 0; background: var(--green-450); color: var(--neutral-50); }
 .listing-edit-form footer button:disabled { cursor: wait; opacity: .7; }
 @media (max-width: 620px) { .listing-edit-page { width: 100%; margin: 0; } .listing-edit-page .listing-detail-back { margin: 20px; } .listing-edit-form { border-right: 0; border-left: 0; border-radius: 0; padding: 22px 20px 100px; } .listing-edit-grid { grid-template-columns: 1fr; } }
-.listing-detail-loading { width: min(1180px, calc(100% - 48px)); display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, .95fr); gap: 46px; margin: 40px auto 70px; }
+.listing-detail-loading { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin: 0; padding: var(--space-4) var(--space-4) var(--space-12); }
 .listing-detail-loading-media, .listing-detail-loading-summary, .listing-detail-loading-description > * { background: linear-gradient(100deg, var(--neutral-200) 30%, var(--neutral-150) 46%, var(--neutral-200) 62%); background-size: 200% 100%; animation: listing-loading-shimmer 1.25s ease-in-out infinite; }
 .listing-detail-loading-media { min-height: 480px; border-radius: var(--radius-md); }
 .listing-detail-loading-summary { min-height: 390px; display: grid; align-content: start; gap: 18px; padding: 28px; border-radius: var(--radius-md); background-color: var(--neutral-150); }
@@ -13104,4 +13104,61 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .services-listing-media > img,
   .listing-row-media img,
   .bargain-sale-detail-item-image img { transition: none; transform: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Detail skeleton — the same frame the real page arrives in.
+
+   /market/[listingId] serves a listing, a single bargain item and a multi-item
+   garage or moving sale, and the boundary renders before the route knows which.
+   What all three share is the frame: browse rail, wide media column, card
+   beside it. Building the skeleton from that is what stops the layout jumping
+   sideways when the real page replaces it.
+   --------------------------------------------------------------------------- */
+.listing-detail-loading-shell { min-height: calc(100vh - var(--desktop-header-height)); }
+.listing-detail-loading-rail { display: none; }
+.listing-detail-loading-crumb { width: 220px; height: var(--space-4); border-radius: var(--radius-xs); }
+
+.listing-detail-loading-rail > span,
+.listing-detail-loading-crumb {
+  background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%);
+  background-size: 220% 100%;
+  animation: infinite-market-shimmer 1.1s ease-in-out infinite;
+}
+
+@media (min-width: 1024px) {
+  /* The rail placeholder stands in the column the real rail will occupy. */
+  .listing-detail-loading-rail {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-3) var(--space-8);
+    border-right: 1px solid var(--color-line);
+  }
+  .listing-detail-loading-rail > span { height: var(--control-h-md); border-radius: var(--radius-sm); }
+  .listing-detail-loading { padding-inline: 0; }
+  .listing-detail-loading > * { padding-inline: var(--space-4); }
+}
+
+@media (min-width: 1200px) {
+  /* Media column and card on the same tracks the real page uses, so the two
+     line up exactly rather than approximately. */
+  /* column-gap: 0 for the same reason the real page uses none — the sidebar
+     track carries its own inset, so a gap here would take 16px off the media
+     column and land it on 849 instead of 865. */
+  .listing-detail-loading { grid-template-columns: minmax(0, 1fr) 288px; column-gap: 0; }
+  .listing-detail-loading-crumb,
+  .listing-detail-loading-media,
+  .listing-detail-loading-description { grid-column: 1; }
+  .listing-detail-loading-summary { grid-column: 2; margin-right: var(--space-4); padding-inline: 0; }
+  .listing-detail-loading-media { min-height: 420px; }
+  .listing-detail-loading-description { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-detail-loading-rail > span,
+  .listing-detail-loading-crumb,
+  .listing-detail-loading-media,
+  .listing-detail-loading-summary,
+  .listing-detail-loading-description > * { animation: none; }
 }
