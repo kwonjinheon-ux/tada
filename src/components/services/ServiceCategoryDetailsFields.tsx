@@ -38,7 +38,7 @@ export function ServiceCategoryDetailsFields({ category, locale, values, onValue
 
   return (
     <div className="service-category-details" aria-live="polite">
-      <div className={`service-price-table service-price-table--${fields.length}-fields`}>
+      <div className={`service-price-table service-price-table--${fields.length}-fields ${category === "computerIt" ? "service-price-table--computer-it" : ""}`}>
         <div className="service-price-table-head">{fields.map((field) => <span key={field.key}>{field.label}</span>)}<span>{isKorean ? "삭제" : "Remove"}</span></div>
         {serviceRows.map((row, rowIndex) => <div className="service-price-row" key={row.id}>{fields.map((field) => {
           const name = rowIndex === 0 ? `service-detail-${field.key}` : `additional-service-${row.id}-${field.key}`;

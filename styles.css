@@ -12916,6 +12916,63 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .service-create-page .service-editor-address-visibility label { min-height: var(--control-h-xl); }
 .service-create-page .service-editor-gallery { flex-wrap: nowrap; align-items: stretch; }
 .service-create-page .service-editor-add-photo { flex: 0 0 84px; }
+@media (min-width: 768px) {
+  .service-create-page .service-price-table--computer-it .service-price-table-head,
+  .service-create-page .service-price-table--computer-it .service-price-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) var(--control-h-lg);
+  }
+  .service-create-page .service-price-table--computer-it .service-price-table-head > :nth-child(5),
+  .service-create-page .service-price-table--computer-it .service-price-row > :nth-child(5) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .service-create-page .service-price-table--computer-it .service-price-table-head > :nth-child(6),
+  .service-create-page .service-price-table--computer-it .service-price-row > :nth-child(6) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .service-create-page .service-price-table--computer-it .service-price-table-head > :nth-child(7),
+  .service-create-page .service-price-table--computer-it .service-price-actions {
+    grid-column: 5;
+    grid-row: 1 / span 2;
+  }
+}
+.service-create-page .service-editor-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  overflow: visible;
+}
+.service-create-page .service-editor-gallery figure,
+.service-create-page .service-editor-gallery .service-editor-add-photo {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+.service-create-page .service-editor-gallery .service-editor-add-photo { flex: none; }
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .service-create-page .service-editor-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 767.98px) {
+  .service-create-page .service-editor-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.service-create-page .service-create-editor.is-validation-attempted input:invalid,
+.service-create-page .service-create-editor.is-validation-attempted textarea:invalid,
+.service-create-page .service-create-editor.is-validation-attempted select:invalid,
+.service-create-page .service-create-editor.is-validation-attempted .post-select-wrap:has(select:invalid) .post-select-trigger {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 14%, transparent);
+}
+.service-create-page .service-create-editor .service-editor-category.is-invalid > div,
+.service-create-page .service-create-editor .service-editor-submit > label.is-invalid {
+  border-color: var(--color-danger);
+}
+.service-create-page .service-create-editor .service-editor-submit > label.is-invalid {
+  padding: var(--space-2);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-xs);
+}
 .service-create-error-dialog { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: var(--space-4); }
 .service-create-error-dialog-panel {
   position: relative;
