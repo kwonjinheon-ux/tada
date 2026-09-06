@@ -28,7 +28,7 @@ export function MarketDetailShell({ children, shopTypeHref }: { children: ReactN
   };
 
   return (
-    <div className="market-theme market-detail-shell">
+    <div className="market-detail-shell">
       <BrowseFilterDrawer open={isFilterOpen} onOpenChange={setIsFilterOpen} openLabel="Open marketplace filters" closeLabel="Close marketplace filters">
         <MarketFilterSidebar
           activeShopType={activeShopType}
