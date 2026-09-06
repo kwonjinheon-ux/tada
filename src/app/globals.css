@@ -451,6 +451,47 @@
   --accent-soft-200: var(--mint-soft-200);
   --accent-soft-250: var(--mint-soft-250);
 
+  /* Re-pointing the ramp alone does not reach these. A custom property is
+     substituted where it is DECLARED, so --color-primary: var(--accent-450) was
+     already resolved to blue at :root, and descendants inherit that resolved
+     value no matter what --accent-450 becomes further down. Every token that
+     aliases the ramp at :root therefore has to be restated here, against the
+     mint ramp, or it stays blue on a mint page. */
+  --color-primary: var(--mint-450);
+  --color-primary-hover: var(--mint-550);
+  --color-primary-dark: var(--mint-700);
+  --color-primary-strong: var(--mint-750);
+  --color-primary-deep: var(--mint-900);
+  --color-primary-soft: var(--mint-soft-50);
+  --color-brand: var(--mint-450);
+
+  /* The legacy hue-named aliases, same reason. styles.css still reaches for
+     these directly across the market surfaces. */
+  --green-150: var(--mint-150);
+  --green-200: var(--mint-200);
+  --green-250: var(--mint-250);
+  --green-300: var(--mint-300);
+  --green-350: var(--mint-350);
+  --green-400: var(--mint-400);
+  --green-450: var(--mint-450);
+  --green-500: var(--mint-500);
+  --green-550: var(--mint-550);
+  --green-600: var(--mint-600);
+  --green-650: var(--mint-650);
+  --green-700: var(--mint-700);
+  --green-750: var(--mint-750);
+  --green-800: var(--mint-800);
+  --green-850: var(--mint-850);
+  --green-900: var(--mint-900);
+  --green-950: var(--mint-950);
+  --green-975: var(--mint-975);
+  --green-soft-50: var(--mint-soft-50);
+  --green-soft-200: var(--mint-soft-200);
+  --green-soft-250: var(--mint-soft-250);
+  --primary: var(--mint-450);
+  --primary-dark: var(--mint-750);
+  --brand: var(--mint-450);
+
   /* Shadows and rings carry the hue as a literal rgb(), so they cannot ride
      the ramp and are restated here. */
   --shadow-primary: 0 6px 16px rgb(23 128 90 / 24%);

@@ -1818,7 +1818,7 @@ a {
 }
 
 .view-toggle button.is-selected {
-  background: var(--blue-550);
+  background: var(--accent-450);
   color: var(--neutral-50);
 }
 
@@ -12150,7 +12150,6 @@ html[lang="ko"] .service-create-page .post-title-field .post-section-heading h2:
 .groupbuy-card-body:hover h3, .groupbuy-card-body:focus-visible h3 { color: var(--color-primary-strong); }
 .groupbuy-card-body:focus-visible { outline: none; box-shadow: inset var(--ring-focus); }
 .groupbuy-card-body h3 { margin: 0; overflow: hidden; color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: -0.01em; line-height: 1.25; }
-.groupbuy-card-body h3 a { text-decoration: none; }
 .groupbuy-card-seller { display: flex; min-width: 0; gap: var(--space-1); align-items: center; margin: 2px 0 0; overflow: hidden; color: var(--color-muted); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
 .groupbuy-card-seller .ms { flex: 0 0 auto; color: var(--color-muted-soft); font-size: var(--text-lg); }
 .groupbuy-card-summary { display: -webkit-box; overflow: hidden; margin: 0; color: var(--color-ink-soft); font-size: var(--text-sm); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }

@@ -29,7 +29,9 @@ export function GroupBuyCard({ groupBuy, isPreview = false }: { groupBuy: GroupB
       </Link>
       <Link className="groupbuy-card-body" href={`/market/groupbuy/${groupBuy.id}`}>
         <header>
-          <h3><Link href={`/market/groupbuy/${groupBuy.id}`}>{groupBuy.title}</Link></h3>
+          {/* The whole body is already the link to this group buy; a second
+              one inside it is invalid HTML and breaks hydration. */}
+          <h3>{groupBuy.title}</h3>
           <p className="groupbuy-card-seller"><i className="ms ms-storefront" aria-hidden="true" />{groupBuy.seller.name} · {groupBuy.seller.location}</p>
         </header>
         <p className="groupbuy-card-summary">{groupBuy.summary}</p>
