@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("service_reviews")
     .insert({ service_id: serviceId, reviewer_id: user.id, rating, comment })
-    .select("id, rating, comment, created_at")
+    .select("id, reviewer_id, rating, comment, created_at")
     .single();
 
   if (error || !data) {
