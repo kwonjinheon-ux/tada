@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { consumeMarketRateLimit } from "@/lib/market/safety";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 type CommentRow = {
   id: string;
@@ -96,6 +97,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
   const body = typeof payload?.body === "string" ? payload.body.trim() : "";
   const parentId = typeof payload?.parentId === "string" ? payload.parentId : null;
   if (!body || body.length > 2000) return NextResponse.json({ error: "Comments must be between 1 and 2,000 characters." }, { status: 400 });
+  if (containsProhibitedPublicContent(body)) return NextResponse.json({ error: prohibitedPublicContentMessage }, { status: 400 });
   if (parentId && !isUuid(parentId)) return NextResponse.json({ error: "Invalid reply target." }, { status: 400 });
 
   const { error } = await supabase.from("bargain_listing_comments").insert({ listing_id: listingId, author_id: user.id, parent_id: parentId, body });

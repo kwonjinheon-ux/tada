@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, RefObject, useEffect, useState } from "react";
+import { FormEvent, RefObject, useEffect, useRef, useState } from "react";
+import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 import { Button } from "@/components/ui/Button";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { ServiceCategoryDetailsFields } from "@/components/services/ServiceCategoryDetailsFields";
@@ -28,6 +29,7 @@ type Props = {
   onPrimaryPhotoChange: (id: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onInvalid: (message: string) => void;
+  onUnsafeInput: () => void;
   onPreview: () => void;
   onInput: (form: HTMLFormElement) => void;
   acceptedTerms: boolean;
@@ -87,6 +89,7 @@ function BusinessInformationEditor({ isKorean, areaOptions, serviceArea, onAreaC
 export function ServiceCreateEditor(props: Props) {
   const { isKorean, category, categoryLabels } = props;
   const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
+  const lastSafeContentValues = useRef(new Map<string, string>());
   useEffect(() => {
     props.logoInputRef.current = document.querySelector<HTMLInputElement>("#editor-logo");
     props.photoInputRef.current = document.querySelector<HTMLInputElement>("#editor-photos");
@@ -133,7 +136,21 @@ export function ServiceCreateEditor(props: Props) {
     props.onSubmit(event);
   };
 
-  return <form className={`service-create-editor ${hasAttemptedValidation ? "is-validation-attempted" : ""}`} noValidate onSubmit={handleSubmit} onInput={(event) => props.onInput(event.currentTarget)}>
+  const handleInput = (event: FormEvent<HTMLFormElement>) => {
+    const field = event.target;
+    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+      const isServiceContent = /^(business-name|service-name|service-summary|service-description|service-detail-|additional-service-)/.test(field.name);
+      if (isServiceContent && containsProhibitedPublicContent(field.value)) {
+        field.value = lastSafeContentValues.current.get(field.name) ?? "";
+        props.onUnsafeInput();
+      } else if (isServiceContent) {
+        lastSafeContentValues.current.set(field.name, field.value);
+      }
+    }
+    props.onInput(event.currentTarget);
+  };
+
+  return <form className={`service-create-editor ${hasAttemptedValidation ? "is-validation-attempted" : ""}`} noValidate onSubmit={handleSubmit} onInput={handleInput}>
     <p className="service-editor-required-note"><span aria-hidden="true">*</span>{isKorean ? " 표시된 항목은 필수입니다." : " indicates a required field."}</p>
     <BusinessInformationEditor isKorean={isKorean} areaOptions={props.areaOptions} serviceArea={props.serviceArea} suburb={props.suburb} onAreaChange={props.onAreaChange} />
     <section className="service-editor-card service-editor-identity"><StepHeading number={1} title={text.identity} help={text.identityHelp} /><div className={`service-editor-category ${hasAttemptedValidation && !category ? "is-invalid" : ""}`}><label><RequiredLabel>{text.category}</RequiredLabel></label><div>{serviceCategories.map(({ id, icon }) => <button type="button" key={id} className={category === id ? "is-selected" : ""} onClick={() => props.onCategoryChange(id)}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></div><div className="service-editor-identity-grid"><div className="service-editor-logo"><label>{text.logo}</label><input ref={props.logoInputRef} id="editor-logo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { props.onLogoAdd(event.target.files); event.currentTarget.value = ""; }} />{props.logo ? <div><img src={props.logo.url} alt="" /><button type="button" onClick={props.onLogoRemove}><i className="ms ms-close" aria-hidden="true" /></button></div> : <button type="button" onClick={() => props.logoInputRef.current?.click()}><i className="ms ms-image" aria-hidden="true" /><span>{text.upload}</span><small>PNG or JPG, max 2MB</small></button>}</div><div className="service-editor-fields"><label><RequiredLabel>{text.provider}</RequiredLabel><input name="business-name" required placeholder="SmartLearn Tutoring" /></label><label><RequiredLabel>{text.title}</RequiredLabel><input name="service-name" required placeholder="Tutoring" /></label><fieldset><legend><span className="service-editor-required-mark" aria-hidden="true">*</span>{text.type}</legend><label><input type="radio" name="provider-type" value="business" defaultChecked required />{text.local}</label><label><input type="radio" name="provider-type" value="sole-trader" />{text.sole}</label></fieldset></div></div></section>

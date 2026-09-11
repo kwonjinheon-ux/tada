@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null) as { serviceId?: unknown; rating?: unknown; comment?: unknown } | null;
@@ -11,6 +12,7 @@ export async function POST(request: Request) {
   if (!serviceId || !Number.isInteger(rating) || rating < 1 || rating > 5 || comment.length < 1 || comment.length > 1000) {
     return NextResponse.json({ error: "Please choose a rating and write a review of up to 1,000 characters." }, { status: 400 });
   }
+  if (containsProhibitedPublicContent(comment)) return NextResponse.json({ error: prohibitedPublicContentMessage }, { status: 400 });
 
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Please log in to write a review." }, { status: 401 });

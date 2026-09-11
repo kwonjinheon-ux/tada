@@ -2,6 +2,7 @@ import { communityPostCreateRequestSchema, communityPostCategorySchema } from "@
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 const postTypeByCategory = {
   "local-noticeboard": "notice",
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const payload = communityPostCreateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
+  if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return apiFailure("BAD_REQUEST", prohibitedPublicContentMessage, 400);
 
   const supabase = await createServerSupabaseClient();
   if (!supabase) return apiFailure("UNAVAILABLE", "Community posting is unavailable right now.", 503);

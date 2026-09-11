@@ -14,6 +14,7 @@ import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { GroupBuyLivePreview } from "@/components/groupbuy/GroupBuyLivePreview";
 import { MarketBreadcrumb } from "@/components/market/MarketBreadcrumb";
+import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 
 type DraftPhoto = { url: string; name: string; isUploaded: boolean; file?: File };
 type DraftItem = { id: string; name: string; note: string; price: string; unit: string; limit: string; photo: DraftPhoto | null };
@@ -156,6 +157,9 @@ export function GroupBuyCreateClient() {
     };
     if (read("title").length < 4 || read("summary").length < 4 || read("description").length < 20) {
       return fail(isKorean ? "제목, 한 줄 소개, 안내를 모두 입력해 주세요." : "Enter the title, summary, and description.");
+    }
+    if (containsProhibitedPublicContent(read("title"), read("summary"), read("description"), ...postItems.flatMap((item) => [item.name, item.note, item.unit]))) {
+      return fail(isKorean ? "금지되거나 안전하지 않은 내용은 게시할 수 없습니다." : "Prohibited or unsafe content cannot be published on Tada.");
     }
     if (!postItems.length) return fail(isKorean ? "공동구매 상품을 하나 이상 입력해 주세요." : "Add at least one item.");
     if (postItems.some((item) => !item.name.trim() || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0 || !item.unit.trim())) {

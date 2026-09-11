@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
 import { invalidateComments, loadComments as fetchComments, readCachedComments, type CommentRecord, type CommentSpace } from "@/lib/comment-cache";
 import { useLanguage } from "@/components/LanguageProvider";
+import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 
 // Draws the reply-thread connector as smooth SVG curves from the parent
 // comment's avatar centre to each reply's avatar centre, measured from the
@@ -77,7 +78,7 @@ function relativeTime(value: string, justNow: string) {
 }
 
 export function ListingComments({ listingId, textSizeStep = 0, space = "market" }: { listingId: string; textSizeStep?: number; space?: CommentSpace }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const apiBase = `/api/${space}`;
   const resource = space === "community" ? "posts" : "listings";
   const cached = readCachedComments(listingId, space);
@@ -93,6 +94,14 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in public content.";
+  const acceptSafeText = (value: string, setter: (next: string) => void) => {
+    if (containsProhibitedPublicContent(value)) {
+      setError(unsafeMessage);
+      return;
+    }
+    setter(value);
+  };
 
   const expandThread = useCallback((commentId: string) => {
     setExpandedThreads((current) => current.has(commentId) ? current : new Set(current).add(commentId));
@@ -143,6 +152,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     event.preventDefault();
     const body = parentId ? replyDraft.trim() : draft.trim();
     if (!body || isSubmitting) return;
+    if (containsProhibitedPublicContent(body)) { setError(unsafeMessage); return; }
 
     const parent = parentId ? comments.find((comment) => comment.id === parentId) : null;
     const optimisticComment: ListingComment = {
@@ -217,6 +227,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   const saveEdit = async (comment: ListingComment) => {
     const body = editDraft.trim();
     if (!body || busyCommentId) return;
+    if (containsProhibitedPublicContent(body)) { setError(unsafeMessage); return; }
     setBusyCommentId(comment.id);
     try {
       const response = await fetch(`${apiBase}/comments/${comment.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
@@ -260,9 +271,9 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
       <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
       <div className="listing-comment-content">
         <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt, t("listingCommentJustNow"))}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">{t("listingCommentEdited")}</span> : null}</div>
-        {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label={t("listingCommentEdit")} /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>{t("save")}</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>{t("cancel")}</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? t("listingCommentDeleted") : comment.body}</p>}
+        {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => acceptSafeText(event.target.value, setEditDraft)} aria-label={t("listingCommentEdit")} /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>{t("save")}</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>{t("cancel")}</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? t("listingCommentDeleted") : comment.body}</p>}
         {!comment.deletedAt ? <div className="listing-comment-tools"><button type="button" className={`is-upvote ${comment.myVote === 1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, 1)} disabled={busyCommentId === comment.id} aria-label={t("listingCommentUpvote")}><CommunityVoteArrow direction="up" /></button><span className="listing-comment-vote-score">{comment.score}</span><button type="button" className={`is-downvote ${comment.myVote === -1 ? "is-selected" : ""}`.trim()} onClick={() => void vote(comment, -1)} disabled={busyCommentId === comment.id} aria-label={t("listingCommentDownvote")}><CommunityVoteArrow direction="down" /></button>{canReply ? <button type="button" className="listing-comment-text-button" onClick={() => { setReplyTo(comment); setReplyDraft(""); expandThread(comment.id); }}>{t("listingCommentReply")}</button> : null}{isOwner ? <><button type="button" className="listing-comment-text-button" onClick={() => { setEditingId(comment.id); setEditDraft(comment.body); }}>{t("edit")}</button><button type="button" className="listing-comment-text-button is-danger" onClick={() => void deleteComment(comment)}>{t("delete")}</button></> : null}</div> : null}
-        {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => setReplyDraft(event.target.value)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>{t("cancel")}</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Reply"}</button></div></form> : null}
+        {isReplying ? <form className="listing-comment-reply-form" onSubmit={(event) => void submitComment(event, comment.id)}><textarea value={replyDraft} maxLength={2000} placeholder={`Reply to ${comment.authorName}`} onChange={(event) => acceptSafeText(event.target.value, setReplyDraft)} autoFocus /><div><button className="listing-comment-cancel-button" type="button" onClick={() => setReplyTo(null)}>{t("cancel")}</button><button className="listing-comment-post-button" type="submit" disabled={isSubmitting || !replyDraft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Reply"}</button></div></form> : null}
         {children.length ? <button type="button" className="listing-comment-thread-toggle" aria-expanded={isThreadOpen} onClick={() => toggleThread(comment.id)}>
           <i className={`ms ${isThreadOpen ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" />
           {isThreadOpen ? t("listingCommentHideReplies") : `${children.length} ${children.length === 1 ? "reply" : "replies"}`}
@@ -277,7 +288,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
 
   return <section className={`listing-comments is-${space}`} aria-labelledby="listing-comments-title" style={{ "--text-scale": descriptionTextScale(textSizeStep) } as CSSProperties}>
     <div className="listing-comments-heading"><h2 id="listing-comments-title">{t("listingCommentsTitle")}</h2><span>{activeCommentCount} {activeCommentCount === 1 ? "comment" : "comments"}</span></div>
-    <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="ms ms-person" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder={t("listingCommentPlaceholder")} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Post"}</button></div></div></form>
+    <form className="listing-comments-composer" onSubmit={(event) => void submitComment(event)}><div className="listing-comments-composer-avatar"><i className="ms ms-person" aria-hidden="true" /></div><div><textarea value={draft} maxLength={2000} placeholder={t("listingCommentPlaceholder")} onChange={(event) => acceptSafeText(event.target.value, setDraft)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="listing-comments-composer-footer"><span>{draft.length}/2000</span><button type="submit" disabled={isSubmitting || !draft.trim()}>{isSubmitting ? t("listingCommentPosting") : "Post"}</button></div></div></form>
     {error ? <p className="listing-comments-error" role="alert">{error}</p> : null}
     {isLoading ? <div className="listing-comments-skeleton" aria-label={t("listingCommentLoading")}><span /><span /><span /></div> : rootComments.length ? <div className="listing-comments-list">{rootComments.map(renderComment)}</div> : null}
   </section>;

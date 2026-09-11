@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { serviceCategories, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
+import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type EditableService = { id: string; category: ServiceCategoryId; providerName: string; businessName: string; description: string; providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[]; phone: string; email: string; website: string; streetAddress: string; weekdayHours: string; saturdayHours: string; sundayHours: string; foundedYear: string };
@@ -33,7 +34,13 @@ export function ServiceEditClient({ serviceId }: { serviceId: string }) {
     return () => { active = false; };
   }, [isKorean, router, serviceId]);
 
-  const update = <Key extends keyof EditableService>(key: Key, value: EditableService[Key]) => setService((current) => current ? { ...current, [key]: value } : current);
+  const update = <Key extends keyof EditableService>(key: Key, value: EditableService[Key]) => {
+    if (["providerName", "businessName", "description"].includes(key) && typeof value === "string" && containsProhibitedPublicContent(value)) {
+      setNotice(isKorean ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a service listing.");
+      return;
+    }
+    setService((current) => current ? { ...current, [key]: value } : current);
+  };
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!service) return;

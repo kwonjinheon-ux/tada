@@ -15,13 +15,14 @@ import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
+import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 
 type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; locality: string | null; rawSuburb: string | null; region: string | null; latitude: number | null; longitude: number | null };
 
 const emptyLocation: LocationDraft = { mainLocation: "", subLocation: "", locality: null, rawSuburb: null, region: null, latitude: null, longitude: null };
 
 export function CommunityCreateClient() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [categorySlug, setCategorySlug] = useState<Exclude<CommunityCategory, "all"> | "">("");
   const [title, setTitle] = useState("");
@@ -31,6 +32,7 @@ export function CommunityCreateClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
+  const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a public post.";
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -49,6 +51,10 @@ export function CommunityCreateClient() {
     setError(null);
     if (!categorySlug) {
       setError(t("communityCreateCategoryRequired"));
+      return;
+    }
+    if (containsProhibitedPublicContent(title, body)) {
+      setError(unsafeMessage);
       return;
     }
     if (title.trim().length < 4) {
@@ -100,8 +106,8 @@ export function CommunityCreateClient() {
 
             <section className="post-description-field">
               <div className="post-section-heading"><span>2</span><h2>{t("communityWriteYourPost")}</h2></div>
-              <div className="post-field"><label htmlFor="community-title">{t("communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder={t("communityTitlePlaceholder")} required /></div>
-              <div className="post-field"><label htmlFor="community-body">{t("communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t("communityDetailsLabel")} value={body} onChange={setBody} placeholder={t("communityDetailsPlaceholder")} /></div>
+              <div className="post-field"><label htmlFor="community-title">{t("communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => { if (containsProhibitedPublicContent(event.target.value)) { setError(unsafeMessage); return; } setTitle(event.target.value); }} minLength={4} maxLength={120} placeholder={t("communityTitlePlaceholder")} required /></div>
+              <div className="post-field"><label htmlFor="community-body">{t("communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t("communityDetailsLabel")} value={body} onChange={(value) => { if (containsProhibitedPublicContent(value)) { setError(unsafeMessage); return; } setBody(value); }} placeholder={t("communityDetailsPlaceholder")} /></div>
             </section>
 
             <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>{t("communityAddImages")}</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { containsProhibitedPublicContent, prohibitedServiceContentMessage } from "@/lib/safety/prohibited-content";
 
 const serviceCategories = new Set(["cleaning", "cleaningServices", "computerIt", "handyman", "moving", "auto", "gardening", "tutoring", "beauty", "petCare", "realEstate", "travelStudy"]);
 const providerTypes = new Set(["business", "sole_trader"]);
@@ -66,6 +67,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
   const languages = Array.isArray(payload.languages) ? payload.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0 && value.trim().length <= 80).map((value) => value.trim()).slice(0, 20) : [];
   const addressVisibility = payload.addressVisibility === "exact" ? "exact" : "area";
   const serviceDetails = payload.serviceDetails && typeof payload.serviceDetails === "object" && !Array.isArray(payload.serviceDetails) ? payload.serviceDetails : null;
+
+  if (containsProhibitedPublicContent(providerName, businessName, description, summary, serviceDetails ? JSON.stringify(serviceDetails) : null)) {
+    return NextResponse.json({ error: prohibitedServiceContentMessage }, { status: 400 });
+  }
 
   if (!providerName || !businessName || !description || !phone || !category || !providerType || !serviceAreas.length || !streetAddress || !weekdayHours) {
     return NextResponse.json({ error: "Complete the required service details before saving." }, { status: 400 });

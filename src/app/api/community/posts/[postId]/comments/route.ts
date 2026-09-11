@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
@@ -30,6 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ pos
   const payload = await request.json().catch(() => null) as { body?: unknown; parentId?: unknown } | null;
   const body = typeof payload?.body === "string" ? payload.body.trim() : "";
   if (!body || body.length > 2000) return NextResponse.json({ error: "Comments must be between 1 and 2,000 characters." }, { status: 400 });
+  if (containsProhibitedPublicContent(body)) return NextResponse.json({ error: prohibitedPublicContentMessage }, { status: 400 });
   const supabase = await createServerSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Comments are unavailable right now." }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();

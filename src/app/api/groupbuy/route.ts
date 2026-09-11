@@ -3,6 +3,7 @@ import type { GroupBuy } from "@/data/groupBuy";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createBearerSupabaseClient, createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 const fallbackImage = "/images/home/journey-market.png";
 
@@ -81,6 +82,9 @@ export async function POST(request: Request) {
   const parsed = groupBuyCreateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", parsed.error.issues[0]?.message ?? "Invalid group buy.", 400);
   const data = parsed.data;
+  if (containsProhibitedPublicContent(data.title, data.summary, data.description, ...data.items.flatMap((item) => [item.name, item.note, item.unitLabel]))) {
+    return apiFailure("BAD_REQUEST", prohibitedPublicContentMessage, 400);
+  }
   if ((data.coverImagePath && !data.coverImagePath.startsWith(`${user.id}/group-buy/`)) || data.items.some((item) => item.photoPath && !item.photoPath.startsWith(`${user.id}/group-buy/`))) {
     return apiFailure("BAD_REQUEST", "Uploaded images must belong to your account.", 400);
   }

@@ -15,6 +15,7 @@ import { ServiceCreateEditor } from "@/components/services/ServiceCreateEditor";
 import { serviceCategories, serviceDetailFields, serviceDetailsSummary, servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { NZ_MAIN_LOCATIONS, getSubLocations, type MainLocation } from "@/data/nzLocations";
 import { isAcceptedMarketListingImage, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
+import { containsProhibitedPublicContent, prohibitedServiceContentMessage } from "@/lib/safety/prohibited-content";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type PhotoPreview = { id: string; file: File; url: string };
@@ -186,6 +187,11 @@ export function ServiceCreateClient() {
       }, {});
       const priceFrom = Number(detailValues.price_from);
       const priceUnit = detailValues.price_unit;
+      const serviceContent = [providerName, businessName, summary, description, ...Object.values(detailValues), ...Object.values(additionalServices).flatMap((service) => Object.values(service))];
+      if (containsProhibitedPublicContent(...serviceContent)) {
+        showErrorDialog(isKorean ? "금지되거나 안전하지 않은 내용은 서비스에 등록할 수 없습니다." : prohibitedServiceContentMessage);
+        return;
+      }
       if (!phone || !/^\+?\d{7,20}$/.test(phone)) {
         showErrorDialog(isKorean ? "전화번호를 7자리 이상 입력해 주세요." : "Enter a phone number with at least 7 digits.");
         return;
@@ -304,7 +310,7 @@ export function ServiceCreateClient() {
       <section className="post-ad-card">
         <header className="post-ad-intro"><h1>{copy.title}</h1><p>{copy.description}</p></header>
         <section className="service-create-information" aria-label="Service listing information">{copy.information.map(([, title, body], index) => <article key={title}><i className={["ms ms-credit-card", "ms ms-security", "ms ms-check-circle"][index]} aria-hidden="true" /><div><strong>{title}</strong><span>{body}</span></div></article>)}</section>
-        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInvalid={showErrorDialog} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} selectedServiceAreas={selectedServiceAreas} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={addServiceArea} onServiceAreaAdd={addServiceArea} onServiceAreaRemove={removeServiceArea} onSuburbChange={setSuburb} />
+        <ServiceCreateEditor isKorean={isKorean} locale={locale} category={category} categoryLabels={categoryLabels} onCategoryChange={(next) => { setCategory(next); setServiceDetailValues({}); }} detailValues={serviceDetailValues} onDetailChange={(key, value) => setServiceDetailValues((current) => ({ ...current, [key]: value }))} logo={logo} photos={photos} primaryPhotoId={primaryPhotoId} logoInputRef={logoInputRef} photoInputRef={photoInputRef} onLogoAdd={addLogo} onLogoRemove={removeLogo} onPhotosAdd={addPhotos} onPhotoRemove={removePhoto} onPrimaryPhotoChange={setPrimaryPhotoId} onSubmit={submit} onInvalid={showErrorDialog} onUnsafeInput={() => showErrorDialog(isKorean ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a service listing.")} onPreview={() => setIsPreviewOpen(true)} onInput={readPreviewFields} acceptedTerms={acceptedTerms} onTermsChange={setAcceptedTerms} isSubmitting={isSubmitting} notice={notice} serviceArea={serviceArea} selectedServiceAreas={selectedServiceAreas} suburb={suburb} allAreasValue={allAreasValue} areaOptions={[{ value: allAreasValue, label: isKorean ? "뉴질랜드 전체" : "All New Zealand" }, ...NZ_MAIN_LOCATIONS.map((location) => ({ value: location, label: location }))]} suburbOptions={availableSuburbs.map((option) => ({ value: option, label: option }))} onAreaChange={addServiceArea} onServiceAreaAdd={addServiceArea} onServiceAreaRemove={removeServiceArea} onSuburbChange={setSuburb} />
         <form className="post-ad-form service-create-legacy-form" hidden aria-hidden="true" onSubmit={submit} onInput={(event) => readPreviewFields(event.currentTarget)}>
           <fieldset disabled>
           <section className="post-title-field"><div className="post-section-heading"><span>1</span><h2>{copy.category}</h2></div><div className="post-shop-type-options" role="group" aria-label={copy.category}>{serviceCategories.map(({ id, icon }) => <button className={category === id ? "is-selected" : ""} key={id} type="button" onClick={() => { setCategory(id); setServiceDetailValues({}); }}><i className={`ms ${icon}`} aria-hidden="true" />{categoryLabels[id]}</button>)}</div></section>

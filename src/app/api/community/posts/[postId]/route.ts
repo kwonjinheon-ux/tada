@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { communityPostUpdateRequestSchema } from "@/contracts/api";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ postId: string }> }) {
   const payload = communityPostUpdateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return NextResponse.json({ error: "Please complete each required field." }, { status: 400 });
+  if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return NextResponse.json({ error: prohibitedPublicContentMessage }, { status: 400 });
   const { postId } = await params;
   const supabase = await createServerSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Community posts are unavailable right now." }, { status: 503 });
