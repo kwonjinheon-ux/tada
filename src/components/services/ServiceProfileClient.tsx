@@ -172,16 +172,23 @@ export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
     profile.email ? { icon: "ms-mail", label: isKorean ? "이메일" : "Email", value: profile.email } : null,
     profile.website ? { icon: "ms-language", label: isKorean ? "웹사이트" : "Website", value: profile.website.replace(/^https?:\/\//, "") } : null,
   ].filter((item): item is { icon: string; label: string; value: string } => Boolean(item));
+  const defaultClosedLabel = isKorean ? "휴무" : "Closed";
   const openingHours = [
     { value: profile.weekdayHours, label: isKorean ? "평일" : "Mon – Fri" },
     { value: profile.saturdayHours, label: isKorean ? "토요일" : "Saturday" },
     { value: profile.sundayHours, label: isKorean ? "일요일·공휴일" : "Sunday & public holidays" },
-  ].flatMap(({ value, label }) => (value ?? "").split(/\s+·\s+|\r?\n/).map((entry) => entry.trim()).filter(Boolean).map((entry) => {
+  ].flatMap(({ value, label }) => {
+    const entries = (value ?? "").split(/\s+·\s+|\r?\n/).map((entry) => entry.trim()).filter(Boolean);
+    // A blank day is intentionally shown as closed so customers can see the full weekly schedule.
+    if (!entries.length) return [{ days: label, time: defaultClosedLabel }];
+
+    return entries.map((entry) => {
     // New entries already include their selected days; legacy fields hold only times.
     const timeStart = entry.search(/\d{1,2}:\d{2}|\b(?:closed|open 24 hours)\b|휴무|24시간/i);
     const days = timeStart > 0 ? entry.slice(0, timeStart).trim() : label;
     return { days, time: timeStart > 0 ? entry.slice(timeStart).trim() : entry };
-  }));
+    });
+  });
   const businessProfileDetails = [
     profile.foundedYear ? { icon: "ms-calendar-month", label: isKorean ? "설립" : "Established", value: String(profile.foundedYear) } : null,
     profile.languages.length ? { icon: "ms-language", label: isKorean ? "제공 언어" : "Languages spoken", value: profile.languages.join(", ") } : null,
