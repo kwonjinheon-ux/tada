@@ -2928,6 +2928,17 @@ a {
   object-fit: contain;
 }
 
+/* The shared gallery promotes ordinary camera ratios to their native frame.
+   The backdrop appears only when a portrait or panorama would exceed the
+   viewport's comfortable reading height. */
+.listing-detail-main-image.is-native-aspect {
+  aspect-ratio: var(--gallery-image-aspect);
+}
+
+.listing-detail-main-image.is-native-aspect .listing-detail-main-backdrop {
+  opacity: 0;
+}
+
 .listing-detail-main-image:focus-visible {
   outline: 3px solid var(--green-450);
   outline-offset: 3px;

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -60,18 +60,41 @@ export function ImageLightbox({ images, activeIndex, onSelect, onClose, caption 
 export function ImageGallery({ images, className = "", priority = false }: { images: GalleryImage[]; className?: string; priority?: boolean }) {
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
+  const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+  const [nativeAspect, setNativeAspect] = useState<number | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
   const active = Math.min(selected, Math.max(0, images.length - 1));
   const image = images[active];
+  const updateAspect = useCallback(() => {
+    if (!naturalSize || !stageRef.current) return;
+    const aspect = naturalSize.width / naturalSize.height;
+    const projectedHeight = stageRef.current.clientWidth / aspect;
+    // A native-ratio image is easier to scan when it fits inside the current
+    // viewport. Portrait extremes and panoramas retain the blurred safe frame.
+    const comfortableHeight = Math.max(280, window.innerHeight * 0.72);
+    setNativeAspect(aspect >= 0.62 && aspect <= 2.35 && projectedHeight <= comfortableHeight ? aspect : null);
+  }, [naturalSize]);
+  useEffect(() => {
+    setNaturalSize(null);
+    setNativeAspect(null);
+  }, [image?.src]);
+  useEffect(() => {
+    updateAspect();
+    const observer = new ResizeObserver(updateAspect);
+    if (stageRef.current) observer.observe(stageRef.current);
+    window.addEventListener("resize", updateAspect);
+    return () => { observer.disconnect(); window.removeEventListener("resize", updateAspect); };
+  }, [updateAspect]);
   if (!image) return null;
   return <section className={`listing-detail-gallery shared-image-gallery ${className}`} aria-label={image.alt}>
-    <div className="listing-detail-main-image">
+    <div ref={stageRef} className={`listing-detail-main-image ${nativeAspect ? "is-native-aspect" : "has-letterbox"}`} style={nativeAspect ? { "--gallery-image-aspect": nativeAspect } as CSSProperties : undefined}>
       <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill sizes="(max-width: 767px) 100vw, 960px" aria-hidden="true" />
       <button className="shared-image-gallery-open" type="button" aria-label="Enlarge photo" onClick={() => { if (!swiped.current) setOpen(true); swiped.current = false; }} onPointerDown={(event) => { swiped.current = false; start.current = { x: event.clientX, y: event.clientY }; }} onPointerCancel={() => { start.current = null; }} onPointerUp={(event) => {
         const origin = start.current; start.current = null;
         if (origin && Math.abs(event.clientX - origin.x) > 42 && Math.abs(event.clientX - origin.x) > Math.abs(event.clientY - origin.y)) { swiped.current = true; setSelected((active + (event.clientX < origin.x ? 1 : -1) + images.length) % images.length); }
-      }}><Image className="listing-detail-main-photo" src={image.src} alt={image.alt} fill priority={priority} sizes="(max-width: 767px) 100vw, 960px" /></button>
+      }}><Image className="listing-detail-main-photo" src={image.src} alt={image.alt} fill priority={priority} quality={85} sizes="(max-width: 767px) 100vw, (max-width: 1199px) 92vw, 960px" onLoad={(event) => setNaturalSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} /></button>
       <span className="listing-detail-image-count"><i className="ms ms-photo-library" aria-hidden="true" /> {active + 1} / {images.length}</span>
       {images.length > 1 ? [-1, 1].map((direction) => <button key={direction} type="button" className={`listing-detail-gallery-arrow ${direction < 0 ? "is-previous" : "is-next"}`} aria-label={direction < 0 ? "Previous photo" : "Next photo"} onClick={() => setSelected((active + direction + images.length) % images.length)}><i className={direction < 0 ? "ms ms-chevron-left" : "ms ms-chevron-right"} aria-hidden="true" /></button>) : null}
     </div>
