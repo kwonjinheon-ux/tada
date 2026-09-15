@@ -8465,6 +8465,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     );
   }
   .listing-detail-back-row { display: flex; margin: var(--space-4) var(--page-padding-mobile) var(--space-3); }.listing-detail-back-row .listing-detail-back { display: none; }.listing-detail-summary { display: none; }
+  /* The market detail shell already supplies the mobile top gutter. Avoid
+     stacking a second one above its category path. */
+  .market-detail-shell .listing-detail-back-row { margin-top: 0; }
   .listing-detail-gallery-safety { display: none; }
 
   .listing-detail-layout { display: block; }

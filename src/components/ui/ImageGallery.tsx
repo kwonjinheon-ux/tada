@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -61,35 +61,19 @@ export function ImageGallery({ images, className = "", priority = false }: { ima
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
-  const [nativeAspect, setNativeAspect] = useState<number | null>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const swiped = useRef(false);
   const active = Math.min(selected, Math.max(0, images.length - 1));
   const image = images[active];
-  const updateAspect = useCallback(() => {
-    if (!naturalSize || !stageRef.current) return;
-    const aspect = naturalSize.width / naturalSize.height;
-    const projectedHeight = stageRef.current.clientWidth / aspect;
-    // A native-ratio image is easier to scan when it fits inside the current
-    // viewport. Portrait extremes and panoramas retain the blurred safe frame.
-    const comfortableHeight = Math.max(280, window.innerHeight * 0.72);
-    setNativeAspect(aspect >= 0.62 && aspect <= 2.35 && projectedHeight <= comfortableHeight ? aspect : null);
-  }, [naturalSize]);
+  const nativeAspect = naturalSize && naturalSize.width > 0 && naturalSize.height > 0
+    ? naturalSize.width / naturalSize.height
+    : null;
   useEffect(() => {
     setNaturalSize(null);
-    setNativeAspect(null);
   }, [image?.src]);
-  useEffect(() => {
-    updateAspect();
-    const observer = new ResizeObserver(updateAspect);
-    if (stageRef.current) observer.observe(stageRef.current);
-    window.addEventListener("resize", updateAspect);
-    return () => { observer.disconnect(); window.removeEventListener("resize", updateAspect); };
-  }, [updateAspect]);
   if (!image) return null;
   return <section className={`listing-detail-gallery shared-image-gallery ${className}`} aria-label={image.alt}>
-    <div ref={stageRef} className={`listing-detail-main-image ${nativeAspect ? "is-native-aspect" : "has-letterbox"}`} style={nativeAspect ? { "--gallery-image-aspect": nativeAspect } as CSSProperties : undefined}>
+    <div className={`listing-detail-main-image ${nativeAspect ? "is-native-aspect" : "has-letterbox"}`} style={nativeAspect ? { "--gallery-image-aspect": nativeAspect } as CSSProperties : undefined}>
       <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill sizes="(max-width: 767px) 100vw, 960px" aria-hidden="true" />
       <button className="shared-image-gallery-open" type="button" aria-label="Enlarge photo" onClick={() => { if (!swiped.current) setOpen(true); swiped.current = false; }} onPointerDown={(event) => { swiped.current = false; start.current = { x: event.clientX, y: event.clientY }; }} onPointerCancel={() => { start.current = null; }} onPointerUp={(event) => {
         const origin = start.current; start.current = null;
