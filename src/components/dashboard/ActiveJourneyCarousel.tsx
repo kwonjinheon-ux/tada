@@ -59,7 +59,7 @@ function JourneyThumbnail({ imageUrl }: { imageUrl: string | null }) {
   return imageUrl ? <img className="journey-thumbnail" src={imageUrl} alt="" /> : <span className="journey-thumbnail"><i className="ms ms-image" aria-hidden="true" /></span>;
 }
 
-function JourneyCard({ item }: { item: ActiveJourneyItem }) {
+export function JourneyCard({ item }: { item: ActiveJourneyItem }) {
   if (item.role === "buying") {
     return (
       <article className="journey-card is-buying">

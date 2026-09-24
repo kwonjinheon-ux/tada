@@ -12,6 +12,7 @@ export type DashboardNavItem = {
 };
 
 export const dashboardNavItems: readonly DashboardNavItem[] = [
+  { icon: "ms-account-circle", translationKey: "myPage", label: "My page", suffix: "/my-page" },
   { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
   { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
   { icon: "ms-notifications", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
@@ -34,6 +35,7 @@ export function dashboardNavItemsFor(context: "market" | "jobs", { railOnly = fa
 
 /** Wishlist lives on the marketplace itself rather than inside the dashboard. */
 export function dashboardNavHref(item: DashboardNavItem, context: "market" | "jobs") {
+  if (item.label === "My page") return "/market/dashboard/my-page";
   if (item.label === "Wishlist" && context === "market") return "/market/wishlist";
   return `/${context}/dashboard${item.suffix}`;
 }
