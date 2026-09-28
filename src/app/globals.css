@@ -392,7 +392,10 @@
   --global-shell-tablet-gutter: 24px;
   --global-shell-desktop-width: 90%;
   --global-shell-max-width: 1360px;
-  --page-inner-reading-max-width: 760px;
+  /* Focused reading and form surfaces share the 900px measure. This keeps
+     policies, guides, long-form content, and editors comfortably readable
+     without route-specific width rules. */
+  --page-inner-reading-max-width: 900px;
   --page-inner-form-max-width: 900px;
   --page-padding-inline: var(--page-padding-mobile);
   --page-max-width: 1200px;

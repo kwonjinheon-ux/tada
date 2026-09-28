@@ -9050,6 +9050,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
 /* Seller dashboard overview. */
 .dashboard-layout:has(> .seller-dashboard-content) { background: var(--neutral-150); }
+.dashboard-layout:has(> .my-page-content) { background: var(--neutral-50); }
+.dashboard-layout > .my-page-content {
+  max-width: none;
+  margin-inline: 0;
+}
 .seller-dashboard-content { width: min(100%, 1180px); min-height: 100%; padding: 30px 34px 56px; background: var(--neutral-50); }
 
 /* My page composes the existing dashboard shell; all rules stay within this feature. */
@@ -9132,6 +9137,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .my-page-progress, .my-page-activity { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .my-page-activity { column-gap: var(--space-5); }
   .my-page-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  /* My page shares the Market browse canvas: the result column uses its full
+     available width and begins on the same 16px gutter after the rail. */
+  .dashboard-layout > .my-page-content { padding-inline: var(--space-4); }
 }
 @media (min-width: 1280px) {
   .my-page-layout { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); }
@@ -13332,4 +13342,71 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-detail-loading-media,
   .listing-detail-loading-summary,
   .listing-detail-loading-description > * { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Page-width policy
+
+   Browse and account products use the shared 1360px Global Shell. Detail
+   screens step down to 1200px, focused authoring and reading surfaces to
+   900px, and Messages remains an app-wide workspace. Keeping the decisions
+   here prevents individual routes from quietly reintroducing their own widths.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  /* Browse and account shells share the same outer frame as PageContainer. */
+  .marketplace-page.market-page-with-bottom-dock,
+  .marketplace-page.community-page,
+  .marketplace-page.services-page:not(.service-profile-page),
+  .marketplace-page.dashboard-page.dashboard-layout:not(:has(> .messages-page)):not(:has(> .messages-unavailable)) {
+    width: min(var(--global-shell-desktop-width), var(--global-shell-max-width));
+    margin-inline: auto;
+  }
+
+  /* Dashboard pages use the full shared shell after their standing rail. */
+  .dashboard-layout:not(:has(> .messages-page)):not(:has(> .messages-unavailable)) .dashboard-content {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .dashboard-layout .seller-dashboard-content,
+  .dashboard-layout .manage-listings-content {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Messaging is a viewport workspace, never a centred document. */
+  .dashboard-layout:has(> .messages-page),
+  .dashboard-layout:has(> .messages-unavailable) {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  /* Product and service detail use one calm, deliberately narrower measure. */
+  .market-detail-shell,
+  .marketplace-page.services-page.service-profile-page {
+    width: min(var(--global-shell-desktop-width), var(--page-max-width));
+    max-width: var(--page-max-width);
+    margin-inline: auto;
+  }
+
+  /* The editor can shrink below 900px when its app rails need space, but it
+     never grows beyond the focused form measure. */
+  .service-create-main {
+    width: min(100%, var(--page-inner-form-max-width));
+    margin-inline: auto;
+  }
+
+  .service-edit-page {
+    max-width: var(--page-inner-form-max-width);
+  }
+}
+
+@media (min-width: 768px) {
+  /* Market and Community composers share the same focused authoring width. */
+  .post-ad-page > .post-ad-intro,
+  .post-ad-page > .post-ad-layout {
+    width: min(100%, var(--page-inner-form-max-width));
+    margin-inline: auto;
+  }
 }
