@@ -14,7 +14,7 @@ outer width, margin, or desktop gutter.
 | --- | --- |
 | Below `768px` | Full width with `16px` inline gutters |
 | `768px` to `1023px` | Full width with `24px` inline gutters |
-| `1024px` and above | `90%` viewport width, centered, capped at `1360px` |
+| `1024px` and above | Available width, centered, capped at `1360px` |
 
 The tokens live in `src/app/globals.css`:
 
@@ -44,8 +44,8 @@ export default function ExamplePage() {
 }
 ```
 
-`PageInner` is optional. Use it only when the content itself needs to be more
-focused than the shared frame:
+`PageInner` is optional. It preserves the Global Shell's 1360px cap while
+giving content a semantic layout boundary:
 
 - `size="reading"` for long-form text, help, profile summaries, and detail copy.
 - `size="form"` for focused forms.

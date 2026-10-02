@@ -13363,10 +13363,9 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 /* ---------------------------------------------------------------------------
    Page-width policy
 
-   Browse and account products use the shared 1360px Global Shell. Detail
-   screens step down to 1200px, focused authoring and reading surfaces to
-   900px, and Messages remains an app-wide workspace. Keeping the decisions
-   here prevents individual routes from quietly reintroducing their own widths.
+   Browse, account, detail, authoring, and reading surfaces use the shared
+   1360px Global Shell. Messages remains an app-wide workspace. Keeping the
+   decisions here prevents individual routes from quietly reintroducing widths.
    --------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
   /* Browse and account shells share the same outer frame as PageContainer. */
@@ -13398,7 +13397,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     margin-inline: 0;
   }
 
-  /* Product and service detail use one calm, deliberately narrower measure. */
+  /* Product and service detail stay within the shared Global Shell. */
   .market-detail-shell,
   .marketplace-page.services-page.service-profile-page {
     width: min(var(--global-shell-desktop-width), var(--page-max-width));
@@ -13406,8 +13405,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     margin-inline: auto;
   }
 
-  /* The editor can shrink below 900px when its app rails need space, but it
-     never grows beyond the focused form measure. */
+  /* Editors use the shared form measure and can still shrink beside app rails. */
   .service-create-main {
     width: min(100%, var(--page-inner-form-max-width));
     margin-inline: auto;

@@ -390,15 +390,14 @@
   /* Global page frame: every page surface aligns to this shell. */
   --global-shell-mobile-gutter: 16px;
   --global-shell-tablet-gutter: 24px;
-  --global-shell-desktop-width: 90%;
+  --global-shell-desktop-width: 100%;
   --global-shell-max-width: 1360px;
-  /* Focused reading and form surfaces share the 900px measure. This keeps
-     policies, guides, long-form content, and editors comfortably readable
-     without route-specific width rules. */
-  --page-inner-reading-max-width: 900px;
-  --page-inner-form-max-width: 900px;
+  /* Reading, authoring, and detail surfaces share the Global Shell cap so
+     complex desktop layouts do not become artificially narrower. */
+  --page-inner-reading-max-width: 1360px;
+  --page-inner-form-max-width: 1360px;
   --page-padding-inline: var(--page-padding-mobile);
-  --page-max-width: 1200px;
+  --page-max-width: 1360px;
   --page-narrow-max-width: 760px;
   --page-wide-max-width: 1440px;
   --section-gap: 32px;
