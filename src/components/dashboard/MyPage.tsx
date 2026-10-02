@@ -3,13 +3,14 @@ import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getActiveJourneys } from "@/lib/market/active-journey";
 import { MyPageClient } from "@/components/dashboard/MyPageClient";
+import { MyPageV2Client } from "@/components/dashboard/MyPageV2Client";
 
 /** Personal overview: scoped reads through the same authenticated client as the dashboard. */
-export async function MyPage() {
+export async function MyPage({ version = "current" }: { version?: "current" | "v2" }) {
   const user = await getServerUser();
-  if (!user) redirect("/login?redirectTo=%2Fmarket%2Fdashboard%2Fmy-page");
+  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(version === "v2" ? "/market/dashboard/my-page-v2" : "/market/dashboard/my-page")}`);
   const db = await createServerSupabaseClient();
-  if (!db) return <MyPageClient data={null} />;
+  if (!db) return version === "v2" ? <MyPageV2Client data={null} /> : <MyPageClient data={null} />;
   const [profile, services, posts, activity, unread, sales, journeys, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations] = await Promise.all([
     db.from("profiles").select("display_name,avatar_path,region_city,region_suburb").eq("id", user.id).maybeSingle(),
     db.from("service_listings").select("id,provider_name,status,updated_at", { count: "exact" }).eq("owner_id", user.id).neq("status", "archived").order("updated_at", { ascending: false }).limit(6),
@@ -30,7 +31,7 @@ export async function MyPage() {
   ]);
   const avatarPath = profile.data?.avatar_path;
   const avatar = avatarPath ? await db.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : null;
-  return <MyPageClient data={{
+  const data = {
     name: profile.data?.display_name || "Tada member",
     avatar: avatar?.data?.signedUrl ?? null,
     location: [profile.data?.region_suburb, profile.data?.region_city].filter(Boolean).join(", "),
@@ -47,5 +48,6 @@ export async function MyPage() {
     activeListingCount: marketListings.error || bargainListings.error || services.error ? null : (marketListings.count ?? 0) + (bargainListings.count ?? 0) + (services.count ?? 0),
     activeReservationCount: sellingReservations.error || buyingReservations.error ? null : (sellingReservations.count ?? 0) + (buyingReservations.count ?? 0),
     unavailable: [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
-  }} />;
+  };
+  return version === "v2" ? <MyPageV2Client data={data} /> : <MyPageClient data={data} />;
 }

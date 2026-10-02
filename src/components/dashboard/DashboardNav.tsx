@@ -30,7 +30,7 @@ export function DashboardNav({
       {dashboardNavItemsFor(context, { railOnly: true }).map((item) => {
         const href = dashboardNavHref(item, context);
         // The index route would otherwise match every child path.
-        const isActive = item.suffix === "" ? pathname === base : pathname.startsWith(href);
+        const isActive = item.suffix === "" ? pathname === base : pathname === href || pathname.startsWith(`${href}/`);
         const unreadCount = item.label === "Messages" ? unreadMessageCount : item.label === "Notifications" ? unreadNotificationCount : 0;
 
         return (
