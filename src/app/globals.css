@@ -390,8 +390,9 @@
   /* Global page frame: every page surface aligns to this shell. */
   --global-shell-mobile-gutter: 16px;
   --global-shell-tablet-gutter: 24px;
-  --global-shell-desktop-width: 100%;
-  --global-shell-max-width: 1360px;
+  --global-shell-desktop-gutter: 32px;
+  --global-shell-desktop-width: calc(100% - (var(--global-shell-desktop-gutter) * 2));
+  --global-shell-max-width: 1600px;
   /* Reading, authoring, and detail surfaces share the Global Shell cap so
      complex desktop layouts do not become artificially narrower. */
   --page-inner-reading-max-width: 1360px;
