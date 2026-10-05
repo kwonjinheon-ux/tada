@@ -14,7 +14,7 @@ outer width, margin, or desktop gutter.
 | --- | --- |
 | Below `768px` | Full width with `16px` inline gutters |
 | `768px` to `1023px` | Full width with `24px` inline gutters |
-| `1024px` and above | Available width with `32px` inline gutters, centered, capped at `1600px` |
+| `1024px` and above | Available width with `32px` inline gutters, centered, capped at `1800px` |
 
 The tokens live in `src/app/globals.css`:
 
@@ -45,7 +45,7 @@ export default function ExamplePage() {
 }
 ```
 
-`PageInner` is optional. It preserves the Global Shell's 1600px cap while
+`PageInner` is optional. It preserves the Global Shell's 1800px cap while
 giving content a semantic layout boundary:
 
 - `size="reading"` for long-form text, help, profile summaries, and detail copy.

@@ -13364,7 +13364,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
    Page-width policy
 
    Browse, account, detail, authoring, and reading surfaces use the shared
-   1600px Global Shell. Messages remains an app-wide workspace. Keeping the
+   1800px Global Shell. Messages remains an app-wide workspace. Keeping the
    decisions here prevents individual routes from quietly reintroducing widths.
    --------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
