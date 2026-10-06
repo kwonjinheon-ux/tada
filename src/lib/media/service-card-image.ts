@@ -32,7 +32,9 @@ export type ServiceCardContent = {
   isKorean: boolean;
 };
 
-export const serviceCardFormats: readonly ServiceCardFormat[] = ["card", "cardPortrait", "thumbnail"] as const;
+// The provider can save the two business-card layouts. The thumbnail renderer
+// stays available for directory media, but is not a downloadable card choice.
+export const serviceCardFormats: readonly ServiceCardFormat[] = ["card", "cardPortrait"] as const;
 
 /** Business-card proportions (91×55mm) and the directory card's 16:10 media
  *  box. Both are sized so the export stays sharp when printed or shared. */
