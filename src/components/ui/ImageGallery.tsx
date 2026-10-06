@@ -53,7 +53,7 @@ export function ImageLightbox({ images, activeIndex, onSelect, onClose, caption 
     }}><Image className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill sizes="100vw" /></div>
     {images.length > 1 ? <>{[-1, 1].map((direction) => <button key={direction} className={`listing-gallery-lightbox-arrow ${direction < 0 ? "is-previous" : "is-next"}`} type="button" aria-label={direction < 0 ? "Previous photo" : "Next photo"} onClick={() => onSelect((activeIndex + direction + images.length) % images.length)}><i className={direction < 0 ? "ms ms-chevron-left" : "ms ms-chevron-right"} aria-hidden="true" /></button>)}</> : null}
     {caption}
-    <span className="listing-gallery-lightbox-count">{activeIndex + 1} / {images.length}<br />{locale === "ko" ? "사진 바깥을 누르면 닫힙니다" : "Click outside the photo to close"}</span>
+    <span className="listing-gallery-lightbox-count">{activeIndex + 1} / {images.length}</span>
   </DialogOverlay>, document.body);
 }
 

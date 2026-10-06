@@ -529,15 +529,15 @@ export function Navbar() {
   ];
 
   const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
-    { id: "home", label: "Market home", icon: "home", href: "/market" },
-    { id: "message", label: "Message seller", icon: "message", onClick: () => triggerListingDockAction("message") },
+    { id: "home", label: t("listingDockMarketHome"), icon: "home", href: "/market" },
+    { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
-      ? { id: "edit", label: "Edit listing", icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
-      : { id: "offer", label: "Make an offer", icon: "offer", actionLabel: "Offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
-    { id: "share", label: isListingShareCopied ? "Listing link copied" : "Copy listing link", icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
+      ? { id: "edit", label: t("listingDockEdit"), icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
+      : { id: "offer", label: t("listingMakeOffer"), icon: "offer", actionLabel: t("listingDockOffer"), onClick: () => triggerListingDockAction("offer"), variant: "offer" },
+    { id: "share", label: isListingShareCopied ? t("listingDockLinkCopied") : t("listingDockCopyLink"), icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
     listingDockConfig.isOwner
-      ? { id: "delete", label: "Delete listing", icon: "delete", onClick: () => triggerListingDockAction("delete") }
-      : { id: "save", label: listingDockConfig.isSaved ? "Remove saved listing" : "Save listing", icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
+      ? { id: "delete", label: t("listingDelete"), icon: "delete", onClick: () => triggerListingDockAction("delete") }
+      : { id: "save", label: listingDockConfig.isSaved ? t("listingUnsave") : t("listingSave"), icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
 
   function openMobileCategories() {

@@ -12,6 +12,7 @@ import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
+import { getMarketCategoryLabel } from "@/lib/market/category-label";
 import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
 import { TextSizeSection } from "@/components/ui/TextSizeSection";
 import { AdSlot } from "@/components/advertising/AdSlot";
@@ -65,7 +66,7 @@ type BargainOffer = { id: string; buyer_id: string; amount_cents: number; note: 
 
 export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const isBargainListing = space === "bargain";
   const supportsBargainOffer = isBargainListing && listing.bargainType === "2-dollar-deals";
   const listingHomePath = "/market";
@@ -391,7 +392,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   return (
     <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
-        {listing.category ? <nav className="detail-breadcrumb" aria-label={t("listingCategoryNav")}><Link href={listingHomePath}>{t("listingBreadcrumbMarket")}</Link><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{listing.category.label}</Link>{listing.category.subcategory ? <><i className="ms ms-chevron-right" aria-hidden="true" /><span>{listing.category.subcategory.label}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="ms ms-arrow-back" aria-hidden="true" /> Back to listings</Link>}
+        {listing.category ? <nav className="detail-breadcrumb" aria-label={t("listingCategoryNav")}><Link href={listingHomePath}>{t("listingBreadcrumbMarket")}</Link><i className="ms ms-chevron-right" aria-hidden="true" /><Link href={listing.category.href}>{getMarketCategoryLabel(listing.category.label, locale)}</Link>{listing.category.subcategory ? <><i className="ms ms-chevron-right" aria-hidden="true" /><span>{getMarketCategoryLabel(listing.category.subcategory.label, locale)}</span></> : null}</nav> : <Link className="listing-detail-back" href={listingHomePath}><i className="ms ms-arrow-back" aria-hidden="true" /> Back to listings</Link>}
       </div>
 
       <div className="listing-detail-layout">
