@@ -8,8 +8,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 export type GalleryImage = { src: string; alt: string };
 
-export function ImageLightbox({ images, activeIndex, onSelect, onClose, caption }: {
-  images: GalleryImage[]; activeIndex: number; onSelect: (index: number) => void; onClose: () => void; caption?: ReactNode;
+export function ImageLightbox({ images, activeIndex, onSelect, onClose, caption, watermarkLabel }: {
+  images: GalleryImage[]; activeIndex: number; onSelect: (index: number) => void; onClose: () => void; caption?: ReactNode; watermarkLabel?: string;
 }) {
   const { locale } = useLanguage();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -50,14 +50,16 @@ export function ImageLightbox({ images, activeIndex, onSelect, onClose, caption 
       const scale = Math.min(box.width / photo.naturalWidth, box.height / photo.naturalHeight);
       const width = photo.naturalWidth * scale, height = photo.naturalHeight * scale;
       if (Math.abs(event.clientX - box.left - box.width / 2) > width / 2 || Math.abs(event.clientY - box.top - box.height / 2) > height / 2) onClose();
-    }}><Image className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill sizes="100vw" /></div>
+    }}><Image className="listing-gallery-lightbox-photo" src={image.src} alt={image.alt} fill sizes="100vw" />
+      {watermarkLabel ? <span className="shared-image-gallery-watermark" aria-hidden="true">{watermarkLabel}</span> : null}
+    </div>
     {images.length > 1 ? <>{[-1, 1].map((direction) => <button key={direction} className={`listing-gallery-lightbox-arrow ${direction < 0 ? "is-previous" : "is-next"}`} type="button" aria-label={direction < 0 ? "Previous photo" : "Next photo"} onClick={() => onSelect((activeIndex + direction + images.length) % images.length)}><i className={direction < 0 ? "ms ms-chevron-left" : "ms ms-chevron-right"} aria-hidden="true" /></button>)}</> : null}
     {caption}
     <span className="listing-gallery-lightbox-count">{activeIndex + 1} / {images.length}</span>
   </DialogOverlay>, document.body);
 }
 
-export function ImageGallery({ images, className = "", priority = false }: { images: GalleryImage[]; className?: string; priority?: boolean }) {
+export function ImageGallery({ images, className = "", priority = false, watermarkLabel, disableEnlarge = false }: { images: GalleryImage[]; className?: string; priority?: boolean; watermarkLabel?: string; disableEnlarge?: boolean }) {
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
@@ -72,17 +74,19 @@ export function ImageGallery({ images, className = "", priority = false }: { ima
     setNaturalSize(null);
   }, [image?.src]);
   if (!image) return null;
+  const mainPhoto = <Image className="listing-detail-main-photo" src={image.src} alt={image.alt} fill priority={priority} quality={85} sizes="(max-width: 767px) 100vw, (max-width: 1199px) 92vw, 960px" onLoad={(event) => setNaturalSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />;
   return <section className={`listing-detail-gallery shared-image-gallery ${className}`} aria-label={image.alt}>
-    <div className={`listing-detail-main-image ${nativeAspect ? "is-native-aspect" : "has-letterbox"}`} style={nativeAspect ? { "--gallery-image-aspect": nativeAspect } as CSSProperties : undefined}>
+    <div className={`listing-detail-main-image ${nativeAspect ? "is-native-aspect" : "has-letterbox"}${disableEnlarge ? " is-static" : ""}`} style={nativeAspect ? { "--gallery-image-aspect": nativeAspect } as CSSProperties : undefined}>
       <Image className="listing-detail-main-backdrop" src={image.src} alt="" fill sizes="(max-width: 767px) 100vw, 960px" aria-hidden="true" />
-      <button className="shared-image-gallery-open" type="button" aria-label="Enlarge photo" onClick={() => { if (!swiped.current) setOpen(true); swiped.current = false; }} onPointerDown={(event) => { swiped.current = false; start.current = { x: event.clientX, y: event.clientY }; }} onPointerCancel={() => { start.current = null; }} onPointerUp={(event) => {
+      {disableEnlarge ? mainPhoto : <button className="shared-image-gallery-open" type="button" aria-label="Enlarge photo" onClick={() => { if (!swiped.current) setOpen(true); swiped.current = false; }} onPointerDown={(event) => { swiped.current = false; start.current = { x: event.clientX, y: event.clientY }; }} onPointerCancel={() => { start.current = null; }} onPointerUp={(event) => {
         const origin = start.current; start.current = null;
         if (origin && Math.abs(event.clientX - origin.x) > 42 && Math.abs(event.clientX - origin.x) > Math.abs(event.clientY - origin.y)) { swiped.current = true; setSelected((active + (event.clientX < origin.x ? 1 : -1) + images.length) % images.length); }
-      }}><Image className="listing-detail-main-photo" src={image.src} alt={image.alt} fill priority={priority} quality={85} sizes="(max-width: 767px) 100vw, (max-width: 1199px) 92vw, 960px" onLoad={(event) => setNaturalSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} /></button>
+      }}>{mainPhoto}</button>}
+      {watermarkLabel ? <span className="shared-image-gallery-watermark" aria-hidden="true">{watermarkLabel}</span> : null}
       <span className="listing-detail-image-count"><i className="ms ms-photo-library" aria-hidden="true" /> {active + 1} / {images.length}</span>
       {images.length > 1 ? [-1, 1].map((direction) => <button key={direction} type="button" className={`listing-detail-gallery-arrow ${direction < 0 ? "is-previous" : "is-next"}`} aria-label={direction < 0 ? "Previous photo" : "Next photo"} onClick={() => setSelected((active + direction + images.length) % images.length)}><i className={direction < 0 ? "ms ms-chevron-left" : "ms ms-chevron-right"} aria-hidden="true" /></button>) : null}
     </div>
     {images.length > 1 ? <div className="listing-detail-thumbnails">{images.map((photo, index) => <button key={`${photo.src}-${index}`} type="button" className={index === active ? "is-active" : ""} aria-label={`Show photo ${index + 1}`} aria-pressed={index === active} onClick={() => setSelected(index)}><Image src={photo.src} alt="" fill sizes="96px" /></button>)}</div> : null}
-    {open ? <ImageLightbox images={images} activeIndex={active} onSelect={setSelected} onClose={() => setOpen(false)} /> : null}
+    {open && !disableEnlarge ? <ImageLightbox images={images} activeIndex={active} onSelect={setSelected} onClose={() => setOpen(false)} watermarkLabel={watermarkLabel} /> : null}
   </section>;
 }

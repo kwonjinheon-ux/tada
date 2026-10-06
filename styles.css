@@ -2506,7 +2506,8 @@ a {
   filter: none;
 }
 
-.product-sold-out {
+.product-sold-out,
+.shared-image-gallery-watermark {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -2528,6 +2529,16 @@ a {
   text-transform: uppercase;
   transform: translate(-50%, -50%) rotate(-11deg);
   white-space: nowrap;
+}
+
+.shared-image-gallery-watermark {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.listing-gallery-lightbox-stage .shared-image-gallery-watermark {
+  padding-inline: var(--space-6);
+  font-size: var(--text-3xl);
 }
 
 .product-body h2 {
@@ -2914,6 +2925,10 @@ a {
   border-radius: var(--radius-md);
   background: var(--blue-900);
   cursor: zoom-in;
+}
+
+.listing-detail-main-image.is-static {
+  cursor: default;
 }
 
 .listing-detail-main-backdrop {
@@ -8986,7 +9001,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     position: relative;
     height: var(--desktop-header-height);
     min-height: var(--desktop-header-height);
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    /* Keep navigation and account controls in their own auto tracks. The
+       search track is the only flexible column, so it yields before links can
+       overlap or disappear at intermediate desktop widths. */
+    grid-template-columns: auto minmax(200px, 1fr) auto auto;
     grid-auto-rows: 48px;
     padding-block: 6px;
     padding-inline: 0;
@@ -8995,13 +9013,15 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .site-logo { justify-self: start; }
 
   .nav-search {
-    position: absolute;
-    left: 50%;
-    width: min(100%, 406px);
-    transform: translateX(-50%);
+    position: relative;
+    left: auto;
+    width: 100%;
+    max-width: 580px;
+    justify-self: stretch;
+    transform: none;
   }
 
-  .primary-nav { grid-column: 2; }
+  .primary-nav { grid-column: auto; }
 
 }
 
@@ -13110,7 +13130,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
    where the rail and its toggle stay out of the way entirely.
    --------------------------------------------------------------------------- */
 .market-detail-shell { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--color-background); }
-.market-detail-shell-content { min-width: 0; }
+.market-detail-shell-content { min-width: 0; background: var(--color-surface); }
 
 @media (max-width: 1023.98px) {
   /* A filter control on a page with nothing to filter is noise. */

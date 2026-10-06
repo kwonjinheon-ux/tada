@@ -396,7 +396,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </div>
 
       <div className="listing-detail-layout">
-        <ImageGallery images={listing.images} priority />
+        <ImageGallery images={listing.images} priority watermarkLabel={listingStatus === "sold" ? t("soldOut") : undefined} disableEnlarge={listingStatus === "sold"} />
 
         <aside className="listing-detail-summary">
           <div className="listing-detail-heading">
