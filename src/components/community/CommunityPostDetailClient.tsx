@@ -18,7 +18,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPostType } from "@/data/community-posts";
 import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 
-export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string | null; authorAvatarUrl: string | null; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[] };
+export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[] };
 
 export function CommunityPostDetailClient({ post, relatedCategory, initialAction }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all">; initialAction?: "edit" | "delete" }) {
   const { t, locale } = useLanguage();
@@ -53,7 +53,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
       <article className="ui-card community-detail-post">
         <header className="community-detail-post-header">
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span>조회수 {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="ms ms-location-on" aria-hidden="true" /> {post.location}</span><span><i className="ms ms-schedule" aria-hidden="true" /> {post.createdAt}</span></div></div>
-          <div className="community-detail-author"><CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" /></div>
+          <div className="community-detail-author"><CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" /></div>
         </header>
         <ImageGallery images={post.images} className="community-detail-gallery" priority />
         <div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} />

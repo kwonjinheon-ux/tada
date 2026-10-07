@@ -70,7 +70,7 @@ export function CommunityPostCard({ post, showTypeBadge = true, mutedTypeBadge =
             <span><i className="ms ms-location-on" aria-hidden="true" />{post.location}</span>
             {post.eventDate ? <span><i className="ms ms-calendar-today" aria-hidden="true" />{post.eventDate}</span> : null}
             {post.timeAgo ? <span><i className="ms ms-schedule" aria-hidden="true" />{post.timeAgo}</span> : null}
-            <CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} className="community-post-author" avatarClassName="community-post-author-avatar" />
+            <CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-post-author" avatarClassName="community-post-author-avatar" />
           </div>
           </div>
         </Link>

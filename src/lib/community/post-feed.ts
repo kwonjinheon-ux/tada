@@ -8,6 +8,7 @@ type SupabaseServerClient = NonNullable<Awaited<ReturnType<typeof createServerSu
 type CommunityPostRow = {
   id: string;
   author_id: string;
+  is_anonymous: boolean;
   post_type: string;
   title: string;
   body: string;
@@ -21,7 +22,7 @@ type CommunityPostRow = {
 
 // The ranked feed and the search feed read the same columns, so one projection
 // removes the extra round trip that only re-read engagement counters.
-const POST_COLUMNS = "id, author_id, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count";
+const POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count";
 
 export type CommunityFeedQuery = {
   category?: string | null;
@@ -47,6 +48,7 @@ export type CommunityFeedPost = {
   viewCount: number;
   authorName?: string;
   authorAvatarUrl: string | null;
+  isAnonymous: boolean;
   isOwner: boolean;
   isSaved: boolean;
 };
@@ -107,13 +109,13 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   const postIds = data.map((post) => post.id);
   if (!postIds.length) return [];
 
-  const authorIds = [...new Set(data.map((post) => post.author_id))];
+  const authorIds = [...new Set(data.filter((post) => !post.is_anonymous).map((post) => post.author_id))];
   const [{ data: imageRows }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }, { data: authors }] = await Promise.all([
     isRecentFeed ? Promise.resolve({ data: [] }) : supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order"),
     supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null),
     user && !isRecentFeed ? supabase.from("community_post_votes").select("post_id,value").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
     user && !isRecentFeed ? supabase.from("community_wishlist").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
-    isRecentFeed ? Promise.resolve({ data: [] }) : supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds),
+    isRecentFeed || !authorIds.length ? Promise.resolve({ data: [] }) : supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds),
   ]);
 
   // Cards render a small square crop, so the list thumbnail is signed at card
@@ -141,7 +143,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   }
 
   return data.map((post) => {
-    const author = authorsById.get(post.author_id);
+    const author = post.is_anonymous ? undefined : authorsById.get(post.author_id);
     const thumbnailPath = firstImagePathByPost.get(post.id);
     return {
       id: post.id,
@@ -159,6 +161,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       viewCount: post.view_count ?? 0,
       authorName: author?.display_name ?? undefined,
       authorAvatarUrl: author?.avatar_path ? avatars.get(author.avatar_path) ?? null : null,
+      isAnonymous: post.is_anonymous,
       isOwner: user?.id === post.author_id,
       isSaved: savedPostIds.has(post.id),
     };

@@ -8,11 +8,12 @@ type CommunityPostAuthorProps = {
   avatarUrl: string | null | undefined;
   className: string;
   avatarClassName: string;
+  isAnonymous?: boolean;
 };
 
 /** Shared identity treatment for community feed cards and post details. */
-export function CommunityPostAuthor({ name, avatarUrl, className, avatarClassName }: CommunityPostAuthorProps) {
+export function CommunityPostAuthor({ name, avatarUrl, className, avatarClassName, isAnonymous = false }: CommunityPostAuthorProps) {
   const { t } = useLanguage();
-  const label = name ?? t("communityMemberFallback");
-  return <span className={className}><Avatar src={avatarUrl} name={label} className={avatarClassName} initials="double" /><strong className="community-post-author-name">{label}</strong></span>;
+  const label = isAnonymous ? t("communityAnonymousAuthor") : name ?? t("communityMemberFallback");
+  return <span className={className}><Avatar src={isAnonymous ? null : avatarUrl} name={label} className={avatarClassName} initials="double" /><strong className="community-post-author-name">{label}</strong></span>;
 }

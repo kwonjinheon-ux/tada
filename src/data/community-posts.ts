@@ -30,6 +30,7 @@ export type CommunityPost = {
   images?: { src: string; alt: string }[];
   authorName?: string;
   authorAvatarUrl?: string | null;
+  isAnonymous?: boolean;
   isOwner?: boolean;
   isSaved?: boolean;
 };

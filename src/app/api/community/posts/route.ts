@@ -41,6 +41,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const payload = communityPostCreateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
+  if (payload.data.isAnonymous && payload.data.categorySlug !== "free-board") return apiFailure("BAD_REQUEST", "Anonymous posting is only available in the free board.", 400);
   if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return apiFailure("BAD_REQUEST", prohibitedPublicContentMessage, 400);
 
   const supabase = await createServerSupabaseClient();
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
     .from("community_posts")
     .insert({
       author_id: user.id,
+      is_anonymous: payload.data.isAnonymous,
       category_slug: payload.data.categorySlug,
       post_type: postTypeByCategory[payload.data.categorySlug],
       title: payload.data.title,

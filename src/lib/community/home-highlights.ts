@@ -5,6 +5,7 @@ import type { CommunityPost, CommunityPostType } from "@/data/community-posts";
 
 type CommunityHighlightRow = {
   id: string;
+  is_anonymous: boolean;
   post_type: string;
   title: string;
   body: string;
@@ -31,7 +32,7 @@ function relativeTime(createdAt: string) {
 export async function getHomeCommunityHighlights(supabase: SupabaseClient): Promise<CommunityPost[]> {
   const { data, error } = await supabase
     .from("community_posts")
-    .select("id,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count")
+    .select("id,is_anonymous,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count")
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(6);
@@ -59,5 +60,6 @@ export async function getHomeCommunityHighlights(supabase: SupabaseClient): Prom
       score: post.score ?? 0,
       shareCount: post.share_count ?? 0,
       responseCount: commentCounts.get(post.id) ?? 0,
+      isAnonymous: post.is_anonymous,
     } satisfies CommunityPost));
 }

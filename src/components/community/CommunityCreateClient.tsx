@@ -25,6 +25,7 @@ export function CommunityCreateClient() {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const [categorySlug, setCategorySlug] = useState<Exclude<CommunityCategory, "all"> | "">("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
@@ -74,7 +75,7 @@ export function CommunityCreateClient() {
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorySlug, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths }),
+      body: JSON.stringify({ categorySlug, isAnonymous: categorySlug === "free-board" && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
     if (result.error) {
@@ -100,8 +101,9 @@ export function CommunityCreateClient() {
           <form className="post-ad-form" onSubmit={submit}>
             <section className="post-title-field">
               <div className="post-section-heading"><span>1</span><h2>{t("communityChooseCategory")}</h2></div>
-              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => setCategorySlug(value)}><i className={`ms ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
+              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => { setCategorySlug(value); if (value !== "free-board") setIsAnonymous(false); }}><i className={`ms ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
               <p className="post-field-hint">{t("communitySameCategoriesHint")}</p>
+              {categorySlug === "free-board" ? <fieldset className="community-post-identity-options"><legend>{t("communityAuthorVisibility")}</legend><div><label><input type="radio" name="community-author-visibility" checked={!isAnonymous} onChange={() => setIsAnonymous(false)} />{t("communityShowMyName")}</label><label><input type="radio" name="community-author-visibility" checked={isAnonymous} onChange={() => setIsAnonymous(true)} />{t("communityPostAnonymously")}</label></div><p>{t("communityAnonymousHelp")}</p></fieldset> : null}
             </section>
 
             <section className="post-description-field">

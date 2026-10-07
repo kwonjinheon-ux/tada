@@ -4452,6 +4452,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .post-shop-type-options button:hover:not(.is-selected) { border-color: var(--neutral-300); background: var(--neutral-150); }
 .post-shop-type-options button.is-selected { border-color: var(--primary); background: var(--primary); color: var(--neutral-50); }
 .post-shop-type-options button.is-selected > i { color: currentColor; }
+.community-post-identity-options { margin: var(--space-4) 0 0; padding: 0; border: 0; }
+.community-post-identity-options legend { margin-bottom: var(--space-2); color: var(--color-ink); font-weight: var(--weight-semibold); }
+.community-post-identity-options > div { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.community-post-identity-options label { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-lg); cursor: pointer; }
+.community-post-identity-options input { accent-color: var(--color-primary); }
+.community-post-identity-options p { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
 
 .bargain-sale-items,
 .bargain-sale-items-empty {

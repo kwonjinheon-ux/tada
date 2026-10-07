@@ -183,6 +183,7 @@ export const communityPostCategorySchema = z.enum([
 
 export const communityPostCreateRequestSchema = z.object({
   categorySlug: communityPostCategorySchema,
+  isAnonymous: z.boolean().default(false),
   title: z.string().trim().min(4).max(120),
   body: z.string().trim().min(20).max(5_000),
   mainLocation: z.string().trim().min(2).max(80),
@@ -228,6 +229,7 @@ export const communityPostFeedItemSchema = z.object({
   viewCount: z.number().int().nonnegative().optional(),
   authorName: z.string().optional(),
   authorAvatarUrl: z.string().url().nullable().optional(),
+  isAnonymous: z.boolean().optional(),
   isOwner: z.boolean().optional(),
   isSaved: z.boolean().optional(),
 });
