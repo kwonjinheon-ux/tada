@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const user = await getServerUser();
-  const supabase = await createServerSupabaseClient();
+  const [user, supabase] = await Promise.all([getServerUser(), createServerSupabaseClient()]);
+  const communityHighlightsPromise = supabase ? getHomeCommunityHighlights(supabase) : Promise.resolve([]);
   const { data: profile } = user && supabase
     ? await supabase.from("profiles").select("region_city, region_suburb").eq("id", user.id).maybeSingle()
     : { data: null };
@@ -24,7 +24,7 @@ export default async function HomePage() {
         suburb: profile?.region_suburb,
         userId: user?.id,
       }),
-      getHomeCommunityHighlights(supabase),
+      communityHighlightsPromise,
     ])
     : [{
       nearbyListings: [], justListedListings: [], savedListingIds: [],
