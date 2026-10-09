@@ -2534,6 +2534,13 @@ a {
 .shared-image-gallery-watermark {
   z-index: 3;
   pointer-events: none;
+  font-size: calc(var(--text-lg) * 3);
+}
+
+@media (min-width: 768px) {
+  .shared-image-gallery-watermark {
+    font-size: calc(var(--text-lg) * 5);
+  }
 }
 
 .listing-gallery-lightbox-stage .shared-image-gallery-watermark {
