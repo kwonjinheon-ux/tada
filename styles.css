@@ -7812,7 +7812,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   margin-top: 22px;
 }
 
-.dashboard-page { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 230px minmax(0, 1fr); background: var(--neutral-150); color: var(--blue-950); }
+.dashboard-page { min-height: calc(100vh - 70px); display: grid; grid-template-columns: 230px minmax(0, 1fr); background: var(--color-surface); color: var(--blue-950); }
 .dashboard-layout:has(> .profile-settings-content) {
   background: var(--neutral-50);
 }
@@ -7960,7 +7960,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
   padding: 0;
-  background: var(--neutral-150);
+  background: var(--color-surface);
   color: var(--blue-950);
 }
 
@@ -8651,7 +8651,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Marketplace messages: a compact conversation rail paired with a focused thread. */
 body:has(.messages-page) { height: 100dvh; overflow: hidden; }
-.dashboard-layout:has(> .messages-page) { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--neutral-150); transform: translateY(var(--messages-viewport-offset-top, 0px)); }
+.dashboard-layout:has(> .messages-page) { height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 70px)); align-items: stretch; overflow: hidden; background: var(--color-surface); transform: translateY(var(--messages-viewport-offset-top, 0px)); }
 /* The messages shell is a fixed-height surface, so the rail tracks it rather than
    the page scroll. Only the reference variables change; the rail itself does not. */
 .dashboard-layout:has(> .messages-page) { --dashboard-rail-top: 0px; --dashboard-rail-height: 100%; --dashboard-rail-min-height: 0; }
@@ -9082,7 +9082,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 /* Seller dashboard overview. */
-.dashboard-layout:has(> .seller-dashboard-content) { background: var(--neutral-150); }
+.dashboard-layout:has(> .seller-dashboard-content) { background: var(--color-surface); }
 .dashboard-layout:has(> .my-page-content) { background: var(--neutral-50); }
 .dashboard-layout > .my-page-content {
   max-width: none;
@@ -9163,6 +9163,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-promo { position: relative; overflow: hidden; }
 .my-page-promo > img { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: var(--space-3); }
 .my-page-promo p { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.5; }
+.my-page-discovery-list { display: grid; gap: var(--space-3); }
+.my-page-discovery .my-page-promo h3 { margin-top: 0; }
 .my-page-shortcuts { display: grid; gap: var(--space-2); }
 .my-page-shortcut { display: grid; grid-template-columns: var(--control-h-lg) minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface); color: inherit; text-decoration: none; }
 .my-page-shortcut > .ms:first-child { display: grid; place-items: center; width: var(--control-h-lg); height: var(--control-h-lg); border-radius: var(--radius-sm); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }

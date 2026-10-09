@@ -13,24 +13,15 @@ export type DashboardNavItem = {
 
 export const dashboardNavItems: readonly DashboardNavItem[] = [
   { icon: "ms-account-circle", translationKey: "myPage", label: "My page", suffix: "/my-page" },
-  { icon: "ms-layers", translationKey: "myPageV2", label: "My page V2", suffix: "/my-page-v2" },
   { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
-  { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
-  { icon: "ms-notifications", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
   { icon: "ms-chat", translationKey: "messages", label: "Messages", suffix: "/messages" },
-  { icon: "ms-favorite", translationKey: "wishlist", label: "Wishlist", suffix: "/wishlist" },
-  { icon: "ms-key", translationKey: "keywords", label: "Keywords", suffix: "/keywords" },
-  { icon: "ms-list-alt", translationKey: "manageListings", label: "Manage Listings", suffix: "/listings" },
-  { icon: "ms-event-available", translationKey: null, label: "Reservations", suffix: "/reservations" },
-  { icon: "ms-map", translationKey: "nearbyMap", label: "Nearby Map", suffix: "/map", railOnly: true },
 ];
 
 /** Jobs has no reservations or notification feed of its own. */
 export function dashboardNavItemsFor(context: "market" | "jobs", { railOnly = false } = {}) {
   return dashboardNavItems.filter((item) => {
     if (item.railOnly && !railOnly) return false;
-    if (context !== "jobs") return true;
-    return item.label !== "Notifications" && item.label !== "Reservations";
+    return context !== "jobs" || item.label !== "Messages";
   });
 }
 
