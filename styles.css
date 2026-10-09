@@ -9459,21 +9459,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
 /* Community post detail follows the single-card discussion composition. */
 .community-detail-container { display: grid; gap: var(--space-6); min-width: 0; padding-top: var(--space-6); padding-bottom: var(--space-10); }
-/* Bars for the route's loading.tsx. Heights come from the same tokens the real
-   breadcrumb, h1, meta and body use, so the shell does not resize when the
-   post arrives. */
-.community-detail-skeleton-breadcrumb i, .community-detail-skeleton-title, .community-detail-skeleton-meta i, .community-detail-skeleton-body i { display: block; border-radius: var(--radius-xs); background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%); background-size: 220% 100%; animation: infinite-market-shimmer 1.1s ease-in-out infinite; }
-.community-detail-skeleton-breadcrumb i { width: 72px; height: var(--text-md); }
-.community-detail-skeleton-breadcrumb i:nth-child(2) { width: 54px; }
-.community-detail-skeleton-title { width: 62%; height: var(--text-2xl); }
-.community-detail-skeleton-meta i { width: 64px; height: var(--text-sm); }
-.community-detail-skeleton-meta i:nth-child(2) { width: 118px; }
-.community-detail-skeleton-meta i:nth-child(3) { width: 86px; }
-.community-detail-skeleton-body { display: grid; gap: var(--space-3); }
-.community-detail-skeleton-body i { width: 96%; height: var(--text-md); }
-.community-detail-skeleton-body i:nth-child(2) { width: 91%; }
-.community-detail-skeleton-body i:nth-child(4) { width: 57%; }
-@media (max-width: 767.98px) { .community-detail-skeleton-title { height: var(--text-xl); } .community-detail-skeleton-body i { height: var(--text-lg); } }
 .community-detail-post { display: grid; gap: var(--space-5); width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
 .community-detail-post-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }.community-detail-post-heading { min-width: 0; display: grid; gap: var(--space-3); }.community-detail-title-row { display: flex; align-items: center; gap: var(--space-3); }.community-detail-title-row h1 { margin: 0; color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-bold); line-height: 1.25; }.community-detail-post-meta { display: flex; flex-wrap: wrap; gap: var(--space-4); color: var(--color-ink-soft); font-size: var(--text-sm); }.community-detail-post-meta span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .community-detail-author { display: grid; justify-items: center; gap: var(--space-2); min-width: 90px; color: var(--color-ink-soft); font-size: var(--text-sm); text-align: center; }.community-detail-author-identity { display: grid; justify-items: center; gap: var(--space-2); }.community-detail-author-avatar { width: var(--control-h-xl); height: var(--control-h-xl); display: grid; place-items: center; overflow: hidden; border: 3px solid var(--color-surface-soft); border-radius: var(--radius-circle); object-fit: cover; clip-path: circle(50%); box-shadow: var(--shadow-xs); }.community-post-owner-menu { position: relative; }.community-post-owner-menu-trigger { width: var(--control-h-xs); min-height: var(--control-h-xs); padding: 0; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-950); }.community-post-owner-menu-trigger:hover { background: var(--neutral-250); color: var(--blue-950); }.community-post-owner-menu-popover { position: absolute; top: calc(100% + var(--space-2)); right: 0; z-index: 5; display: grid; min-width: 136px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }.community-post-owner-menu-popover button { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font: inherit; font-size: var(--text-sm); text-align: left; cursor: pointer; }.community-post-owner-menu-popover button:hover { background: var(--color-surface-soft); }.community-post-owner-menu-popover button.is-danger { color: var(--color-danger); }.community-post-owner-menu-popover button:focus-visible, .community-post-owner-menu-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }
@@ -13032,6 +13017,25 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .route-skeleton-line.is-title { width: 40%; height: var(--space-5); }
 .route-skeleton-field { display: block; height: var(--control-h-xl); border-radius: var(--radius-sm); }
 .route-skeleton-tile { aspect-ratio: 4 / 3; margin: 0; border-radius: var(--radius-md); }
+.community-detail-loading .detail-breadcrumb .route-skeleton-line { width: var(--space-12); height: var(--text-md); }
+.community-detail-loading .detail-breadcrumb .route-skeleton-line:last-child { width: var(--space-8); }
+.community-detail-loading .route-skeleton-chevron { width: var(--text-2xs); height: var(--text-2xs); border-radius: var(--radius-circle); }
+.community-detail-loading .community-detail-title-row .route-skeleton-line { width: 62%; height: var(--text-2xl); }
+.community-detail-loading .community-detail-post-meta .route-skeleton-line { width: var(--space-12); height: var(--text-sm); }
+.community-detail-loading .community-detail-post-meta .route-skeleton-line:nth-child(2) { width: calc(var(--space-12) + var(--space-10)); }
+.community-detail-loading .community-detail-author .route-skeleton-line { width: var(--space-12); }
+.community-detail-loading .route-skeleton-author { display: block; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); }
+.community-detail-loading-body { display: grid; gap: var(--space-2); }
+.community-detail-loading-body .route-skeleton-line { height: var(--text-lg); }
+.community-detail-loading .community-detail-body .route-skeleton-line:last-child { width: 62%; }
+.community-detail-loading .community-detail-post-actions .route-skeleton-field { width: var(--control-h-compact); height: var(--control-h-compact); border-radius: var(--radius-pill); }
+.community-detail-loading-comments { display: grid; gap: var(--space-4); }
+.community-detail-loading-comments .listing-comments-heading { margin-bottom: 0; }
+.community-detail-loading-comments .listing-comments-composer .route-skeleton-field { min-height: calc(var(--control-h-xl) + var(--control-h-xl)); }
+
+@media (max-width: 767.98px) {
+  .community-detail-loading .community-detail-title-row .route-skeleton-line { height: var(--text-xl); }
+}
 
 /* One shimmer for every shape, reusing the market card timing so a skeleton
    next to a still-loading card list beats in step. */
@@ -13039,6 +13043,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .route-skeleton-line,
 .route-skeleton-field,
 .route-skeleton-tile,
+.route-skeleton-author,
 .route-skeleton-rail > span {
   background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%);
   background-size: 220% 100%;
@@ -13051,6 +13056,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .route-skeleton-line,
   .route-skeleton-field,
   .route-skeleton-tile,
+  .route-skeleton-author,
   .route-skeleton-rail > span { animation: none; }
 }
 

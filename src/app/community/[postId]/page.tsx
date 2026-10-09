@@ -28,30 +28,35 @@ export default async function CommunityPostPage({ params, searchParams }: { para
   const relatedCategory = category.success ? category.data : undefined;
   const supabase = await createServerSupabaseClient();
   if (supabase) {
-    // These three waves replace what used to be seven sequential round trips.
-    // Nothing here depends on the auth lookup, and score/share_count come off
-    // the post row itself rather than a second read of the same row.
+    // The post and verified user can be fetched together; engagement reads
+    // depend on the user, while image signing only depends on the post.
     const [{ data: { user } }, { data: post }] = await Promise.all([
       supabase.auth.getUser(),
       supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle(),
     ]);
     if (post) {
-      // Everything below needs only post.id / post.author_id / user, so it all
-      // goes out together instead of images -> author -> counts in series.
-      const [{ data: imageRows }, { data: author }, { count: responseCount }, { data: vote }, { data: saved }] = await Promise.all([
-        supabase.from("community_post_images").select("storage_path").eq("post_id", post.id).order("display_order"),
-        post.is_anonymous ? Promise.resolve({ data: null }) : supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle(),
+      // Sign images and the avatar as soon as their own lookup completes.
+      // Neither needs to wait for the comments, votes or saved-state queries.
+      const imagesPromise = supabase.from("community_post_images").select("storage_path").eq("post_id", post.id).order("display_order").then(async ({ data: imageRows }) => {
+        const paths = (imageRows ?? []).map((image) => image.storage_path as string);
+        return { paths, urls: await getSignedStorageImages("community-post-images", paths, "gallery") };
+      });
+      const authorPromise = (post.is_anonymous
+        ? Promise.resolve({ data: null })
+        : supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle()
+      ).then(async ({ data: author }) => {
+        if (!author?.avatar_path) return { author, avatarUrl: null };
+        const { data } = await supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600);
+        return { author, avatarUrl: data?.signedUrl ?? null };
+      });
+      const [{ paths, urls }, { author, avatarUrl }, { count: responseCount }, { data: vote }, { data: saved }] = await Promise.all([
+        imagesPromise,
+        authorPromise,
         supabase.from("community_post_comments").select("id", { count: "exact", head: true }).eq("post_id", post.id).is("deleted_at", null),
         user ? supabase.from("community_post_votes").select("value").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
         user ? supabase.from("community_wishlist").select("post_id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
-      // Both signing calls depend on the wave above but not on each other.
-      const paths = (imageRows ?? []).map((image) => image.storage_path as string);
-      const [urls, { data: signedAvatar }] = await Promise.all([
-        getSignedStorageImages("community-post-images", paths, "gallery"),
-        author?.avatar_path ? supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600) : Promise.resolve({ data: null }),
-      ]);
-      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? null, authorAvatarUrl: signedAvatar?.signedUrl ?? null, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
+      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} initialAction={initialAction} />;
     }
   }
