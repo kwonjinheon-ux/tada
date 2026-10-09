@@ -9420,6 +9420,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
    layouts the action is intentionally omitted so every row keeps one clean,
    consistent reading edge. Grid/blog cards retain their own actions. */
 @media (min-width: 768px) {
+  .community-post-list:not(.is-grid-view) .community-post-author { display: inline-flex; }
   .community-post-list:not(.is-grid-view) .community-post-card-save { display: none; }
   .community-post-list:not(.is-grid-view) .community-post-body { padding-right: 0; }
 }
