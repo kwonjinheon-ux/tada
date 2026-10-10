@@ -5541,11 +5541,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .is-event-sale .post-title-field label,
 .is-event-sale .event-schedule-grid label { font-weight: var(--weight-regular); }
 .event-schedule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.event-schedule-grid label { display: grid; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.event-schedule-grid label { display: grid; min-width: 0; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .event-schedule-grid input,
 .event-address-input,
 .event-description-input { min-height: var(--control-h-xl); width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--text-base); }
-.event-schedule-grid input { padding: 0 var(--space-3); }
+.event-schedule-grid input { min-width: 0; padding: 0 var(--space-3); }
+.community-create-page .event-schedule-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--space-4); }
 .event-address-input { display: flex; align-items: center; gap: var(--space-2); padding-left: var(--space-3); }
 .event-address-input i { color: var(--color-muted); }
 .event-address-input input { min-width: 0; border: 0; background: transparent; outline: 0; }
