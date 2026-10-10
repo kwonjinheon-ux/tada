@@ -21,10 +21,10 @@ type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; loc
 
 const emptyLocation: LocationDraft = { mainLocation: "", subLocation: "", locality: null, rawSuburb: null, region: null, latitude: null, longitude: null };
 
-export function CommunityCreateClient() {
+export function CommunityCreateClient({ initialCategory = "" }: { initialCategory?: Exclude<CommunityCategory, "all"> | "" }) {
   const { t, locale } = useLanguage();
   const router = useRouter();
-  const [categorySlug, setCategorySlug] = useState<Exclude<CommunityCategory, "all"> | "">("");
+  const [categorySlug, setCategorySlug] = useState<Exclude<CommunityCategory, "all"> | "">(initialCategory);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -34,6 +34,8 @@ export function CommunityCreateClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a public post.";
+
+  useEffect(() => { setCategorySlug(initialCategory); setIsAnonymous(false); }, [initialCategory]);
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -89,7 +91,7 @@ export function CommunityCreateClient() {
   };
 
   return (
-    <CommunityDesktopLayout>
+    <CommunityDesktopLayout activeCategory={categorySlug || "all"}>
       <div className="post-ad-page community-create-page">
       <div className="post-ad-create-bar"><Link href="/community"><i className="ms ms-arrow-back" aria-hidden="true" /> {t("communityBackToCommunity")}</Link></div>
       <div className="post-ad-layout">

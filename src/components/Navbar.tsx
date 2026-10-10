@@ -10,6 +10,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
+import { communityCreateHref } from "@/components/community/CommunityFilterSidebar";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
@@ -29,13 +30,15 @@ declare global {
  *  LanguageProvider — by which time the locale had already flipped, so the
  *  header hydrated Korean text against English server markup. Isolating the
  *  hook here keeps the boundary down to a component that renders nothing. */
-function SearchQuerySync({ onQueryChange }: { onQueryChange: (query: string) => void }) {
+function SearchQuerySync({ onQueryChange, onCommunityCategoryChange }: { onQueryChange: (query: string) => void; onCommunityCategoryChange: (category: string | null) => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    onQueryChange(new URLSearchParams(window.location.search).get("q") ?? "");
-  }, [pathname, searchParams, onQueryChange]);
+    const params = new URLSearchParams(window.location.search);
+    onQueryChange(params.get("q") ?? "");
+    onCommunityCategoryChange(params.get("category"));
+  }, [pathname, searchParams, onQueryChange, onCommunityCategoryChange]);
 
   return null;
 }
@@ -58,6 +61,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [communityCategory, setCommunityCategory] = useState<string | null>(null);
   const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [isSearchSuggestionsOpen, setIsSearchSuggestionsOpen] = useState(false);
   const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
@@ -439,7 +443,7 @@ export function Navbar() {
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
   const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || pathname.startsWith("/services/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
-  const createPath = isCommunity ? "/community/create" : isServices ? "/services/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
+  const createPath = isCommunity ? communityCreateHref(communityCategory) : isServices ? "/services/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
   // The create button names what it publishes on the surface you are browsing.
   const createLabel = isCommunity ? t("createPostAction") : isServices ? t("createServiceAction") : t("createListing");
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
@@ -568,7 +572,7 @@ export function Navbar() {
 
   return (
     <>
-      <Suspense fallback={null}><SearchQuerySync onQueryChange={setSearchQuery} /></Suspense>
+      <Suspense fallback={null}><SearchQuerySync onQueryChange={setSearchQuery} onCommunityCategoryChange={setCommunityCategory} /></Suspense>
       <header className="site-header">
       <div className="site-nav global-shell">
         <Link className="site-logo" href="/" aria-label="Tada home">

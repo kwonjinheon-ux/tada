@@ -64,13 +64,23 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
   };
+  const updateCategoryUrl = (category: CommunityCategory) => {
+    const params = new URLSearchParams(window.location.search);
+    if (category === "all") params.delete("category");
+    else params.set("category", category);
+    const query = params.toString();
+    window.history.replaceState(window.history.state, "", `/community${query ? `?${query}` : ""}`);
+  };
   const chooseCategory = (category: CommunityCategory) => {
     setActiveCategory(category);
     setActiveChip(category === "recommendations" ? "recommendations" : "all");
+    updateCategoryUrl(category);
   };
   const chooseChip = (chip: string) => {
     setActiveChip(chip);
-    setActiveCategory(chip === "recommendations" ? "recommendations" : "all");
+    const category = chip === "recommendations" ? "recommendations" : "all";
+    setActiveCategory(category);
+    updateCategoryUrl(category);
   };
 
   useEffect(() => {
@@ -167,7 +177,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           {viewMode === "grid"
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={false} />)
             : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} />)}
-        </div> : <CommunityEmptyState />}
+        </div> : <CommunityEmptyState category={activeCategory} />}
       </section>
 
       <CommunityRecentPostsPanel category={activeCategory} />

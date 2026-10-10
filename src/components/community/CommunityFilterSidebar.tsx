@@ -34,6 +34,12 @@ export const communityPostCategories = communityCategories.filter(
   (category): category is (typeof communityCategories)[number] & { value: Exclude<CommunityCategory, "all"> } => category.value !== "all",
 );
 
+export function communityCreateHref(category: string | null) {
+  return communityPostCategories.some(({ value }) => value === category)
+    ? `/community/create?category=${category}`
+    : "/community/create";
+}
+
 export type CommunityFilterSidebarProps = {
   activeCategory: CommunityCategory;
   onCategorySelect: (category: CommunityCategory) => void;

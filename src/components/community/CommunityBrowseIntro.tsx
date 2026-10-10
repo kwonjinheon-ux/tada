@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
-import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
+import { communityCreateHref, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 
 const communityBrowseCopy: Record<CommunityCategory, { title: TranslationKey; description: TranslationKey }> = {
   all: { title: "communityIntroTitle", description: "communityIntroDescription" },
@@ -25,7 +25,7 @@ export function CommunityBrowseIntro({ category }: { category: CommunityCategory
       <h1>{t(copy.title)}</h1>
       <p>{t(copy.description)}</p>
     </div>
-    <Link className="browse-create-button ui-button ui-button--lg" href="/community/create">
+    <Link className="browse-create-button ui-button ui-button--lg" href={communityCreateHref(category)}>
       <i className="ms ms-add" aria-hidden="true" />
       <span>{t("createPostAction")}</span>
     </Link>
