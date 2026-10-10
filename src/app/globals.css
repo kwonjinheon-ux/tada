@@ -251,6 +251,16 @@
    ========================================================================== */
 :root {
   --color-surface: var(--neutral-50);
+  /* Domain identity: independent of primary actions and semantic status. */
+  --color-market-accent: #168568;
+  --color-market-soft: #ECF8F3;
+  --color-market-text: #116149;
+  --color-community-accent: #7255C8;
+  --color-community-soft: #F3F0FC;
+  --color-community-text: #583BA5;
+  --color-services-accent: #EA6B25;
+  --color-services-soft: #FFF2E9;
+  --color-services-text: #B94A13;
   --color-surface-soft: var(--neutral-200);
   --color-surface-sunken: var(--neutral-150);
   --color-background: var(--neutral-150);

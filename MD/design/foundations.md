@@ -68,6 +68,14 @@ Never reference a palette step from a component. Reference a semantic role.
 
 Adding a vertical (property, community) means adding roles here, not new hexes.
 
+Domain identity tokens use `--color-market-*`, `--color-community-*`, and
+`--color-services-*` with `accent`, `soft`, and `text` roles. The current
+trial is scoped to `.my-page-domain-preview` on My Page: white cards,
+accent icons and darker domain labels. My Page V2 is not part of the trial.
+Primary actions and success/warning/error tokens remain unchanged. These
+domain representative icons explicitly override the usual glyph colour;
+status icons and shared controls keep their existing meaning and colours.
+
 ## 3. Scales
 
 | Scale | Steps |
