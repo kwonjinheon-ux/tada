@@ -12,6 +12,7 @@ const communityBrowseCopy: Record<CommunityCategory, { title: TranslationKey; de
   events: { title: "communityIntroEventsTitle", description: "communityIntroEventsDescription" },
   recommendations: { title: "communityIntroRecommendationsTitle", description: "communityIntroRecommendationsDescription" },
   together: { title: "communityIntroTogetherTitle", description: "communityIntroTogetherDescription" },
+  "parents-kids": { title: "communityIntroParentingTitle", description: "communityIntroParentingDescription" },
   immigration: { title: "communityIntroImmigrationTitle", description: "communityIntroImmigrationDescription" },
 };
 

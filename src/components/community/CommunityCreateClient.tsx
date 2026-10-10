@@ -21,6 +21,11 @@ type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; loc
 
 const emptyLocation: LocationDraft = { mainLocation: "", subLocation: "", locality: null, rawSuburb: null, region: null, latitude: null, longitude: null };
 
+const toLocalDateTimeInputValue = (date: Date) => {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().slice(0, 16);
+};
+
 export function CommunityCreateClient({ initialCategory = "" }: { initialCategory?: Exclude<CommunityCategory, "all"> | "" }) {
   const { t, locale } = useLanguage();
   const router = useRouter();
@@ -28,12 +33,16 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [eventStartAt, setEventStartAt] = useState("");
+  const [eventEndAt, setEventEndAt] = useState("");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [location, setLocation] = useState<LocationDraft>(emptyLocation);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
+  const [minimumEventDateTime] = useState(() => toLocalDateTimeInputValue(new Date()));
   const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a public post.";
+  const isEventCategory = categorySlug === "events";
 
   useEffect(() => { setCategorySlug(initialCategory); setIsAnonymous(false); }, [initialCategory]);
 
@@ -61,7 +70,15 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
       return;
     }
     if (title.trim().length < 4) {
-      setError(t("communityCreateTitleRequired"));
+      setError(t(isEventCategory ? "communityEventNameRequired" : "communityCreateTitleRequired"));
+      return;
+    }
+    if (isEventCategory && (!eventStartAt || !eventEndAt)) {
+      setError(t("communityEventScheduleRequired"));
+      return;
+    }
+    if (isEventCategory && new Date(eventEndAt).getTime() <= new Date(eventStartAt).getTime()) {
+      setError(t("communityEventScheduleInvalid"));
       return;
     }
     if (body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) {
@@ -77,7 +94,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorySlug, isAnonymous: categorySlug === "free-board" && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths }),
+      body: JSON.stringify({ categorySlug, isAnonymous: categorySlug === "free-board" && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths, eventStartAt: isEventCategory ? new Date(eventStartAt).toISOString() : null, eventEndAt: isEventCategory ? new Date(eventEndAt).toISOString() : null }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
     if (result.error) {
@@ -108,9 +125,13 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
             </section>
 
             <section className="post-description-field">
-              <div className="post-section-heading"><span>2</span><h2>{t("communityWriteYourPost")}</h2></div>
-              <div className="post-field"><label htmlFor="community-title">{t("communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => { if (containsProhibitedPublicContent(event.target.value)) { setError(unsafeMessage); return; } setTitle(event.target.value); }} minLength={4} maxLength={120} placeholder={t("communityTitlePlaceholder")} required /></div>
-              <div className="post-field"><label htmlFor="community-body">{t("communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t("communityDetailsLabel")} value={body} onChange={(value) => { if (containsProhibitedPublicContent(value)) { setError(unsafeMessage); return; } setBody(value); }} placeholder={t("communityDetailsPlaceholder")} /></div>
+              <div className="post-section-heading"><span>2</span><h2>{t(isEventCategory ? "communityEventDetailsHeading" : "communityWriteYourPost")}</h2></div>
+              <div className="post-field"><label htmlFor="community-title">{t(isEventCategory ? "communityEventNameLabel" : "communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => { if (containsProhibitedPublicContent(event.target.value)) { setError(unsafeMessage); return; } setTitle(event.target.value); }} minLength={4} maxLength={120} placeholder={t(isEventCategory ? "communityEventNamePlaceholder" : "communityTitlePlaceholder")} required /></div>
+              {isEventCategory ? <div className="event-schedule-grid">
+                <label htmlFor="community-event-start">{t("communityEventStartLabel")}<input id="community-event-start" type="datetime-local" min={minimumEventDateTime} value={eventStartAt} onChange={(event) => { setEventStartAt(event.target.value); if (eventEndAt && event.target.value >= eventEndAt) setEventEndAt(""); }} required /></label>
+                <label htmlFor="community-event-end">{t("communityEventEndLabel")}<input id="community-event-end" type="datetime-local" min={eventStartAt || minimumEventDateTime} value={eventEndAt} onChange={(event) => setEventEndAt(event.target.value)} required /></label>
+              </div> : null}
+              <div className="post-field"><label htmlFor="community-body">{t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")} value={body} onChange={(value) => { if (containsProhibitedPublicContent(value)) { setError(unsafeMessage); return; } setBody(value); }} placeholder={t(isEventCategory ? "communityEventDetailsPlaceholder" : "communityDetailsPlaceholder")} /></div>
             </section>
 
             <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>{t("communityAddImages")}</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>

@@ -10,6 +10,7 @@ const postTypeByCategory = {
   qna: "question",
   recommendations: "recommendation",
   together: "event",
+  "parents-kids": "notice",
   immigration: "notice",
   "free-board": "notice",
 } as const;
@@ -61,10 +62,15 @@ export async function POST(request: Request) {
       body: payload.data.body,
       region_city: payload.data.mainLocation,
       region_suburb: payload.data.subLocation || null,
+      ...(payload.data.categorySlug === "events" ? {
+        event_start_at: payload.data.eventStartAt,
+        event_end_at: payload.data.eventEndAt,
+      } : {}),
     })
     .select("id")
     .single();
 
+  if (error && payload.data.categorySlug === "events" && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Event posting is temporarily unavailable. Please try again later.", 503);
   if (error || !data) return apiFailure("INTERNAL", "We couldn't publish your post. Please try again.", 500);
   if (payload.data.imagePaths.length) {
     const { error: imageError } = await supabase.from("community_post_images").insert(payload.data.imagePaths.map((storage_path, display_order) => ({ post_id: data.id, owner_id: user.id, storage_path, display_order })));

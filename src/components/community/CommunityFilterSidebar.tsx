@@ -13,6 +13,7 @@ export type CommunityCategory =
   | "qna"
   | "recommendations"
   | "together"
+  | "parents-kids"
   | "immigration"
   | "free-board";
 
@@ -24,6 +25,7 @@ export const communityCategories: Array<{ value: CommunityCategory; labelKey: Tr
   { value: "events", labelKey: "communityCategoryEvents", icon: "ms-event" },
   { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "ms-thumb-up" },
   { value: "together", labelKey: "communityCategoryTogether", icon: "ms-groups" },
+  { value: "parents-kids", labelKey: "communityCategoryParenting", icon: "ms-stroller" },
   { value: "immigration", labelKey: "communityCategoryImmigration", icon: "ms-flight-takeoff" },
 ];
 
@@ -64,10 +66,6 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
             <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
           </button>;
         })}
-        <button type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-parenting`} onClick={() => onCategorySelect("together")}>
-          <i className="ms ms-stroller" aria-hidden="true" />
-          <span className={mobileDrawerClasses.menuLabel}>{t("communityTogetherParenting")}</span>
-        </button>
       </div>
     </section>
   </BrowseFilterSidebar>;

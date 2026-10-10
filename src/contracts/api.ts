@@ -177,6 +177,7 @@ export const communityPostCategorySchema = z.enum([
   "qna",
   "recommendations",
   "together",
+  "parents-kids",
   "immigration",
   "free-board",
 ]);
@@ -189,6 +190,17 @@ export const communityPostCreateRequestSchema = z.object({
   mainLocation: z.string().trim().min(2).max(80),
   subLocation: z.string().trim().max(80).optional(),
   imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),
+  eventStartAt: z.string().datetime({ offset: true }).nullable().optional(),
+  eventEndAt: z.string().datetime({ offset: true }).nullable().optional(),
+}).superRefine((post, context) => {
+  if (post.categorySlug !== "events") return;
+  if (!post.eventStartAt || !post.eventEndAt) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["eventStartAt"], message: "Event start and end times are required." });
+    return;
+  }
+  if (new Date(post.eventEndAt).getTime() <= new Date(post.eventStartAt).getTime()) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["eventEndAt"], message: "Event end time must be after the start time." });
+  }
 });
 
 export const marketTradeReviewRequestSchema = z.object({
@@ -220,6 +232,7 @@ export const communityPostFeedItemSchema = z.object({
   excerpt: z.string(),
   location: z.string(),
   timeAgo: z.string(),
+  eventDate: z.string().optional(),
   thumbnail: z.string().url().optional(),
   images: z.array(z.object({ src: z.string().url(), alt: z.string() })).optional(),
   responseCount: z.number().int().nonnegative().optional(),

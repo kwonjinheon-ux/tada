@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { formatCommunityEventSchedule } from "@/lib/community/format-event-schedule";
 
 type SupabaseServerClient = NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>;
 
@@ -14,6 +15,8 @@ type CommunityPostRow = {
   body: string;
   region_city: string | null;
   region_suburb: string | null;
+  event_start_at: string | null;
+  event_end_at: string | null;
   created_at: string;
   view_count: number | null;
   score: number | null;
@@ -22,7 +25,8 @@ type CommunityPostRow = {
 
 // The ranked feed and the search feed read the same columns, so one projection
 // removes the extra round trip that only re-read engagement counters.
-const POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count";
+const POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, region_city, region_suburb, event_start_at, event_end_at, created_at, view_count, score, share_count";
+const LEGACY_POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count";
 
 export type CommunityFeedQuery = {
   category?: string | null;
@@ -39,6 +43,7 @@ export type CommunityFeedPost = {
   excerpt: string;
   location: string;
   timeAgo: string;
+  eventDate?: string;
   thumbnail?: string;
   images: { src: string; alt: string }[];
   responseCount: number;
@@ -84,20 +89,26 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   if (rankedPostIdsError) throw rankedPostIdsError;
   const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
 
-  let directRequest = supabase.from("community_posts").select(POST_COLUMNS).eq("status", "published");
-  directRequest = sort === "trending"
-    ? directRequest.order("score", { ascending: false }).order("created_at", { ascending: false })
-    : directRequest.order("created_at", { ascending: false });
-  directRequest = directRequest.limit(search ? 100 : isRecentFeed ? 10 : 40);
-  if (category) directRequest = directRequest.eq("category_slug", category);
-  if (mainLocation) directRequest = directRequest.eq("region_city", mainLocation);
-  if (subLocation) directRequest = directRequest.eq("region_suburb", subLocation);
-  if (search) directRequest = directRequest.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
-  const { data: unorderedPostsData, error } = isDirectQuery
-    ? await directRequest
-    : orderedPostIds.length
-      ? await supabase.from("community_posts").select(POST_COLUMNS).in("id", orderedPostIds)
+  const loadPosts = async (columns: string) => {
+    if (!isDirectQuery) return orderedPostIds.length
+      ? supabase.from("community_posts").select(columns as typeof POST_COLUMNS).in("id", orderedPostIds)
       : { data: [], error: null };
+
+    let request = supabase.from("community_posts").select(columns as typeof POST_COLUMNS).eq("status", "published");
+    request = sort === "trending"
+      ? request.order("score", { ascending: false }).order("created_at", { ascending: false })
+      : request.order("created_at", { ascending: false });
+    request = request.limit(search ? 100 : isRecentFeed ? 10 : 40);
+    if (category) request = request.eq("category_slug", category);
+    if (mainLocation) request = request.eq("region_city", mainLocation);
+    if (subLocation) request = request.eq("region_suburb", subLocation);
+    if (search) request = request.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
+    return request;
+  };
+  let { data: unorderedPostsData, error } = await loadPosts(POST_COLUMNS);
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    ({ data: unorderedPostsData, error } = await loadPosts(LEGACY_POST_COLUMNS));
+  }
   if (error) throw error;
 
   const unorderedPosts = (unorderedPostsData ?? []) as CommunityPostRow[];
@@ -152,6 +163,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       excerpt: post.body,
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
       timeAgo: relativeTime(post.created_at),
+      eventDate: formatCommunityEventSchedule(post.event_start_at ?? null, post.event_end_at ?? null),
       thumbnail: thumbnailPath ? signedThumbnails.get(thumbnailPath) : undefined,
       images: imagesByPost.get(post.id) ?? [],
       responseCount: commentCounts.get(post.id) ?? 0,
