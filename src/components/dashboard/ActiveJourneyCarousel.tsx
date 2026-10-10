@@ -59,14 +59,14 @@ function JourneyThumbnail({ imageUrl }: { imageUrl: string | null }) {
   return imageUrl ? <img className="journey-thumbnail" src={imageUrl} alt="" /> : <span className="journey-thumbnail"><i className="ms ms-image" aria-hidden="true" /></span>;
 }
 
-export function JourneyCard({ item }: { item: ActiveJourneyItem }) {
+export function JourneyCard({ item, sectionLabel }: { item: ActiveJourneyItem; sectionLabel?: string }) {
   if (item.role === "buying") {
     return (
       <article className="journey-card is-buying">
         <div className="journey-card-top">
           <JourneyThumbnail imageUrl={item.imageUrl} />
           <div>
-            <em><TranslatedText translationKey="buying" /></em>
+            <em>{sectionLabel ? <><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</> : <TranslatedText translationKey="buying" />}</em>
             <h3>{item.title}</h3>
             <p><i className="ms ms-check-circle" aria-hidden="true" />{item.statusLabel}</p>
           </div>
@@ -88,7 +88,7 @@ export function JourneyCard({ item }: { item: ActiveJourneyItem }) {
       <div className="journey-card-top">
         <JourneyThumbnail imageUrl={item.imageUrl} />
         <div>
-          <em><TranslatedText translationKey="selling" /></em>
+          <em>{sectionLabel ? <><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</> : <TranslatedText translationKey="selling" />}</em>
           <h3>{item.title}</h3>
           {item.newOfferCount ? <p><i className="ms ms-info" aria-hidden="true" />{item.newOfferCount} <TranslatedText translationKey="newOffers" /></p> : null}
         </div>
