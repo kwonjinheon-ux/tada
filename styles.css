@@ -9158,7 +9158,11 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   --domain-text: var(--color-community-text);
 }
 .my-page-domain-preview :is(.my-page-task, .my-page-work, .journey-card) {
-  background: var(--color-surface);
+  background: var(--domain-soft, var(--color-surface));
+  border-color: var(--domain-border, var(--color-line-soft));
+}
+.my-page-domain-preview :is(.is-market, .is-community, .is-services, .journey-card) {
+  --domain-border: color-mix(in srgb, var(--domain-accent) 30%, var(--color-surface));
 }
 .my-page-domain-preview :is(.my-page-task-icon, .my-page-work-icon) {
   color: var(--domain-accent, var(--color-primary));
