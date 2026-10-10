@@ -269,6 +269,15 @@
   --color-line: var(--neutral-400);
   --color-line-soft: var(--neutral-200);
 
+  /* Section identity stays independent from actions and status colours. */
+  --color-market-accent: var(--success-700);
+  --color-market-soft: var(--success-100);
+  --color-community-accent: var(--violet-700);
+  --color-community-soft: var(--violet-soft-100);
+  --color-services-accent: var(--orange-600);
+  --color-services-soft: var(--orange-soft-100);
+  --section-accent: var(--color-primary);
+  --section-accent-soft: var(--color-primary-soft);
   --color-primary: var(--accent-450);
   --color-primary-hover: var(--accent-550);
   --color-primary-dark: var(--accent-700);

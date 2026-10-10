@@ -68,6 +68,20 @@ Never reference a palette step from a component. Reference a semantic role.
 
 Adding a vertical (property, community) means adding roles here, not new hexes.
 
+### Section themes
+
+Market uses green, Community purple, and Services orange. The source tokens
+are `--color-market-accent`, `--color-community-accent`, and
+`--color-services-accent` with matching `-soft` tokens in `globals.css`.
+Existing browse, detail and composer roots select the theme in `styles.css`;
+reusable sections may use `data-theme="market|community|services"`.
+Consumers use `--section-accent`, `--section-accent-soft`,
+`--section-accent-hover`, `--section-accent-border`, and
+`--section-accent-on-color`. Do not override `--color-primary`: shared action
+buttons remain blue. Status badges, ratings, errors and category glyphs keep
+their existing semantic colours. Theme rules change colour only, not shell
+dimensions or responsive breakpoints.
+
 ## 3. Scales
 
 | Scale | Steps |
