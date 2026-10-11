@@ -3,6 +3,8 @@ import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { formatCommunityEventSchedule } from "@/lib/community/format-event-schedule";
+import { LIST_PAGE_SIZE, escapeLikePattern, pageRange, totalPageCount } from "@/lib/list-pagination";
+import type { CommunityPost, CommunityPostType } from "@/data/community-posts";
 
 type SupabaseServerClient = NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>;
 
@@ -34,29 +36,11 @@ export type CommunityFeedQuery = {
   subLocation?: string | null;
   search?: string;
   sort?: "recent" | "trending";
+  page?: number;
+  searchBy?: "all" | "id" | "title" | "content";
 };
 
-export type CommunityFeedPost = {
-  id: string;
-  type: string;
-  title: string;
-  excerpt: string;
-  location: string;
-  timeAgo: string;
-  eventDate?: string;
-  thumbnail?: string;
-  images: { src: string; alt: string }[];
-  responseCount: number;
-  score: number;
-  myVote: number;
-  shareCount: number;
-  viewCount: number;
-  authorName?: string;
-  authorAvatarUrl: string | null;
-  isAnonymous: boolean;
-  isOwner: boolean;
-  isSaved: boolean;
-};
+export type CommunityFeedResult = { posts: CommunityPost[]; totalCount: number; page: number; totalPages: number };
 
 const relativeTime = (createdAt: string) => {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 60_000));
@@ -69,17 +53,48 @@ const relativeTime = (createdAt: string) => {
 
 // The desktop rail only prints a type, a title and a response count, so the
 // recent feed skips every lookup that exists purely for the main post cards.
-export async function loadCommunityPostFeed(supabase: SupabaseServerClient, query: CommunityFeedQuery): Promise<CommunityFeedPost[]> {
-  const { category = null, mainLocation = null, subLocation = null, sort } = query;
+export async function loadCommunityPostFeed(supabase: SupabaseServerClient, query: CommunityFeedQuery): Promise<CommunityFeedResult> {
+  const { category = null, mainLocation = null, subLocation = null, sort, searchBy = "all" } = query;
   const search = (query.search ?? "").replace(/[,%()]/g, " ").trim().slice(0, 60);
   const isRecentFeed = sort === "recent";
   const isDirectQuery = Boolean(search) || Boolean(sort);
+  const isPaged = query.page !== undefined;
+  let authorIdsForSearch: string[] | null = null;
+  if (search && searchBy === "id") {
+    const { data: matches, error: profileError } = await supabase.from("community_comment_profiles")
+      .select("id").ilike("display_name", `%${escapeLikePattern(search)}%`);
+    if (profileError) throw profileError;
+    authorIdsForSearch = (matches ?? []).map((profile) => profile.id);
+  }
 
-  const rankedPostIdsRequest = isDirectQuery ? null : supabase.rpc("get_ranked_community_post_ids", {
+  let totalCount = 0;
+  let page = isPaged ? Math.max(1, Math.floor(query.page ?? 1)) : 1;
+  let totalPages = 1;
+  if (isPaged) {
+    let countRequest = supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("status", "published");
+    if (category) countRequest = countRequest.eq("category_slug", category);
+    if (mainLocation) countRequest = countRequest.eq("region_city", mainLocation);
+    if (subLocation) countRequest = countRequest.eq("region_suburb", subLocation);
+    if (search) {
+      const pattern = `%${escapeLikePattern(search)}%`;
+      if (searchBy === "id") countRequest = countRequest.eq("is_anonymous", false).in("author_id", authorIdsForSearch?.length ? authorIdsForSearch : ["00000000-0000-0000-0000-000000000000"]);
+      else if (searchBy === "title") countRequest = countRequest.ilike("title", pattern);
+      else if (searchBy === "content") countRequest = countRequest.ilike("body", pattern);
+      else countRequest = countRequest.or(`title.ilike.${pattern},body.ilike.${pattern}`);
+    }
+    const { count, error: countError } = await countRequest;
+    if (countError) throw countError;
+    totalCount = count ?? 0;
+    totalPages = totalPageCount(totalCount);
+    page = Math.min(page, totalPages);
+  }
+
+  const rankedPostIdsRequest = isDirectQuery ? null : supabase.rpc(isPaged ? "get_paged_ranked_community_post_ids" : "get_ranked_community_post_ids", {
     p_category_slug: category,
     p_region_city: mainLocation,
     p_region_suburb: subLocation,
-    p_limit: 40,
+    p_limit: isPaged ? LIST_PAGE_SIZE : 40,
+    ...(isPaged ? { p_offset: pageRange(page).from } : {}),
   });
   const userRequest = isRecentFeed ? Promise.resolve({ data: { user: null } }) : supabase.auth.getUser();
   const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([
@@ -95,14 +110,20 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       : { data: [], error: null };
 
     let request = supabase.from("community_posts").select(columns as typeof POST_COLUMNS).eq("status", "published");
-    request = sort === "trending"
-      ? request.order("score", { ascending: false }).order("created_at", { ascending: false })
-      : request.order("created_at", { ascending: false });
-    request = request.limit(search ? 100 : isRecentFeed ? 10 : 40);
     if (category) request = request.eq("category_slug", category);
     if (mainLocation) request = request.eq("region_city", mainLocation);
     if (subLocation) request = request.eq("region_suburb", subLocation);
-    if (search) request = request.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
+    if (search) {
+      const pattern = `%${escapeLikePattern(search)}%`;
+      if (searchBy === "id") request = request.eq("is_anonymous", false).in("author_id", authorIdsForSearch?.length ? authorIdsForSearch : ["00000000-0000-0000-0000-000000000000"]);
+      else if (searchBy === "title") request = request.ilike("title", pattern);
+      else if (searchBy === "content") request = request.ilike("body", pattern);
+      else request = request.or(`title.ilike.${pattern},body.ilike.${pattern}`);
+    }
+    request = sort === "trending"
+      ? request.order("score", { ascending: false }).order("created_at", { ascending: false }).order("id", { ascending: false })
+      : request.order("created_at", { ascending: false }).order("id", { ascending: false });
+    request = isPaged ? request.range(pageRange(page).from, pageRange(page).to) : request.limit(search ? 100 : isRecentFeed ? 10 : 40);
     return request;
   };
   let { data: unorderedPostsData, error } = await loadPosts(POST_COLUMNS);
@@ -118,7 +139,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     return post ? [post] : [];
   });
   const postIds = data.map((post) => post.id);
-  if (!postIds.length) return [];
+  if (!postIds.length) return { posts: [], totalCount, page, totalPages };
 
   const authorIds = [...new Set(data.filter((post) => !post.is_anonymous).map((post) => post.author_id))];
   const [{ data: imageRows }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }, { data: authors }] = await Promise.all([
@@ -153,12 +174,12 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     if (src) imagesByPost.set(image.post_id, [...(imagesByPost.get(image.post_id) ?? []), { src, alt: "Community post image" }]);
   }
 
-  return data.map((post) => {
+  const posts = data.map((post) => {
     const author = post.is_anonymous ? undefined : authorsById.get(post.author_id);
     const thumbnailPath = firstImagePathByPost.get(post.id);
     return {
       id: post.id,
-      type: post.post_type,
+      type: post.post_type as CommunityPostType,
       title: post.title,
       excerpt: post.body,
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
@@ -178,4 +199,5 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       isSaved: savedPostIds.has(post.id),
     };
   });
+  return { posts, totalCount: isPaged ? totalCount : posts.length, page, totalPages };
 }

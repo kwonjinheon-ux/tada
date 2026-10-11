@@ -6,21 +6,34 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 /** The search box that sits under the page index, in the board layout these
  *  lists follow. Submitting sets `?q=` and returns to page one, because the
  *  page number from the previous result set means nothing in the new one. */
-export function ListSearchField({ placeholder, label = "Search this list" }: { placeholder: string; label?: string }) {
+export function ListSearchField({ placeholder, label = "Search this list", scopes, scopeParam = "searchBy", submitLabel = "Search" }: {
+  placeholder: string;
+  label?: string;
+  scopes?: ReadonlyArray<{ value: string; label: string }>;
+  scopeParam?: string;
+  submitLabel?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeTerm = searchParams.get("q") ?? "";
   const [term, setTerm] = useState(activeTerm);
+  const activeScope = searchParams.get(scopeParam) ?? scopes?.[0]?.value ?? "";
+  const [scope, setScope] = useState(activeScope);
 
   // A back/forward step or a cleared filter changes the URL under us.
   useEffect(() => { setTerm(activeTerm); }, [activeTerm]);
+  useEffect(() => { setScope(activeScope); }, [activeScope]);
 
   const submit = (value: string) => {
     const next = new URLSearchParams(searchParams.toString());
     const trimmed = value.trim();
     if (trimmed) next.set("q", trimmed);
     else next.delete("q");
+    if (scopes) {
+      if (scope === scopes[0]?.value) next.delete(scopeParam);
+      else next.set(scopeParam, scope);
+    }
     next.delete("page");
     const query = next.toString();
     router.push(query ? `${pathname}?${query}` : pathname);
@@ -32,6 +45,9 @@ export function ListSearchField({ placeholder, label = "Search this list" }: { p
       role="search"
       onSubmit={(event) => { event.preventDefault(); submit(term); }}
     >
+      {scopes ? <select className="list-search-scope ui-input" aria-label="Search field" value={scope} onChange={(event) => setScope(event.target.value)}>
+        {scopes.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select> : null}
       <label className="list-search-field">
         <i className="ms ms-search" aria-hidden="true" />
         <input
@@ -48,7 +64,7 @@ export function ListSearchField({ placeholder, label = "Search this list" }: { p
           </button>
         ) : null}
       </label>
-      <button className="ui-button ui-button--primary ui-button--sm" type="submit">Search</button>
+      <button className="ui-button ui-button--primary ui-button--sm" type="submit">{submitLabel}</button>
     </form>
   );
 }

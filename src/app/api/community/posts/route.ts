@@ -1,4 +1,4 @@
-import { communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
@@ -24,16 +24,22 @@ export async function GET(request: Request) {
   if (url.searchParams.has("category") && !category.success) return apiFailure("BAD_REQUEST", "Invalid community category.", 400);
   const sort = url.searchParams.get("sort");
   if (sort && sort !== "recent" && sort !== "trending") return apiFailure("BAD_REQUEST", "Invalid community post sort.", 400);
+  const searchBy = url.searchParams.get("searchBy") ?? "all";
+  if (!["all", "id", "title", "content"].includes(searchBy)) return apiFailure("BAD_REQUEST", "Invalid community search field.", 400);
+  const pageParam = url.searchParams.get("page");
+  if (pageParam !== null && (!/^\d+$/.test(pageParam) || Number(pageParam) < 1 || Number(pageParam) > 100000)) return apiFailure("BAD_REQUEST", "Invalid community page.", 400);
 
   try {
-    const posts = await loadCommunityPostFeed(supabase, {
+    const feed = await loadCommunityPostFeed(supabase, {
       category: category.success ? category.data ?? null : null,
       mainLocation: url.searchParams.get("mainLocation")?.trim() || null,
       subLocation: url.searchParams.get("subLocation")?.trim() || null,
       search: url.searchParams.get("q") ?? "",
+      searchBy: searchBy as "all" | "id" | "title" | "content",
+      page: pageParam === null ? undefined : Number(pageParam),
       sort: sort === "recent" || sort === "trending" ? sort : undefined,
     });
-    return apiSuccess({ posts });
+    return apiSuccess(feed);
   } catch {
     return apiFailure("INTERNAL", "We couldn't load community posts.", 500);
   }
@@ -42,7 +48,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const payload = communityPostCreateRequestSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
-  if (payload.data.isAnonymous && payload.data.categorySlug !== "free-board") return apiFailure("BAD_REQUEST", "Anonymous posting is only available in the free board.", 400);
+  if (payload.data.isAnonymous && !allowsAnonymousCommunityPost(payload.data.categorySlug)) return apiFailure("BAD_REQUEST", "Anonymous posting is only available in Q&A or the free board.", 400);
   if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return apiFailure("BAD_REQUEST", prohibitedPublicContentMessage, 400);
 
   const supabase = await createServerSupabaseClient();

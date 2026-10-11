@@ -9,7 +9,7 @@ import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
 import { PostSubmitButton } from "@/components/post-ad/PostSubmitButton";
-import { communityPostCreateResponseSchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
@@ -43,6 +43,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const [minimumEventDateTime] = useState(() => toLocalDateTimeInputValue(new Date()));
   const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a public post.";
   const isEventCategory = categorySlug === "events";
+  const allowsAnonymous = allowsAnonymousCommunityPost(categorySlug);
 
   useEffect(() => { setCategorySlug(initialCategory); setIsAnonymous(false); }, [initialCategory]);
 
@@ -94,7 +95,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorySlug, isAnonymous: categorySlug === "free-board" && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths, eventStartAt: isEventCategory ? new Date(eventStartAt).toISOString() : null, eventEndAt: isEventCategory ? new Date(eventEndAt).toISOString() : null }),
+      body: JSON.stringify({ categorySlug, isAnonymous: allowsAnonymous && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths, eventStartAt: isEventCategory ? new Date(eventStartAt).toISOString() : null, eventEndAt: isEventCategory ? new Date(eventEndAt).toISOString() : null }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
     if (result.error) {
@@ -120,8 +121,8 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
           <form className="post-ad-form" onSubmit={submit}>
             <section className="post-title-field">
               <div className="post-section-heading"><span>1</span><h2>{t("communityChooseCategory")}</h2></div>
-              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => { setCategorySlug(value); if (value !== "free-board") setIsAnonymous(false); }}><i className={`ms ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
-              {categorySlug === "free-board" ? <fieldset className="community-post-identity-options"><legend>{t("communityAuthorVisibility")}</legend><div><label><input type="radio" name="community-author-visibility" checked={!isAnonymous} onChange={() => setIsAnonymous(false)} />{t("communityShowMyName")}</label><label><input type="radio" name="community-author-visibility" checked={isAnonymous} onChange={() => setIsAnonymous(true)} />{t("communityPostAnonymously")}</label></div><p>{t("communityAnonymousHelp")}</p></fieldset> : null}
+              <div className="post-shop-type-options" role="group" aria-label={t("categories")}>{communityPostCategories.map(({ value, labelKey, icon }) => <button className={`community-category-${value} ${categorySlug === value ? "is-selected" : ""}`} key={value} type="button" onClick={() => { setCategorySlug(value); if (!allowsAnonymousCommunityPost(value)) setIsAnonymous(false); }}><i className={`ms ${icon}`} aria-hidden="true" />{t(labelKey)}</button>)}</div>
+              {allowsAnonymous ? <fieldset className="community-post-identity-options"><legend>{t("communityAuthorVisibility")}</legend><div><label><input type="radio" name="community-author-visibility" checked={!isAnonymous} onChange={() => setIsAnonymous(false)} />{t("communityShowMyName")}</label><label><input type="radio" name="community-author-visibility" checked={isAnonymous} onChange={() => setIsAnonymous(true)} />{t("communityPostAnonymously")}</label></div><p>{t("communityAnonymousHelp")}</p></fieldset> : null}
             </section>
 
             <section className="post-description-field">

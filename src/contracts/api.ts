@@ -182,6 +182,10 @@ export const communityPostCategorySchema = z.enum([
   "free-board",
 ]);
 
+export function allowsAnonymousCommunityPost(categorySlug: string) {
+  return categorySlug === "free-board" || categorySlug === "qna";
+}
+
 export const communityPostCreateRequestSchema = z.object({
   categorySlug: communityPostCategorySchema,
   isAnonymous: z.boolean().default(false),
@@ -247,7 +251,12 @@ export const communityPostFeedItemSchema = z.object({
   isSaved: z.boolean().optional(),
 });
 
-export const communityPostFeedResponseSchema = z.object({ posts: z.array(communityPostFeedItemSchema) });
+export const communityPostFeedResponseSchema = z.object({
+  posts: z.array(communityPostFeedItemSchema),
+  totalCount: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
+});
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>;
 export type ApiFailure = z.infer<typeof apiFailureSchema>;

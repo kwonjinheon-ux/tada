@@ -12,12 +12,14 @@ import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
 import { CommunityEmptyState } from "@/components/community/CommunityEmptyState";
 import { CommunityPostListSkeleton } from "@/components/community/CommunityPostListSkeleton";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
-import type { CommunityPost } from "@/data/community-posts";
-import type { MainLocation } from "@/data/nzLocations";
+import { NZ_MAIN_LOCATIONS, type MainLocation } from "@/data/nzLocations";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 import { communityPostFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
+import { ListPagination } from "@/components/ui/ListPagination";
+import { ListSearchField } from "@/components/ui/ListSearchField";
+import type { CommunityFeedResult } from "@/lib/community/post-feed";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
 
@@ -28,32 +30,41 @@ const communityChips: Array<{ value: string; labelKey: TranslationKey }> = [
   { value: "recommendations", labelKey: "communityCategoryRecommendations" },
 ];
 
-const buildFeedCacheKey = ({ category, search, mainLocation, subLocation, sort }: { category: CommunityCategory; search: string; mainLocation: string; subLocation: string; sort?: "recent" | "trending" }) => {
+const buildFeedCacheKey = ({ category, search, searchBy, mainLocation, subLocation, sort, page }: { category: CommunityCategory; search: string; searchBy: string; mainLocation: string; subLocation: string; page: number; sort?: "recent" | "trending" }) => {
   const params = new URLSearchParams();
+  params.set("page", String(page));
   if (category !== "all") params.set("category", category);
   if (search) params.set("q", search);
+  if (searchBy !== "all") params.set("searchBy", searchBy);
   if (mainLocation) params.set("mainLocation", mainLocation);
   if (subLocation) params.set("subLocation", subLocation);
   if (sort) params.set("sort", sort);
   return params.toString();
 };
 
-export function CommunityPageClient({ initialCategory = "all", initialPosts = null }: { initialCategory?: CommunityCategory; initialPosts?: CommunityPost[] | null }) {
-  const { t } = useLanguage();
+export function CommunityPageClient({ initialCategory = "all", initialFeed = null }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null }) {
+  const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
+  const searchBy = searchParams.get("searchBy") ?? "all";
+  const requestedCategory = searchParams.get("category");
+  const urlCategory = communityCategories.some(({ value }) => value === requestedCategory) ? requestedCategory as CommunityCategory : "all";
+  const requestedPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [activeCategory, setActiveCategory] = useState<CommunityCategory>(initialCategory);
-  const [activeChip, setActiveChip] = useState(initialCategory === "recommendations" ? "recommendations" : "all");
-  const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
-  const [subLocation, setSubLocation] = useState("");
-  const [publishedPosts, setPublishedPosts] = useState<CommunityPost[]>(initialPosts ?? []);
-  const [isLoadingPosts, setIsLoadingPosts] = useState(!initialPosts);
+  const urlSort = searchParams.get("sort");
+  const [activeChip, setActiveChip] = useState(urlSort === "recent" || urlSort === "trending" ? urlSort : initialCategory === "recommendations" ? "recommendations" : "all");
+  const requestedLocation = searchParams.get("mainLocation");
+  const mainLocation: MainLocation | "" = NZ_MAIN_LOCATIONS.find((location) => location === requestedLocation) ?? "";
+  const subLocation = searchParams.get("subLocation") ?? "";
+  const [feed, setFeed] = useState<CommunityFeedResult>(initialFeed ?? { posts: [], totalCount: 0, page: 1, totalPages: 1 });
+  const [isLoadingPosts, setIsLoadingPosts] = useState(!initialFeed);
   // Seeding the cache with the server-rendered feed keeps the first paint from
   // firing a duplicate request for data the page already shipped.
-  const postFeedCache = useRef(new Map<string, { posts: CommunityPost[]; cachedAt: number }>(
-    initialPosts ? [[buildFeedCacheKey({ category: initialCategory, search: searchQuery, mainLocation: "", subLocation: "" }), { posts: initialPosts, cachedAt: Date.now() }]] : [],
+  const postFeedCache = useRef(new Map<string, { feed: CommunityFeedResult; cachedAt: number }>(
+    initialFeed ? [[buildFeedCacheKey({ category: initialCategory, search: searchQuery, searchBy, page, mainLocation, subLocation, sort: urlSort === "recent" || urlSort === "trending" ? urlSort : undefined }), { feed: initialFeed, cachedAt: Date.now() }]] : [],
   ));
 
   const chooseView = (mode: ListingViewMode) => {
@@ -61,11 +72,19 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     saveListingViewPreference(mode, "community");
   };
   const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
-    setMainLocation(nextMainLocation);
-    setSubLocation(nextSubLocation);
-  };
-  const updateCategoryUrl = (category: CommunityCategory) => {
     const params = new URLSearchParams(window.location.search);
+    params.delete("page");
+    if (nextMainLocation) params.set("mainLocation", nextMainLocation);
+    else params.delete("mainLocation");
+    if (nextSubLocation) params.set("subLocation", nextSubLocation);
+    else params.delete("subLocation");
+    window.history.replaceState(window.history.state, "", `/community${params.size ? `?${params}` : ""}`);
+  };
+  const updateCategoryUrl = (category: CommunityCategory, sort?: "recent" | "trending") => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("page");
+    if (sort) params.set("sort", sort);
+    else params.delete("sort");
     if (category === "all") params.delete("category");
     else params.set("category", category);
     const query = params.toString();
@@ -80,7 +99,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     setActiveChip(chip);
     const category = chip === "recommendations" ? "recommendations" : "all";
     setActiveCategory(category);
-    updateCategoryUrl(category);
+    updateCategoryUrl(category, chip === "recent" || chip === "trending" ? chip : undefined);
   };
 
   useEffect(() => {
@@ -88,23 +107,20 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
     if (stored) setViewMode(stored);
   }, []);
 
-  // A soft navigation swaps the server-rendered category without remounting
-  // this component, so the selection has to follow the URL rather than stay on
-  // whatever it was mounted with. Reseeding the cache first lets the effect
-  // below reuse the posts that arrived with the navigation.
+  // A soft navigation may preserve this component, so the selection follows
+  // the URL instead of retaining an earlier category or sorting chip.
   useEffect(() => {
-    if (initialPosts) postFeedCache.current.set(buildFeedCacheKey({ category: initialCategory, search: searchQuery, mainLocation: "", subLocation: "" }), { posts: initialPosts, cachedAt: Date.now() });
-    setActiveCategory(initialCategory);
-    setActiveChip(initialCategory === "recommendations" ? "recommendations" : "all");
-  }, [initialCategory, initialPosts, searchQuery]);
+    setActiveCategory(urlCategory);
+    setActiveChip(urlSort === "recent" || urlSort === "trending" ? urlSort : urlCategory === "recommendations" ? "recommendations" : "all");
+  }, [urlSort, urlCategory]);
 
   useEffect(() => {
     const controller = new AbortController();
     const sort = activeChip === "recent" || activeChip === "trending" ? activeChip : undefined;
-    const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, mainLocation, subLocation, sort });
+    const cacheKey = buildFeedCacheKey({ category: activeCategory, search: searchQuery, searchBy, mainLocation, subLocation, sort, page });
     const cachedFeed = postFeedCache.current.get(cacheKey);
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
-      setPublishedPosts(cachedFeed.posts);
+      setFeed(cachedFeed.feed);
       setIsLoadingPosts(false);
       return () => controller.abort();
     }
@@ -113,18 +129,18 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
       .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
       .then((result) => {
         if (result.data) {
-          postFeedCache.current.set(cacheKey, { posts: result.data.posts, cachedAt: Date.now() });
-          setPublishedPosts(result.data.posts);
+          postFeedCache.current.set(cacheKey, { feed: result.data, cachedAt: Date.now() });
+          setFeed(result.data);
         } else {
-          setPublishedPosts([]);
+          setFeed({ posts: [], totalCount: 0, page: 1, totalPages: 1 });
         }
       })
-      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPublishedPosts([]); })
+      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setFeed({ posts: [], totalCount: 0, page: 1, totalPages: 1 }); })
       .finally(() => { if (!controller.signal.aborted) setIsLoadingPosts(false); });
     return () => controller.abort();
-  }, [activeCategory, activeChip, mainLocation, searchQuery, subLocation]);
+  }, [activeCategory, activeChip, mainLocation, searchQuery, searchBy, subLocation, page]);
 
-  const visiblePosts = publishedPosts;
+  const visiblePosts = feed.posts;
 
   useEffect(() => {
     const openFilters = (event: Event) => {
@@ -170,7 +186,7 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
           activeChipValue={activeChip}
           onChipSelect={chooseChip}
           chipStyle="sort"
-          resultsLabel={`${visiblePosts.length} ${t("communityPostsCount")}`}
+          resultsLabel={`${feed.totalCount} ${t("communityPostsCount")}`}
         />
 
         {isLoadingPosts && visiblePosts.length === 0 ? <CommunityPostListSkeleton /> : visiblePosts.length ? <div className={`community-post-list ${viewMode === "grid" ? "is-grid-view" : ""}`}>
@@ -178,6 +194,19 @@ export function CommunityPageClient({ initialCategory = "all", initialPosts = nu
             ? visiblePosts.map((post) => <CommunityBlogPost key={post.id} post={post} showTypeBadge={false} />)
             : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} />)}
         </div> : <CommunityEmptyState category={activeCategory} />}
+        <div className="community-list-footer">
+          <ListPagination page={feed.page} totalPages={feed.totalPages} label={locale === "ko" ? "커뮤니티 글 페이지" : "Community post pages"} />
+          <ListSearchField
+            placeholder={t("searchCommunity")}
+            label={t("searchCommunity")}
+            submitLabel={locale === "ko" ? "검색" : "Search"}
+            scopes={locale === "ko" ? [
+              { value: "all", label: "전체" }, { value: "id", label: "아이디" }, { value: "content", label: "내용" }, { value: "title", label: "제목" },
+            ] : [
+              { value: "all", label: "All" }, { value: "id", label: "User ID" }, { value: "content", label: "Content" }, { value: "title", label: "Title" },
+            ]}
+          />
+        </div>
       </section>
 
       <CommunityRecentPostsPanel category={activeCategory} />
