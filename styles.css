@@ -11873,15 +11873,15 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 .community-list-footer .list-pagination { margin-top: 0; }
-.community-list-footer .list-search { justify-content: flex-end; margin-top: 0; }
+.community-list-footer .list-search { justify-content: flex-end; align-items: stretch; margin-top: 0; }
 
 @media (max-width: 767.98px) {
   .list-pagination { margin-top: var(--space-6); flex-wrap: wrap; }
   .list-search { flex-wrap: wrap; }
   .list-search-field { width: 100%; }
   .list-search button[type="submit"] { width: 100%; }
-  .community-list-footer .list-search { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .community-list-footer .list-search-scope { width: 100%; }
+  .community-list-footer .list-search { flex-wrap: nowrap; }
+  .community-list-footer .list-search-scope { flex: none; }
   .community-list-footer .list-search-scope .post-select-menu {
     top: auto;
     bottom: calc(100% + var(--space-2));
@@ -11891,8 +11891,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .community-list-footer .list-search-scope .post-select-wrap.is-open .post-select-menu {
     transform: translateY(0) scale(1);
   }
-  .community-list-footer .list-search-field { width: 100%; }
-  .community-list-footer .list-search button[type="submit"] { width: 100%; }
+  .community-list-footer .list-search-field { flex: 1 1 0; width: auto; padding-inline: var(--space-2); }
+  .community-list-footer .list-search-field > .ms { display: none; }
+  .community-list-footer .list-search button[type="submit"] { flex: none; width: auto; }
 }
 
 /* Desktop navigates services from the left rail only — the same rule the
