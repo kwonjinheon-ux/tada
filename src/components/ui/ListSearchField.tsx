@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { SelectMenu } from "@/components/ui/SelectMenu";
 
 /** The search box that sits under the page index, in the board layout these
  *  lists follow. Submitting sets `?q=` and returns to page one, because the
@@ -45,9 +46,18 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
       role="search"
       onSubmit={(event) => { event.preventDefault(); submit(term); }}
     >
-      {scopes ? <select className="list-search-scope ui-input" aria-label="Search field" value={scope} onChange={(event) => setScope(event.target.value)}>
-        {scopes.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select> : null}
+      {scopes ? <SelectMenu
+        id="list-search-scope"
+        name={scopeParam}
+        className="list-search-scope"
+        label="Search field"
+        placeholder={scopes[0]?.label ?? "Search field"}
+        options={scopes}
+        value={scope}
+        onChange={setScope}
+        hideLabel
+        includeEmptyOption={false}
+      /> : null}
       <label className="list-search-field">
         <i className="ms ms-search" aria-hidden="true" />
         <input

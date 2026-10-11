@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { CommunityBrowseIntro } from "@/components/community/CommunityBrowseIntro";
@@ -44,6 +44,7 @@ const buildFeedCacheKey = ({ category, search, searchBy, mainLocation, subLocati
 
 export function CommunityPageClient({ initialCategory = "all", initialFeed = null }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null }) {
   const { t, locale } = useLanguage();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
   const searchBy = searchParams.get("searchBy") ?? "all";
@@ -72,13 +73,13 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     saveListingViewPreference(mode, "community");
   };
   const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     params.delete("page");
     if (nextMainLocation) params.set("mainLocation", nextMainLocation);
     else params.delete("mainLocation");
     if (nextSubLocation) params.set("subLocation", nextSubLocation);
     else params.delete("subLocation");
-    window.history.replaceState(window.history.state, "", `/community${params.size ? `?${params}` : ""}`);
+    router.replace(`/community${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
   };
   const updateCategoryUrl = (category: CommunityCategory, sort?: "recent" | "trending") => {
     const params = new URLSearchParams(window.location.search);
