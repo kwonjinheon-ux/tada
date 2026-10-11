@@ -54,7 +54,12 @@ const relativeTime = (createdAt: string) => {
 // The desktop rail only prints a type, a title and a response count, so the
 // recent feed skips every lookup that exists purely for the main post cards.
 export async function loadCommunityPostFeed(supabase: SupabaseServerClient, query: CommunityFeedQuery): Promise<CommunityFeedResult> {
-  const { category = null, mainLocation = null, subLocation = null, sort, searchBy = "all" } = query;
+  const { sort, searchBy = "all" } = query;
+  // The SQL ranking function treats NULL as "all"; empty URL filters must
+  // match the count query's unfiltered semantics as well.
+  const category = query.category || null;
+  const mainLocation = query.mainLocation || null;
+  const subLocation = query.subLocation || null;
   const search = (query.search ?? "").replace(/[,%()]/g, " ").trim().slice(0, 60);
   const isRecentFeed = sort === "recent";
   const isDirectQuery = Boolean(search) || Boolean(sort);
@@ -67,10 +72,8 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     authorIdsForSearch = (matches ?? []).map((profile) => profile.id);
   }
 
-  let totalCount = 0;
-  let page = isPaged ? Math.max(1, Math.floor(query.page ?? 1)) : 1;
-  let totalPages = 1;
-  if (isPaged) {
+  const requestedPage = isPaged ? Math.max(1, Math.floor(query.page ?? 1)) : 1;
+  const countRequest = isPaged ? (() => {
     let countRequest = supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("status", "published");
     if (category) countRequest = countRequest.eq("category_slug", category);
     if (mainLocation) countRequest = countRequest.eq("region_city", mainLocation);
@@ -82,27 +85,39 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       else if (searchBy === "content") countRequest = countRequest.ilike("body", pattern);
       else countRequest = countRequest.or(`title.ilike.${pattern},body.ilike.${pattern}`);
     }
-    const { count, error: countError } = await countRequest;
-    if (countError) throw countError;
-    totalCount = count ?? 0;
-    totalPages = totalPageCount(totalCount);
-    page = Math.min(page, totalPages);
-  }
+    return countRequest;
+  })() : Promise.resolve({ count: null, error: null });
 
   const rankedPostIdsRequest = isDirectQuery ? null : supabase.rpc(isPaged ? "get_paged_ranked_community_post_ids" : "get_ranked_community_post_ids", {
     p_category_slug: category,
     p_region_city: mainLocation,
     p_region_suburb: subLocation,
     p_limit: isPaged ? LIST_PAGE_SIZE : 40,
-    ...(isPaged ? { p_offset: pageRange(page).from } : {}),
+    ...(isPaged ? { p_offset: pageRange(requestedPage).from } : {}),
   });
   const userRequest = isRecentFeed ? Promise.resolve({ data: { user: null } }) : supabase.auth.getUser();
-  const [{ data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([
+  const [{ count, error: countError }, { data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([
+    countRequest,
     rankedPostIdsRequest ?? Promise.resolve({ data: [], error: null }),
     userRequest,
   ]);
+  if (countError) throw countError;
   if (rankedPostIdsError) throw rankedPostIdsError;
-  const orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
+  const totalCount = isPaged ? count ?? 0 : 0;
+  const totalPages = totalPageCount(totalCount);
+  const page = isPaged ? Math.min(requestedPage, totalPages) : 1;
+  let orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
+  if (rankedPostIdsRequest && page !== requestedPage) {
+    const { data: lastPageIds, error: lastPageError } = await supabase.rpc("get_paged_ranked_community_post_ids", {
+      p_category_slug: category,
+      p_region_city: mainLocation,
+      p_region_suburb: subLocation,
+      p_limit: LIST_PAGE_SIZE,
+      p_offset: pageRange(page).from,
+    });
+    if (lastPageError) throw lastPageError;
+    orderedPostIds = (lastPageIds ?? []).map((post: { id: string }) => post.id);
+  }
 
   const loadPosts = async (columns: string) => {
     if (!isDirectQuery) return orderedPostIds.length
