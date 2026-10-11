@@ -9144,16 +9144,19 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Trial domain identity on My Page only; V2 and shared cards stay unchanged. */
 .my-page-domain-preview :is(.is-market, .journey-card) {
   --domain-accent: var(--color-market-accent);
+  --domain-icon: var(--color-market-icon);
   --domain-soft: var(--color-market-soft);
   --domain-text: var(--color-market-text);
 }
 .my-page-domain-preview .is-services {
   --domain-accent: var(--color-services-accent);
+  --domain-icon: var(--color-services-icon);
   --domain-soft: var(--color-services-soft);
   --domain-text: var(--color-services-text);
 }
 .my-page-domain-preview .is-community {
   --domain-accent: var(--color-community-accent);
+  --domain-icon: var(--color-community-icon);
   --domain-soft: var(--color-community-soft);
   --domain-text: var(--color-community-text);
 }
@@ -9165,7 +9168,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   --domain-border: color-mix(in srgb, var(--domain-accent) 30%, var(--color-surface));
 }
 .my-page-domain-preview :is(.my-page-task-icon, .my-page-work-icon) {
-  color: var(--domain-accent, var(--color-primary));
+  color: var(--domain-icon, var(--color-primary));
 }
 .my-page-domain-preview .my-page-task-icon {
   background: var(--domain-soft, var(--color-primary-soft));
@@ -9179,7 +9182,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-progress { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
 .my-page-progress-item { min-width: 0; }
 .my-page-progress-item > article { height: 100%; width: 100%; min-width: 0; margin: 0; padding: var(--space-3); box-shadow: none; }
-.my-page-domain-preview .my-page-progress h3 { color: var(--color-ink); }
+.my-page-domain-preview .my-page-progress h3 { color: var(--domain-text, var(--color-ink)); }
 .my-page-domain-preview .my-page-work {
   display: grid;
   grid-template-columns: var(--control-h-lg) minmax(0, 1fr);

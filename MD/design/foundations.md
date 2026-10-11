@@ -69,10 +69,12 @@ Never reference a palette step from a component. Reference a semantic role.
 Adding a vertical (property, community) means adding roles here, not new hexes.
 
 Domain identity tokens use `--color-market-*`, `--color-community-*`, and
-`--color-services-*` with `accent`, `soft`, and `text` roles. The current
-trial is scoped to `.my-page-domain-preview` on My Page: soft domain card
-backgrounds, tinted borders, accent icons and darker domain labels. Borders
-mix 30% domain accent with the surface token. Account cards remain neutral.
+`--color-services-*` with `accent`, `icon`, `soft`, and `text` roles. The
+current My Page trial uses Fresh Leaf Green for Market, Vivid/Golden Yellow
+for Community, and Orange for Services. It reuses the existing success, amber,
+and orange soft palette tokens for card backgrounds. Cards use the domain
+accent for tinted borders, domain icons, and darker domain text; account cards
+remain neutral. My Page V2 is not part of the trial.
 My Page V2 is not part of the trial.
 Primary actions and success/warning/error tokens remain unchanged. These
 domain representative icons explicitly override the usual glyph colour;
