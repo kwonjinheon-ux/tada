@@ -11873,7 +11873,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 .community-list-footer .list-pagination { margin-top: 0; }
-.community-list-footer .list-search { justify-content: flex-end; align-items: stretch; margin-top: 0; }
+.community-list-footer .list-search { justify-content: center; align-items: stretch; margin-top: 0; }
 
 @media (max-width: 767.98px) {
   .list-pagination { margin-top: var(--space-6); flex-wrap: wrap; }
