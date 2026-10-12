@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import { TranslatedText, useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 
 const JOURNEY_STAGES = ["offer", "pending", "accepted", "complete"] as const;
@@ -41,15 +41,20 @@ const stageLabelKey: Record<JourneyStage, "journeyOffer" | "journeyPending" | "j
 
 function JourneyStepper({ stage }: { stage: JourneyStage }) {
   const currentIndex = JOURNEY_STAGES.indexOf(stage);
-  const progressPercent = (currentIndex / (JOURNEY_STAGES.length - 1)) * 100;
+  return <ProgressStepper steps={JOURNEY_STAGES.map((step) => <TranslatedText key={step} translationKey={stageLabelKey[step]} />)} currentIndex={currentIndex} ariaLabel="Trade progress" />;
+}
+
+export function ProgressStepper({ steps, currentIndex, ariaLabel }: { steps: ReactNode[]; currentIndex: number; ariaLabel: string }) {
+  const boundedIndex = Math.max(0, Math.min(currentIndex, steps.length - 1));
+  const progressPercent = steps.length > 1 ? (boundedIndex / (steps.length - 1)) * 100 : 100;
   return (
-    <div className="journey-stepper">
+    <div className="journey-stepper" role="img" aria-label={ariaLabel}>
       <div className="journey-stepper-track"><span style={{ width: `${progressPercent}%` }} /></div>
       <ol>
-        {JOURNEY_STAGES.map((step, index) => (
-          <li key={step} className={index <= currentIndex ? "is-done" : index === currentIndex + 1 ? "is-next" : "is-upcoming"}>
-            <i className={index <= currentIndex ? "ms ms-check" : ""} aria-hidden="true" />
-            <span><TranslatedText translationKey={stageLabelKey[step]} /></span>
+        {steps.map((step, index) => (
+          <li key={index} className={index < boundedIndex ? "is-done" : index === boundedIndex ? "is-current" : "is-upcoming"} aria-current={index === boundedIndex ? "step" : undefined}>
+            <i className={index < boundedIndex ? "ms ms-check" : ""} aria-hidden="true" />
+            <span>{step}</span>
           </li>
         ))}
       </ol>
@@ -100,6 +105,11 @@ export function JourneyCard({ item, sectionLabel }: { item: ActiveJourneyItem; s
           {item.newOfferCount ? <p><i className="ms ms-info" aria-hidden="true" />{item.newOfferCount} <TranslatedText translationKey="newOffers" /></p> : null}
         </div>
       </div>
+      <ProgressStepper
+        steps={ko ? ["등록", item.listingStatus === "pending" ? "검토" : "판매", "제안", "완료"] : ["Listed", item.listingStatus === "pending" ? "Review" : "For sale", "Offer", "Complete"]}
+        currentIndex={item.newOfferCount > 0 ? 2 : 1}
+        ariaLabel={ko ? `현재 ${item.newOfferCount > 0 ? "제안" : item.listingStatus === "pending" ? "검토" : "판매"} 단계` : `Currently at ${item.newOfferCount > 0 ? "offer" : item.listingStatus === "pending" ? "review" : "for sale"}`}
+      />
       {item.listingStatus ? <p className="journey-listing-status"><i className={`ms ${item.listingStatus === "published" ? "ms-check-circle" : "ms-calendar-today"}`} aria-hidden="true" />{item.listingStatus === "published" ? (ko ? "판매 중" : "For sale") : (ko ? "검토 중" : "Under review")}</p> : <div className="journey-stats">
         <div><span><TranslatedText translationKey="bestOffer" /></span><strong>{item.bestOfferLabel}</strong></div>
         <div><span><TranslatedText translationKey="totalViews" /></span><strong>{item.totalViews}</strong></div>

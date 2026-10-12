@@ -9085,6 +9085,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 /* Reference treatment keeps the existing My Page shell and column structure. */
+.my-page-ad-image { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); }
 .my-page-reference .my-page-heading h2 { display: flex; align-items: center; gap: var(--space-2); }
 .my-page-reference .my-page-attention-count { display: inline-grid; place-items: center; min-width: var(--space-5); height: var(--space-5); padding-inline: var(--space-1); border-radius: var(--radius-pill); background: var(--color-danger); color: var(--color-on-danger); font-size: var(--text-xs); }
 .my-page-reference .my-page-filters [aria-pressed="true"].ui-button--ghost { color: var(--color-primary); background: var(--color-primary-soft); }
@@ -9115,7 +9116,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-reference.my-page-domain-preview .my-page-work .my-page-tag { grid-column: 1 / -1; grid-row: 1; justify-self: start; color: var(--domain-text); background: var(--domain-soft); border-radius: var(--radius-xs); padding: var(--space-1) var(--space-2); }
 .my-page-reference.my-page-domain-preview .my-page-work h3 { grid-column: 2; grid-row: 2; align-self: start; }
 .my-page-reference.my-page-domain-preview .my-page-work > p { grid-row: 3; margin: var(--space-2) 0; }
-.my-page-reference.my-page-domain-preview .my-page-work .my-page-link { grid-row: 4; align-self: end; }
+.my-page-reference.my-page-domain-preview .my-page-work .journey-stepper { grid-column: 1 / -1; grid-row: 4; width: 100%; margin-block: var(--space-2); }
+.my-page-reference.my-page-domain-preview .my-page-work .my-page-link { grid-row: 5; align-self: end; }
 .my-page-reference.my-page-domain-preview .my-page-progress :is(.my-page-link, .journey-card-action, .journey-card-footer a) { background: var(--domain-accent); color: var(--color-on-primary); border-radius: var(--radius-xs); min-height: var(--control-h-sm); justify-content: center; gap: var(--space-2); }
 .my-page-reference.my-page-domain-preview .my-page-progress .is-community .my-page-link { color: var(--color-ink); }
 .my-page-reference.my-page-domain-preview .my-page-progress :is(.my-page-link, .journey-card-action, .journey-card-footer a) i { color: inherit; }
@@ -9131,8 +9133,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-reference.my-page-domain-preview .journey-card-action { align-self: end; }
 .my-page-reference.my-page-domain-preview .journey-stepper li span { display: block; }
 .my-page-reference.my-page-domain-preview .journey-stepper-track span,
-.my-page-reference.my-page-domain-preview .journey-stepper li.is-done i { background: var(--color-market-accent); border-color: var(--color-market-accent); }
-.my-page-reference.my-page-domain-preview .journey-stepper li.is-next i { border-color: var(--color-market-accent); }
+.my-page-reference.my-page-domain-preview .journey-stepper li.is-done i { background: var(--domain-accent); border-color: var(--domain-accent); }
+.my-page-reference.my-page-domain-preview .journey-stepper li.is-current i { border-color: var(--domain-accent); background: var(--color-surface); box-shadow: inset 0 0 0 var(--space-1) var(--domain-accent); }
+.my-page-reference.my-page-domain-preview .journey-stepper li.is-current span { color: var(--domain-text); font-weight: var(--weight-bold); }
 .my-page-reference.my-page-domain-preview .my-page-filters .ui-button { min-height: var(--control-h-xs); font-size: var(--text-xs); border: 1px solid var(--color-line-soft); }
 .my-page-reference.my-page-domain-preview .my-page-activity { grid-template-columns: minmax(0, 1fr); }
 .my-page-reference.my-page-domain-preview .my-page-activity > a { align-items: center; padding-block: var(--space-2); gap: var(--space-2); }
@@ -9164,7 +9167,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-reference.my-page-domain-preview .my-page-discovery-controls { display: flex; align-items: center; font-size: var(--text-xs); color: var(--color-muted); }
 .my-page-reference.my-page-domain-preview .my-page-discovery-controls .ui-button { padding-inline: var(--space-1); }
 .my-page-reference.my-page-domain-preview .my-page-discovery-slide { display: block; border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); overflow: hidden; background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
-.my-page-reference.my-page-domain-preview .my-page-discovery-slide img { display: block; width: 100%; aspect-ratio: 8 / 3; object-fit: cover; }
+.my-page-reference.my-page-domain-preview .my-page-discovery-slide img { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; }
 .my-page-reference.my-page-domain-preview .my-page-discovery-slide strong { display: block; padding: var(--space-2) var(--space-3) 0; font-size: var(--text-sm); }
 .my-page-reference.my-page-domain-preview .my-page-discovery-slide p { margin: 0; padding: var(--space-1) var(--space-3) var(--space-3); color: var(--color-muted); font-size: var(--text-xs); }
 .my-page-reference.my-page-domain-preview .my-page-discovery-dots { display: flex; justify-content: center; }
@@ -9299,7 +9302,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .my-page-progress .journey-card-action { min-width: 0; padding-inline: var(--space-2); font-size: var(--text-sm); }
 .my-page-progress .journey-stats { flex-wrap: wrap; gap: var(--space-3); }
 .my-page-progress .journey-stats strong { font-size: var(--text-lg); }
-.my-page-progress .journey-stepper li span { display: none; }
+.my-page-progress .journey-stepper li span { display: block; }
 .my-page-progress .journey-card-top { grid-template-columns: var(--space-12) minmax(0, 1fr); }
 .my-page-progress .journey-thumbnail { width: var(--space-12); height: var(--space-12); }
 .my-page-activity { display: grid; grid-template-columns: minmax(0, 1fr); }
@@ -9442,6 +9445,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .journey-stepper li span { color: var(--blue-soft-600); font-size: var(--text-2xs); font-weight: var(--weight-semibold); }
 .journey-stepper li.is-done i { border-color: var(--green-450); background: var(--green-450); }
 .journey-stepper li.is-done span { color: var(--blue-800); font-weight: var(--weight-bold); }
+.journey-stepper li.is-current i { border-color: var(--green-450); background: var(--neutral-50); box-shadow: inset 0 0 0 var(--space-1) var(--green-450); }
+.journey-stepper li.is-current span { color: var(--green-700); font-weight: var(--weight-bold); }
 .journey-stepper li.is-next i { border-color: var(--green-450); background: var(--neutral-50); }
 .journey-stepper li.is-next span { color: var(--green-700); font-weight: var(--weight-bold); }
 
