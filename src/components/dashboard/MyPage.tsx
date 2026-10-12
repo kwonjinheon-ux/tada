@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getActiveJourneys } from "@/lib/market/active-journey";
+import { getActiveJourneys, getListedJourneys } from "@/lib/market/active-journey";
 import { MyPageClient } from "@/components/dashboard/MyPageClient";
 import { MyPageV2Client } from "@/components/dashboard/MyPageV2Client";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 /** Personal overview: scoped reads through the same authenticated client as the dashboard. */
 export async function MyPage({ version = "current" }: { version?: "current" | "v2" }) {
@@ -29,6 +30,28 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     db.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
     db.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
   ]);
+  const listed = version === "current" ? await getListedJourneys(db, user.id) : { items: [], unavailable: false };
+  const listedIds = new Set(listed.items.map((item) => item.id));
+  const thumbnails = await Promise.all([
+    { rows: services.data ?? [], table: "service_listing_photos", key: "listing_id", bucket: "service-listing-images" },
+    { rows: posts.data ?? [], table: "community_post_images", key: "post_id", bucket: "community-post-images" },
+  ].map(async ({ rows, table, key, bucket }) => {
+    if (version !== "current" || !rows.length) return new Map<string, string>();
+    const { data: photos } = await db.from(table).select(`${key},storage_path`).in(key, rows.map((row) => row.id)).order("display_order", { ascending: true });
+    const paths = new Map<string, string>();
+    for (const photo of (photos ?? []) as unknown as Record<string, string>[]) {
+      if (photo.storage_path && !paths.has(photo[key])) paths.set(photo[key], photo.storage_path);
+    }
+    const signed = await getSignedStorageImages(bucket, [...paths.values()], "card");
+    return new Map([...paths].map(([id, path]) => [id, signed.get(path) ?? ""]));
+  }));
+  const mergedJourneys = [
+    ...listed.items.map((item) => {
+      const trade = journeys.find((journey) => journey.role === "selling" && journey.id === item.id);
+      return trade?.role === "selling" ? { ...item, ...trade, listingPriceLabel: item.listingPriceLabel, listingStatus: item.listingStatus } : item;
+    }),
+    ...journeys.filter((item) => item.role !== "selling" || !listedIds.has(item.id)),
+  ];
   const avatarPath = profile.data?.avatar_path;
   const avatar = avatarPath ? await db.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : null;
   const data = {
@@ -38,7 +61,9 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     joined: user.created_at,
     profileComplete: Boolean(profile.data?.display_name && avatarPath),
     phoneVerified: Boolean(user.phone_confirmed_at),
-    services: services.data ?? [], posts: posts.data ?? [], activity: activity.data ?? [], journeys,
+    services: (services.data ?? []).map((row) => ({ ...row, imageUrl: thumbnails[0].get(row.id) || null })),
+    posts: (posts.data ?? []).map((row) => ({ ...row, imageUrl: thumbnails[1].get(row.id) || null })),
+    activity: activity.data ?? [], journeys: mergedJourneys,
     unread: unread.error ? null : unread.count ?? 0,
     serviceCount: services.error ? null : services.count ?? 0,
     postCount: posts.error ? null : posts.count ?? 0,
@@ -47,7 +72,7 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     savedSearchCount: savedSearches.error ? null : savedSearches.count ?? 0,
     activeListingCount: marketListings.error || bargainListings.error || services.error ? null : (marketListings.count ?? 0) + (bargainListings.count ?? 0) + (services.count ?? 0),
     activeReservationCount: sellingReservations.error || buyingReservations.error ? null : (sellingReservations.count ?? 0) + (buyingReservations.count ?? 0),
-    unavailable: [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
+    unavailable: listed.unavailable || [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
   };
   return version === "v2" ? <MyPageV2Client data={data} /> : <MyPageClient data={data} />;
 }

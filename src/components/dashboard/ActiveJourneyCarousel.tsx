@@ -26,6 +26,8 @@ type SellingJourney = {
   bestOfferLabel: string;
   totalViews: number;
   reviewHref: string;
+  listingPriceLabel?: string;
+  listingStatus?: "published" | "pending";
 };
 
 export type ActiveJourneyItem = BuyingJourney | SellingJourney;
@@ -60,13 +62,16 @@ function JourneyThumbnail({ imageUrl }: { imageUrl: string | null }) {
 }
 
 export function JourneyCard({ item, sectionLabel }: { item: ActiveJourneyItem; sectionLabel?: string }) {
+  const { locale } = useLanguage();
+  const ko = locale === "ko";
   if (item.role === "buying") {
     return (
       <article className="journey-card is-buying">
+        {sectionLabel ? <span className="my-page-tag journey-section-label"><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</span> : null}
         <div className="journey-card-top">
           <JourneyThumbnail imageUrl={item.imageUrl} />
           <div>
-            <em>{sectionLabel ? <><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</> : <TranslatedText translationKey="buying" />}</em>
+            {!sectionLabel ? <em><TranslatedText translationKey="buying" /></em> : null}
             <h3>{item.title}</h3>
             <p><i className="ms ms-check-circle" aria-hidden="true" />{item.statusLabel}</p>
           </div>
@@ -85,19 +90,21 @@ export function JourneyCard({ item, sectionLabel }: { item: ActiveJourneyItem; s
   }
   return (
     <article className="journey-card is-selling">
+      {sectionLabel ? <span className="my-page-tag journey-section-label"><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</span> : null}
       <div className="journey-card-top">
         <JourneyThumbnail imageUrl={item.imageUrl} />
         <div>
-          <em>{sectionLabel ? <><i className="ms ms-storefront" aria-hidden="true" />{sectionLabel}</> : <TranslatedText translationKey="selling" />}</em>
+          {!sectionLabel ? <em><TranslatedText translationKey="selling" /></em> : null}
           <h3>{item.title}</h3>
+          {item.listingPriceLabel ? <p className="journey-listing-price">{item.listingPriceLabel}</p> : null}
           {item.newOfferCount ? <p><i className="ms ms-info" aria-hidden="true" />{item.newOfferCount} <TranslatedText translationKey="newOffers" /></p> : null}
         </div>
       </div>
-      <div className="journey-stats">
+      {item.listingStatus ? <p className="journey-listing-status"><i className={`ms ${item.listingStatus === "published" ? "ms-check-circle" : "ms-calendar-today"}`} aria-hidden="true" />{item.listingStatus === "published" ? (ko ? "판매 중" : "For sale") : (ko ? "검토 중" : "Under review")}</p> : <div className="journey-stats">
         <div><span><TranslatedText translationKey="bestOffer" /></span><strong>{item.bestOfferLabel}</strong></div>
         <div><span><TranslatedText translationKey="totalViews" /></span><strong>{item.totalViews}</strong></div>
-      </div>
-      <a className="journey-card-action" href={item.reviewHref}><TranslatedText translationKey="reviewOffers" /><i className="ms ms-chevron-right" aria-hidden="true" /></a>
+      </div>}
+      <a className="journey-card-action" href={item.reviewHref}>{item.listingStatus && !item.newOfferCount ? (ko ? "상품 관리" : "Manage listing") : <TranslatedText translationKey="reviewOffers" />}<i className="ms ms-chevron-right" aria-hidden="true" /></a>
     </article>
   );
 }

@@ -12,6 +12,36 @@ type PhotoRow = { listing_id: string; storage_path: string | null; is_primary: b
 const MAX_BUYING = 6;
 const MAX_SELLING = 6;
 
+/** Listings belong on My Page even before the first offer arrives. */
+export async function getListedJourneys(supabase: SupabaseClient, userId: string) {
+  const results = await Promise.all((["market", "bargain"] as const).map(async (kind) => {
+    const result = await supabase.from(`${kind}_listings`)
+      .select("id,title,price_cents,status,created_at", { count: "exact" })
+      .eq("owner_id", userId).in("status", ["published", "pending"])
+      .order("created_at", { ascending: false }).limit(MAX_SELLING);
+    const rows = (result.data ?? []) as { id: string; title: string; price_cents: number; status: "published" | "pending"; created_at: string }[];
+    const photos = rows.length ? await supabase.from(`${kind}_listing_photos`)
+      .select("listing_id,storage_path,display_order").in("listing_id", rows.map((row) => row.id))
+      .order("display_order", { ascending: true }) : { data: [], error: null };
+    const paths = new Map<string, string>();
+    for (const photo of photos.data ?? []) {
+      if (photo.storage_path && !paths.has(photo.listing_id)) paths.set(photo.listing_id, photo.storage_path);
+    }
+    const images = await getSignedStorageImages(`${kind}-listing-images`, [...paths.values()], "card");
+    return {
+      unavailable: Boolean(result.error || photos.error),
+      items: rows.map((row) => ({
+        id: row.id, role: "selling" as const, title: row.title,
+        imageUrl: images.get(paths.get(row.id) ?? "") ?? null,
+        newOfferCount: 0, bestOfferLabel: "—", totalViews: 0,
+        listingPriceLabel: formatMarketPrice(row.price_cents), listingStatus: row.status,
+        reviewHref: "/market/dashboard/listings", createdAt: row.created_at,
+      })),
+    };
+  }));
+  return { items: results.flatMap((result) => result.items).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), unavailable: results.some((result) => result.unavailable) };
+}
+
 /**
  * A "journey" is a trade in flight, on either side. Buying reuses the offer's own
  * status as the stepper stage: db status "pending" maps to stepper stage "pending"
