@@ -9,10 +9,12 @@ export type DashboardNavItem = {
   label: string;
   suffix: string;
   railOnly?: boolean;
+  marketOnly?: boolean;
 };
 
 export const dashboardNavItems: readonly DashboardNavItem[] = [
   { icon: "ms-account-circle", translationKey: "myPage", label: "My page", suffix: "/my-page" },
+  { icon: "ms-bolt", translationKey: "tadaChargeGuide", label: "Tada Charge guide", suffix: "/tada-charge", marketOnly: true },
   { icon: "ms-layers", translationKey: "myPageV2", label: "My page V2", suffix: "/my-page-v2" },
   { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
   { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
@@ -29,6 +31,7 @@ export const dashboardNavItems: readonly DashboardNavItem[] = [
 export function dashboardNavItemsFor(context: "market" | "jobs", { railOnly = false } = {}) {
   return dashboardNavItems.filter((item) => {
     if (item.railOnly && !railOnly) return false;
+    if (item.marketOnly && context !== "market") return false;
     if (context !== "jobs") return true;
     return item.label !== "Notifications" && item.label !== "Reservations";
   });

@@ -13599,3 +13599,104 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     margin-inline: auto;
   }
 }
+
+/* Tada Charge guide — a static explanation within the shared dashboard shell. */
+.tada-charge-guide { display: grid; gap: var(--space-8); color: var(--color-ink); }
+.tada-charge-guide h1, .tada-charge-guide h2, .tada-charge-guide h3, .tada-charge-guide p { margin-block: 0; }
+.tada-charge-guide h2 { font-size: var(--text-2xl); font-weight: var(--weight-extrabold); }
+.tada-charge-guide h3 { font-size: var(--text-md); font-weight: var(--weight-bold); }
+.tada-charge-guide p { line-height: 1.6; }
+.tada-charge-guide .ui-panel { min-width: 0; box-shadow: var(--shadow-xs); }
+.tada-charge-guide .ms { flex: 0 0 auto; }
+.tada-charge-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: var(--space-6); overflow: hidden; padding: var(--space-8); border-radius: var(--radius-xl); background: linear-gradient(120deg, var(--color-surface) 10%, var(--color-primary-soft) 55%, var(--blue-soft-100)); }
+.tada-charge-hero-copy { position: relative; z-index: 1; display: grid; justify-items: start; gap: var(--space-4); }
+.tada-charge-eyebrow { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-primary-strong); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.tada-charge-eyebrow > span { padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-primary-soft); font-size: var(--text-xs); }
+.tada-charge-hero h1 { font-size: var(--text-3xl); font-weight: var(--weight-extrabold); }
+.tada-charge-headline { font-size: clamp(var(--text-3xl), 3vw, var(--text-5xl)); font-weight: var(--weight-extrabold); line-height: 1.25 !important; }
+.tada-charge-headline strong { color: var(--color-primary); }
+.tada-charge-hero-copy > p:last-child { max-width: 42ch; color: var(--color-muted); font-size: var(--text-md); }
+.tada-charge-hero-art { position: relative; display: grid; place-items: center; min-height: calc(var(--space-12) * 6); }
+.tada-charge-hero-art::before { content: ""; position: absolute; width: 85%; aspect-ratio: 1; border-radius: var(--radius-circle); background: var(--blue-soft-100); opacity: .55; }
+.tada-charge-gauge { position: relative; display: grid; place-items: center; width: min(60%, calc(var(--space-12) * 4)); aspect-ratio: 1; padding: var(--space-4); border-radius: var(--radius-circle); background: conic-gradient(var(--color-primary) 20%, var(--color-line-soft) 0); box-shadow: var(--shadow-md); transform: rotate(-90deg); }
+.tada-charge-gauge > div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); width: 100%; height: 100%; border-radius: var(--radius-circle); background: var(--color-surface); transform: rotate(90deg); }
+.tada-charge-gauge .ms { color: var(--color-primary); font-size: var(--text-4xl); }
+.tada-charge-gauge strong { font-size: var(--text-5xl); line-height: 1; }
+.tada-charge-gauge span { color: var(--color-muted); font-size: var(--text-sm); }
+.tada-charge-speech { position: absolute; right: 0; top: var(--space-4); display: flex; align-items: center; gap: var(--space-2); max-width: 40%; padding: var(--space-3); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.tada-charge-speech .ms { color: var(--color-primary); font-size: var(--text-xl); }
+.tada-charge-section { display: grid; gap: var(--space-3); }
+.tada-charge-section > p { color: var(--color-muted); font-size: var(--text-md); }
+.tada-charge-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.tada-charge-step-group { position: relative; min-width: 0; }
+.tada-charge-step-group > .ms { position: absolute; right: calc(var(--space-3) * -1); top: 50%; z-index: 1; color: var(--color-primary); font-size: var(--text-2xl); transform: translate(25%, -50%); }
+.tada-charge-step { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); min-height: calc(var(--space-12) * 3); }
+.tada-charge-step-number { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); border-radius: var(--radius-circle); background: var(--color-primary); color: var(--color-on-primary); font-weight: var(--weight-bold); }
+.tada-charge-step div { display: grid; align-content: start; gap: var(--space-2); }
+.tada-charge-step p, .tada-charge-stage p, .tada-charge-exclusion p, .tada-charge-new-neighbours p { color: var(--color-muted); font-size: var(--text-sm); }
+.tada-charge-step > .ms { grid-column: 1 / -1; justify-self: center; align-self: end; color: var(--color-primary); font-size: var(--text-5xl); }
+.tada-charge-ratings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); padding: var(--space-2) !important; }
+.tada-charge-rating { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-soft); }
+.tada-charge-rating > .ms { font-size: var(--text-3xl); }
+.tada-charge-rating div { display: grid; gap: var(--space-1); }
+.tada-charge-rating strong { font-size: var(--text-xl); }
+.tada-charge-rating p { color: var(--color-muted); font-size: var(--text-sm); }
+.tada-charge-rating.is-positive { background: var(--color-success-soft); }
+.tada-charge-rating.is-positive > .ms, .tada-charge-rating.is-positive strong { color: var(--color-success); }
+.tada-charge-rating.is-neutral > .ms { color: var(--color-muted); }
+.tada-charge-rating.is-negative { background: var(--color-danger-soft); }
+.tada-charge-rating.is-negative > .ms, .tada-charge-rating.is-negative strong { color: var(--color-danger); }
+.tada-charge-note { display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-sm); }
+.tada-charge-note > .ms { font-size: var(--text-xl); }
+.tada-charge-stages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); }
+.tada-charge-stage { display: grid; justify-items: center; align-content: start; gap: var(--space-2); text-align: center; }
+.tada-charge-stage > .ms { color: var(--color-primary); font-size: var(--text-4xl); }
+.tada-charge-stage strong { color: var(--color-success); font-size: var(--text-xl); white-space: nowrap; }
+.tada-charge-stage:first-child strong { color: var(--color-primary); }
+.tada-charge-track { display: flex; justify-content: space-between; align-items: center; height: var(--space-2); margin: var(--space-3) var(--space-4) var(--space-4); border-radius: var(--radius-pill); background: linear-gradient(90deg, var(--color-success), var(--color-success-soft)); }
+.tada-charge-track span { width: var(--space-3); height: var(--space-3); border: 2px solid var(--color-surface); border-radius: var(--radius-circle); background: var(--color-success); box-shadow: var(--shadow-xs); }
+.tada-charge-excluded { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.tada-charge-exclusion { display: flex; align-items: flex-start; gap: var(--space-2); }
+.tada-charge-exclusion > .ms { color: var(--color-primary); font-size: var(--text-2xl); }
+.tada-charge-exclusion div { display: grid; gap: var(--space-1); }
+.tada-charge-new-neighbours { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.tada-charge-new-neighbours > article { display: flex; gap: var(--space-3); }
+.tada-charge-new-neighbours > article > .ms { color: var(--color-primary); font-size: var(--text-3xl); }
+.tada-charge-new-neighbours > article div { display: grid; align-content: start; gap: var(--space-2); }
+.tada-charge-new-neighbours > .tada-charge-caution { background: var(--color-warning-soft); }
+.tada-charge-new-neighbours > .tada-charge-caution > .ms { color: var(--color-warning); }
+.tada-charge-faq { gap: var(--space-2); }
+.tada-charge-faq h2 { margin-bottom: var(--space-2); }
+.tada-charge-faq details { padding: 0 var(--space-4); }
+.tada-charge-faq summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-block: var(--space-3); font-weight: var(--weight-semibold); cursor: pointer; list-style: none; }
+.tada-charge-faq summary::-webkit-details-marker { display: none; }
+.tada-charge-faq summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: var(--space-1); }
+.tada-charge-faq details[open] summary .ms { transform: rotate(180deg); }
+.tada-charge-faq details p { padding-bottom: var(--space-4); color: var(--color-muted); font-size: var(--text-sm); }
+.tada-charge-cta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-lg); background: linear-gradient(110deg, var(--color-primary), var(--blue-300)); color: var(--color-on-primary); }
+.tada-charge-cta div { display: grid; gap: var(--space-2); }
+.tada-charge-cta p { font-size: var(--text-sm); }
+.tada-charge-cta .ui-button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: var(--space-2); text-decoration: none; }
+.tada-charge-cta .ui-button .ms { color: inherit; }
+.tada-charge-pending { margin-top: calc(var(--space-8) * -1) !important; color: var(--color-muted); font-size: var(--text-sm); }
+@media (max-width: 1023.98px) {
+  .tada-charge-stages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tada-charge-excluded { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tada-charge-track { display: none; }
+}
+@media (max-width: 767.98px) {
+  .tada-charge-guide { gap: var(--space-6); padding-bottom: calc(var(--space-12) * 2) !important; }
+  .tada-charge-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-5); }
+  .tada-charge-hero-art { min-height: 0; gap: var(--space-3); }
+  .tada-charge-speech { position: static; justify-self: center; max-width: min(100%, calc(var(--space-12) * 5)); overflow-wrap: anywhere; }
+  .tada-charge-steps, .tada-charge-ratings, .tada-charge-new-neighbours { grid-template-columns: minmax(0, 1fr); }
+  .tada-charge-step { min-height: 0; }
+  .tada-charge-step-group > .ms { display: none; }
+  .tada-charge-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tada-charge-cta { align-items: stretch; flex-direction: column; }
+  .tada-charge-cta .ui-button { justify-content: center; }
+}
+@media (max-width: 479.98px) {
+  .tada-charge-excluded, .tada-charge-stages { grid-template-columns: minmax(0, 1fr); }
+  .tada-charge-stage { justify-items: start; text-align: left; }
+}
