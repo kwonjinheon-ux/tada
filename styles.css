@@ -3476,6 +3476,9 @@ img.listing-gallery-lightbox-photo {
 .desktop-profile-popover .mobile-profile-popover-item,
 .desktop-profile-popover .mobile-profile-popover-logout { min-height: var(--control-h-lg); display: grid; grid-template-columns: 20px max-content minmax(0, 1fr); align-items: center; gap: 10px; padding: 0 8px; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--neutral-950); font: inherit; font-size: var(--text-md); font-weight: var(--weight-regular); text-align: left; text-decoration: none; cursor: pointer; }
 .desktop-profile-popover .mobile-profile-popover-item > i:first-child { width: 20px; font-size: var(--text-lg); text-align: center; }
+/* Profile menu navigation icons share one monochrome treatment at both widths. */
+#mobile-dashboard-menu .mobile-profile-popover-item > i:first-child,
+#desktop-dashboard-menu .mobile-profile-popover-item > i:first-child { color: var(--neutral-700); }
 .desktop-profile-popover .mobile-profile-popover-item:hover,
 .desktop-profile-popover .mobile-profile-popover-item.is-active { background: var(--neutral-200); color: var(--neutral-950); }
 .desktop-profile-popover .mobile-profile-popover-item b { min-width: 19px; height: 19px; display: grid; place-items: center; justify-self: start; padding: 0 5px; border-radius: var(--radius-pill); background: var(--red-850); color: var(--neutral-50); font-size: var(--text-2xs); font-weight: var(--weight-regular); }
@@ -6236,8 +6239,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   .mobile-profile-popover-item > i:first-child { width: 20px; font-size: var(--text-lg); text-align: center; }
-  /* Keep the mobile account menu visually quiet; notification state stays on its badge. */
-  #mobile-dashboard-menu .mobile-profile-popover-item > i:first-child { color: var(--neutral-700); }
   .mobile-profile-popover-item > i:last-child { color: var(--muted); font-size: var(--text-xs); }
   .mobile-profile-popover-item:hover,
   .mobile-profile-popover-item.is-active { background: var(--neutral-200); color: var(--neutral-950); }
