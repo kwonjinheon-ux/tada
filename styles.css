@@ -9374,6 +9374,33 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .my-page-charge { border-top: 0; padding-top: 0; border-left: 1px solid var(--color-line-soft); padding-left: var(--space-4); }
   .my-page-charge-content { flex-wrap: wrap; }
 }
+/* Keep My Page readable within the sidebar-reduced tablet canvas. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .my-page-reference.my-page-domain-preview :is(.my-page-progress, .my-page-activity, .my-page-management, .my-page-rail) { grid-template-columns: minmax(0, 1fr); }
+  .my-page-reference.my-page-domain-preview .my-page-today { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767.98px) {
+  .my-page-reference.my-page-domain-preview .my-page-filters .ui-button,
+  .my-page-reference.my-page-domain-preview .my-page-progress :is(.my-page-link, .journey-card-action, .journey-card-footer a),
+  .my-page-reference.my-page-domain-preview .my-page-task .my-page-link { min-height: var(--control-h-xl); }
+  .my-page-reference.my-page-domain-preview .my-page-task .my-page-link { align-items: center; }
+  .my-page-reference.my-page-domain-preview .my-page-identity .ui-button,
+  .my-page-reference.my-page-domain-preview .my-page-charge .ui-button,
+  .my-page-reference.my-page-domain-preview .my-page-heading > .my-page-link { min-height: var(--control-h-xl); }
+  .my-page-reference.my-page-domain-preview .my-page-discovery-controls .ui-button,
+  .my-page-reference.my-page-domain-preview .my-page-discovery-dots .ui-button { min-width: var(--control-h-xl); min-height: var(--control-h-xl); }
+}
+@media (max-width: 479.98px) {
+  .my-page-reference.my-page-domain-preview .my-page-title h1 { font-size: var(--text-2xl); }
+  .my-page-reference.my-page-domain-preview .my-page-identity { align-items: flex-start; gap: var(--space-3); }
+  .my-page-reference.my-page-domain-preview .my-page-avatar { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
+  .my-page-reference.my-page-domain-preview .my-page-name h2 { font-size: var(--text-lg); }
+  .my-page-reference.my-page-domain-preview .my-page-identity p { margin-block: var(--space-1); }
+  .my-page-reference.my-page-domain-preview .my-page-heading { align-items: flex-start; }
+  .my-page-reference.my-page-domain-preview .my-page-heading .my-page-filters { flex-basis: 100%; order: 1; }
+  .my-page-reference.my-page-domain-preview .my-page-impact > div { padding-inline: var(--space-1); }
+  .my-page-reference.my-page-domain-preview .my-page-impact strong { font-size: var(--text-xl); }
+}
 .seller-dashboard-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .72fr); gap: 18px; }
 .seller-summary-card, .seller-trust-card, .seller-dashboard-insights article, .seller-active-listings > div > article, .seller-activity, .seller-new-listing, .journey-card { border: 1px solid var(--blue-soft-150); border-radius: var(--radius-md); background: var(--neutral-50); box-shadow: 0 3px 10px rgba(0, 0, 0,.04); }
 .seller-summary-card { position: relative; min-height: 172px; display: grid; grid-template-columns: 152px minmax(0, 1fr); align-items: center; gap: 24px; padding: 20px; }
@@ -13719,4 +13746,58 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 @media (max-width: 479.98px) {
   .tada-charge-excluded, .tada-charge-stages { grid-template-columns: minmax(0, 1fr); }
   .tada-charge-stage { justify-items: start; text-align: left; }
+}
+
+/* The guide follows the available content width, not just the viewport width. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .tada-charge-guide { gap: var(--space-6); }
+  .tada-charge-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-6); }
+  .tada-charge-hero-art { min-height: calc(var(--space-12) * 5); }
+  .tada-charge-steps, .tada-charge-ratings, .tada-charge-new-neighbours { grid-template-columns: minmax(0, 1fr); }
+  .tada-charge-step { min-height: 0; }
+  .tada-charge-step-group > .ms { display: none; }
+  .tada-charge-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tada-charge-cta { align-items: stretch; flex-direction: column; }
+  .tada-charge-cta .ui-button { align-self: start; }
+}
+@media (max-width: 767.98px) {
+  .tada-charge-guide h2 { font-size: var(--text-xl); }
+  .tada-charge-hero { gap: var(--space-4); }
+  .tada-charge-hero h1 { font-size: var(--text-2xl); }
+  .tada-charge-headline { font-size: var(--text-3xl); }
+  .tada-charge-hero-art { padding-block: var(--space-2); }
+  .tada-charge-step { grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); }
+  .tada-charge-step > .ms { grid-column: 3; grid-row: 1; align-self: center; font-size: var(--text-3xl); }
+  .tada-charge-cta { padding: var(--space-4); }
+  .tada-charge-cta .ui-button { min-height: var(--control-h-xl); }
+  .tada-charge-faq summary { min-height: var(--control-h-xl); }
+}
+@media (max-width: 479.98px) {
+  .tada-charge-hero { padding: var(--space-4); }
+  .tada-charge-headline { font-size: var(--text-2xl); }
+  .tada-charge-hero-copy > p:last-child, .tada-charge-section > p { font-size: var(--text-sm); }
+  .tada-charge-stage { grid-template-columns: var(--control-h-xl) minmax(0, 1fr); justify-items: start; align-items: center; column-gap: var(--space-3); text-align: left; }
+  .tada-charge-stage > .ms { grid-column: 1; grid-row: 1 / 4; font-size: var(--text-3xl); }
+  .tada-charge-stage :is(h3, strong, p) { grid-column: 2; }
+  .tada-charge-stage strong { font-size: var(--text-lg); }
+  .tada-charge-gauge { width: min(60%, calc(var(--space-12) * 3)); padding: var(--space-3); }
+  .tada-charge-gauge .ms { font-size: var(--text-3xl); }
+  .tada-charge-gauge strong { font-size: var(--text-4xl); }
+  .tada-charge-speech { font-size: var(--text-xs); }
+}
+@media (min-width: 1280px) and (max-width: 1439.98px) {
+  .my-page-reference.my-page-domain-preview .my-page-progress,
+  .my-page-reference.my-page-domain-preview .my-page-today { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  .tada-charge-hero { grid-template-columns: minmax(0, 1fr); }
+  .tada-charge-hero-art { min-height: calc(var(--space-12) * 5); }
+  .tada-charge-stages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tada-charge-excluded, .tada-charge-new-neighbours { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tada-charge-new-neighbours > .tada-charge-caution { grid-column: 1 / -1; }
+  .tada-charge-track { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1279.98px) {
+  .tada-charge-step { grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; align-items: start; min-height: 0; }
+  .tada-charge-step > .ms { grid-column: 3; grid-row: 1; align-self: center; font-size: var(--text-3xl); }
 }
