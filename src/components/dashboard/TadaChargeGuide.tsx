@@ -7,27 +7,28 @@ import { useLanguage } from "@/components/LanguageProvider";
 const Icon = ({ name }: { name: string }) => <i className={`ms ${name}`} aria-hidden="true" />;
 
 type Card = { icon: string; title: string; body: string };
+type IllustratedCard = Card & { illustration: string };
 
 export function TadaChargeGuide() {
   const { locale } = useLanguage();
   const ko = locale === "ko";
   const say = (en: string, kr: string) => ko ? kr : en;
-  const steps: Card[] = [
-    { icon: "ms-handshake", title: say("Complete a trade", "거래를 마쳐요"), body: say("Keep your agreement with a neighbour and finish the trade.", "마켓에서 서로 약속을 지키고 거래를 완료해요.") },
-    { icon: "ms-forum", title: say("Share your experience", "서로 평가해요"), body: say("Both people share how the trade went.", "거래가 끝나면 서로의 거래 경험을 평가해요.") },
-    { icon: "ms-bolt", title: say("Build your Charge", "타다가 충전돼요"), body: say("Good feedback helps your Charge grow.", "좋은 평가가 쌓일수록 타다 충전도가 올라가요.") },
+  const steps: IllustratedCard[] = [
+    { icon: "ms-handshake", illustration: "🛍️", title: say("Complete a trade", "거래를 마쳐요"), body: say("Keep your agreement with a neighbour and finish the trade.", "마켓에서 서로 약속을 지키고 거래를 완료해요.") },
+    { icon: "ms-forum", illustration: "💬", title: say("Share your experience", "서로 평가해요"), body: say("Both people share how the trade went.", "거래가 끝나면 서로의 거래 경험을 평가해요.") },
+    { icon: "ms-bolt", illustration: "⚡", title: say("Build your Charge", "타다가 충전돼요"), body: say("Good feedback helps your Charge grow.", "좋은 평가가 쌓일수록 타다 충전도가 올라가요.") },
   ];
   const feedback = [
-    { icon: "ms-thumb-up", tone: "positive", title: say("Great", "좋았어요"), value: say("Base +2%", "기본 +2%"), body: say("Friendly, punctual and accurate.", "친절했어요, 약속을 잘 지켰어요, 설명이 정확했어요.") },
-    { icon: "ms-more-horiz", tone: "neutral", title: say("Okay", "보통이었어요"), value: say("No change", "변화 없음"), body: say("The trade went as expected.", "큰 문제가 없었어요.") },
-    { icon: "ms-info", tone: "negative", title: say("Could be better", "아쉬웠어요"), value: say("May decrease", "하락할 수 있어요"), body: say("Confirmed problems may affect Charge after review.", "확인된 문제는 검토 후 반영될 수 있어요.") },
+    { icon: "ms-thumb-up", face: "🙂", tone: "positive", title: say("Great", "좋았어요"), value: say("Base +2%", "기본 +2%"), body: say("Friendly, punctual and accurate.", "친절했어요, 약속을 잘 지켰어요, 설명이 정확했어요.") },
+    { icon: "ms-more-horiz", face: "😐", tone: "neutral", title: say("Okay", "보통이었어요"), value: say("No change", "변화 없음"), body: say("The trade went as expected.", "큰 문제가 없었어요.") },
+    { icon: "ms-info", face: "🙁", tone: "negative", title: say("Could be better", "아쉬웠어요"), value: say("May decrease", "하락할 수 있어요"), body: say("Confirmed problems may affect Charge after review.", "확인된 문제는 검토 후 반영될 수 있어요.") },
   ];
   const stages = [
-    { icon: "ms-bolt", title: say("Just joined", "가입 직후"), range: "20%", body: say("Everyone starts together.", "모두 같은 출발선에서 시작해요.") },
-    { icon: "ms-check-circle", title: say("A good start", "좋은 시작"), range: "20–49%", body: say("Good feedback adds up.", "좋은 평가가 모이면 점점 올라가요.") },
-    { icon: "ms-groups", title: say("A steady neighbour", "든든한 이웃"), range: "50–69%", body: say("Trust grows with experience.", "꾸준한 좋은 거래로 충전돼요.") },
-    { icon: "ms-verified", title: say("A trusted neighbour", "믿을 수 있는 이웃"), range: "70–89%", body: say("Many good experiences have built up.", "많은 좋은 경험이 쌓였어요.") },
-    { icon: "ms-favorite", title: say("A warm neighbour", "따뜻한 이웃"), range: "90–100%", body: say("A long history of positive experiences.", "오랫동안 좋은 이웃으로 활동하고 있어요.") },
+    { icon: "ms-bolt", illustration: "🚀", title: say("Just joined", "가입 직후"), range: "20%", body: say("Everyone starts together.", "모두 같은 출발선에서 시작해요.") },
+    { icon: "ms-check-circle", illustration: "🌱", title: say("A good start", "좋은 시작"), range: "20–49%", body: say("Good feedback adds up.", "좋은 평가가 모이면 점점 올라가요.") },
+    { icon: "ms-groups", illustration: "🌳", title: say("A steady neighbour", "든든한 이웃"), range: "50–69%", body: say("Trust grows with experience.", "꾸준한 좋은 거래로 충전돼요.") },
+    { icon: "ms-verified", illustration: "🌲", title: say("A trusted neighbour", "믿을 수 있는 이웃"), range: "70–89%", body: say("Many good experiences have built up.", "많은 좋은 경험이 쌓였어요.") },
+    { icon: "ms-favorite", illustration: "🌳", title: say("A warm neighbour", "따뜻한 이웃"), range: "90–100%", body: say("A long history of positive experiences.", "오랫동안 좋은 이웃으로 활동하고 있어요.") },
   ];
   const excluded: Card[] = [
     { icon: "ms-photo-camera", title: say("Profile photo", "프로필 사진 등록"), body: say("Helps neighbours recognise you.", "프로필을 꾸미는 데 도움이 돼요.") },
@@ -56,11 +57,11 @@ export function TadaChargeGuide() {
       </div>
     </header>
 
-    <section className="tada-charge-section" aria-labelledby="charge-how"><h2 id="charge-how">{say("How Charge grows", "이렇게 충전돼요")}</h2><p>{say("Finish a trade, share your experience, and watch good interactions add up.", "거래를 마치고 서로 평가하면 타다가 충전돼요.")}</p><div className="tada-charge-steps">{steps.map((step, index) => <div className="tada-charge-step-group" key={step.title}><article className="ui-panel tada-charge-step"><span className="tada-charge-step-number">{index + 1}</span><div><h3>{step.title}</h3><p>{step.body}</p></div><Icon name={step.icon} /></article>{index < 2 ? <Icon name="ms-arrow-forward" /> : null}</div>)}</div></section>
+    <section className="tada-charge-section" aria-labelledby="charge-how"><h2 id="charge-how">{say("How Charge grows", "이렇게 충전돼요")}</h2><p>{say("Finish a trade, share your experience, and watch good interactions add up.", "거래를 마치고 서로 평가하면 타다가 충전돼요.")}</p><div className="tada-charge-steps">{steps.map((step, index) => <div className="tada-charge-step-group" key={step.title}><article className="ui-panel tada-charge-step"><span className="tada-charge-step-number">{index + 1}</span><div><h3>{step.title}</h3><p>{step.body}</p></div><span className="tada-charge-step-illustration" aria-hidden="true">{step.illustration}</span></article>{index < 2 ? <Icon name="ms-arrow-forward" /> : null}</div>)}</div></section>
 
-    <section className="tada-charge-section" aria-labelledby="charge-feedback"><h2 id="charge-feedback">{say("Feedback shapes your Charge", "평가가 충전도에 반영돼요")}</h2><p>{say("Your neighbours’ experiences can move your Charge up or down.", "이웃의 평가에 따라 타다 충전도가 오르거나 내릴 수 있어요.")}</p><div className="ui-panel tada-charge-ratings">{feedback.map((item) => <article className={`tada-charge-rating is-${item.tone}`} key={item.title}><Icon name={item.icon} /><div><h3>{item.title}</h3><strong>{item.value}</strong><p>{item.body}</p></div></article>)}</div><div className="tada-charge-note"><Icon name="ms-info" /><p><strong>{say("A positive review starts at +2%; the increase gets smaller as Charge rises.", "좋은 평가의 기본 상승 폭은 +2%이며, 충전도가 높을수록 상승 폭은 점점 줄어들어요.")}</strong><br />{say("The final rules will be announced before launch.", "실제 반영 기준은 기능 도입 전에 확정해 안내할게요.")}</p></div></section>
+    <section className="tada-charge-section" aria-labelledby="charge-feedback"><h2 id="charge-feedback">{say("Feedback shapes your Charge", "평가가 충전도에 반영돼요")}</h2><p>{say("Your neighbours’ experiences can move your Charge up or down.", "이웃의 평가에 따라 타다 충전도가 오르거나 내릴 수 있어요.")}</p><div className="ui-panel tada-charge-ratings">{feedback.map((item) => <article className={`tada-charge-rating is-${item.tone}`} key={item.title}><span className="tada-charge-rating-face" aria-hidden="true">{item.face}</span><div><h3>{item.title}</h3><strong>{item.value}</strong><p>{item.body}</p></div></article>)}</div><div className="tada-charge-note"><Icon name="ms-info" /><p><strong>{say("A positive review starts at +2%; the increase gets smaller as Charge rises.", "좋은 평가의 기본 상승 폭은 +2%이며, 충전도가 높을수록 상승 폭은 점점 줄어들어요.")}</strong><br />{say("The final rules will be announced before launch.", "실제 반영 기준은 기능 도입 전에 확정해 안내할게요.")}</p></div></section>
 
-    <section className="tada-charge-section" aria-labelledby="charge-stages"><h2 id="charge-stages">{say("Grow together", "충전도는 이렇게 올라가요")}</h2><p>{say("Every good experience adds a little more Charge.", "좋은 이웃 경험이 쌓일수록 타다가 조금씩 더 충전돼요.")}</p><div className="tada-charge-stages">{stages.map((stage) => <article className="ui-panel tada-charge-stage" key={stage.title}><Icon name={stage.icon} /><h3>{stage.title}</h3><strong>{stage.range}</strong><p>{stage.body}</p></article>)}</div><div className="tada-charge-track" role="img" aria-label={say("Proposed growth stages: 20, 50, 70 and 90 percent", "제안된 성장 단계: 20, 50, 70, 90퍼센트")}><span /><span /><span /><span /></div></section>
+    <section className="tada-charge-section" aria-labelledby="charge-stages"><h2 id="charge-stages">{say("Grow together", "충전도는 이렇게 올라가요")}</h2><p>{say("Every good experience adds a little more Charge.", "좋은 이웃 경험이 쌓일수록 타다가 조금씩 더 충전돼요.")}</p><div className="tada-charge-stages">{stages.map((stage) => <article className="ui-panel tada-charge-stage" key={stage.title}><span className="tada-charge-stage-illustration" aria-hidden="true">{stage.illustration}</span><h3>{stage.title}</h3><strong>{stage.range}</strong><p>{stage.body}</p></article>)}</div><div className="tada-charge-track" role="img" aria-label={say("Proposed growth stages: 20, 50, 70 and 90 percent", "제안된 성장 단계: 20, 50, 70, 90퍼센트")}><span><small>20%</small></span><span><small>50%</small></span><span><small>70%</small></span><span><small>90%</small></span></div></section>
 
     <section className="tada-charge-section" aria-labelledby="charge-excluded"><h2 id="charge-excluded">{say("These don’t add Charge", "이건 충전 점수가 아니에요")}</h2><p>{say("These actions do not raise your Charge by themselves.", "아래 활동은 타다 충전도에 반영되지 않아요.")}</p><div className="tada-charge-excluded">{excluded.map((item) => <article className="ui-panel tada-charge-exclusion" key={item.title}><Icon name={item.icon} /><div><h3>{item.title}</h3><p>{item.body}</p></div></article>)}</div></section>
 
