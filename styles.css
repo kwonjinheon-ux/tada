@@ -3076,7 +3076,6 @@ body.listing-gallery-open { overflow: hidden; }
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  padding: calc(var(--desktop-header-height) + 12px) 16px 16px;
 }
 
 .desktop-dashboard-menu {
@@ -3216,7 +3215,11 @@ body.listing-gallery-open { overflow: hidden; }
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: calc(var(--desktop-header-height) + 8px) 64px 16px 16px;
+}
+
+.desktop-dashboard-dialog,
+.language-settings-dialog {
+  padding: calc(var(--header-popover-top, var(--desktop-header-height)) + var(--space-2)) max(var(--space-4), var(--header-popover-right, var(--space-4))) var(--space-4) var(--space-4);
 }
 
 .mobile-profile-popover-dialog { display: none; }

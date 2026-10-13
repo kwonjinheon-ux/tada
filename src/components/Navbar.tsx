@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
+import { type CSSProperties, FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
 import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
@@ -70,9 +70,38 @@ export function Navbar() {
   const [isListingShareCopied, setIsListingShareCopied] = useState(false);
   const dockHeartTimer = useRef<number | null>(null);
   const shareCopiedTimer = useRef<number | null>(null);
+  const desktopLanguageButtonRef = useRef<HTMLButtonElement>(null);
+  const desktopProfileButtonRef = useRef<HTMLButtonElement>(null);
+  const [desktopPopoverPosition, setDesktopPopoverPosition] = useState<{ top: number; right: number } | null>(null);
   const { locale, setLocale, t } = useLanguage();
 
+  const positionDesktopPopover = (button: HTMLButtonElement | null) => {
+    if (!button) return;
+    const bounds = button.getBoundingClientRect();
+    setDesktopPopoverPosition({ top: bounds.bottom, right: window.innerWidth - bounds.right });
+  };
 
+  useEffect(() => {
+    if (!isLanguageMenuOpen && !isDesktopDashboardOpen) return;
+    const updatePosition = () => {
+      if (window.innerWidth < 1024) {
+        setIsDesktopDashboardOpen(false);
+        return;
+      }
+      positionDesktopPopover(isDesktopDashboardOpen ? desktopProfileButtonRef.current : desktopLanguageButtonRef.current);
+    };
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isLanguageMenuOpen, isDesktopDashboardOpen]);
+
+  const desktopPopoverStyle = desktopPopoverPosition ? {
+    "--header-popover-top": `${desktopPopoverPosition.top}px`,
+    "--header-popover-right": `${desktopPopoverPosition.right}px`,
+  } as CSSProperties : undefined;
 
   useEffect(() => {
     const showCopiedState = () => {
@@ -647,11 +676,11 @@ export function Navbar() {
             <i className="ms ms-notifications" aria-hidden="true" />
             {unreadNotificationCount ? <span>{notificationBadge}</span> : null}
           </Link>
-          <button className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
+          <button ref={desktopLanguageButtonRef} className="nav-language-button" type="button" aria-label="Open language settings" aria-expanded={isLanguageMenuOpen} aria-controls="language-settings-dialog" onClick={() => { positionDesktopPopover(desktopLanguageButtonRef.current); setIsDesktopDashboardOpen(false); setIsLanguageMenuOpen(true); }}>
             {languageButtonLabel ? <span>{languageButtonLabel}</span> : <i className="ms ms-language" aria-hidden="true" />}
           </button>
           {isAuthReady && userEmail ? (
-            <button className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => setIsDesktopDashboardOpen(true)}>
+            <button ref={desktopProfileButtonRef} className="nav-profile-link nav-profile-dashboard-trigger" type="button" title={userEmail} aria-label="Open dashboard menu" aria-expanded={isDesktopDashboardOpen} aria-controls="desktop-dashboard-menu" onClick={() => { positionDesktopPopover(desktopProfileButtonRef.current); setIsDesktopDashboardOpen(true); }}>
               <Avatar src={avatarUrl} name={displayName} alt="Profile" className="nav-avatar-initial" colored />
             </button>
           ) : isAuthReady ? (
@@ -712,7 +741,7 @@ export function Navbar() {
       </div>
       </header>
       {isLanguageMenuOpen ? (
-        <DialogOverlay className="language-settings-dialog" onClose={() => setIsLanguageMenuOpen(false)}>
+        <DialogOverlay className="language-settings-dialog" style={desktopPopoverStyle} onClose={() => setIsLanguageMenuOpen(false)}>
           <section className="language-settings-card profile-popup-surface" id="language-settings-dialog" aria-label="Language settings">
             <header>
               <div><i className="ms ms-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
@@ -732,7 +761,7 @@ export function Navbar() {
         </DialogOverlay>
       ) : null}
       {userEmail && isDesktopDashboardOpen ? (
-        <DialogOverlay className="desktop-dashboard-dialog" onClose={() => setIsDesktopDashboardOpen(false)}>
+        <DialogOverlay className="desktop-dashboard-dialog" style={desktopPopoverStyle} onClose={() => setIsDesktopDashboardOpen(false)}>
           <nav className="mobile-profile-popover desktop-profile-popover profile-popup-surface" id="desktop-dashboard-menu" aria-label="Dashboard menu">
             <div className="mobile-profile-popover-header">
               <div className="mobile-profile-popover-avatar" aria-hidden="true">
