@@ -28,7 +28,7 @@ export function TadaChargeGuide() {
     { icon: "ms-check-circle", illustration: "🌱", title: say("A good start", "좋은 시작"), range: "20–49%", body: say("Good feedback adds up.", "좋은 평가가 모이면 점점 올라가요.") },
     { icon: "ms-groups", illustration: "🌳", title: say("A steady neighbour", "든든한 이웃"), range: "50–69%", body: say("Trust grows with experience.", "꾸준한 좋은 거래로 충전돼요.") },
     { icon: "ms-verified", illustration: "🌲", title: say("A trusted neighbour", "믿을 수 있는 이웃"), range: "70–89%", body: say("Many good experiences have built up.", "많은 좋은 경험이 쌓였어요.") },
-    { icon: "ms-favorite", illustration: "🌳", title: say("A warm neighbour", "따뜻한 이웃"), range: "90–100%", body: say("A long history of positive experiences.", "오랫동안 좋은 이웃으로 활동하고 있어요.") },
+    { icon: "ms-favorite", illustration: "🌳", fruitful: true, title: say("A warm neighbour", "따뜻한 이웃"), range: "90–100%", body: say("A long history of positive experiences.", "오랫동안 좋은 이웃으로 활동하고 있어요.") },
   ];
   const excluded: Card[] = [
     { icon: "ms-photo-camera", title: say("Profile photo", "프로필 사진 등록"), body: say("Helps neighbours recognise you.", "프로필을 꾸미는 데 도움이 돼요.") },
@@ -47,12 +47,11 @@ export function TadaChargeGuide() {
       <div className="tada-charge-hero-copy">
         <span className="tada-charge-eyebrow">Tada Charge <span>{say("Coming soon", "도입 예정")}</span></span>
         <h1>{say("What is Tada Charge?", "타다 충전이란?")}</h1>
-        <p className="tada-charge-headline">{say("Good trades add up.", "좋은 거래가 쌓일수록,")}<br /><strong>{say("So does your Tada Charge!", "타다도 충전돼요!")}</strong></p>
+        <p className="tada-charge-headline">{say("Good trades add up.", "좋은 거래가 쌓일수록,")}<br />{ko ? <strong><span>타다</span>가 <span>충전</span>돼요!</strong> : <strong>So does your <span>Tada Charge</span>!</strong>}</p>
         <p>{say("Care and kept promises help make you a neighbour people enjoy trading with.", "서로 배려하고 약속을 지키는 좋은 이웃 활동이 타다 충전으로 이어져요.")}</p>
       </div>
-      <div className="tada-charge-hero-art" role="img" aria-label={say("Tada Charge mascot beside a green 20 percent starting meter", "초록색 20% 시작 게이지와 타다 충전 마스코트")}>
-        <div className="tada-charge-gauge"><div><Icon name="ms-bolt" /><strong>20%</strong><span>{say("Starting Charge", "시작 충전도")}</span></div></div>
-        <Image className="tada-charge-mascot" src="/images/tada-charge-mascot.png" alt="" width={1024} height={1024} priority />
+      <div className="tada-charge-hero-art">
+        <Image className="tada-charge-hero-scene" src="/images/tada-charge-hero-v2.png" alt={say("Tada Charge mascot pointing to a green 20 percent starting meter", "초록색 20% 시작 게이지를 가리키는 타다 충전 마스코트")} width={1536} height={1024} priority />
         <span className="tada-charge-speech"><Icon name="ms-forum" />{say("Good neighbours help Tada grow!", "좋은 이웃이 될수록 타다가 더 충전돼요!")}</span>
       </div>
     </header>
@@ -61,7 +60,7 @@ export function TadaChargeGuide() {
 
     <section className="tada-charge-section" aria-labelledby="charge-feedback"><h2 id="charge-feedback">{say("Feedback shapes your Charge", "평가가 충전도에 반영돼요")}</h2><p>{say("Your neighbours’ experiences can move your Charge up or down.", "이웃의 평가에 따라 타다 충전도가 오르거나 내릴 수 있어요.")}</p><div className="ui-panel tada-charge-ratings">{feedback.map((item) => <article className={`tada-charge-rating is-${item.tone}`} key={item.title}><span className="tada-charge-rating-face" aria-hidden="true">{item.face}</span><div><h3>{item.title}</h3><strong>{item.value}</strong><p>{item.body}</p></div></article>)}</div><div className="tada-charge-note"><Icon name="ms-info" /><p><strong>{say("A positive review starts at +2%; the increase gets smaller as Charge rises.", "좋은 평가의 기본 상승 폭은 +2%이며, 충전도가 높을수록 상승 폭은 점점 줄어들어요.")}</strong><br />{say("The final rules will be announced before launch.", "실제 반영 기준은 기능 도입 전에 확정해 안내할게요.")}</p></div></section>
 
-    <section className="tada-charge-section" aria-labelledby="charge-stages"><h2 id="charge-stages">{say("Grow together", "충전도는 이렇게 올라가요")}</h2><p>{say("Every good experience adds a little more Charge.", "좋은 이웃 경험이 쌓일수록 타다가 조금씩 더 충전돼요.")}</p><div className="tada-charge-stages">{stages.map((stage) => <article className="ui-panel tada-charge-stage" key={stage.title}><span className="tada-charge-stage-illustration" aria-hidden="true">{stage.illustration}</span><h3>{stage.title}</h3><strong>{stage.range}</strong><p>{stage.body}</p></article>)}</div><div className="tada-charge-track" role="img" aria-label={say("Proposed growth stages: 20, 50, 70 and 90 percent", "제안된 성장 단계: 20, 50, 70, 90퍼센트")}><span><small>20%</small></span><span><small>50%</small></span><span><small>70%</small></span><span><small>90%</small></span></div></section>
+    <section className="tada-charge-section" aria-labelledby="charge-stages"><h2 id="charge-stages">{say("Grow together", "충전도는 이렇게 올라가요")}</h2><p>{say("Every good experience adds a little more Charge.", "좋은 이웃 경험이 쌓일수록 타다가 조금씩 더 충전돼요.")}</p><div className="tada-charge-stages">{stages.map((stage) => <article className="ui-panel tada-charge-stage" key={stage.title}><span className={`tada-charge-stage-illustration${stage.fruitful ? " is-fruitful" : ""}`} aria-hidden="true">{stage.illustration}</span><h3>{stage.title}</h3><strong>{stage.range}</strong><p>{stage.body}</p></article>)}</div><div className="tada-charge-track" role="img" aria-label={say("Charge growth line from zero to one hundred percent", "0퍼센트부터 100퍼센트까지의 충전도 성장선")}><span><small>0%</small></span><span><small>20%</small></span><span><small>50%</small></span><span><small>70%</small></span><span><small>90%</small></span><span><small>100%</small></span></div></section>
 
     <section className="tada-charge-section" aria-labelledby="charge-excluded"><h2 id="charge-excluded">{say("These don’t add Charge", "이건 충전 점수가 아니에요")}</h2><p>{say("These actions do not raise your Charge by themselves.", "아래 활동은 타다 충전도에 반영되지 않아요.")}</p><div className="tada-charge-excluded">{excluded.map((item) => <article className="ui-panel tada-charge-exclusion" key={item.title}><Icon name={item.icon} /><div><h3>{item.title}</h3><p>{item.body}</p></div></article>)}</div></section>
 
