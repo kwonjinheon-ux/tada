@@ -56,6 +56,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
+  const resultsRef = useRef<HTMLElement>(null);
   const activeCategory = urlCategory;
   const urlSort = searchParams.get("sort");
   const activeChip = urlSort === "recent" || urlSort === "trending" ? urlSort : urlCategory === "recommendations" ? "recommendations" : "all";
@@ -96,10 +97,31 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     if (category === "all") params.delete("category");
     else params.set("category", category);
     const query = params.toString();
-    window.history.replaceState(window.history.state, "", `/community${query ? `?${query}` : ""}`);
+    const nextUrl = `/community${query ? `?${query}` : ""}`;
+    if (`${window.location.pathname}${window.location.search}` === nextUrl) return;
+
+    const nextPage = 1;
+    const nextSearch = params.get("q")?.trim().slice(0, 60) ?? "";
+    const nextSearchBy = params.get("searchBy") ?? "all";
+    const nextMainLocation = params.get("mainLocation") ?? "";
+    const nextSubLocation = params.get("subLocation") ?? "";
+    const nextSort = sort;
+    const cacheKey = buildFeedCacheKey({ category, search: nextSearch, searchBy: nextSearchBy, mainLocation: nextMainLocation, subLocation: nextSubLocation, sort: nextSort, page: nextPage });
+    const cachedFeed = postFeedCache.current.get(cacheKey);
+
+    window.history.pushState(window.history.state, "", nextUrl);
+    if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
+      setFeed(cachedFeed.feed);
+      setIsLoadingPosts(false);
+    } else {
+      setFeed({ posts: [], totalCount: 0, page: 1, totalPages: 1 });
+      setIsLoadingPosts(true);
+    }
   };
   const chooseCategory = (category: CommunityCategory) => {
     updateCategoryUrl(category);
+    setIsFilterOpen(false);
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   const chooseChip = (chip: string) => {
     const category = chip === "recommendations" ? "recommendations" : "all";
@@ -173,7 +195,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
         />
       </BrowseFilterDrawer>
 
-      <section className="market-results community-results" aria-label="Community posts">
+      <section className="market-results community-results" aria-label="Community posts" ref={resultsRef}>
         <CommunityBrowseIntro category={activeCategory} />
 
         <MobileBrowseCategoryRail
