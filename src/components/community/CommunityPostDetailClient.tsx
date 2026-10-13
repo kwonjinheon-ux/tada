@@ -17,7 +17,7 @@ import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPostType } from "@/data/community-posts";
 import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
-import { calendarProvider, googleCalendarUrl, isValidCalendarRange } from "@/lib/community/calendar-event";
+import { CommunityEventSchedule } from "@/components/community/CommunityEventSchedule";
 
 const HtmlEditor = dynamic(() => import("@/components/ui/HtmlEditor").then((module) => module.HtmlEditor));
 
@@ -26,16 +26,7 @@ export type CommunityPostDetail = { id: string; type: CommunityPostType; title: 
 export function CommunityPostDetailClient({ post, relatedCategory, initialAction }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all">; initialAction?: "edit" | "delete" }) {
   const { t, locale } = useLanguage();
   const router = useRouter();
-  const canAddToCalendar = isValidCalendarRange(post.eventStartAt, post.eventEndAt);
-  const addToCalendar = () => {
-    if (!canAddToCalendar || !post.eventStartAt || !post.eventEndAt) return;
-    const event = { id: post.id, title: post.title, location: post.location, start: new Date(post.eventStartAt).toISOString(), end: new Date(post.eventEndAt).toISOString() };
-    if (calendarProvider(navigator.userAgent, navigator.maxTouchPoints) === "apple") {
-      window.location.assign(`/api/community/calendar?${new URLSearchParams(event)}`);
-    } else {
-      window.open(googleCalendarUrl(event), "_blank", "noopener,noreferrer");
-    }
-  };
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(initialAction === "delete");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -68,13 +59,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span>조회수 {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="ms ms-location-on" aria-hidden="true" /> {post.location}</span><span><i className="ms ms-schedule" aria-hidden="true" /> {post.createdAt}</span></div></div>
           <div className="community-detail-author"><CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" /></div>
         </header>
-        {post.eventDate ? (
-          <div className="ui-panel community-detail-event-schedule">
-            <i className="ms ms-calendar-today" aria-hidden="true" />
-            <div><span>{t("communityCategoryEvents")}</span><strong>{post.eventDate}</strong></div>
-            {canAddToCalendar ? <Button size="sm" onClick={addToCalendar}><i className="ms ms-add" aria-hidden="true" />{locale === "ko" ? "캘린더에 추가" : "Add to calendar"}</Button> : null}
-          </div>
-        ) : null}
+        <CommunityEventSchedule id={post.id} title={post.title} location={post.location} eventDate={post.eventDate} eventStartAt={post.eventStartAt} eventEndAt={post.eventEndAt} />
         <ImageGallery images={post.images} className="community-detail-gallery" priority />
         <div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} />
         <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} title={post.title} body={post.body} commentCount={post.responseCount} score={post.score} myVote={post.myVote} shareCount={post.shareCount} initialIsSaved={post.isSaved} isOwner={post.isOwner} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>

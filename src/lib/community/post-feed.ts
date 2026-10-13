@@ -205,6 +205,8 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
       location: [post.region_suburb, post.region_city].filter(Boolean).join(", "),
       timeAgo: relativeTime(post.created_at),
       eventDate: formatCommunityEventSchedule(post.event_start_at ?? null, post.event_end_at ?? null),
+      eventStartAt: post.event_start_at ?? null,
+      eventEndAt: post.event_end_at ?? null,
       thumbnail: thumbnailPath ? signedThumbnails.get(thumbnailPath) : undefined,
       images: imagesByPost.get(post.id) ?? [],
       responseCount: commentCounts.get(post.id) ?? 0,

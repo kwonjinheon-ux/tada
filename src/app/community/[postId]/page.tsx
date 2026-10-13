@@ -5,17 +5,9 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { communityPostCategorySchema } from "@/contracts/api";
 import { formatCommunityEventSchedule } from "@/lib/community/format-event-schedule";
+import { sanitizePostHtml } from "@/lib/community/sanitize-post-html";
 
 export const dynamic = "force-dynamic";
-
-function cleanHtml(value: string) {
-  const allowed = new Set(["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "blockquote", "code", "pre"]);
-  return value.replace(/<\/?([a-z0-9]+)(?:\s[^>]*)?>/gi, (tag, name: string) => {
-    const normalized = name.toLowerCase();
-    if (!allowed.has(normalized)) return "";
-    return tag.startsWith("</") ? `</${normalized}>` : `<${normalized}>`;
-  });
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
@@ -62,7 +54,7 @@ export default async function CommunityPostPage({ params, searchParams }: { para
         user ? supabase.from("community_post_votes").select("value").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
         user ? supabase.from("community_wishlist").select("post_id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
-      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), eventDate: formatCommunityEventSchedule("event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null, "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
+      const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: sanitizePostHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), eventDate: formatCommunityEventSchedule("event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null, "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       detail.eventStartAt = "event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null;
       detail.eventEndAt = "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null;
       return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} initialAction={initialAction} />;
@@ -71,5 +63,5 @@ export default async function CommunityPostPage({ params, searchParams }: { para
 
   const fallback = communityPosts.find((post) => post.id === postId);
   if (!fallback) notFound();
-  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: cleanHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? "Recently", eventDate: fallback.eventDate, authorName: null, authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, score: fallback.score ?? 0, myVote: fallback.myVote ?? 0, shareCount: fallback.shareCount ?? 0, responseCount: fallback.responseCount ?? 0, isOwner: false, isSaved: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} relatedCategory={relatedCategory} initialAction={initialAction} />;
+  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: sanitizePostHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? "Recently", eventDate: fallback.eventDate, authorName: null, authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, score: fallback.score ?? 0, myVote: fallback.myVote ?? 0, shareCount: fallback.shareCount ?? 0, responseCount: fallback.responseCount ?? 0, isOwner: false, isSaved: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} relatedCategory={relatedCategory} initialAction={initialAction} />;
 }

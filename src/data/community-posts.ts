@@ -18,6 +18,8 @@ export type CommunityPost = {
   excerpt: string;
   location: string;
   eventDate?: string;
+  eventStartAt?: string | null;
+  eventEndAt?: string | null;
   responseCount?: number;
   score?: number;
   myVote?: -1 | 0 | 1;

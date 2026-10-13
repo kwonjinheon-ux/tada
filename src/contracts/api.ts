@@ -237,6 +237,8 @@ export const communityPostFeedItemSchema = z.object({
   location: z.string(),
   timeAgo: z.string(),
   eventDate: z.string().optional(),
+  eventStartAt: z.string().nullable().optional(),
+  eventEndAt: z.string().nullable().optional(),
   thumbnail: z.string().url().optional(),
   images: z.array(z.object({ src: z.string().url(), alt: z.string() })).optional(),
   responseCount: z.number().int().nonnegative().optional(),
