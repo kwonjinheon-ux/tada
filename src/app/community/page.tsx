@@ -32,5 +32,5 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const subLocation = typeof params.subLocation === "string" ? params.subLocation : "";
   const initialPosts = await loadInitialPosts(category, search, searchBy, page, mainLocation, subLocation, sort);
 
-  return <Suspense fallback={null}><CommunityPageClient initialCategory={category} initialFeed={initialPosts} /></Suspense>;
+  return <Suspense fallback={null}><CommunityPageClient initialCategory={category} initialFeed={initialPosts} initialFeedQuery={{ category, search, searchBy, page, mainLocation, subLocation, sort }} /></Suspense>;
 }

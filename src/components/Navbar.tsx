@@ -139,22 +139,18 @@ export function Navbar() {
           setIsAdmin(false);
           return;
         }
-        const [{ count: messageCount }, { count: notificationCount }, { data: role }] = await Promise.all([
+        const avatarPath = user.user_metadata?.avatar_path;
+        const [{ count: messageCount }, { count: notificationCount }, { data: role }, { data: signedAvatar }] = await Promise.all([
           supabase.from("market_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
           supabase.from("market_notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
           supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle(),
+          avatarPath ? supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : Promise.resolve({ data: null }),
         ]);
         if (isMounted) {
           setUnreadMessageCount(messageCount ?? 0);
           setUnreadNotificationCount(notificationCount ?? 0);
           setIsAdmin(role?.role === "admin" || role?.role === "moderator");
-        }
-        const avatarPath = user.user_metadata?.avatar_path;
-        if (avatarPath) {
-          const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600);
-          if (isMounted) setAvatarUrl(signed?.signedUrl ?? null);
-        } else {
-          setAvatarUrl(null);
+          setAvatarUrl(signedAvatar?.signedUrl ?? null);
         }
       } finally {
         if (isMounted) setIsAuthReady(true);
@@ -566,7 +562,7 @@ export function Navbar() {
     { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
       ? { id: "edit", label: t("listingDockEdit"), icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
-      : { id: "offer", label: t("listingMakeOffer"), icon: "offer", actionLabel: t("listingDockOffer"), onClick: () => triggerListingDockAction("offer"), variant: "offer" },
+      : { id: "offer", label: t("listingDockOffer"), icon: "offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
     { id: "share", label: isListingShareCopied ? t("listingDockLinkCopied") : t("listingDockCopyLink"), icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
     listingDockConfig.isOwner
       ? { id: "delete", label: t("listingDelete"), icon: "delete", onClick: () => triggerListingDockAction("delete") }

@@ -15,16 +15,25 @@ export function CommunityRecentPostsPanel({ category = "all" }: { category?: Com
   const [posts, setPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    const desktop = window.matchMedia("(min-width: 1200px)");
+    let controller: AbortController | null = null;
     const params = new URLSearchParams({ sort: "recent" });
     if (category !== "all") params.set("category", category);
 
-    void fetch(`/api/community/posts?${params}`, { signal: controller.signal })
-      .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
-      .then((result) => { if (result.data) setPosts(result.data.posts); })
-      .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setPosts([]); });
-
-    return () => controller.abort();
+    const loadVisibleRail = () => {
+      controller?.abort();
+      controller = null;
+      if (!desktop.matches) return;
+      controller = new AbortController();
+      const { signal } = controller;
+      void fetch(`/api/community/posts?${params}`, { signal })
+        .then((response) => readApiResponse(response, communityPostFeedResponseSchema))
+        .then((result) => { if (!signal.aborted && result.data) setPosts(result.data.posts); })
+        .catch((error: unknown) => { if (!signal.aborted && (error as { name?: string }).name !== "AbortError") setPosts([]); });
+    };
+    loadVisibleRail();
+    desktop.addEventListener("change", loadVisibleRail);
+    return () => { controller?.abort(); desktop.removeEventListener("change", loadVisibleRail); };
   }, [category]);
 
   return (

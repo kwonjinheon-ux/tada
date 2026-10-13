@@ -2,6 +2,7 @@
 
 import { ImageGallery } from "@/components/ui/ImageGallery";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListingComments } from "@/components/market/ListingComments";
@@ -11,12 +12,13 @@ import { CommunityPostOwnerMenu } from "@/components/community/CommunityPostOwne
 import { CommunityCategoryPosts } from "@/components/community/CommunityCategoryPosts";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
 import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
-import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { Button } from "@/components/ui/Button";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostTypeLabelKeys, type CommunityPostType } from "@/data/community-posts";
 import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
+
+const HtmlEditor = dynamic(() => import("@/components/ui/HtmlEditor").then((module) => module.HtmlEditor));
 
 export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; eventDate?: string; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[] };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
@@ -8,7 +9,6 @@ import { CommunityBrowseIntro } from "@/components/community/CommunityBrowseIntr
 import { CommunityFilterSidebar, communityCategories, type CommunityCategory } from "@/components/community/CommunityFilterSidebar";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
-import { CommunityBlogPost } from "@/components/community/CommunityBlogPost";
 import { CommunityEmptyState } from "@/components/community/CommunityEmptyState";
 import { CommunityPostListSkeleton } from "@/components/community/CommunityPostListSkeleton";
 import { CommunityRecentPostsPanel } from "@/components/community/CommunityRecentPostsPanel";
@@ -22,6 +22,7 @@ import { ListSearchField } from "@/components/ui/ListSearchField";
 import type { CommunityFeedResult } from "@/lib/community/post-feed";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
+const CommunityBlogPost = dynamic(() => import("@/components/community/CommunityBlogPost").then((module) => module.CommunityBlogPost));
 
 const communityChips: Array<{ value: string; labelKey: TranslationKey }> = [
   { value: "all", labelKey: "all" },
@@ -42,7 +43,7 @@ const buildFeedCacheKey = ({ category, search, searchBy, mainLocation, subLocati
   return params.toString();
 };
 
-export function CommunityPageClient({ initialCategory = "all", initialFeed = null }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null }) {
+export function CommunityPageClient({ initialCategory = "all", initialFeed = null, initialFeedQuery }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null; initialFeedQuery?: Parameters<typeof buildFeedCacheKey>[0] }) {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -54,9 +55,9 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
-  const [activeCategory, setActiveCategory] = useState<CommunityCategory>(initialCategory);
+  const activeCategory = urlCategory;
   const urlSort = searchParams.get("sort");
-  const [activeChip, setActiveChip] = useState(urlSort === "recent" || urlSort === "trending" ? urlSort : initialCategory === "recommendations" ? "recommendations" : "all");
+  const activeChip = urlSort === "recent" || urlSort === "trending" ? urlSort : urlCategory === "recommendations" ? "recommendations" : "all";
   const requestedLocation = searchParams.get("mainLocation");
   const mainLocation: MainLocation | "" = NZ_MAIN_LOCATIONS.find((location) => location === requestedLocation) ?? "";
   const subLocation = searchParams.get("subLocation") ?? "";
@@ -92,14 +93,10 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     window.history.replaceState(window.history.state, "", `/community${query ? `?${query}` : ""}`);
   };
   const chooseCategory = (category: CommunityCategory) => {
-    setActiveCategory(category);
-    setActiveChip(category === "recommendations" ? "recommendations" : "all");
     updateCategoryUrl(category);
   };
   const chooseChip = (chip: string) => {
-    setActiveChip(chip);
     const category = chip === "recommendations" ? "recommendations" : "all";
-    setActiveCategory(category);
     updateCategoryUrl(category, chip === "recent" || chip === "trending" ? chip : undefined);
   };
 
@@ -108,12 +105,13 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     if (stored) setViewMode(stored);
   }, []);
 
-  // A soft navigation may preserve this component, so the selection follows
-  // the URL instead of retaining an earlier category or sorting chip.
+  // Soft navigations deliver a new server feed. Seed its own query key before
+  // the loading effect runs, so pagination/search do not fetch it a second time.
   useEffect(() => {
-    setActiveCategory(urlCategory);
-    setActiveChip(urlSort === "recent" || urlSort === "trending" ? urlSort : urlCategory === "recommendations" ? "recommendations" : "all");
-  }, [urlSort, urlCategory]);
+    if (initialFeed && initialFeedQuery) {
+      postFeedCache.current.set(buildFeedCacheKey(initialFeedQuery), { feed: initialFeed, cachedAt: Date.now() });
+    }
+  }, [initialFeed, initialFeedQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -139,7 +137,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
       .catch((error: unknown) => { if ((error as { name?: string }).name !== "AbortError") setFeed({ posts: [], totalCount: 0, page: 1, totalPages: 1 }); })
       .finally(() => { if (!controller.signal.aborted) setIsLoadingPosts(false); });
     return () => controller.abort();
-  }, [activeCategory, activeChip, mainLocation, searchQuery, searchBy, subLocation, page]);
+  }, [activeCategory, activeChip, mainLocation, searchQuery, searchBy, subLocation, page, initialFeed, initialFeedQuery]);
 
   const visiblePosts = feed.posts;
 

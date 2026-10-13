@@ -77,8 +77,11 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   const rows = ((data ?? []) as Row[]);
   const page = rows.slice(0, pageSize);
   const ids = page.map((row) => row.id);
-  const { data: photoRows } = ids.length ? await supabase.from("market_listing_photos").select("listing_id,storage_path,original_name,is_primary,display_order").in("listing_id", ids).order("display_order") : { data: [] };
-  const { data: commentRows } = ids.length ? await supabase.from("market_listing_comments").select("listing_id").in("listing_id", ids).is("deleted_at", null) : { data: [] };
+  const [{ data: photoRows }, { data: commentRows }, { data: savedRows }] = await Promise.all([
+    ids.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,original_name,is_primary,display_order").in("listing_id", ids).order("display_order") : Promise.resolve({ data: [] }),
+    ids.length ? supabase.from("market_listing_comments").select("listing_id").in("listing_id", ids).is("deleted_at", null) : Promise.resolve({ data: [] }),
+    userId && ids.length ? supabase.from("market_wishlist").select("listing_id").eq("user_id", userId).in("listing_id", ids) : Promise.resolve({ data: [] }),
+  ]);
   const photos = new Map<string, Photo>();
   for (const photo of (photoRows ?? []) as Photo[]) {
     const current = photos.get(photo.listing_id);
@@ -86,9 +89,7 @@ export async function getMarketFeed(supabase: SupabaseClient, rawQuery: FeedQuer
   }
   const imagePaths = [...photos.values()].map((photo) => photo.storage_path).filter((path): path is string => Boolean(path));
   const signedImages = await getSignedStorageImages("market-listing-images", imagePaths, "thumbnail");
-  const savedListingIds = userId && ids.length
-    ? ((await supabase.from("market_wishlist").select("listing_id").eq("user_id", userId).in("listing_id", ids)).data ?? []).map((row) => row.listing_id as string)
-    : [];
+  const savedListingIds = (savedRows ?? []).map((row) => row.listing_id as string);
   const commentCounts = new Map<string, number>();
   for (const row of (commentRows ?? []) as { listing_id: string }[]) commentCounts.set(row.listing_id, (commentCounts.get(row.listing_id) ?? 0) + 1);
   const listings = page.map((row) => {

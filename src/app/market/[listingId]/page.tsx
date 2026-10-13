@@ -228,10 +228,10 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     : 0;
 
   if (listing) {
-    const relatedListings = await getRelatedListings(listing, supabase, user?.id);
-    const { data: savedListing } = user
-      ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
-      : { data: null };
+    const [relatedListings, { data: savedListing }] = await Promise.all([
+      getRelatedListings(listing, supabase, user?.id),
+      user ? supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle() : Promise.resolve({ data: null }),
+    ]);
     const { data: savedRelatedListings } = user && relatedListings.length
       ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
       : { data: [] };

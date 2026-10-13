@@ -61,7 +61,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   const mainLocation = query.mainLocation || null;
   const subLocation = query.subLocation || null;
   const search = (query.search ?? "").replace(/[,%()]/g, " ").trim().slice(0, 60);
-  const isRecentFeed = sort === "recent";
+  const isRecentFeed = sort === "recent" && query.page === undefined;
   const isDirectQuery = Boolean(search) || Boolean(sort);
   const isPaged = query.page !== undefined;
   let authorIdsForSearch: string[] | null = null;
@@ -157,27 +157,32 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   if (!postIds.length) return { posts: [], totalCount, page, totalPages };
 
   const authorIds = [...new Set(data.filter((post) => !post.is_anonymous).map((post) => post.author_id))];
-  const [{ data: imageRows }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }, { data: authors }] = await Promise.all([
-    isRecentFeed ? Promise.resolve({ data: [] }) : supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order"),
+  // Each media pipeline starts signing as soon as its own lookup completes;
+  // slower comments or engagement reads must not hold up image work.
+  const imagesRequest = (async () => {
+    const { data: imageRows } = isRecentFeed ? { data: [] } : await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order");
+    const firstImagePathByPost = new Map<string, string>();
+    for (const image of imageRows ?? []) if (!firstImagePathByPost.has(image.post_id)) firstImagePathByPost.set(image.post_id, image.storage_path);
+    const [signed, signedThumbnails] = await Promise.all([
+      getSignedStorageImages("community-post-images", (imageRows ?? []).map((image) => image.storage_path), "gallery"),
+      getSignedStorageImages("community-post-images", [...firstImagePathByPost.values()], "card"),
+    ]);
+    return { imageRows, firstImagePathByPost, signed, signedThumbnails };
+  })();
+  const authorsRequest = (async () => {
+    const { data: authors } = isRecentFeed || !authorIds.length ? { data: [] } : await supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds);
+    const avatarPaths = (authors ?? []).map((author) => author.avatar_path).filter((path): path is string => Boolean(path));
+    const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls([...new Set(avatarPaths)], 3600) : { data: [] };
+    const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
+    return { authors, avatars };
+  })();
+  const [{ imageRows, firstImagePathByPost, signed, signedThumbnails }, { authors, avatars }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }] = await Promise.all([
+    imagesRequest,
+    authorsRequest,
     supabase.from("community_post_comments").select("post_id").in("post_id", postIds).is("deleted_at", null),
     user && !isRecentFeed ? supabase.from("community_post_votes").select("post_id,value").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
     user && !isRecentFeed ? supabase.from("community_wishlist").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
-    isRecentFeed || !authorIds.length ? Promise.resolve({ data: [] }) : supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds),
   ]);
-
-  // Cards render a small square crop, so the list thumbnail is signed at card
-  // size while full-size gallery URLs stay available for the lightbox.
-  const galleryPaths = (imageRows ?? []).map((image) => image.storage_path);
-  const firstImagePathByPost = new Map<string, string>();
-  for (const image of imageRows ?? []) if (!firstImagePathByPost.has(image.post_id)) firstImagePathByPost.set(image.post_id, image.storage_path);
-  const avatarPaths = [...new Set((authors ?? []).map((author) => author.avatar_path).filter((path): path is string => Boolean(path)))];
-  const [signed, signedThumbnails, { data: signedAvatars }] = await Promise.all([
-    getSignedStorageImages("community-post-images", galleryPaths, "gallery"),
-    getSignedStorageImages("community-post-images", [...firstImagePathByPost.values()], "card"),
-    avatarPaths.length ? supabase.storage.from("profile-avatars").createSignedUrls(avatarPaths, 3600) : Promise.resolve({ data: [] }),
-  ]);
-
-  const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
   const authorsById = new Map((authors ?? []).map((author) => [author.id, author]));
   const votes = new Map((voteRows ?? []).map((vote) => [vote.post_id, vote.value]));
   const savedPostIds = new Set((wishlistRows ?? []).map((row) => row.post_id));

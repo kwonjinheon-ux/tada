@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { CommunityPostActions } from "@/components/community/CommunityPostActions";
-import { CommunityPostComments } from "@/components/community/CommunityPostComments";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
 import { CommunityPostBadge } from "@/components/community/CommunityPostBadge";
 import { CommunityPostOwnerMenu } from "@/components/community/CommunityPostOwnerMenu";
@@ -12,6 +12,8 @@ import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { useLanguage } from "@/components/LanguageProvider";
 import { type CommunityPost } from "@/data/community-posts";
 import { prefetchComments } from "@/lib/comment-cache";
+
+const CommunityPostComments = dynamic(() => import("@/components/community/CommunityPostComments").then((module) => module.CommunityPostComments));
 
 function safeHtml(value: string) { const allowed = new Set(["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "blockquote", "code", "pre"]); return value.replace(/<\/?([a-z0-9]+)(?:\s[^>]*)?>/gi, (tag, name: string) => allowed.has(name.toLowerCase()) ? (tag.startsWith("</") ? `</${name.toLowerCase()}>` : `<${name.toLowerCase()}>`) : ""); }
 
