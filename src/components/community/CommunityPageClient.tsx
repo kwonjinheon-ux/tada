@@ -20,6 +20,7 @@ import { readApiResponse } from "@/lib/api/client";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
 import type { CommunityFeedResult } from "@/lib/community/post-feed";
+import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
 const CommunityBlogPost = dynamic(() => import("@/components/community/CommunityBlogPost").then((module) => module.CommunityBlogPost));
@@ -73,15 +74,20 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     setViewMode(mode);
     saveListingViewPreference(mode, "community");
   };
-  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "", isProfileDefault = false) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("page");
-    if (nextMainLocation) params.set("mainLocation", nextMainLocation);
-    else params.delete("mainLocation");
-    if (nextSubLocation) params.set("subLocation", nextSubLocation);
-    else params.delete("subLocation");
+    // An explicit empty value preserves "All New Zealand" across navigation.
+    params.set("mainLocation", nextMainLocation);
+    if (isProfileDefault) params.delete("subLocation");
+    else params.set("subLocation", nextSubLocation);
     router.replace(`/community${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
   };
+  useProfileMainLocation({
+    hasMainLocationInUrl: searchParams.has("mainLocation") || searchParams.has("subLocation"),
+    mainLocation,
+    onResolve: (location) => chooseLocation(location, "", true),
+  });
   const updateCategoryUrl = (category: CommunityCategory, sort?: "recent" | "trending") => {
     const params = new URLSearchParams(window.location.search);
     params.delete("page");
@@ -208,7 +214,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
         </div>
       </section>
 
-      <CommunityRecentPostsPanel category={activeCategory} />
+      <CommunityRecentPostsPanel category={activeCategory} mainLocation={searchParams.has("mainLocation") ? mainLocation : undefined} subLocation={searchParams.has("subLocation") ? subLocation : undefined} />
     </main>
   );
 }
