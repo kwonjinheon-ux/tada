@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { CommunityPostDetailClient, type CommunityPostDetail } from "@/components/community/CommunityPostDetailClient";
 import { communityPosts } from "@/data/community-posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSignedStorageImages } from "@/lib/supabase/storage-image";
+import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/storage-image";
 import { communityPostCategorySchema } from "@/contracts/api";
 import { formatCommunityEventSchedule } from "@/lib/community/format-event-schedule";
 import { sanitizePostHtml } from "@/lib/community/sanitize-post-html";
@@ -44,8 +44,9 @@ export default async function CommunityPostPage({ params, searchParams }: { para
         : supabase.from("community_comment_profiles").select("display_name,avatar_path").eq("id", post.author_id).maybeSingle()
       ).then(async ({ data: author }) => {
         if (!author?.avatar_path) return { author, avatarUrl: null };
-        const { data } = await supabase.storage.from("profile-avatars").createSignedUrl(author.avatar_path, 3600);
-        return { author, avatarUrl: data?.signedUrl ?? null };
+        // Cached and avatar-sized, the same way every other avatar on the page
+        // is signed; the raw storage call re-signed it on every view.
+        return { author, avatarUrl: await getSignedStorageImage("profile-avatars", author.avatar_path, "avatar") };
       });
       const [{ paths, urls }, { author, avatarUrl }, { count: responseCount }, { data: vote }, { data: saved }] = await Promise.all([
         imagesPromise,

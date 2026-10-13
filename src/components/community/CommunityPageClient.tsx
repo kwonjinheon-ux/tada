@@ -57,9 +57,23 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const resultsRef = useRef<HTMLElement>(null);
-  const activeCategory = urlCategory;
+  // Choosing a category rewrites the URL with history.pushState so the feed can
+  // be fetched here instead of paying for an RSC navigation of a force-dynamic
+  // page. The App Router does not observe that write, though, so useSearchParams
+  // keeps returning the old query and everything derived from it goes stale —
+  // the category never loaded. The choice is held here until a real navigation
+  // (a router call, or Back/Forward) makes the URL authoritative again.
+  const [selection, setSelection] = useState<{ category: CommunityCategory; sort?: "recent" | "trending" } | null>(null);
+  useEffect(() => { setSelection(null); }, [searchParams]);
+  useEffect(() => {
+    const syncFromUrl = () => setSelection(null);
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
   const urlSort = searchParams.get("sort");
-  const activeChip = urlSort === "recent" || urlSort === "trending" ? urlSort : urlCategory === "recommendations" ? "recommendations" : "all";
+  const activeCategory = selection?.category ?? urlCategory;
+  const activeSort = selection ? selection.sort : urlSort === "recent" || urlSort === "trending" ? urlSort : undefined;
+  const activeChip = activeSort ?? (activeCategory === "recommendations" ? "recommendations" : "all");
   const requestedLocation = searchParams.get("mainLocation");
   const mainLocation: MainLocation | "" = NZ_MAIN_LOCATIONS.find((location) => location === requestedLocation) ?? "";
   const subLocation = searchParams.get("subLocation") ?? "";
@@ -110,6 +124,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     const cachedFeed = postFeedCache.current.get(cacheKey);
 
     window.history.pushState(window.history.state, "", nextUrl);
+    setSelection({ category, sort });
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
       setFeed(cachedFeed.feed);
       setIsLoadingPosts(false);

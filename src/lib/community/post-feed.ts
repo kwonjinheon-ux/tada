@@ -172,8 +172,11 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   const authorsRequest = (async () => {
     const { data: authors } = isRecentFeed || !authorIds.length ? { data: [] } : await supabase.from("community_comment_profiles").select("id,display_name,avatar_path").in("id", authorIds);
     const avatarPaths = (authors ?? []).map((author) => author.avatar_path).filter((path): path is string => Boolean(path));
-    const { data: signedAvatars } = avatarPaths.length ? await supabase.storage.from("profile-avatars").createSignedUrls([...new Set(avatarPaths)], 3600) : { data: [] };
-    const avatars = new Map((signedAvatars ?? []).filter((avatar) => avatar.path && avatar.signedUrl).map((avatar) => [avatar.path as string, avatar.signedUrl as string]));
+    // Signing these straight off the storage client re-signed the same handful
+    // of avatars on every request — the slowest leg of the whole feed, and the
+    // one the rest of the stage waited on. getSignedStorageImages caches, and
+    // serves the avatar-sized transform rather than the original file.
+    const avatars = await getSignedStorageImages("profile-avatars", avatarPaths, "avatar");
     return { authors, avatars };
   })();
   const [{ imageRows, firstImagePathByPost, signed, signedThumbnails }, { authors, avatars }, { data: commentRows }, { data: voteRows }, { data: wishlistRows }] = await Promise.all([
