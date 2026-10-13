@@ -63,6 +63,8 @@ export default async function CommunityPostPage({ params, searchParams }: { para
         user ? supabase.from("community_wishlist").select("post_id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
       const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: cleanHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), eventDate: formatCommunityEventSchedule("event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null, "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
+      detail.eventStartAt = "event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null;
+      detail.eventEndAt = "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null;
       return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} initialAction={initialAction} />;
     }
   }
