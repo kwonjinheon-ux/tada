@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -48,8 +49,9 @@ export function TadaChargeGuide() {
         <p className="tada-charge-headline">{say("Good trades add up.", "좋은 거래가 쌓일수록,")}<br /><strong>{say("So does your Tada Charge!", "타다도 충전돼요!")}</strong></p>
         <p>{say("Care and kept promises help make you a neighbour people enjoy trading with.", "서로 배려하고 약속을 지키는 좋은 이웃 활동이 타다 충전으로 이어져요.")}</p>
       </div>
-      <div className="tada-charge-hero-art" role="img" aria-label={say("20 percent starting Charge illustration", "20% 시작 충전도 그림")}>
+      <div className="tada-charge-hero-art" role="img" aria-label={say("Tada Charge mascot beside a green 20 percent starting meter", "초록색 20% 시작 게이지와 타다 충전 마스코트")}>
         <div className="tada-charge-gauge"><div><Icon name="ms-bolt" /><strong>20%</strong><span>{say("Starting Charge", "시작 충전도")}</span></div></div>
+        <Image className="tada-charge-mascot" src="/images/tada-charge-mascot.png" alt="" width={1024} height={1024} priority />
         <span className="tada-charge-speech"><Icon name="ms-forum" />{say("Good neighbours help Tada grow!", "좋은 이웃이 될수록 타다가 더 충전돼요!")}</span>
       </div>
     </header>

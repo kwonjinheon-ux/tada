@@ -13801,3 +13801,34 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .tada-charge-step { grid-template-columns: var(--control-h-sm) minmax(0, 1fr) auto; align-items: start; min-height: 0; }
   .tada-charge-step > .ms { grid-column: 3; grid-row: 1; align-self: center; font-size: var(--text-3xl); }
 }
+
+/* Tada Charge illustration and reference-led card treatment. */
+.tada-charge-guide { background: var(--color-surface); }
+.tada-charge-hero { background: linear-gradient(115deg, var(--color-surface), var(--color-primary-soft) 65%, var(--color-success-soft)); }
+.tada-charge-hero-art { isolation: isolate; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); min-width: 0; }
+.tada-charge-hero-art::before { z-index: -1; width: 100%; background: radial-gradient(circle, var(--color-success-soft), var(--color-primary-soft)); }
+.tada-charge-gauge { z-index: 1; grid-column: 1; grid-row: 1; justify-self: center; align-self: center; width: min(100%, calc(var(--space-12) * 4)); background: conic-gradient(var(--color-success) 20%, var(--color-line-soft) 0); }
+.tada-charge-gauge .ms { color: var(--color-success); }
+.tada-charge-mascot { z-index: 1; grid-column: 2; grid-row: 1; align-self: end; justify-self: center; display: block; width: min(100%, calc(var(--space-12) * 6)); height: auto; margin-bottom: calc(var(--space-4) * -1); }
+.tada-charge-speech { z-index: 2; }
+.tada-charge-speech .ms { color: var(--color-success); }
+.tada-charge-step { border-color: var(--color-line-soft); }
+.tada-charge-step > .ms { display: grid; place-items: center; width: var(--space-12); height: var(--space-12); border-radius: var(--radius-circle); background: var(--color-primary-soft); }
+.tada-charge-step-group:nth-child(2) .tada-charge-step > .ms { color: var(--color-success); background: var(--color-success-soft); }
+.tada-charge-step-group:nth-child(3) .tada-charge-step > .ms { color: var(--color-primary); background: var(--color-primary-soft); }
+.tada-charge-rating { align-items: center; }
+.tada-charge-rating > .ms { display: grid; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-surface); }
+.tada-charge-rating strong { font-weight: var(--weight-extrabold); }
+.tada-charge-stage { border-color: var(--color-line-soft); }
+.tada-charge-stage > .ms { display: grid; place-items: center; width: var(--space-12); height: var(--space-12); border-radius: var(--radius-circle); background: var(--color-success-soft); color: var(--color-success); }
+.tada-charge-stage:first-child > .ms { background: var(--color-primary-soft); color: var(--color-primary); }
+.tada-charge-exclusion > .ms, .tada-charge-new-neighbours > article > .ms { display: grid; flex: 0 0 auto; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); }
+.tada-charge-exclusion:nth-child(2) > .ms { background: var(--color-success-soft); color: var(--color-success); }
+.tada-charge-new-neighbours > .tada-charge-caution > .ms { background: var(--color-surface); color: var(--color-warning); }
+@media (max-width: 767.98px) {
+  .tada-charge-hero-art { min-height: 0; }
+  .tada-charge-gauge { width: min(100%, calc(var(--space-12) * 4)); }
+  .tada-charge-mascot { margin-bottom: 0; }
+  .tada-charge-speech { grid-column: 1 / -1; justify-self: center; max-width: 100%; }
+  .tada-charge-step > .ms { width: var(--control-h-xl); height: var(--control-h-xl); }
+}
