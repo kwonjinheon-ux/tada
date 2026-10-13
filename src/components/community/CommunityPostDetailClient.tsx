@@ -68,7 +68,13 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span>조회수 {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="ms ms-location-on" aria-hidden="true" /> {post.location}</span><span><i className="ms ms-schedule" aria-hidden="true" /> {post.createdAt}</span></div></div>
           <div className="community-detail-author"><CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" /></div>
         </header>
-        {post.eventDate ? <div className="ui-panel community-detail-event-schedule"><i className="ms ms-calendar-today" aria-hidden="true" /><div><span>{t("communityCategoryEvents")}</span><strong>{post.eventDate}</strong>{canAddToCalendar ? <><Button size="sm" onClick={addToCalendar}><i className="ms ms-add" aria-hidden="true" />{locale === "ko" ? "캘린더에 추가" : "Add to calendar"}</Button><small>{locale === "ko" ? "기기에 맞는 캘린더를 열거나 일정 파일을 내려받습니다. 캘린더에서 추가를 확인해 주세요." : "Opens your calendar or downloads an event file. Confirm adding it in your calendar."}</small></> : null}</div></div> : null}
+        {post.eventDate ? (
+          <div className="ui-panel community-detail-event-schedule">
+            <i className="ms ms-calendar-today" aria-hidden="true" />
+            <div><span>{t("communityCategoryEvents")}</span><strong>{post.eventDate}</strong></div>
+            {canAddToCalendar ? <Button size="sm" onClick={addToCalendar}><i className="ms ms-add" aria-hidden="true" />{locale === "ko" ? "캘린더에 추가" : "Add to calendar"}</Button> : null}
+          </div>
+        ) : null}
         <ImageGallery images={post.images} className="community-detail-gallery" priority />
         <div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} />
         <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} title={post.title} body={post.body} commentCount={post.responseCount} score={post.score} myVote={post.myVote} shareCount={post.shareCount} initialIsSaved={post.isSaved} isOwner={post.isOwner} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>
