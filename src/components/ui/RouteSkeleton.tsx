@@ -13,10 +13,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
  * router prefetches the loading state, so the shell is already in cache by the
  * time the link is clicked.
  *
- * One component with variants rather than a skeleton per route — the shapes
- * only differ in which shell they mirror.
+ * Each variant is built from the layout classes its own page uses — the same
+ * grid, rail, intro and card containers — so the shell has the real geometry at
+ * every breakpoint and the page does not jump when it arrives. Only the leaf
+ * content is replaced with placeholders. One component with variants rather
+ * than a skeleton per route: the shapes only differ in which shell they mirror.
  */
-export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "community" | "community-detail" | "services" | "home" | "form" | "dashboard" }) {
+export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "community" | "community-detail" | "services" | "search" | "home" | "form" | "dashboard" }) {
   if (variant === "home") {
     return <main className="home-reference" aria-busy="true" aria-label="Loading home">
       <PageContainer className="home-reference-content">
@@ -72,28 +75,151 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "co
           <div className="community-detail-body community-detail-loading-body"><span className="route-skeleton-line" /><span className="route-skeleton-line" /><span className="route-skeleton-line" /></div>
           <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><span className="route-skeleton-field" /><span className="route-skeleton-field" /><span className="route-skeleton-field" /><span className="route-skeleton-field" /></div></footer>
         </article>
-        <section className="listing-comments is-community community-detail-loading-comments" aria-hidden="true"><div className="listing-comments-heading"><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></div><div className="listing-comments-composer"><span className="route-skeleton-author" /><span className="route-skeleton-field" /></div></section>
+        <section className="listing-comments is-community community-detail-loading-comments" aria-hidden="true"><div className="listing-comments-heading"><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></div><div className="listing-comments-composer"><span className="route-skeleton-field" /></div></section>
       </div>
     </CommunityDesktopLayout>;
   }
 
-  return <main className={`marketplace-page route-skeleton route-skeleton--browse route-skeleton--${variant}`} aria-busy="true" aria-label="Loading">
-    <aside className="route-skeleton-rail">
-      {Array.from({ length: 7 }, (_, row) => <span key={row} className="route-skeleton-line" />)}
-    </aside>
-    <section className="route-skeleton-body">
-      <div className="route-skeleton-toolbar">
-        <span className="route-skeleton-line is-title" />
-        <span className="route-skeleton-line" />
-      </div>
-      {variant === "community" ? <CommunityPostListSkeleton /> : <div className={variant === "services" ? "services-card-grid" : "product-grid"} aria-hidden="true">
-        {Array.from({ length: 8 }, (_, cell) => <article key={cell} className="route-skeleton-card ui-card">
+  // Search has no rail: it is a single reading column of result sections.
+  if (variant === "search") {
+    return <main className="global-search-page" aria-busy="true" aria-label="Loading search results">
+      <PageContainer>
+        <div className="global-search-results" aria-hidden="true">
+          <div className="route-skeleton-heading" />
+          <section className="global-search-section">
+            <div className="global-search-section-heading"><span className="route-skeleton-line is-title" /></div>
+            <div className="product-grid is-list-view global-search-market-list">
+              {Array.from({ length: 4 }, (_, card) => <article className="route-skeleton-card ui-card" key={card}><div className="route-skeleton-tile" /><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></article>)}
+            </div>
+          </section>
+          <section className="global-search-section">
+            <div className="global-search-section-heading"><span className="route-skeleton-line is-title" /></div>
+            <CommunityPostListSkeleton />
+          </section>
+        </div>
+      </PageContainer>
+    </main>;
+  }
+
+  if (variant === "community") {
+    return <main className="marketplace-page community-page" aria-busy="true" aria-label="Loading community posts">
+      <BrowseRailSkeleton />
+      <section className="market-results community-results">
+        <BrowseIntroSkeleton />
+        <MobileRailSkeleton cells={8} className="community-mobile-category-rail" />
+        <BrowseToolbarSkeleton chips={4} />
+        <CommunityPostListSkeleton />
+        <div className="community-list-footer" aria-hidden="true"><span className="route-skeleton-field route-skeleton-search" /></div>
+      </section>
+      <aside className="community-recent-panel" aria-hidden="true">
+        <div className="route-skeleton-rows">
+          <span className="route-skeleton-line is-title" />
+          {Array.from({ length: 5 }, (_, row) => <span className="route-skeleton-line" key={row} />)}
+        </div>
+      </aside>
+    </main>;
+  }
+
+  if (variant === "services") {
+    return <main className="marketplace-page services-page" aria-busy="true" aria-label="Loading services">
+      <BrowseRailSkeleton />
+      <section className="market-results services-results">
+        <BrowseIntroSkeleton />
+        <MobileRailSkeleton cells={12} className="services-mobile-category-rail" />
+        <div className="services-category-grid" aria-hidden="true">
+          {Array.from({ length: 12 }, (_, tile) => <div className="services-category" key={tile}><span className="route-skeleton-field route-skeleton-glyph" /><span className="route-skeleton-line" /></div>)}
+        </div>
+        <BrowseToolbarSkeleton chips={2} />
+        <section className="services-sponsor-banner" aria-hidden="true">
+          <div className="services-sponsor-copy"><span className="route-skeleton-line" /><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></div>
+          <ul><li><span className="route-skeleton-line" /></li><li><span className="route-skeleton-line" /></li><li><span className="route-skeleton-line" /></li></ul>
+          <span className="route-skeleton-tile" />
+          <span className="route-skeleton-field route-skeleton-toggle" />
+        </section>
+        <div className="services-card-grid" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, card) => <article className="route-skeleton-card ui-card" key={card}><div className="route-skeleton-tile" /><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></article>)}
+        </div>
+      </section>
+      <aside className="services-side-rail" aria-hidden="true">
+        <div className="route-skeleton-rows">
+          <span className="route-skeleton-line is-title" />
+          {Array.from({ length: 4 }, (_, row) => <span className="route-skeleton-line" key={row} />)}
+        </div>
+      </aside>
+    </main>;
+  }
+
+  return <main className="marketplace-page market-page-with-bottom-dock" aria-busy="true" aria-label="Loading listings">
+    <BrowseRailSkeleton />
+    <section className="market-results">
+      <BrowseIntroSkeleton />
+      <MobileRailSkeleton cells={6} className="" />
+      <BrowseToolbarSkeleton chips={4} />
+      <div className="product-grid" aria-hidden="true">
+        {Array.from({ length: 8 }, (_, card) => <article className="route-skeleton-card ui-card" key={card}>
           <div className="route-skeleton-tile" />
           <span className="route-skeleton-line is-title" />
           <span className="route-skeleton-line" />
           <span className="route-skeleton-line is-title" />
         </article>)}
-      </div>}
+      </div>
     </section>
   </main>;
+}
+
+/** The rail every browse surface opens with: the two location selects, then
+ *  the filter menu. It hides itself below 768px exactly as the real one does. */
+function BrowseRailSkeleton() {
+  return <aside className="market-filter-panel" aria-hidden="true">
+    <div className="browse-filter-sidebar">
+      <div className="browse-filter-sidebar-location">
+        <section className="filter-block location-block">
+          <span className="route-skeleton-line is-title" />
+          <span className="route-skeleton-field" />
+          <span className="route-skeleton-field" />
+        </section>
+      </div>
+      <div className="browse-filter-sidebar-menu">
+        {[5, 8].map((rows, block) => <section className="filter-block" key={block}>
+          <span className="route-skeleton-line is-title" />
+          {Array.from({ length: rows }, (_, row) => <span className="route-skeleton-field" key={row} />)}
+        </section>)}
+      </div>
+    </div>
+  </aside>;
+}
+
+/** The swipeable category rail phones get above the toolbar. */
+function MobileRailSkeleton({ cells, className }: { cells: number; className: string }) {
+  return <section className={`mobile-browse-category-section ${className}`} aria-hidden="true">
+    <div className="mobile-browse-category-rail">
+      {Array.from({ length: cells }, (_, cell) => <span className="mobile-browse-category" key={cell}>
+        <span className="mobile-browse-category-icon"><span className="route-skeleton-glyph" /></span>
+        <span className="route-skeleton-line" />
+      </span>)}
+    </div>
+  </section>;
+}
+
+/** The heading, its one line of copy, and the create button beside them. */
+function BrowseIntroSkeleton() {
+  return <div className="browse-intro browse-intro--with-create" aria-hidden="true">
+    <div className="browse-intro-copy">
+      <span className="route-skeleton-heading" />
+      <span className="route-skeleton-line" />
+    </div>
+    <span className="route-skeleton-field route-skeleton-cta" />
+  </div>;
+}
+
+/** View toggle on the left, filter chips beside it. */
+function BrowseToolbarSkeleton({ chips }: { chips: number }) {
+  return <div className="market-toolbar" aria-hidden="true">
+    <div className="market-toolbar-top">
+      <span className="route-skeleton-field route-skeleton-toggle" />
+      <div className="market-chip-row">
+        {Array.from({ length: chips }, (_, chip) => <span className="route-skeleton-field route-skeleton-chip" key={chip} />)}
+      </div>
+    </div>
+  </div>;
 }

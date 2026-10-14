@@ -13248,7 +13248,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
    Shapes mirror the real shell so nothing jumps when the page arrives.
    --------------------------------------------------------------------------- */
 .route-skeleton { width: 100%; min-height: calc(100vh - 70px); display: grid; gap: var(--space-4); margin: 0; padding: var(--space-4); background: var(--color-background); }
-.route-skeleton-rail { display: none; }
 .route-skeleton-body { min-width: 0; display: grid; align-content: start; gap: var(--space-4); }
 .route-skeleton-toolbar { display: grid; gap: var(--space-2); }
 .route-skeleton-rows { display: grid; gap: var(--space-2); }
@@ -13284,8 +13283,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .route-skeleton-line,
 .route-skeleton-field,
 .route-skeleton-tile,
-.route-skeleton-author,
-.route-skeleton-rail > span {
+.route-skeleton-author {
   background: linear-gradient(90deg, var(--neutral-200) 0%, var(--neutral-150) 45%, var(--neutral-200) 90%);
   background-size: 220% 100%;
   animation: infinite-market-shimmer 1.1s ease-in-out infinite;
@@ -13297,20 +13295,36 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .route-skeleton-line,
   .route-skeleton-field,
   .route-skeleton-tile,
-  .route-skeleton-author,
-  .route-skeleton-rail > span { animation: none; }
+  .route-skeleton-author { animation: none; }
 }
 
 .route-skeleton--form { max-width: var(--page-inner-reading-max-width); margin-inline: auto; }
 
-@media (min-width: 768px) {
-  .route-skeleton--browse { grid-template-columns: 232px minmax(0, 1fr); gap: var(--space-4); }
-  .route-skeleton-rail { display: grid; align-content: start; gap: var(--space-3); }
-  .route-skeleton-rail > span { height: var(--control-h-md); border-radius: var(--radius-sm); }
-}
+/* Stand-ins for a specific control, sized from the control itself so the row
+   it sits in keeps its real height. */
+.route-skeleton-cta { width: calc(var(--space-12) * 3.5); height: var(--control-h-xl); border-radius: var(--radius-pill); }
+.route-skeleton-toggle { width: calc(var(--space-12) + var(--space-3)); height: var(--control-h-compact); border-radius: var(--radius-pill); }
+.route-skeleton-chip { width: calc(var(--space-8) * 2); height: var(--control-h-xs); border-radius: var(--radius-pill); }
+.route-skeleton-glyph { width: var(--control-h-md); height: var(--control-h-md); border-radius: var(--radius-md); }
+.route-skeleton-search { width: 100%; height: var(--control-h-xl); border-radius: var(--radius-lg); }
+.browse-intro .route-skeleton-heading { height: var(--control-h-md); }
+.browse-intro .route-skeleton-line { height: var(--space-6); }
+.market-filter-panel .filter-block .route-skeleton-field { height: var(--control-h-lg); border-radius: var(--radius-sm); }
+.browse-filter-sidebar-location .filter-block .route-skeleton-field { height: var(--control-h-xl); border-radius: var(--radius-lg); }
+.market-chip-row .route-skeleton-chip:first-child { width: calc(var(--space-12) + var(--space-2)); }
+.services-category .route-skeleton-line { width: 70%; }
+.services-card-grid .route-skeleton-card { min-height: calc(var(--space-12) * 8); }
+/* Search lists its market results as rows: a thumbnail with the text beside
+   it, not the stacked card the grid uses. */
+.global-search-market-list .route-skeleton-card { grid-template-columns: calc(var(--space-12) * 3) minmax(0, 1fr); align-items: center; }
+.global-search-market-list .route-skeleton-card .route-skeleton-tile { grid-row: span 2; aspect-ratio: 4 / 3; }
 
-@media (min-width: 1024px) {
-  .route-skeleton--browse { grid-template-columns: 272px minmax(0, 1fr); }
+/* The phone intro is one compact block: the heading and its line shrink, and
+   the create button is not in the row at all. */
+@media (max-width: 767.98px) {
+  .browse-intro .route-skeleton-heading { height: var(--control-h-xs); }
+  .browse-intro .route-skeleton-line { height: var(--space-5); }
+  .browse-intro .route-skeleton-cta { display: none; }
 }
 
 /* ---------------------------------------------------------------------------
