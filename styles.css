@@ -174,7 +174,7 @@ a {
 @media (min-width: 768px) and (max-width: 1023.98px) {
   :root { --desktop-header-height: 64px; }
 
-  .site-header { border-bottom: 0; background: var(--neutral-50); }
+  .site-header { background: var(--neutral-50); }
   /* One row, the way every other breakpoint reads it: brand on the left, the
      search in the middle, account controls on the right. The stacked variant
      this replaces centred the logo over a full-width search row, which cost
@@ -366,14 +366,14 @@ a {
   background: radial-gradient(circle at 35% 24%, var(--neutral-50) 0%, var(--neutral-50) 38%, var(--neutral-150) 100%);
   color: var(--ink);
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
   transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
 .nav-menu-button:hover {
   border-color: rgba(0, 88, 176, 0.38);
   background: radial-gradient(circle at 35% 24%, var(--neutral-50) 0%, var(--neutral-100) 36%, var(--neutral-200) 100%);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.78);
   transform: translateY(-1px);
 }
 
