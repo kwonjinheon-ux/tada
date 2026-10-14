@@ -18,13 +18,16 @@ export default async function CommunityPostPage({ params, searchParams }: { para
   const requestedSearchParams = await searchParams;
   const category = communityPostCategorySchema.safeParse(requestedSearchParams.category);
   const initialAction = requestedSearchParams.action === "edit" || requestedSearchParams.action === "delete" ? requestedSearchParams.action : undefined;
-  const relatedCategory = category.success ? category.data : undefined;
+  // Arriving from a category list puts it on the URL, but a post opened from
+  // search, a share or the recent rail carries none — and it is the post own
+  // category that decides what else belongs under it.
+  const urlCategory = category.success ? category.data : undefined;
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     const postRequest = async () => {
-      const current = await supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,title,body,region_city,region_suburb,event_start_at,event_end_at,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
+      const current = await supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,category_slug,title,body,region_city,region_suburb,event_start_at,event_end_at,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
       if (current.error?.code !== "42703" && current.error?.code !== "PGRST204") return current;
-      return supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,title,body,region_city,region_suburb,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
+      return supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,category_slug,title,body,region_city,region_suburb,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
     };
     // The post and verified user can be fetched together; engagement reads
     // depend on the user, while image signing only depends on the post.
@@ -58,11 +61,12 @@ export default async function CommunityPostPage({ params, searchParams }: { para
       const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: sanitizePostHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), eventDate: formatCommunityEventSchedule("event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null, "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       detail.eventStartAt = "event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null;
       detail.eventEndAt = "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null;
-      return <CommunityPostDetailClient post={detail} relatedCategory={relatedCategory} initialAction={initialAction} />;
+      const postCategory = communityPostCategorySchema.safeParse("category_slug" in post ? post.category_slug : null);
+      return <CommunityPostDetailClient post={detail} relatedCategory={urlCategory ?? (postCategory.success ? postCategory.data : undefined)} initialAction={initialAction} />;
     }
   }
 
   const fallback = communityPosts.find((post) => post.id === postId);
   if (!fallback) notFound();
-  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: sanitizePostHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? "Recently", eventDate: fallback.eventDate, authorName: null, authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, score: fallback.score ?? 0, myVote: fallback.myVote ?? 0, shareCount: fallback.shareCount ?? 0, responseCount: fallback.responseCount ?? 0, isOwner: false, isSaved: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} relatedCategory={relatedCategory} initialAction={initialAction} />;
+  return <CommunityPostDetailClient post={{ id: fallback.id, type: fallback.type, title: fallback.title, body: sanitizePostHtml(fallback.excerpt), location: fallback.location, createdAt: fallback.timeAgo ?? "Recently", eventDate: fallback.eventDate, authorName: null, authorAvatarUrl: null, viewCount: fallback.viewCount ?? 0, score: fallback.score ?? 0, myVote: fallback.myVote ?? 0, shareCount: fallback.shareCount ?? 0, responseCount: fallback.responseCount ?? 0, isOwner: false, isSaved: false, images: fallback.image ? [{ src: fallback.image, alt: fallback.imageAlt ?? fallback.title }] : [] }} relatedCategory={urlCategory} initialAction={initialAction} />;
 }
