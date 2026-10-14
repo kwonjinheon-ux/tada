@@ -17,9 +17,14 @@ type UseProfileMainLocationOptions = {
 export function useProfileMainLocation({ hasMainLocationInUrl, mainLocation, onResolve, enabled = true }: UseProfileMainLocationOptions) {
   const onResolveRef = useRef(onResolve);
   useEffect(() => { onResolveRef.current = onResolve; }, [onResolve]);
+  // The default is a starting point, not a correction. Once it has been
+  // applied the reader owns the filter: choosing All New Zealand leaves no
+  // location on the URL, which otherwise looks exactly like a fresh visit and
+  // put the profile area straight back.
+  const hasAppliedDefault = useRef(false);
 
   useEffect(() => {
-    if (!enabled || hasMainLocationInUrl || mainLocation) return;
+    if (!enabled || hasAppliedDefault.current || hasMainLocationInUrl || mainLocation) return;
     let cancelled = false;
 
     void (async () => {
@@ -35,6 +40,7 @@ export function useProfileMainLocation({ hasMainLocationInUrl, mainLocation, onR
       const profileMainLocation = findMainLocation(profile?.main_location) ?? findMainLocation(profile?.region_city);
       if (!cancelled && !error && profileMainLocation) {
         const suburb = findSubLocation(profileMainLocation, profile?.sub_location) ?? findSubLocation(profileMainLocation, profile?.region_suburb) ?? "";
+        hasAppliedDefault.current = true;
         onResolveRef.current(profileMainLocation, suburb);
       }
     })().catch(() => undefined);

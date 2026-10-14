@@ -48,7 +48,7 @@ export function ServicesPageClient() {
 
       const { data, error } = await supabase
         .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,business_name,description,phone,email,website,street_address,provider_type,service_areas,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
+        .select("id,owner_id,category_slug,provider_name,business_name,description,phone,email,website,street_address,provider_type,service_areas,suburbs,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
         .order("created_at", { ascending: false });
       if (error || !data || !isCurrent) return;
 
@@ -97,6 +97,8 @@ export function ServicesPageClient() {
           // column; only this line changes once the flag is stored.
           isVerified: true,
           location: listing.service_areas[0] ?? "New Zealand",
+          serviceAreas: listing.service_areas ?? [],
+          suburbs: listing.suburbs ?? [],
           price: listing.price_from === null || !listing.price_unit ? (locale === "ko" ? "가격 문의" : "Contact for pricing") : serviceDetailsSummary(listing.category_slug as ServiceCategoryId, { price_from: String(listing.price_from), price_unit: listing.price_unit }, locale)[0]?.value ?? (locale === "ko" ? "가격 문의" : "Contact for pricing"),
           imageAlt: listing.provider_name,
         } satisfies ServiceListing;
@@ -121,14 +123,24 @@ export function ServicesPageClient() {
   }, []);
   const visibleServices = useMemo(() => {
     const sourceServices = databaseServices ?? [];
+    // A provider covering the whole country, or one that never named an area,
+    // stays in every list; naming areas is what narrows it.
+    const servesLocation = (service: ServiceListing) => {
+      if (!mainLocation) return true;
+      const areas = service.serviceAreas ?? [];
+      if (areas.length && !areas.includes("All New Zealand") && !areas.includes(mainLocation)) return false;
+      const suburbs = service.suburbs ?? [];
+      return !subLocation || !suburbs.length || suburbs.includes(subLocation);
+    };
     const matches = sourceServices.filter((service) => (activeCategory === "all" || service.category === activeCategory)
+      && servesLocation(service)
       && (filters.providerType === "all" || service.providerType === filters.providerType)
       && (filters.availability === "all" || service.availability === filters.availability)
       && (!filters.verified || service.badges.includes("verified"))
       && (!filters.highlyRated || service.badges.includes("highlyRated"))
       && (!filters.fastResponder || service.badges.includes("fastResponder")));
     return [...matches].sort((a, b) => sort === "highest-rated" ? b.rating - a.rating || b.reviewCount - a.reviewCount : sort === "most-reviewed" ? b.reviewCount - a.reviewCount : sort === "newest" ? Number(b.badges.includes("new")) - Number(a.badges.includes("new")) : b.rating * b.reviewCount - a.rating * a.reviewCount);
-  }, [activeCategory, databaseServices, filters, sort]);
+  }, [activeCategory, databaseServices, filters, mainLocation, subLocation, sort]);
 
   // Picking a category closes the rail and takes the reader straight to the
   // filtered list, which on a phone is otherwise hidden behind the drawer.

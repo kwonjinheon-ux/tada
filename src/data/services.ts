@@ -32,6 +32,10 @@ export type ServiceListing = {
    *  until `service_listings` carries its own verification column. */
   isVerified?: boolean;
   location?: string;
+  /** The regions the provider works in, and the suburbs within them. The card
+   *  shows the first area; the rail filters on the whole list. */
+  serviceAreas?: string[];
+  suburbs?: string[];
   price?: string;
   imageAlt?: string;
   isOwner?: boolean;

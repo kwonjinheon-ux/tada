@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCategoryRail";
 import { CommunityBrowseIntro } from "@/components/community/CommunityBrowseIntro";
@@ -46,48 +46,39 @@ const buildFeedCacheKey = ({ category, search, searchBy, mainLocation, subLocati
 
 export function CommunityPageClient({ initialCategory = "all", initialFeed = null, initialFeedQuery }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null; initialFeedQuery?: Parameters<typeof buildFeedCacheKey>[0] }) {
   const { t, locale } = useLanguage();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("q")?.trim().slice(0, 60) ?? "";
-  const searchBy = searchParams.get("searchBy") ?? "all";
-  const requestedCategory = searchParams.get("category");
-  const urlCategory = communityCategories.some(({ value }) => value === requestedCategory) ? requestedCategory as CommunityCategory : "all";
-  const requestedPage = Number(searchParams.get("page") ?? "1");
-  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const resultsRef = useRef<HTMLElement>(null);
-  // Choosing a category rewrites the URL with history.pushState so the feed can
-  // be fetched here instead of paying for an RSC navigation of a force-dynamic
-  // page. The App Router does not observe that write, though, so useSearchParams
-  // keeps returning the old query and everything derived from it goes stale —
-  // the category never loaded. The choice is held here until a real navigation
-  // (a router call, or Back/Forward) makes the URL authoritative again.
-  const [selection, setSelection] = useState<{ category: CommunityCategory; sort?: "recent" | "trending" } | null>(null);
-  useEffect(() => { setSelection(null); }, [searchParams]);
+  // A filter rewrites the URL with history.pushState so the feed can be fetched
+  // here instead of paying for an RSC navigation of a force-dynamic page. The
+  // App Router does not observe that write, though, so useSearchParams keeps
+  // returning the query the page was served with and everything derived from it
+  // goes stale — the category never loaded, and choosing a location afterwards
+  // rebuilt the URL from the old query and dropped it. The pushed query is held
+  // here until a real navigation (a router call, or Back/Forward) makes the URL
+  // authoritative again.
+  const [pushedSearch, setPushedSearch] = useState<string | null>(null);
+  useEffect(() => { setPushedSearch(null); }, [searchParams]);
   useEffect(() => {
-    const syncFromUrl = () => setSelection(null);
+    const syncFromUrl = () => setPushedSearch(null);
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
-  const urlSort = searchParams.get("sort");
-  const activeCategory = selection?.category ?? urlCategory;
-  const activeSort = selection ? selection.sort : urlSort === "recent" || urlSort === "trending" ? urlSort : undefined;
+  const activeSearch = pushedSearch ?? searchParams.toString();
+  const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
+  const searchQuery = activeParams.get("q")?.trim().slice(0, 60) ?? "";
+  const searchBy = activeParams.get("searchBy") ?? "all";
+  const requestedCategory = activeParams.get("category");
+  const activeCategory = communityCategories.some(({ value }) => value === requestedCategory) ? requestedCategory as CommunityCategory : "all";
+  const requestedPage = Number(activeParams.get("page") ?? "1");
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const urlSort = activeParams.get("sort");
+  const activeSort = urlSort === "recent" || urlSort === "trending" ? urlSort : undefined;
   const activeChip = activeSort ?? (activeCategory === "recommendations" ? "recommendations" : "all");
-  // The query actually on screen, which the pushed-URL writes above have made
-  // the router unaware of. Pagination links are built from it so they keep the
-  // category being read rather than the one the page was served with.
-  const activeSearch = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (!selection) return params.toString();
-    params.delete("page");
-    if (selection.sort) params.set("sort", selection.sort); else params.delete("sort");
-    if (selection.category === "all") params.delete("category"); else params.set("category", selection.category);
-    return params.toString();
-  }, [searchParams, selection]);
-  const requestedLocation = searchParams.get("mainLocation");
+  const requestedLocation = activeParams.get("mainLocation");
   const mainLocation: MainLocation | "" = NZ_MAIN_LOCATIONS.find((location) => location === requestedLocation) ?? "";
-  const subLocation = searchParams.get("subLocation") ?? "";
+  const subLocation = activeParams.get("subLocation") ?? "";
   const [feed, setFeed] = useState<CommunityFeedResult>(initialFeed ?? { posts: [], totalCount: 0, page: 1, totalPages: 1 });
   const [isLoadingPosts, setIsLoadingPosts] = useState(!initialFeed);
   // Seeding the cache with the server-rendered feed keeps the first paint from
@@ -100,42 +91,30 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     setViewMode(mode);
     saveListingViewPreference(mode, "community");
   };
-  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "", isProfileDefault = false) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("page");
-    // An explicit empty value preserves "All New Zealand" across navigation.
-    params.set("mainLocation", nextMainLocation);
-    if (isProfileDefault) params.delete("subLocation");
-    else params.set("subLocation", nextSubLocation);
-    router.replace(`/community${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+  /** The cache key the feed effect will look up for a set of filters. */
+  const feedCacheKeyFor = (params: URLSearchParams) => {
+    const category = params.get("category");
+    const sort = params.get("sort");
+    const requested = Number(params.get("page") ?? "1");
+    return buildFeedCacheKey({
+      category: communityCategories.some(({ value }) => value === category) ? category as CommunityCategory : "all",
+      search: params.get("q")?.trim().slice(0, 60) ?? "",
+      searchBy: params.get("searchBy") ?? "all",
+      mainLocation: params.get("mainLocation") ?? "",
+      subLocation: params.get("subLocation") ?? "",
+      sort: sort === "recent" || sort === "trending" ? sort : undefined,
+      page: Number.isSafeInteger(requested) && requested > 0 ? requested : 1,
+    });
   };
-  useProfileMainLocation({
-    hasMainLocationInUrl: searchParams.has("mainLocation") || searchParams.has("subLocation"),
-    mainLocation,
-    onResolve: (location) => chooseLocation(location, "", true),
-  });
-  const updateCategoryUrl = (category: CommunityCategory, sort?: "recent" | "trending") => {
-    const params = new URLSearchParams(window.location.search);
-    params.delete("page");
-    if (sort) params.set("sort", sort);
-    else params.delete("sort");
-    if (category === "all") params.delete("category");
-    else params.set("category", category);
+  /** Puts a filter change on the URL without asking the server for the page. */
+  const applyBrowseParams = (params: URLSearchParams, { replace = false } = {}) => {
     const query = params.toString();
     const nextUrl = `/community${query ? `?${query}` : ""}`;
     if (`${window.location.pathname}${window.location.search}` === nextUrl) return;
 
-    const nextPage = 1;
-    const nextSearch = params.get("q")?.trim().slice(0, 60) ?? "";
-    const nextSearchBy = params.get("searchBy") ?? "all";
-    const nextMainLocation = params.get("mainLocation") ?? "";
-    const nextSubLocation = params.get("subLocation") ?? "";
-    const nextSort = sort;
-    const cacheKey = buildFeedCacheKey({ category, search: nextSearch, searchBy: nextSearchBy, mainLocation: nextMainLocation, subLocation: nextSubLocation, sort: nextSort, page: nextPage });
-    const cachedFeed = postFeedCache.current.get(cacheKey);
-
-    window.history.pushState(window.history.state, "", nextUrl);
-    setSelection({ category, sort });
+    window.history[replace ? "replaceState" : "pushState"](window.history.state, "", nextUrl);
+    setPushedSearch(query);
+    const cachedFeed = postFeedCache.current.get(feedCacheKeyFor(params));
     if (cachedFeed && Date.now() - cachedFeed.cachedAt < POST_FEED_CACHE_TTL_MS) {
       setFeed(cachedFeed.feed);
       setIsLoadingPosts(false);
@@ -143,6 +122,38 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
       setFeed({ posts: [], totalCount: 0, page: 1, totalPages: 1 });
       setIsLoadingPosts(true);
     }
+  };
+  /** The filters on screen, ready to be amended. Read from the address bar
+   *  rather than the router, which has not seen the pushed writes. */
+  const nextBrowseParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("page");
+    return params;
+  };
+  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "", isProfileDefault = false) => {
+    const params = nextBrowseParams();
+    // An explicit empty value preserves "All New Zealand" across navigation:
+    // a URL with no location at all is a first visit, which is when the
+    // signed-in profile area gets filled in.
+    params.set("mainLocation", nextMainLocation);
+    if (isProfileDefault) params.delete("subLocation");
+    else params.set("subLocation", nextSubLocation);
+    // The profile default is not a choice the reader made, so it does not earn
+    // its own history entry.
+    applyBrowseParams(params, { replace: isProfileDefault });
+  };
+  useProfileMainLocation({
+    hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
+    mainLocation,
+    onResolve: (location) => chooseLocation(location, "", true),
+  });
+  const updateCategoryUrl = (category: CommunityCategory, sort?: "recent" | "trending") => {
+    const params = nextBrowseParams();
+    if (sort) params.set("sort", sort);
+    else params.delete("sort");
+    if (category === "all") params.delete("category");
+    else params.set("category", category);
+    applyBrowseParams(params);
   };
   const chooseCategory = (category: CommunityCategory) => {
     updateCategoryUrl(category);

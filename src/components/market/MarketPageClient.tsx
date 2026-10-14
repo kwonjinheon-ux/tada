@@ -261,12 +261,15 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
     const params = nextBrowseParams();
-    if (nextMainLocation) params.set("mainLocation", nextMainLocation); else params.delete("mainLocation");
-    if (nextSubLocation) params.set("subLocation", nextSubLocation); else params.delete("subLocation");
+    // Written even when empty: All New Zealand is a choice, and a URL that
+    // simply omits the location is indistinguishable from a first visit, which
+    // is when the signed-in profile area gets filled in.
+    params.set("mainLocation", nextMainLocation);
+    params.set("subLocation", nextSubLocation);
     applyBrowseParams(params, { replace });
   };
   useProfileMainLocation({
-    hasMainLocationInUrl: activeParams.has("mainLocation"),
+    hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
     mainLocation,
     // The profile default is not a choice the reader made, so it does not earn
     // its own history entry.

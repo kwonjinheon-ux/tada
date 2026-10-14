@@ -25,6 +25,19 @@ export function CommunityDesktopLayout({ children, activeCategory = "all" }: Com
     const query = category === "all" ? "" : `?category=${encodeURIComponent(category)}`;
     router.push(`/community${query}`);
   };
+  // This rail sits beside a single post, so a location has nothing to filter
+  // until it reaches the browse page — the same jump the categories make. The
+  // empty value is written out too, so All New Zealand reads as a choice and
+  // not as a first visit waiting for the profile area.
+  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+    setMainLocation(nextMainLocation);
+    setSubLocation(nextSubLocation);
+    const params = new URLSearchParams();
+    if (activeCategory !== "all") params.set("category", activeCategory);
+    params.set("mainLocation", nextMainLocation);
+    params.set("subLocation", nextSubLocation);
+    router.push(`/community?${params.toString()}`);
+  };
 
   useEffect(() => {
     const openCategories = (event: Event) => {
@@ -50,10 +63,7 @@ export function CommunityDesktopLayout({ children, activeCategory = "all" }: Com
           onCategorySelect={(category) => { setIsMobileCategoryOpen(false); chooseCategory(category); }}
           mainLocation={mainLocation}
           subLocation={subLocation}
-          onLocationChange={(nextMainLocation, nextSubLocation = "") => {
-            setMainLocation(nextMainLocation);
-            setSubLocation(nextSubLocation);
-          }}
+          onLocationChange={chooseLocation}
         />
       </MobileDrawer>
       <aside className="market-filter-panel community-desktop-filter-panel" aria-label="Community filters">
@@ -62,10 +72,7 @@ export function CommunityDesktopLayout({ children, activeCategory = "all" }: Com
           onCategorySelect={chooseCategory}
           mainLocation={mainLocation}
           subLocation={subLocation}
-          onLocationChange={(nextMainLocation, nextSubLocation = "") => {
-            setMainLocation(nextMainLocation);
-            setSubLocation(nextSubLocation);
-          }}
+          onLocationChange={chooseLocation}
         />
       </aside>
       <section className="market-results community-results community-desktop-main">{children}</section>

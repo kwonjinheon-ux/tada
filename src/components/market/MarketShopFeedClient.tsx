@@ -66,19 +66,21 @@ export function MarketShopFeedClient({ shopType, basePath, listings, savedListin
     return () => window.removeEventListener(mobileDrawerEvents.dashboardState, syncDashboardDrawer);
   }, []);
 
-  const updateParams = useCallback((changes: Record<string, string | null>) => {
+  const updateParams = useCallback((changes: Record<string, string | null>, { keepEmpty = false } = {}) => {
     const params = new URLSearchParams(searchParams.toString());
-    Object.entries(changes).forEach(([key, value]) => { if (value) params.set(key, value); else params.delete(key); });
+    Object.entries(changes).forEach(([key, value]) => { if (value || (keepEmpty && value !== null)) params.set(key, value ?? ""); else params.delete(key); });
     router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
   }, [basePath, router, searchParams]);
   const chooseCategory = (categorySlug: string) => { updateParams({ category: categorySlug === "all" ? null : categorySlug }); setIsFilterOpen(false); };
   const changeLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
-    updateParams({ mainLocation: nextMainLocation || null, subLocation: nextSubLocation || null });
+    // Kept on the URL even when empty, so All New Zealand reads as a choice
+    // rather than as a first visit waiting for the profile area.
+    updateParams({ mainLocation: nextMainLocation, subLocation: nextSubLocation }, { keepEmpty: true });
   };
   useProfileMainLocation({
-    hasMainLocationInUrl: searchParams.has("mainLocation"),
+    hasMainLocationInUrl: searchParams.has("mainLocation") || searchParams.has("subLocation"),
     mainLocation,
     onResolve: (profileMainLocation) => changeLocation(profileMainLocation, subLocation),
   });
