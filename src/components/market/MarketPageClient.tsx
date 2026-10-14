@@ -1,17 +1,19 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MobileDrawerBackdrop, mobileDrawerEvents } from "@/components/MobileDrawer";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
 import { ProductCard } from "@/components/ProductCard";
 import { AdSlot } from "@/components/advertising/AdSlot";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { MarketFilterSidebar, marketShopTypes, type ShopType } from "@/components/market/MarketFilterSidebar";
 import { MarketShopTypeRail } from "@/components/market/MarketShopTypeRail";
 import { MarketBrowseIntro } from "@/components/market/MarketBrowseIntro";
 import { BrowseResultsToolbar } from "@/components/browse/BrowseResultsToolbar";
 import { marketSortOptions } from "@/lib/market/sort-options";
+import { marketFeedResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -21,26 +23,65 @@ import { readListingViewPreference, saveListingViewPreference, type ListingViewM
 
 const priceFilterMaximum = 5000;
 const conditionFilters = ["all", "brand_new", "like_new", "excellent", "good", "fair"] as const;
+const FEED_CACHE_TTL_MS = 30_000;
+// Fixed order, so the same filters always produce the same key no matter which
+// control set them.
+const FEED_PARAM_KEYS = ["q", "category", "subcategory", "maxPrice", "condition", "mainLocation", "subLocation", "sort"] as const;
+
+type MarketFeedState = { listings: Listing[]; savedListingIds: string[]; page: number; totalPages: number };
+
+/** The feed request a browse URL stands for; doubles as the cache key. */
+function buildFeedQuery(search: string, shopType: ShopType) {
+  const source = new URLSearchParams(search);
+  const params = new URLSearchParams();
+  for (const key of FEED_PARAM_KEYS) {
+    const value = source.get(key)?.trim();
+    if (value) params.set(key, value);
+  }
+  const requestedPage = Number(source.get("page"));
+  params.set("page", String(Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1));
+  if (shopType === "all") params.set("shopType", "all");
+  return params.toString();
+}
 
 export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1 }: { page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[] }) {
   const { locale, t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlSearchQuery = searchParams.get("q") ?? "";
-  const selectedCategory = searchParams.get("category") ?? "all";
-  const appliedMaxPrice = Number(searchParams.get("maxPrice")) || priceFilterMaximum;
-  const appliedCondition = conditionFilters.includes(searchParams.get("condition") as typeof conditionFilters[number]) ? searchParams.get("condition")! : "all";
+  // Filters rewrite the URL with history.pushState so the feed can be fetched
+  // here instead of paying for an RSC navigation of a force-dynamic page. The
+  // App Router does not observe that write, though, so useSearchParams keeps
+  // returning the query the page was served with and everything derived from it
+  // goes stale. The pushed query is held here until a real navigation (a router
+  // call, or Back/Forward) makes the URL authoritative again.
+  const [pushedSearch, setPushedSearch] = useState<string | null>(null);
+  useEffect(() => { setPushedSearch(null); }, [searchParams]);
+  useEffect(() => {
+    const syncFromUrl = () => setPushedSearch(null);
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
+  const activeSearch = pushedSearch ?? searchParams.toString();
+  const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
+  const urlSearchQuery = activeParams.get("q") ?? "";
+  const selectedCategory = activeParams.get("category") ?? "all";
+  const appliedMaxPrice = Number(activeParams.get("maxPrice")) || priceFilterMaximum;
+  const appliedCondition = conditionFilters.includes(activeParams.get("condition") as typeof conditionFilters[number]) ? activeParams.get("condition")! : "all";
   const [viewMode, setViewMode] = useState<ListingViewMode>("grid");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDashboardDrawerOpen, setIsDashboardDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [maxPrice, setMaxPrice] = useState(appliedMaxPrice);
   const [condition, setCondition] = useState(appliedCondition);
-  const [mainLocation, setMainLocation] = useState<MainLocation | "">((searchParams.get("mainLocation") as MainLocation | null) ?? "");
-  const [subLocation, setSubLocation] = useState(searchParams.get("subLocation") ?? "");
-  const [listings, setListings] = useState(postedListings);
-  const [savedIds, setSavedIds] = useState(savedListingIds);
-  const savedListingIdSet = useMemo(() => new Set(savedIds), [savedIds]);
+  const [mainLocation, setMainLocation] = useState<MainLocation | "">((activeParams.get("mainLocation") as MainLocation | null) ?? "");
+  const [subLocation, setSubLocation] = useState(activeParams.get("subLocation") ?? "");
+  const [feed, setFeed] = useState<MarketFeedState>({ listings: postedListings, savedListingIds, page, totalPages });
+  const [isLoadingListings, setIsLoadingListings] = useState(false);
+  const [feedRevision, setFeedRevision] = useState(0);
+  const feedCache = useRef(new Map<string, { feed: MarketFeedState; cachedAt: number }>());
+  const savedListingIdSet = useMemo(() => new Set(feed.savedListingIds), [feed.savedListingIds]);
+  const feedQuery = buildFeedQuery(activeSearch, shopType);
+  const serverFeedQuery = buildFeedQuery(searchParams.toString(), shopType);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
@@ -52,14 +93,43 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   }, [appliedCondition, appliedMaxPrice]);
 
   useEffect(() => {
-    setMainLocation((searchParams.get("mainLocation") as MainLocation | null) ?? "");
-    setSubLocation(searchParams.get("subLocation") ?? "");
-  }, [searchParams]);
+    setMainLocation((activeParams.get("mainLocation") as MainLocation | null) ?? "");
+    setSubLocation(activeParams.get("subLocation") ?? "");
+  }, [activeParams]);
+
+  // The page already shipped the feed for its own URL, so it is cached under
+  // that query and the first paint does not request it a second time. While a
+  // pushed query is on screen the server props describe a different URL, so
+  // they are only cached, never shown.
+  useEffect(() => {
+    const serverFeed: MarketFeedState = { listings: postedListings, savedListingIds, page, totalPages };
+    feedCache.current.set(serverFeedQuery, { feed: serverFeed, cachedAt: Date.now() });
+    setFeed((current) => (pushedSearch === null ? serverFeed : current));
+  }, [page, postedListings, pushedSearch, savedListingIds, serverFeedQuery, totalPages]);
 
   useEffect(() => {
-    setListings(postedListings);
-    setSavedIds(savedListingIds);
-  }, [postedListings, savedListingIds]);
+    const cached = feedCache.current.get(feedQuery);
+    if (cached && Date.now() - cached.cachedAt < FEED_CACHE_TTL_MS) {
+      setFeed(cached.feed);
+      setIsLoadingListings(false);
+      return;
+    }
+    const controller = new AbortController();
+    setIsLoadingListings(true);
+    // The listings already on screen stay until the new ones land, so changing
+    // a filter does not blank the grid.
+    void fetch(`/api/market/listings?${feedQuery}`, { signal: controller.signal })
+      .then((response) => readApiResponse(response, marketFeedResponseSchema))
+      .then((result) => {
+        if (!result.data) return;
+        const nextFeed: MarketFeedState = { listings: result.data.listings, savedListingIds: result.data.savedListingIds, page: result.data.page ?? 1, totalPages: result.data.totalPages ?? 1 };
+        feedCache.current.set(feedQuery, { feed: nextFeed, cachedAt: Date.now() });
+        setFeed(nextFeed);
+      })
+      .catch(() => undefined)
+      .finally(() => { if (!controller.signal.aborted) setIsLoadingListings(false); });
+    return () => controller.abort();
+  }, [feedQuery, feedRevision]);
 
   useEffect(() => {
     const updateSearch = (event: Event) => setSearchQuery(typeof (event as CustomEvent<string>).detail === "string" ? (event as CustomEvent<string>).detail : "");
@@ -67,16 +137,33 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     return () => window.removeEventListener("market-search-query-change", updateSearch);
   }, []);
 
+  /** Puts a filter change on the URL without asking the server for the page. */
+  const applyBrowseParams = useCallback((params: URLSearchParams, { replace = false } = {}) => {
+    const query = params.toString();
+    const nextUrl = `${basePath}${query ? `?${query}` : ""}`;
+    if (`${window.location.pathname}${window.location.search}` === nextUrl) return;
+    window.history[replace ? "replaceState" : "pushState"](window.history.state, "", nextUrl);
+    setPushedSearch(query);
+  }, [basePath]);
+  /** The current URL's filters, ready to be amended. A filter change always
+   *  lands on the first page: the page it was read from may not exist once the
+   *  result count changes. */
+  const nextBrowseParams = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("cursor");
+    params.delete("page");
+    return params;
+  }, []);
+
   useEffect(() => {
     if (searchQuery === urlSearchQuery) return;
     const timer = window.setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("cursor");
+      const params = nextBrowseParams();
       if (searchQuery.trim()) params.set("q", searchQuery.trim()); else params.delete("q");
-      router.replace(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+      applyBrowseParams(params, { replace: true });
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [basePath, router, searchParams, searchQuery, urlSearchQuery]);
+  }, [applyBrowseParams, nextBrowseParams, searchQuery, urlSearchQuery]);
 
   useEffect(() => {
     if (searchParams.get("filters") !== "open") return;
@@ -99,7 +186,10 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           if (refreshFrame !== null) return;
           refreshFrame = window.requestAnimationFrame(() => {
             refreshFrame = null;
-            router.refresh();
+            // The feed is read here now, so a status change re-reads it instead
+            // of re-rendering the route; a cached page would hide the update.
+            feedCache.current.clear();
+            setFeedRevision((revision) => revision + 1);
           });
         })
         .subscribe();
@@ -110,7 +200,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     } catch {
       return;
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     const setResponsiveView = () => {
@@ -151,43 +241,41 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     saveListingViewPreference(mode);
   };
   const chooseCategory = (categorySlug: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("cursor");
+    const params = nextBrowseParams();
     params.delete("subcategory");
     if (categorySlug === "all") params.delete("category");
     else params.set("category", categorySlug);
-    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
+    applyBrowseParams(params);
     setIsFilterOpen(false);
   };
   const applyFilters = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("cursor");
+    const params = nextBrowseParams();
     if (maxPrice >= priceFilterMaximum) params.delete("maxPrice"); else params.set("maxPrice", String(maxPrice));
     if (condition === "all") params.delete("condition"); else params.set("condition", condition);
     if (mainLocation) params.set("mainLocation", mainLocation); else params.delete("mainLocation");
     if (subLocation) params.set("subLocation", subLocation); else params.delete("subLocation");
-    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
+    applyBrowseParams(params);
     setIsFilterOpen(false);
   };
-  const applyLocationFilter = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+  const applyLocationFilter = (nextMainLocation: MainLocation | "", nextSubLocation = "", { replace = false } = {}) => {
     setMainLocation(nextMainLocation);
     setSubLocation(nextSubLocation);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("cursor");
+    const params = nextBrowseParams();
     if (nextMainLocation) params.set("mainLocation", nextMainLocation); else params.delete("mainLocation");
     if (nextSubLocation) params.set("subLocation", nextSubLocation); else params.delete("subLocation");
-    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`, { scroll: false });
+    applyBrowseParams(params, { replace });
   };
   useProfileMainLocation({
-    hasMainLocationInUrl: searchParams.has("mainLocation"),
+    hasMainLocationInUrl: activeParams.has("mainLocation"),
     mainLocation,
-    onResolve: (profileMainLocation) => applyLocationFilter(profileMainLocation, subLocation),
+    // The profile default is not a choice the reader made, so it does not earn
+    // its own history entry.
+    onResolve: (profileMainLocation) => applyLocationFilter(profileMainLocation, subLocation, { replace: true }),
   });
   const changeSort = (nextSort: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("cursor");
+    const params = nextBrowseParams();
     if (nextSort === "newest") params.delete("sort"); else params.set("sort", nextSort);
-    router.push(`${basePath}${params.size ? `?${params.toString()}` : ""}`);
+    applyBrowseParams(params);
   };
   const chooseShopType = (nextShopType: ShopType) => {
     router.push(marketShopTypes.find(({ value }) => value === nextShopType)?.href ?? "/market");
@@ -207,7 +295,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
       </BrowseFilterDrawer>
       {isDashboardDrawerOpen && <MobileDrawerBackdrop open onClose={() => window.dispatchEvent(new Event(mobileDrawerEvents.dashboardClose))} ariaLabel="Close dashboard menu" className="mobile-dashboard-backdrop mobile-dashboard-content-backdrop" />}
 
-      <section className="market-results" aria-label={t("marketFreshFinds")}>
+      <section className="market-results" aria-label={t("marketFreshFinds")} aria-busy={isLoadingListings}>
         <MarketBrowseIntro shopType={shopType} />
 
         <MarketShopTypeRail activeShopType={shopType} onShopTypeSelect={chooseShopType} />
@@ -215,24 +303,24 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
         <BrowseResultsToolbar
           viewMode={viewMode}
           onViewModeChange={chooseView}
-          sortValue={searchParams.get("sort") ?? "newest"}
+          sortValue={activeParams.get("sort") ?? "newest"}
           sortOptions={marketSortOptions(t)}
           onSortChange={changeSort}
           sortDisplay="chips"
-          resultsLabel={locale === "ko" ? `${listings.length}개 매물` : `${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
+          resultsLabel={locale === "ko" ? `${feed.listings.length}개 매물` : `${feed.listings.length} ${feed.listings.length === 1 ? "listing" : "listings"}`}
         />
 
         <AdSlot placement="market_top" />
 
-        {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
-          {listings.flatMap((listing, index) => [
+        {feed.listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+          {feed.listings.flatMap((listing, index) => [
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />,
             (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,
           ])}
-        </div> : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
+        </div> : isLoadingListings ? null : <div className="market-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("noMatchingListings")}</strong><span>{t("tryDifferentSearch")}</span></div>}
 
-        <ListPagination page={page} totalPages={totalPages} label={t("marketListingPages")} />
-      </section>
+        <ListPagination page={feed.page} totalPages={feed.totalPages} label={t("marketListingPages")} search={activeSearch} />
+      </section>
     </main>
   );
 }

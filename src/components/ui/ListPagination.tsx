@@ -6,15 +6,20 @@ import { pageWindow } from "@/lib/list-pagination";
 
 /** The numbered index under a long list. Every other query param on the URL
  *  survives the jump, so paging does not silently drop the active filter or
- *  the current search. */
-export function ListPagination({ page, totalPages, label = "Pagination" }: { page: number; totalPages: number; label?: string }) {
+ *  the current search.
+ *
+ *  A list that swaps its own feed rewrites the URL with history.pushState,
+ *  which the App Router does not observe — useSearchParams would hand back the
+ *  filters the page was last served with, so those lists pass the query they
+ *  are actually showing as `search`. */
+export function ListPagination({ page, totalPages, label = "Pagination", search }: { page: number; totalPages: number; label?: string; search?: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (totalPages <= 1) return null;
 
   const hrefFor = (target: number) => {
-    const next = new URLSearchParams(searchParams.toString());
+    const next = new URLSearchParams(search ?? searchParams.toString());
     if (target <= 1) next.delete("page");
     else next.set("page", String(target));
     const query = next.toString();

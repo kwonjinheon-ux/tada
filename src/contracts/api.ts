@@ -169,6 +169,11 @@ export const marketFeedResponseSchema = z.object({
   listings: z.array(marketFeedListingSchema),
   savedListingIds: z.array(uuidSchema),
   nextCursor: z.string().nullable(),
+  // Only the numbered-page request reports a position in the feed; the
+  // cursor-based one has no page to report.
+  total: z.number().int().nonnegative().optional(),
+  page: z.number().int().min(1).optional(),
+  totalPages: z.number().int().min(1).optional(),
 });
 
 export const communityPostCategorySchema = z.enum([

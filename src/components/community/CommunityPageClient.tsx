@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseFilterDrawer } from "@/components/browse/BrowseFilterDrawer";
@@ -74,6 +74,17 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   const activeCategory = selection?.category ?? urlCategory;
   const activeSort = selection ? selection.sort : urlSort === "recent" || urlSort === "trending" ? urlSort : undefined;
   const activeChip = activeSort ?? (activeCategory === "recommendations" ? "recommendations" : "all");
+  // The query actually on screen, which the pushed-URL writes above have made
+  // the router unaware of. Pagination links are built from it so they keep the
+  // category being read rather than the one the page was served with.
+  const activeSearch = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!selection) return params.toString();
+    params.delete("page");
+    if (selection.sort) params.set("sort", selection.sort); else params.delete("sort");
+    if (selection.category === "all") params.delete("category"); else params.set("category", selection.category);
+    return params.toString();
+  }, [searchParams, selection]);
   const requestedLocation = searchParams.get("mainLocation");
   const mainLocation: MainLocation | "" = NZ_MAIN_LOCATIONS.find((location) => location === requestedLocation) ?? "";
   const subLocation = searchParams.get("subLocation") ?? "";
@@ -237,7 +248,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
             : visiblePosts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} href={activeCategory === "all" ? undefined : `/community/${post.id}?category=${activeCategory}`} />)}
         </div> : <CommunityEmptyState category={activeCategory} />}
         <div className="community-list-footer">
-          <ListPagination page={feed.page} totalPages={feed.totalPages} label={locale === "ko" ? "커뮤니티 글 페이지" : "Community post pages"} />
+          <ListPagination page={feed.page} totalPages={feed.totalPages} label={locale === "ko" ? "커뮤니티 글 페이지" : "Community post pages"} search={activeSearch} />
           <ListSearchField
             placeholder={t("searchCommunity")}
             label={t("searchCommunity")}
