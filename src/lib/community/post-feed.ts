@@ -88,35 +88,50 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     return countRequest;
   })() : Promise.resolve({ count: null, error: null });
 
-  const rankedPostIdsRequest = isDirectQuery ? null : supabase.rpc(isPaged ? "get_paged_ranked_community_post_ids" : "get_ranked_community_post_ids", {
+  // The ranking returns the rows themselves. Asking it for ids and then reading
+  // those ids back cost a second sequential round trip — the slowest step left
+  // on the feed's critical path once avatar signing was cached.
+  const rankedArgs = (offset: number) => ({
     p_category_slug: category,
     p_region_city: mainLocation,
     p_region_suburb: subLocation,
     p_limit: isPaged ? LIST_PAGE_SIZE : 40,
-    ...(isPaged ? { p_offset: pageRange(requestedPage).from } : {}),
+    p_offset: offset,
   });
+  const rankedPostsRequest = isDirectQuery ? null : supabase.rpc("get_ranked_community_posts", rankedArgs(isPaged ? pageRange(requestedPage).from : 0));
   const userRequest = isRecentFeed ? Promise.resolve({ data: { user: null } }) : supabase.auth.getUser();
-  const [{ count, error: countError }, { data: rankedPostIds, error: rankedPostIdsError }, { data: { user } }] = await Promise.all([
+  const [{ count, error: countError }, { data: rankedPosts, error: rankedPostsError }, { data: { user } }] = await Promise.all([
     countRequest,
-    rankedPostIdsRequest ?? Promise.resolve({ data: [], error: null }),
+    rankedPostsRequest ?? Promise.resolve({ data: [], error: null }),
     userRequest,
   ]);
   if (countError) throw countError;
-  if (rankedPostIdsError) throw rankedPostIdsError;
+  // Until the row-returning function is in place the older id-only pair is
+  // still there, so a deployment that runs ahead of its migration keeps
+  // working rather than serving an empty feed.
+  const needsIdFallback = Boolean(rankedPostsError) && rankedPostsError?.code === "PGRST202";
+  if (rankedPostsError && !needsIdFallback) throw rankedPostsError;
   const totalCount = isPaged ? count ?? 0 : 0;
   const totalPages = totalPageCount(totalCount);
   const page = isPaged ? Math.min(requestedPage, totalPages) : 1;
-  let orderedPostIds = (rankedPostIds ?? []).map((post: { id: string }) => post.id);
-  if (rankedPostIdsRequest && page !== requestedPage) {
-    const { data: lastPageIds, error: lastPageError } = await supabase.rpc("get_paged_ranked_community_post_ids", {
+
+  let rankedRows = (rankedPosts ?? []) as CommunityPostRow[];
+  let orderedPostIds: string[] = [];
+  if (!isDirectQuery && needsIdFallback) {
+    const { data: fallbackIds, error: fallbackError } = await supabase.rpc(isPaged ? "get_paged_ranked_community_post_ids" : "get_ranked_community_post_ids", {
       p_category_slug: category,
       p_region_city: mainLocation,
       p_region_suburb: subLocation,
-      p_limit: LIST_PAGE_SIZE,
-      p_offset: pageRange(page).from,
+      p_limit: isPaged ? LIST_PAGE_SIZE : 40,
+      ...(isPaged ? { p_offset: pageRange(page).from } : {}),
     });
+    if (fallbackError) throw fallbackError;
+    orderedPostIds = (fallbackIds ?? []).map((post: { id: string }) => post.id);
+  } else if (rankedPostsRequest && page !== requestedPage) {
+    // The requested page was past the end; re-read at the clamped offset.
+    const { data: lastPageRows, error: lastPageError } = await supabase.rpc("get_ranked_community_posts", rankedArgs(pageRange(page).from));
     if (lastPageError) throw lastPageError;
-    orderedPostIds = (lastPageIds ?? []).map((post: { id: string }) => post.id);
+    rankedRows = (lastPageRows ?? []) as CommunityPostRow[];
   }
 
   const loadPosts = async (columns: string) => {
@@ -141,7 +156,10 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     request = isPaged ? request.range(pageRange(page).from, pageRange(page).to) : request.limit(search ? 100 : isRecentFeed ? 10 : 40);
     return request;
   };
-  let { data: unorderedPostsData, error } = await loadPosts(POST_COLUMNS);
+  // The ranked path already holds its rows in order; only a search, a sort or
+  // the id fallback still has to read the table.
+  const needsPostRead = isDirectQuery || orderedPostIds.length > 0;
+  let { data: unorderedPostsData, error } = needsPostRead ? await loadPosts(POST_COLUMNS) : { data: [], error: null };
   if (error?.code === "42703" || error?.code === "PGRST204") {
     ({ data: unorderedPostsData, error } = await loadPosts(LEGACY_POST_COLUMNS));
   }
@@ -149,10 +167,10 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
 
   const unorderedPosts = (unorderedPostsData ?? []) as CommunityPostRow[];
   const postsById = new Map(unorderedPosts.map((post) => [post.id, post]));
-  const data: CommunityPostRow[] = isDirectQuery ? unorderedPosts : orderedPostIds.flatMap((postId: string) => {
+  const data: CommunityPostRow[] = isDirectQuery ? unorderedPosts : orderedPostIds.length ? orderedPostIds.flatMap((postId: string) => {
     const post = postsById.get(postId);
     return post ? [post] : [];
-  });
+  }) : rankedRows;
   const postIds = data.map((post) => post.id);
   if (!postIds.length) return { posts: [], totalCount, page, totalPages };
 
