@@ -6,6 +6,9 @@ type AvatarProps = {
   alt?: string;
   className?: string;
   initials?: "single" | "double";
+  /** An anonymous author has no face to show and no initial worth showing:
+   *  the name is the word "Anonymous", so every such avatar would read "A". */
+  anonymous?: boolean;
   colored?: boolean;
 };
 
@@ -17,7 +20,14 @@ function getInitials(name: string | null | undefined, mode: "single" | "double")
   return label.charAt(0).toUpperCase() || "T";
 }
 
-export function Avatar({ src, name, alt = "", className, initials = "single", colored = false }: AvatarProps) {
+export function Avatar({ src, name, alt = "", className, initials = "single", colored = false, anonymous = false }: AvatarProps) {
+  if (anonymous) {
+    return (
+      <span className={className}>
+        <i className="ms ms-masks avatar-anonymous-mark" aria-hidden="true" />
+      </span>
+    );
+  }
   if (src) {
     return <img className={className} src={src} alt={alt} />;
   }

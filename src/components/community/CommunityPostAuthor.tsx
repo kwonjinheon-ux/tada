@@ -15,5 +15,5 @@ type CommunityPostAuthorProps = {
 export function CommunityPostAuthor({ name, avatarUrl, className, avatarClassName, isAnonymous = false }: CommunityPostAuthorProps) {
   const { t } = useLanguage();
   const label = isAnonymous ? t("communityAnonymousAuthor") : name ?? t("communityMemberFallback");
-  return <span className={className}><Avatar src={isAnonymous ? null : avatarUrl} name={label} className={avatarClassName} initials="double" /><strong className="community-post-author-name">{label}</strong></span>;
+  return <span className={className}><Avatar src={isAnonymous ? null : avatarUrl} name={label} className={avatarClassName} initials="double" anonymous={isAnonymous} /><strong className="community-post-author-name">{label}</strong></span>;
 }
