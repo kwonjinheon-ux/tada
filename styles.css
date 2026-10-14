@@ -181,7 +181,7 @@ a {
      the tablet 54px of header before any content had a chance to show. */
   .site-nav.global-shell {
     position: relative;
-    grid-template-columns: 38px auto minmax(0, 1fr) 38px 38px 38px;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
     grid-template-rows: 58px auto;
     grid-template-areas:
       "menu logo search notification language profile"
@@ -11670,25 +11670,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   }
 }
 
-/* Tablet keeps the compact header instead of forcing the full desktop nav
-   (logo + search + links + actions) into a 768px row. */
+/* Tablet keeps the compact header controls — the hamburger and the round
+   account buttons — in place of the desktop links. The row itself is laid
+   out once, further up: repeating the grid here is what stacked the search
+   under a centred logo and cost the header a second row. */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .site-nav {
-    position: relative;
-    grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;
-    grid-template-rows: 58px 48px auto;
-    grid-template-areas:
-      "menu logo notification language profile"
-      "search search search search search"
-      "mobile mobile mobile mobile mobile";
-    min-height: 0;
-    row-gap: 4px;
-    column-gap: 8px;
-    padding: 3px max(var(--page-padding-tablet), env(safe-area-inset-right)) 3px max(var(--page-padding-tablet), env(safe-area-inset-left));
-  }
-
-  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; transform: translateX(-50%); }
-  .nav-search { grid-area: search; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); padding: 0 18px; border-radius: var(--radius-lg); }
+  .site-nav { position: relative; min-height: 0; }
   .nav-search-submit, .primary-nav, .nav-actions { display: none; }
   .nav-menu-button { display: grid; grid-area: menu; }
   .mobile-notifications, .mobile-language-button { display: grid; }
@@ -11835,12 +11822,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .site-footer .footer-bottom { margin-top: 20px; padding-top: 0; border: 0; font-size: var(--text-sm); }
 }
 
-/* This intentionally comes after the tablet layout rules: the header switches
-   to the same compact, touch-first composition as mobile through 1023px. */
+/* This intentionally comes after the tablet layout rules: the header keeps
+   the compact, touch-first controls through 1023px. It deliberately leaves
+   the row alone — brand, search and account controls are placed once, in the
+   tablet block near the top of this file. */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .site-nav.global-shell { grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px; grid-template-rows: 58px 48px auto; grid-template-areas: "menu logo notification language profile" "search search search search search" "mobile mobile mobile mobile mobile"; row-gap: 4px; column-gap: 8px; min-height: 0; padding: 3px 24px; }
-  .site-logo { position: absolute; top: 3px; left: 50%; z-index: 1; justify-self: auto; transform: translateX(-50%); }
-  .nav-search { grid-area: search; width: auto; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
+  .site-nav.global-shell { row-gap: 4px; column-gap: var(--space-2); min-height: 0; padding: 3px 24px; }
+  .nav-search { grid-area: search; min-height: var(--control-h-2xl); grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 0 18px; border-radius: var(--radius-lg); border-color: var(--green-soft-400); background: var(--neutral-50); }
   .nav-menu-button { display: grid; }
   .mobile-profile-link,
   .nav-notifications.mobile-notifications,
