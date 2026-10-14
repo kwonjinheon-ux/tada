@@ -36,6 +36,10 @@ export type ServiceListing = {
    *  shows the first area; the rail filters on the whole list. */
   serviceAreas?: string[];
   suburbs?: string[];
+  /** The stored price, which the card formats in the reader's language;
+   *  `price` itself is the already-formatted string the seeded data carries. */
+  priceFrom?: number | null;
+  priceUnit?: string | null;
   price?: string;
   imageAlt?: string;
   isOwner?: boolean;

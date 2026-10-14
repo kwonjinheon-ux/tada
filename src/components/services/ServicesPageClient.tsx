@@ -12,12 +12,24 @@ import { MobileBrowseCategoryRail } from "@/components/browse/MobileBrowseCatego
 import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
+import { serviceFeedResponseSchema } from "@/contracts/api";
+import { readApiResponse } from "@/lib/api/client";
+import type { ServicesFeedQuery, ServicesFeedResult } from "@/lib/services/feed";
 
 const defaultFilters: ServiceFilterState = { providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false };
+const FEED_CACHE_TTL_MS = 30_000;
 
-export function ServicesPageClient() {
+/** The feed request a browse URL stands for; doubles as the cache key. */
+const buildFeedQuery = ({ category, mainLocation, subLocation }: ServicesFeedQuery) => {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (mainLocation) params.set("mainLocation", mainLocation);
+  if (subLocation) params.set("subLocation", subLocation);
+  return params.toString();
+};
+
+export function ServicesPageClient({ initialFeed = null, initialQuery }: { initialFeed?: ServicesFeedResult | null; initialQuery?: ServicesFeedQuery } = {}) {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,87 +37,70 @@ export function ServicesPageClient() {
   const categoryLabels = servicesCategoryLabels(locale);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<ServiceCategoryId | "all">("all");
   const [activeChip, setActiveChip] = useState("all");
   const [sort, setSort] = useState("recommended");
-  const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
-  const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>(defaultFilters);
   const [notice, setNotice] = useState("");
-  const [databaseServices, setDatabaseServices] = useState<ServiceListing[] | null>(null);
   const resultsRef = useRef<HTMLElement>(null);
+  // Choosing a category rewrites the URL with history.pushState so the list can
+  // be fetched here instead of paying for an RSC navigation of a force-dynamic
+  // page. The App Router does not observe that write, so the pushed query is
+  // held here until a real navigation (or Back/Forward) makes the URL
+  // authoritative again.
+  const [pushedSearch, setPushedSearch] = useState<string | null>(null);
+  useEffect(() => { setPushedSearch(null); }, [searchParams]);
+  useEffect(() => {
+    const syncFromUrl = () => setPushedSearch(null);
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
+  const activeSearch = pushedSearch ?? searchParams.toString();
+  const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
+  const requestedCategory = activeParams.get("category");
+  const activeCategory: ServiceCategoryId | "all" = serviceCategories.some(({ id }) => id === requestedCategory) ? requestedCategory as ServiceCategoryId : "all";
+  const mainLocation = (activeParams.get("mainLocation") ?? "") as MainLocation | "";
+  const subLocation = activeParams.get("subLocation") ?? "";
+  const [feed, setFeed] = useState<ServicesFeedResult>(initialFeed ?? { services: [] });
+  const [isLoadingServices, setIsLoadingServices] = useState(!initialFeed);
+  // Seeding the cache with the server-rendered list keeps the first paint from
+  // requesting what the page already shipped.
+  const feedCache = useRef(new Map<string, { feed: ServicesFeedResult; cachedAt: number }>(
+    initialFeed && initialQuery ? [[buildFeedQuery(initialQuery), { feed: initialFeed, cachedAt: Date.now() }]] : [],
+  ));
+  const feedQuery = buildFeedQuery({ category: activeCategory === "all" ? null : activeCategory, mainLocation, subLocation });
   useEffect(() => {
     if (searchParams.get("submitted") === "pending") {
       setNotice(locale === "ko" ? "서비스 등록 신청이 접수되었습니다. 검토가 완료되면 공개됩니다." : "Your service listing was submitted and is awaiting review.");
     }
   }, [locale, searchParams]);
 
+  // Soft navigations deliver a new server list; seed its own key before the
+  // loading effect runs so it is not fetched a second time.
   useEffect(() => {
-    let isCurrent = true;
-    void (async () => {
-      const supabase = createBrowserSupabaseClient();
-      if (!supabase) return;
+    if (initialFeed && initialQuery) feedCache.current.set(buildFeedQuery(initialQuery), { feed: initialFeed, cachedAt: Date.now() });
+  }, [initialFeed, initialQuery]);
 
-      const { data, error } = await supabase
-        .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,business_name,description,phone,email,website,street_address,provider_type,service_areas,suburbs,rating,review_count,price_from,price_unit,created_at,service_listing_photos(storage_path,display_order,photo_kind)")
-        .order("created_at", { ascending: false });
-      if (error || !data || !isCurrent) return;
-
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: savedRows } = user
-        ? await supabase.from("service_wishlist").select("service_id").eq("user_id", user.id)
-        : { data: [] as Array<{ service_id: string }> };
-      const savedServiceIds = new Set((savedRows ?? []).map((row) => row.service_id));
-
-      const photoPaths = data.flatMap((listing) => (listing.service_listing_photos ?? []).map((photo) => photo.storage_path));
-      const { data: signedPhotos } = photoPaths.length
-        ? await supabase.storage.from("service-listing-images").createSignedUrls(photoPaths, 60 * 60)
-        : { data: [] };
-      if (!isCurrent) return;
-
-      const signedByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
-      setDatabaseServices(data.map((listing) => {
-        const photos = [...(listing.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
-        const logoPhoto = photos.find((photo) => photo.photo_kind === "logo");
-        // The card leads with the representative work photo and keeps the logo
-        // as the small identity mark beside the business name.
-        const galleryPhoto = photos.find((photo) => photo.photo_kind !== "logo");
-        const cardPhoto = galleryPhoto ?? logoPhoto;
-        const image = cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined;
-        const logo = (logoPhoto?.storage_path ? signedByPath.get(logoPhoto.storage_path) : undefined) ?? undefined;
-        return {
-          id: listing.id,
-          isOwner: listing.owner_id === user?.id,
-          isSaved: savedServiceIds.has(listing.id),
-          category: listing.category_slug as ServiceCategoryId,
-          badges: listing.rating >= 4.5 ? ["highlyRated"] : ["new"],
-          provider: listing.provider_name,
-          businessName: listing.business_name ?? listing.provider_name,
-          email: listing.email ?? undefined,
-          website: listing.website ?? undefined,
-          streetAddress: listing.street_address ?? undefined,
-          phone: listing.phone,
-          providerType: listing.provider_type === "business" ? "businesses" : "individuals",
-          availability: "this-week",
-          rating: Number(listing.rating),
-          reviewCount: listing.review_count,
-          image: image ?? "/images/home/journey-services.png",
-          logo,
-          description: listing.description ?? undefined,
-          // Placeholder until the listing row carries its own verification
-          // column; only this line changes once the flag is stored.
-          isVerified: true,
-          location: listing.service_areas[0] ?? "New Zealand",
-          serviceAreas: listing.service_areas ?? [],
-          suburbs: listing.suburbs ?? [],
-          price: listing.price_from === null || !listing.price_unit ? (locale === "ko" ? "가격 문의" : "Contact for pricing") : serviceDetailsSummary(listing.category_slug as ServiceCategoryId, { price_from: String(listing.price_from), price_unit: listing.price_unit }, locale)[0]?.value ?? (locale === "ko" ? "가격 문의" : "Contact for pricing"),
-          imageAlt: listing.provider_name,
-        } satisfies ServiceListing;
-      }));
-    })();
-    return () => { isCurrent = false; };
-  }, [locale]);
+  useEffect(() => {
+    const cached = feedCache.current.get(feedQuery);
+    if (cached && Date.now() - cached.cachedAt < FEED_CACHE_TTL_MS) {
+      setFeed(cached.feed);
+      setIsLoadingServices(false);
+      return;
+    }
+    const controller = new AbortController();
+    setIsLoadingServices(true);
+    void fetch(`/api/services/listings?${feedQuery}`, { signal: controller.signal })
+      .then((response) => readApiResponse(response, serviceFeedResponseSchema))
+      .then((result) => {
+        if (!result.data) return;
+        const nextFeed = result.data as ServicesFeedResult;
+        feedCache.current.set(feedQuery, { feed: nextFeed, cachedAt: Date.now() });
+        setFeed(nextFeed);
+      })
+      .catch(() => undefined)
+      .finally(() => { if (!controller.signal.aborted) setIsLoadingServices(false); });
+    return () => controller.abort();
+  }, [feedQuery, initialFeed, initialQuery]);
 
   // The header's category trigger drives every browse surface's drawer.
   useEffect(() => {
@@ -121,34 +116,41 @@ export function ServicesPageClient() {
       window.removeEventListener("mobile-category-menu-close", closeFilters);
     };
   }, []);
+  // The category and the area are part of the request now, so what is left
+  // here is the handful of flags the rail toggles without a round trip.
   const visibleServices = useMemo(() => {
-    const sourceServices = databaseServices ?? [];
-    // A provider covering the whole country, or one that never named an area,
-    // stays in every list; naming areas is what narrows it.
-    const servesLocation = (service: ServiceListing) => {
-      if (!mainLocation) return true;
-      const areas = service.serviceAreas ?? [];
-      if (areas.length && !areas.includes("All New Zealand") && !areas.includes(mainLocation)) return false;
-      const suburbs = service.suburbs ?? [];
-      return !subLocation || !suburbs.length || suburbs.includes(subLocation);
-    };
-    const matches = sourceServices.filter((service) => (activeCategory === "all" || service.category === activeCategory)
-      && servesLocation(service)
-      && (filters.providerType === "all" || service.providerType === filters.providerType)
+    const matches = feed.services.filter((service) => (filters.providerType === "all" || service.providerType === filters.providerType)
       && (filters.availability === "all" || service.availability === filters.availability)
       && (!filters.verified || service.badges.includes("verified"))
       && (!filters.highlyRated || service.badges.includes("highlyRated"))
       && (!filters.fastResponder || service.badges.includes("fastResponder")));
     return [...matches].sort((a, b) => sort === "highest-rated" ? b.rating - a.rating || b.reviewCount - a.reviewCount : sort === "most-reviewed" ? b.reviewCount - a.reviewCount : sort === "newest" ? Number(b.badges.includes("new")) - Number(a.badges.includes("new")) : b.rating * b.reviewCount - a.rating * a.reviewCount);
-  }, [activeCategory, databaseServices, filters, mainLocation, subLocation, sort]);
+  }, [feed, filters, sort]);
 
   // Picking a category closes the rail and takes the reader straight to the
   // filtered list, which on a phone is otherwise hidden behind the drawer.
+  /** Puts a filter change on the URL without asking the server for the page. */
+  const applyBrowseParams = (params: URLSearchParams) => {
+    const query = params.toString();
+    const nextUrl = `/services${query ? `?${query}` : ""}`;
+    if (`${window.location.pathname}${window.location.search}` === nextUrl) return;
+    window.history.pushState(window.history.state, "", nextUrl);
+    setPushedSearch(query);
+  };
   const chooseCategory = (category: ServiceCategoryId | "all") => {
-    setActiveCategory(category);
+    const params = new URLSearchParams(window.location.search);
+    if (category === "all") params.delete("category"); else params.set("category", category);
+    applyBrowseParams(params);
     setIsFilterOpen(false);
     setNotice("");
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+    const params = new URLSearchParams(window.location.search);
+    // Written even when empty, so All New Zealand reads as a choice.
+    params.set("mainLocation", nextMainLocation);
+    params.set("subLocation", nextSubLocation);
+    applyBrowseParams(params);
   };
 
   return (
@@ -159,14 +161,14 @@ export function ServicesPageClient() {
           onCategorySelect={chooseCategory}
           mainLocation={mainLocation}
           subLocation={subLocation}
-          onLocationChange={(nextMainLocation, nextSubLocation = "") => { setMainLocation(nextMainLocation); setSubLocation(nextSubLocation); }}
+          onLocationChange={chooseLocation}
           filters={filters}
           onFilterChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))}
           onApply={() => setIsFilterOpen(false)}
         />
       </BrowseFilterDrawer>
 
-      <section className="market-results services-results" aria-label={text.popularServices} ref={resultsRef}>
+      <section className="market-results services-results" aria-label={text.popularServices} aria-busy={isLoadingServices} ref={resultsRef}>
         <div className="browse-intro browse-intro--with-create">
           <div className="browse-intro-copy">
             <h1>{text.heroTitle}</h1>
@@ -225,7 +227,12 @@ export function ServicesPageClient() {
           {visibleServices.map((service) => {
             const listing = text.listings[service.id as keyof typeof text.listings];
             const location = service.location ?? listing?.location ?? "New Zealand";
-            const price = service.price ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
+            // Formatted here rather than on the server: it is the one field
+            // that reads differently per language, and the list is shared.
+            const storedPrice = service.priceFrom === null || service.priceFrom === undefined || !service.priceUnit
+              ? undefined
+              : serviceDetailsSummary(service.category, { price_from: String(service.priceFrom), price_unit: service.priceUnit }, locale)[0]?.value;
+            const price = service.price ?? storedPrice ?? listing?.price ?? (locale === "ko" ? "가격 문의" : "Contact for pricing");
             const imageAlt = service.imageAlt ?? listing?.imageAlt ?? service.provider;
             // Verification is a listing-level trust mark; it still falls back to
             // the badge list so the seeded services keep their old behaviour.

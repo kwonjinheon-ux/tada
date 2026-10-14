@@ -176,6 +176,38 @@ export const marketFeedResponseSchema = z.object({
   totalPages: z.number().int().min(1).optional(),
 });
 
+// The services list the browse page swaps in when a reader changes category
+// or area. The price is absent on purpose: the card formats it per language.
+export const serviceFeedListingSchema = z.object({
+  id: z.string(),
+  category: z.string(),
+  badges: z.array(z.enum(["verified", "highlyRated", "topRated", "fastResponder", "new", "sponsored", "popular"])),
+  provider: z.string(),
+  businessName: z.string().optional(),
+  phone: z.string(),
+  email: z.string().optional(),
+  website: z.string().optional(),
+  streetAddress: z.string().optional(),
+  description: z.string().optional(),
+  providerType: z.enum(["individuals", "businesses"]),
+  availability: z.enum(["today", "this-week"]),
+  rating: z.number(),
+  reviewCount: z.number().int().nonnegative(),
+  image: z.string(),
+  logo: z.string().optional(),
+  isVerified: z.boolean().optional(),
+  location: z.string().optional(),
+  serviceAreas: z.array(z.string()).optional(),
+  suburbs: z.array(z.string()).optional(),
+  priceFrom: z.number().nullable().optional(),
+  priceUnit: z.string().nullable().optional(),
+  imageAlt: z.string().optional(),
+  isOwner: z.boolean().optional(),
+  isSaved: z.boolean().optional(),
+});
+
+export const serviceFeedResponseSchema = z.object({ services: z.array(serviceFeedListingSchema) });
+
 export const communityPostCategorySchema = z.enum([
   "local-noticeboard",
   "events",
