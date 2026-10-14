@@ -53,7 +53,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
   return <>
     <CommunityDesktopLayout activeCategory={relatedCategory ?? "all"}>
       <div className="listing-detail-page community-detail-page community-detail-container">
-      <nav className="detail-breadcrumb" aria-label="Breadcrumb"><Link href="/community">{t("community")}</Link><i className="ms ms-chevron-right" aria-hidden="true" /><span>{t(communityPostTypeLabelKeys[post.type])}</span></nav>
+      <nav className="detail-breadcrumb" aria-label="Breadcrumb"><Link href={relatedCategory ? `/community?category=${relatedCategory}` : "/community"}>{t("community")}</Link><i className="ms ms-chevron-right" aria-hidden="true" /><span>{t(communityPostTypeLabelKeys[post.type])}</span></nav>
       <article className="ui-card community-detail-post">
         <header className="community-detail-post-header">
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span>조회수 {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="ms ms-location-on" aria-hidden="true" /> {post.location}</span><span><i className="ms ms-schedule" aria-hidden="true" /> {post.createdAt}</span></div></div>

@@ -24,5 +24,5 @@ export function CommunityCategoryPosts({ category, currentPostId }: { category: 
 
   if (!posts.length) return null;
   const heading = locale === "ko" ? "이 카테고리의 다른 글" : "More in this category";
-  return <section className="community-category-posts" aria-label={heading}><h2>{heading}</h2><div className="community-post-list">{posts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} />)}</div></section>;
+  return <section className="community-category-posts" aria-label={heading}><h2>{heading}</h2><div className="community-post-list">{posts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} href={`/community/${post.id}?category=${category}`} />)}</div></section>;
 }
