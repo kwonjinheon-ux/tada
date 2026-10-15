@@ -25,7 +25,7 @@ export function DashboardMenuItems({
   onNavigate,
   onSignOut,
 }: DashboardMenuItemsProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const isMobile = variant === "mobile";
   const itemClassName = isMobile ? "mobile-profile-popover-item" : "desktop-dashboard-menu-item";
   const labelClassName = isMobile ? undefined : "desktop-dashboard-menu-label";
@@ -48,7 +48,7 @@ export function DashboardMenuItems({
             onClick={onNavigate}
           >
             <i className={`ms ${icon}`} aria-hidden="true" />
-            <span className={labelClassName}>{translationKey ? t(translationKey) : label}</span>
+            <span className={labelClassName}>{translationKey ? t(translationKey) : locale === "ko" ? item.labelKo ?? label : label}</span>
             {unreadCount ? (
               <b>{badgeLabel(unreadCount)}</b>
             ) : !isMobile ? (

@@ -21,7 +21,7 @@ export function DashboardNav({
   unreadNotificationCount: number;
   isAdmin: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const pathname = usePathname();
   const base = `/${context}/dashboard`;
 
@@ -36,7 +36,7 @@ export function DashboardNav({
         return (
           <Link className={isActive ? "is-active" : ""} href={href} key={item.label}>
             <i className={`ms ${item.icon}`} aria-hidden="true" />
-            <span>{item.translationKey ? t(item.translationKey) : item.label}</span>
+            <span>{item.translationKey ? t(item.translationKey) : locale === "ko" ? item.labelKo ?? item.label : item.label}</span>
             {unreadCount ? <b>{badgeLabel(unreadCount)}</b> : null}
           </Link>
         );
