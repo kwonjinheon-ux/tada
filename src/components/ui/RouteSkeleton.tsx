@@ -19,7 +19,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
  * content is replaced with placeholders. One component with variants rather
  * than a skeleton per route: the shapes only differ in which shell they mirror.
  */
-export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "community" | "community-detail" | "services" | "search" | "home" | "form" | "dashboard" }) {
+export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "community" | "community-detail" | "services" | "service-detail" | "search" | "home" | "form" | "dashboard" }) {
   if (variant === "home") {
     return <main className="home-reference" aria-busy="true" aria-label="Loading home">
       <PageContainer className="home-reference-content">
@@ -120,6 +120,28 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "co
     </main>;
   }
 
+  // One provider: the browse rail stays, and the results column carries the
+  // page back link and the hero card rather than a list.
+  if (variant === "service-detail") {
+    return <main className="marketplace-page services-page service-profile-page" aria-busy="true" aria-label="Loading service">
+      <BrowseRailSkeleton className="services-filter-rail service-profile-filter-rail" />
+      <section className="market-results services-results service-profile-main">
+        <div className="service-profile-shell" aria-hidden="true">
+          <span className="route-skeleton-line" />
+          <section className="service-profile-hero ui-card">
+            <div className="service-profile-media route-skeleton-tile" />
+            <div className="service-profile-hero-copy">
+              <span className="route-skeleton-line" />
+              <span className="route-skeleton-heading" />
+              <span className="route-skeleton-line" />
+              <span className="route-skeleton-field route-skeleton-cta" />
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>;
+  }
+
   if (variant === "services") {
     return <main className="marketplace-page services-page" aria-busy="true" aria-label="Loading services">
       <BrowseRailSkeleton />
@@ -169,8 +191,8 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "co
 
 /** The rail every browse surface opens with: the two location selects, then
  *  the filter menu. It hides itself below 768px exactly as the real one does. */
-function BrowseRailSkeleton() {
-  return <aside className="market-filter-panel" aria-hidden="true">
+function BrowseRailSkeleton({ className = "" }: { className?: string } = {}) {
+  return <aside className={`market-filter-panel ${className}`.trim()} aria-hidden="true">
     <div className="browse-filter-sidebar">
       <div className="browse-filter-sidebar-location">
         <section className="filter-block location-block">

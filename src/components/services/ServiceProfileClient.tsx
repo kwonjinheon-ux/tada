@@ -13,20 +13,9 @@ import { ServiceRatingStars } from "@/components/services/ServiceRatingStars";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { serviceBadgeLabel, serviceDetailFields, services, servicesCategoryLabels, type ServiceBadge, type ServiceCategoryId } from "@/data/services";
 import type { MainLocation } from "@/data/nzLocations";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import type { ServiceProfile, ServiceProfileResult, ServiceReview } from "@/lib/services/profile";
 
-type ServiceProfile = {
-  id: string; ownerId: string | null; provider: string; businessName: string; category: ServiceCategoryId; description: string;
-  providerType: "business" | "sole_trader"; serviceAreas: string[]; suburbs: string[];
-  phone: string; email: string | null; website: string | null; streetAddress: string | null;
-  weekdayHours: string | null; saturdayHours: string | null; sundayHours: string | null;
-  foundedYear: number | null; serviceSummary: string | null; languages: string[]; addressVisibility: "area" | "exact";
-  rating: number; reviewCount: number; priceFrom: number | null;
-  priceUnit: string | null; serviceDetails: Record<string, unknown>; logo: string | null;
-  images: string[]; badges: ServiceBadge[];
-};
 
-type ServiceReview = { id: string; reviewerId: string; rating: number; comment: string; createdAt: string; reviewerName: string };
 
 function reviewAgeLabel(createdAt: string, isKorean: boolean) {
   const elapsedDays = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000));
@@ -82,71 +71,21 @@ function ServiceProfileContactCard({
   );
 }
 
-export function ServiceProfileClient({ serviceId }: { serviceId: string }) {
+export function ServiceProfileClient({ serviceId, initial = null }: { serviceId: string; initial?: ServiceProfileResult | null }) {
   const router = useRouter();
   const { locale } = useLanguage();
   const isKorean = locale === "ko";
   const labels = servicesCategoryLabels(locale);
-  const [profile, setProfile] = useState<ServiceProfile | null>(() => previewProfile(serviceId, isKorean));
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewerId, setViewerId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<ServiceProfile | null>(() => initial?.profile ?? previewProfile(serviceId, isKorean));
+  const viewerId = initial?.viewerId ?? null;
   const [mainLocation, setMainLocation] = useState<MainLocation | "">("");
   const [subLocation, setSubLocation] = useState("");
   const [filters, setFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
   const [activeSection, setActiveSection] = useState<"about" | "details" | "gallery" | "area">("about");
   const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const [reviews, setReviews] = useState<ServiceReview[]>([]);
+  const [reviews, setReviews] = useState<ServiceReview[]>(initial?.reviews ?? []);
 
-  useEffect(() => {
-    let isCurrent = true;
-    void (async () => {
-      const supabase = createBrowserSupabaseClient();
-      if (!supabase) { if (isCurrent) setIsLoading(false); return; }
-      const { data, error } = await supabase
-        .from("service_listings")
-        .select("id,owner_id,category_slug,provider_name,business_name,description,provider_type,service_areas,suburbs,phone,email,website,street_address,weekday_hours,saturday_hours,sunday_hours,founded_year,service_summary,languages,address_visibility,rating,review_count,price_from,price_unit,service_details,service_listing_photos(storage_path,display_order,photo_kind)")
-        .eq("id", serviceId).maybeSingle();
-      if (error || !data || !isCurrent) { if (isCurrent) setIsLoading(false); return; }
-      const photos = [...(data.service_listing_photos ?? [])].sort((left, right) => left.display_order - right.display_order);
-      const photoPaths = photos.map((photo) => photo.storage_path);
-      const { data: signedPhotos } = photoPaths.length ? await supabase.storage.from("service-listing-images").createSignedUrls(photoPaths, 60 * 60) : { data: [] };
-      if (!isCurrent) return;
-      const urlsByPath = new Map((signedPhotos ?? []).filter((photo) => photo.path && photo.signedUrl).map((photo) => [photo.path, photo.signedUrl]));
-      const logoPath = photos.find((photo) => photo.photo_kind === "logo")?.storage_path;
-      const galleryPaths = photos.filter((photo) => photo.photo_kind !== "logo").map((photo) => photo.storage_path);
-      const { data: { user } } = await supabase.auth.getUser();
-      setViewerId(user?.id ?? null);
-      setProfile({
-        id: data.id, ownerId: data.owner_id, provider: data.provider_name, businessName: data.business_name ?? data.provider_name, category: data.category_slug as ServiceCategoryId,
-        description: data.description, providerType: data.provider_type, serviceAreas: data.service_areas ?? [],
-        suburbs: data.suburbs ?? [], phone: data.phone, email: data.email, website: data.website,
-        streetAddress: data.street_address, weekdayHours: data.weekday_hours, saturdayHours: data.saturday_hours,
-        sundayHours: data.sunday_hours, foundedYear: data.founded_year, serviceSummary: data.service_summary,
-        languages: data.languages ?? [], addressVisibility: data.address_visibility === "exact" ? "exact" : "area", rating: Number(data.rating),
-        reviewCount: data.review_count, priceFrom: data.price_from === null ? null : Number(data.price_from),
-        priceUnit: data.price_unit, serviceDetails: data.service_details && typeof data.service_details === "object" && !Array.isArray(data.service_details) ? data.service_details : {},
-        logo: logoPath ? urlsByPath.get(logoPath) ?? null : null,
-        images: galleryPaths.map((path) => urlsByPath.get(path)).filter((url): url is string => Boolean(url)),
-        badges: Number(data.rating) >= 4.5 ? ["highlyRated"] : ["new"],
-      });
-      const { data: reviewRows, count: exactReviewCount, error: reviewsError } = await supabase.from("service_reviews").select("id,reviewer_id,rating,comment,created_at", { count: "exact" }).eq("service_id", serviceId).order("created_at", { ascending: false });
-      if (isCurrent && !reviewsError) {
-        const rows = reviewRows ?? [];
-        const reviewerIds = [...new Set(rows.map((review) => review.reviewer_id))];
-        const { data: reviewerProfiles } = reviewerIds.length ? await supabase.from("profiles").select("id,display_name").in("id", reviewerIds) : { data: [] };
-        const names = new Map((reviewerProfiles ?? []).map((reviewer) => [reviewer.id, reviewer.display_name]));
-        const nextReviews = rows.map((review) => ({ id: review.id, reviewerId: review.reviewer_id, rating: review.rating, comment: review.comment, createdAt: review.created_at, reviewerName: names.get(review.reviewer_id) || (isKorean ? "Tada 이용자" : "Tada member") }));
-        const reviewCount = exactReviewCount ?? nextReviews.length;
-        const rating = reviewCount ? nextReviews.reduce((total, review) => total + review.rating, 0) / reviewCount : 0;
-        setReviews(nextReviews);
-        setProfile((current) => current ? { ...current, reviewCount, rating } : current);
-      }
-      setIsLoading(false);
-    })();
-    return () => { isCurrent = false; };
-  }, [isKorean, serviceId]);
 
-  if (isLoading && !profile) return <main className="service-profile-page"><p className="service-profile-loading">{isKorean ? "서비스 정보를 불러오는 중…" : "Loading service profile…"}</p></main>;
   if (!profile) return <main className="service-profile-page"><section className="service-profile-empty ui-card"><h1>{isKorean ? "서비스를 찾을 수 없습니다." : "Service not found."}</h1><p>{isKorean ? "삭제되었거나 공개되지 않은 서비스입니다." : "This service is no longer available or has not been published."}</p><Link className="ui-button ui-button--primary" href="/services">{isKorean ? "서비스 목록으로" : "Back to services"}</Link></section></main>;
 
   const location = [...profile.suburbs, ...profile.serviceAreas].filter(Boolean).join(", ") || (isKorean ? "뉴질랜드" : "New Zealand");

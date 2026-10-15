@@ -11260,7 +11260,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-profile-shell { display: grid; gap: var(--space-4); min-width: 0; }
 .service-profile-back { display: inline-flex; width: fit-content; gap: var(--space-2); align-items: center; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
 .service-profile-back:hover { color: var(--color-primary-strong); }
-.service-profile-loading, .service-profile-empty { padding: var(--space-6); color: var(--color-muted); }
+.service-profile-empty { padding: var(--space-6); color: var(--color-muted); }
 .service-profile-empty { display: grid; gap: var(--space-3); }
 .service-profile-empty h1, .service-profile-empty p { margin: 0; }
 .service-profile-hero { display: grid; gap: var(--space-4); padding: var(--space-4); }
