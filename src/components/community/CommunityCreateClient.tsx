@@ -33,6 +33,9 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  // The notice is for a blank form; a title or a line of the post is enough
+  // to say it has been read.
+  const hasStartedWriting = Boolean(title.trim()) || Boolean(body.replace(/<[^>]*>/g, " ").trim());
   const [eventStartAt, setEventStartAt] = useState("");
   const [eventEndAt, setEventEndAt] = useState("");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
@@ -127,6 +130,10 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
 
             <section className="post-description-field">
               <div className="post-section-heading"><span>2</span><h2>{t(isEventCategory ? "communityEventDetailsHeading" : "communityWriteYourPost")}</h2></div>
+              {/* What the law expects of a post, said before it is written.
+                  It steps aside the moment the writer starts, rather than
+                  sitting over the form for the whole composition. */}
+              {hasStartedWriting ? null : <p className="community-create-legal-notice" role="note"><i className="ms ms-gavel" aria-hidden="true" />{t("communityCreateLegalNotice")}</p>}
               <div className="post-field"><label htmlFor="community-title">{t(isEventCategory ? "communityEventNameLabel" : "communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => { if (containsProhibitedPublicContent(event.target.value)) { setError(unsafeMessage); return; } setTitle(event.target.value); }} minLength={4} maxLength={120} placeholder={t(isEventCategory ? "communityEventNamePlaceholder" : "communityTitlePlaceholder")} required /></div>
               {isEventCategory ? <div className="event-schedule-grid">
                 <div className="post-field"><label htmlFor="community-event-start">{t("communityEventStartLabel")}</label><input id="community-event-start" type="datetime-local" min={minimumEventDateTime} value={eventStartAt} onChange={(event) => { setEventStartAt(event.target.value); if (eventEndAt && event.target.value >= eventEndAt) setEventEndAt(""); }} required /></div>

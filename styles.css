@@ -1679,6 +1679,12 @@ a {
 
 @media (min-width: 768px) {
   .browse-intro h1 { font-size: var(--text-4xl); }
+  /* Tablet has neither the desktop navigation nor the phone's bottom dock,
+     so this button was the only way to start a post there — and it was not
+     drawn. It sits where the desktop puts it: end of the heading row. */
+  .browse-create-button { display: inline-flex; min-height: var(--control-h-xl); padding-inline: var(--space-6); }
+  .browse-intro--with-create { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-8); }
+  .browse-intro--with-create .browse-create-button { grid-column: 2; grid-row: 1; justify-self: end; }
 }
 
 @media (min-width: 1280px) {
@@ -1687,9 +1693,6 @@ a {
 }
 
 @media (min-width: 1024px) {
-  .browse-create-button { display: inline-flex; min-height: var(--control-h-xl); padding-inline: var(--space-6); }
-  .browse-intro--with-create { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-8); }
-  .browse-intro--with-create .browse-create-button { grid-column: 2; grid-row: 1; justify-self: end; }
   .nav-actions .nav-post { display: none !important; }
 }
 
@@ -4561,6 +4564,23 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 .bargain-item-category-select .post-select-wrap.is-enhanced.has-leading-icon > i { font-size: var(--text-xs); }
 .bargain-sale-item-fields textarea { width: 100%; min-height: 70px; resize: vertical; padding: 9px 11px; border: 1px solid var(--neutral-250); border-radius: var(--radius-sm); background: var(--neutral-50); color: var(--ink); font: inherit; font-size: var(--text-sm); outline: none; }
 .bargain-sale-item-fields textarea:focus { border-color: rgba(0, 88, 176, 0.58); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1); }
+/* What the law expects of a post, shown over a blank form. It is guidance
+   rather than an error, so it reads quieter than the status line below it. */
+.community-create-legal-notice {
+  display: flex;
+  align-items: start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.community-create-legal-notice > i { flex: none; color: var(--color-warning); font-size: var(--text-lg); }
 .post-create-status { order: 8; }
 .post-submit-row { order: 9; }
 
