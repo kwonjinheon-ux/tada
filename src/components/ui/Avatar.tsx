@@ -24,7 +24,7 @@ export function Avatar({ src, name, alt = "", className, initials = "single", co
   if (anonymous) {
     return (
       <span className={className}>
-        <i className="ms ms-masks avatar-anonymous-mark" aria-hidden="true" />
+        <i className="ms ms-close avatar-anonymous-mark" aria-hidden="true" />
       </span>
     );
   }
