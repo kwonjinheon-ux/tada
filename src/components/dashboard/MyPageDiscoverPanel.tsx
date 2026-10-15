@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 
 /** Reusable local-discovery entry point for new and returning members. */
 export function MyPageDiscoverPanel({ variant = "list" }: { variant?: "list" | "carousel" }) {
   const [active, setActive] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
   const { locale } = useLanguage();
   const ko = locale === "ko";
   const say = (en: string, kr: string) => ko ? kr : en;
@@ -18,11 +19,13 @@ export function MyPageDiscoverPanel({ variant = "list" }: { variant?: "list" | "
   ];
 
   if (variant === "carousel") {
-    const destination = destinations[active];
-    return <section className="ui-panel my-page-panel my-page-discovery" aria-label={say("Explore your neighbourhood", "동네 둘러보기")}>
-      <header className="my-page-heading"><h2>{say("Explore locally", "동네 둘러보기")}</h2><div className="my-page-discovery-controls"><span>{active + 1} / {destinations.length}</span><Button variant="ghost" size="sm" aria-label={say("Previous", "이전 카드")} onClick={() => setActive((active + destinations.length - 1) % destinations.length)}><i className="ms ms-chevron-left" aria-hidden="true" /></Button><Button variant="ghost" size="sm" aria-label={say("Next", "다음 카드")} onClick={() => setActive((active + 1) % destinations.length)}><i className="ms ms-chevron-right" aria-hidden="true" /></Button></div></header>
-      <div aria-live="polite"><Link href={destination.href} className={`my-page-discovery-slide is-${destination.area}`}><img src={destination.image} alt="" /><strong>{destination.action}</strong><p>{destination.text}</p></Link></div>
-      <div className="my-page-discovery-dots">{destinations.map((item, index) => <Button key={item.href} variant="ghost" size="sm" aria-label={item.action} aria-pressed={active === index} onClick={() => setActive(index)}><span /></Button>)}</div>
+    const goTo = (index: number) => trackRef.current?.scrollTo({ left: index * trackRef.current.clientWidth, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    return <section className="ui-panel my-page-panel my-page-discovery" aria-label={say("Discover your neighbourhood", "동네 둘러보기")}>
+      <header className="my-page-heading"><h2>{say("Discover your neighbourhood", "동네 둘러보기")}</h2></header>
+      <div className="my-page-discovery-track" ref={trackRef} role="region" aria-label={say("Swipe to explore nearby", "옆으로 넘겨 동네 둘러보기")} tabIndex={0} onScroll={(event) => setActive(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>
+        {destinations.map((destination) => <Link href={destination.href} className={`my-page-discovery-slide is-${destination.area}`} key={destination.href}><img src={destination.image} alt="" /><strong>{destination.action}</strong><p>{destination.text}</p></Link>)}
+      </div>
+      <div className="my-page-discovery-dots">{destinations.map((item, index) => <Button key={item.href} variant="ghost" size="sm" aria-label={say(`Show ${item.action}`, `${item.action} 카드 보기`)} aria-pressed={active === index} onClick={() => goTo(index)}><span /></Button>)}</div>
     </section>;
   }
   return <section className="ui-panel my-page-panel my-page-discovery" aria-label={say("Explore more on Tada", "타다에서 더 둘러보기")}>
