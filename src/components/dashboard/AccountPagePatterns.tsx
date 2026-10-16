@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type AccountPageIntroProps = {
@@ -34,4 +35,35 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
     <div className="account-ad-copy"><span>{ko ? "광고 · 타다 추천" : "Ad · From Tada"}</span><strong>{content.title}</strong><p>{content.description}</p><Link className="ui-button ui-button--secondary ui-button--sm" href={content.href}>{content.action}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
     <img src="/images/brand/tada-wordmark.png" alt="" width={1965} height={800} loading="lazy" />
   </aside>;
+}
+
+export type SavedServiceSummary = {
+  id: string;
+  businessName: string;
+  serviceName: string;
+  categorySlug: string;
+  location: string;
+  rating: number | null;
+  reviewCount: number | null;
+  logoUrl: string | null;
+};
+
+/** A compact, in-account directory entry for a provider saved to the service wishlist. */
+export function SavedServiceCard({ service }: { service: SavedServiceSummary }) {
+  const { locale } = useLanguage();
+  const ko = locale === "ko";
+  const categoryLabel = servicesCategoryLabels(locale)[service.categorySlug as ServiceCategoryId] ?? service.categorySlug;
+  const serviceLabel = service.serviceName === service.businessName ? categoryLabel : service.serviceName;
+  return <Link className="ui-panel my-page-saved-service is-services" href={`/services/${service.id}`} aria-label={ko ? `${service.businessName} 서비스 상세 보기` : `View ${service.businessName} service details`}>
+    <span className="services-listing-logo my-page-saved-service-logo">{service.logoUrl ? <img src={service.logoUrl} alt="" /> : <i className="ms ms-build" aria-hidden="true" />}</span>
+    <span className="my-page-saved-service-info">
+      <strong>{service.businessName}</strong>
+      <span>{serviceLabel}</span>
+      <small>{service.location ? <><i className="ms ms-location-on" aria-hidden="true" />{service.location}</> : ko ? "지역 정보 없음" : "Location not listed"}</small>
+    </span>
+    <span className="my-page-saved-service-foot">
+      {service.rating !== null && service.reviewCount !== null && service.reviewCount > 0 ? <span><i className="ms ms-star" aria-hidden="true" />{service.rating.toFixed(1)} <small>({service.reviewCount})</small></span> : <span>{ko ? "아직 후기 없음" : "No reviews yet"}</span>}
+      <span>{ko ? "상세 보기" : "View details"}<i className="ms ms-arrow-forward" aria-hidden="true" /></span>
+    </span>
+  </Link>;
 }

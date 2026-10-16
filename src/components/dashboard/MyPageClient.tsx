@@ -7,11 +7,13 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { JourneyCard, ProgressStepper, type ActiveJourneyItem } from "@/components/dashboard/ActiveJourneyCarousel";
 import { MyPageDiscoverPanel } from "@/components/dashboard/MyPageDiscoverPanel";
+import { SavedServiceCard, type SavedServiceSummary } from "@/components/dashboard/AccountPagePatterns";
 
 type MyPageData = {
   name: string; avatar: string | null; location: string; joined: string;
   profileComplete: boolean; phoneVerified: boolean; unavailable: boolean;
   unread: number | null; sales: number | null; serviceCount: number | null; postCount: number | null;
+  savedServiceCount: number | null; savedServices: SavedServiceSummary[];
   savedCount: number | null; savedSearchCount: number | null; activeListingCount: number | null; activeReservationCount: number | null;
   journeys: ActiveJourneyItem[];
   services: { id: string; provider_name: string; status: string; updated_at: string; imageUrl?: string | null }[];
@@ -73,7 +75,7 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
   const featuredKeys = new Set(featured.map((item) => item.key));
   const preview = [...featured, ...progress.filter((item) => !featuredKeys.has(item.key))].slice(0, 4);
   const libraryShortcuts = [
-    { icon: "ms-favorite", title: say("Wishlist", "찜 목록"), value: data.savedCount, unit: say("saved", "개 저장"), href: "/market/wishlist", description: say("Market items saved to revisit.", "나중에 다시 볼 상품") },
+    { icon: "ms-favorite", title: say("All saved items", "전체 찜 목록"), value: data.savedCount, unit: say("saved", "개 저장"), href: "/market/wishlist", description: say("Saved listings, posts and services.", "저장한 상품·글·서비스 전체") },
     { icon: "ms-search", title: say("Keyword alerts", "키워드 알림"), value: data.savedSearchCount, unit: say("alerts", "개 알림"), href: "/market/dashboard/keywords", description: say("Get notified when a local match appears.", "원하는 항목이 올라오면 알려드려요.") },
   ];
   const manageShortcuts = [
@@ -118,6 +120,20 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
         <div className="my-page-mobile-ad-copy"><span>{say("Ad", "광고")}</span><strong>{say("Ideas grow with Tada", "아이디어를 타다")}</strong><p>{say("Websites · Marketing · Branding", "웹사이트 · 마케팅 · 브랜딩")}</p></div>
         <img src="/images/brand/tada-wordmark.png" width={1965} height={800} loading="lazy" alt="" />
       </aside>
+      <div className="my-page-services">
+        <Panel title={say("Services you've saved", "관심 있는 서비스")} action={<ActionLink href="/market/wishlist?filter=service">{say("See all", "전체 보기")}</ActionLink>}>
+          {data.savedServices.length ? <div className="my-page-saved-services">{data.savedServices.map((service) => <SavedServiceCard service={service} key={service.id} />)}</div> : <div className="my-page-service-empty"><i className="ms ms-favorite ms--outline" aria-hidden="true" /><p>{say("Save local providers to find them here whenever you need them.", "마음에 드는 서비스를 저장하면 이곳에서 다시 찾을 수 있어요.")}</p><Link href="/services">{say("Explore services", "서비스 둘러보기")} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>}
+          {data.savedServiceCount !== null && data.savedServiceCount > data.savedServices.length ? <p className="my-page-service-count">{say(`${data.savedServiceCount} services saved`, `저장한 서비스 ${data.savedServiceCount}개`)}</p> : null}
+        </Panel>
+        <Panel title={say("Services you offer", "내가 제공하는 서비스")} action={<ActionLink href="/market/dashboard/listings?category=services">{say("Manage all", "전체 관리")}</ActionLink>}>
+          {data.services.length ? <div className="my-page-shortcuts my-page-offered-services">{data.services.slice(0, 3).map((service) => <Link className="my-page-shortcut my-page-offered-service" href={`/services/${service.id}/edit`} key={service.id}>
+            <i className="ms ms-build" aria-hidden="true" />
+            <div><strong>{service.provider_name}</strong><small>{service.status === "published" ? say("Published", "공개 중") : service.status === "pending" ? say("Under review", "검토 중") : say("Hidden", "비공개")}</small></div>
+            <i className="ms ms-arrow-forward" aria-hidden="true" />
+          </Link>)}</div> : <div className="my-page-service-empty"><i className="ms ms-build" aria-hidden="true" /><p>{say("Your skills can help a neighbour. Anyone can list a service.", "과외처럼 내가 할 수 있는 일도 동네에 소개할 수 있어요.")}</p><Link href="/services/create">{say("List a service", "서비스 등록하기")} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>}
+          {data.serviceCount !== null && data.serviceCount > data.services.length ? <p className="my-page-service-count">{say(`${data.serviceCount} services listed`, `등록한 서비스 ${data.serviceCount}개`)}</p> : null}
+        </Panel>
+      </div>
       <Panel title={say("Updates", "새소식")} action={<ActionLink href={notificationsHref}>{say("View all", "전체 보기")}</ActionLink>} filters={<div className="my-page-filters" aria-label={say("Update filters", "새소식 필터")}>{(["all", "message", "notification"] as const).map((kind) => <Button key={kind} size="sm" variant="ghost" aria-pressed={activityFilter === kind} onClick={() => setActivityFilter(kind)}>{kind === "all" ? say("All", "전체") : kind === "message" ? say("Messages", "메시지") : say("Notifications", "알림")}</Button>)}</div>}><div className="my-page-activity">{data.activity.filter((item) => activityFilter === "all" || (activityFilter === "message" ? item.type === "message" : item.type !== "message")).map((item) => <Link href={item.href.startsWith("/") && !item.href.startsWith("//") ? item.href : notificationsHref} key={item.id}><i className={`ms ${item.type === "wishlist" ? "ms-favorite" : item.type === "message" ? "ms-chat" : "ms-notifications"}`} aria-hidden="true" /><div><strong>{item.title}</strong><p>{item.body}</p><time dateTime={item.created_at}>{new Intl.DateTimeFormat(ko ? "ko-KR" : "en-NZ", { day: "numeric", month: "short" }).format(new Date(item.created_at))}</time></div></Link>)}</div>{!data.activity.some((item) => activityFilter === "all" || (activityFilter === "message" ? item.type === "message" : item.type !== "message")) ? <p className="my-page-empty">{say("Your latest marketplace updates will appear here.", "마켓의 새로운 소식이 여기에 표시됩니다.")}</p> : null}</Panel>
     <div className="my-page-management">{savedForLaterPanel}{manageActivityPanel}</div></div><aside className="my-page-rail" aria-label={say("Your Tada shortcuts", "나의 타다 바로가기")}><MyPageDiscoverPanel variant="carousel" /><Panel title={say("Join in on Tada", "타다와 함께하기")}><div className="my-page-create-actions"><Link className="ui-button ui-button--secondary ui-button--sm" href="/market/create"><i className="ms ms-shopping-bag" aria-hidden="true" /> {say("List an item", "상품 올리기")}<i className="ms ms-chevron-right" aria-hidden="true" /></Link><Link className="ui-button ui-button--secondary ui-button--sm" href="/services/create"><i className="ms ms-build" aria-hidden="true" /> {say("List a service", "서비스 올리기")}<i className="ms ms-chevron-right" aria-hidden="true" /></Link><Link className="ui-button ui-button--secondary ui-button--sm" href="/community/create"><i className="ms ms-forum" aria-hidden="true" /> {say("Write a post", "동네 글쓰기")}<i className="ms ms-chevron-right" aria-hidden="true" /></Link></div></Panel>{contributionPanel}<Panel className="my-page-desktop-ad" title={say("Advertisement", "광고")}><img className="my-page-ad-image" src="/images/tada-services-banner.png" width={1536} height={1024} loading="lazy" alt={say("Tada — website creation, digital marketing, branding design and project consulting. Ideas become possibilities.", "타다 — 아이디어를 타다, 가능성이 열리다. 웹사이트 제작, 디지털 마케팅, 브랜딩 디자인, 프로젝트 컨설팅.")} /></Panel></aside></div>
   </div>;

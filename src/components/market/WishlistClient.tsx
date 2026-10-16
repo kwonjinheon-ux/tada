@@ -21,7 +21,7 @@ export type WishlistItem = {
   imageUrl: string;
 };
 
-type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[] };
+type WishlistClientProps = { initialItems: WishlistItem[]; recentlyViewed: WishlistItem[]; initialFilter?: "all" | "service" };
 type Filter = "all" | "market" | "service" | "community";
 const filterLabels: Record<Filter, string> = { all: "All items", market: "Market", service: "Services", community: "Community" };
 
@@ -31,9 +31,9 @@ function matchesFilter(item: WishlistItem, filter: Filter) {
   return item.space === filter;
 }
 
-export function WishlistClient({ initialItems, recentlyViewed }: WishlistClientProps) {
+export function WishlistClient({ initialItems, recentlyViewed, initialFilter = "all" }: WishlistClientProps) {
   const [items, setItems] = useState(initialItems);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>(initialFilter);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [messagingId, setMessagingId] = useState<string | null>(null);
   const router = useRouter();

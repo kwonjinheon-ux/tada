@@ -23,7 +23,7 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     db.from("market_wishlist").select("listing_id", { count: "exact", head: true }).eq("user_id", user.id),
     db.from("bargain_wishlist").select("listing_id", { count: "exact", head: true }).eq("user_id", user.id),
     db.from("community_wishlist").select("post_id", { count: "exact", head: true }).eq("user_id", user.id),
-    db.from("service_wishlist").select("service_id", { count: "exact", head: true }).eq("user_id", user.id),
+    db.from("service_wishlist").select("service_id,created_at", { count: "exact" }).eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
     db.from("market_keyword_alerts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     db.from("market_listings").select("id", { count: "exact", head: true }).eq("owner_id", user.id).in("status", ["published", "pending"]),
     db.from("bargain_listings").select("id", { count: "exact", head: true }).eq("owner_id", user.id).in("status", ["published", "pending"]),
@@ -31,6 +31,15 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     db.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
   ]);
   const listed = version === "current" ? await getListedJourneys(db, user.id) : { items: [], unavailable: false };
+  const savedServiceIds = version === "current" ? (serviceSaved.data ?? []).map((row) => row.service_id) : [];
+  const savedServiceResult = savedServiceIds.length
+    ? await db.from("service_listings").select("id,business_name,provider_name,category_slug,service_areas,suburbs,rating,review_count,service_listing_photos(storage_path,display_order,photo_kind)").in("id", savedServiceIds).eq("status", "published")
+    : { data: [], error: null };
+  const savedServiceById = new Map((savedServiceResult.data ?? []).map((service) => [service.id, service]));
+  const savedServicePreview = savedServiceIds.map((id) => savedServiceById.get(id)).filter((service) => service !== undefined).slice(0, 3);
+  const savedLogoPaths = savedServicePreview.map((service) => service.service_listing_photos.find((photo) => photo.photo_kind === "logo")?.storage_path).filter((path): path is string => Boolean(path));
+  const savedLogos = version === "current" ? await getSignedStorageImages("service-listing-images", [...new Set(savedLogoPaths)], "thumbnail") : new Map<string, string>();
+
   const listedIds = new Set(listed.items.map((item) => item.id));
   const thumbnails = await Promise.all([
     { rows: services.data ?? [], table: "service_listing_photos", key: "listing_id", bucket: "service-listing-images" },
@@ -62,6 +71,11 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     profileComplete: Boolean(profile.data?.display_name && avatarPath),
     phoneVerified: Boolean(user.phone_confirmed_at),
     services: (services.data ?? []).map((row) => ({ ...row, imageUrl: thumbnails[0].get(row.id) || null })),
+    savedServices: savedServicePreview.map((service) => {
+      const logoPath = service.service_listing_photos.find((photo) => photo.photo_kind === "logo")?.storage_path;
+      return { id: service.id, businessName: service.business_name || service.provider_name, serviceName: service.provider_name, categorySlug: service.category_slug, location: service.suburbs?.[0] || service.service_areas?.[0] || "", rating: service.rating, reviewCount: service.review_count, logoUrl: logoPath ? savedLogos.get(logoPath) ?? null : null };
+    }),
+    savedServiceCount: serviceSaved.error ? null : serviceSaved.count ?? 0,
     posts: (posts.data ?? []).map((row) => ({ ...row, imageUrl: thumbnails[1].get(row.id) || null })),
     activity: activity.data ?? [], journeys: mergedJourneys,
     unread: unread.error ? null : unread.count ?? 0,
@@ -72,7 +86,7 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     savedSearchCount: savedSearches.error ? null : savedSearches.count ?? 0,
     activeListingCount: marketListings.error || bargainListings.error || services.error ? null : (marketListings.count ?? 0) + (bargainListings.count ?? 0) + (services.count ?? 0),
     activeReservationCount: sellingReservations.error || buyingReservations.error ? null : (sellingReservations.count ?? 0) + (buyingReservations.count ?? 0),
-    unavailable: listed.unavailable || [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
+    unavailable: listed.unavailable || [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedServiceResult, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
   };
   return version === "v2" ? <MyPageV2Client data={data} /> : <MyPageClient data={data} />;
 }

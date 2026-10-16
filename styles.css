@@ -13924,3 +13924,34 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .tada-charge-stage :is(h3, strong, p) { grid-column: 2; }
   .tada-charge-stage strong { font-size: var(--text-lg); }
 }
+
+/* My Page service library: saved providers and services offered by this member. */
+.my-page-services { display: grid; min-width: 0; gap: var(--space-3); }
+.my-page-services > .my-page-panel { min-width: 0; }
+.my-page-saved-services { display: grid; gap: var(--space-2); }
+.my-page-saved-service { display: grid; grid-template-columns: var(--space-12) minmax(0, 1fr); gap: var(--space-2) var(--space-3); min-width: 0; padding: var(--space-3); border-color: color-mix(in srgb, var(--color-services-accent) 20%, var(--color-line-soft)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--color-services-soft) 35%, var(--color-surface)); color: var(--color-ink); text-decoration: none; }
+.my-page-saved-service:hover { border-color: var(--color-services-accent); }
+.my-page-saved-service:focus-visible, .my-page-offered-service:focus-visible { outline: 2px solid var(--color-primary); outline-offset: var(--space-1); }
+.my-page-saved-service-logo { width: var(--space-12); height: var(--space-12); align-self: start; }
+.my-page-saved-service-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.my-page-saved-service-info { display: grid; gap: var(--space-1); min-width: 0; }
+.my-page-saved-service-info strong { overflow: hidden; font-size: var(--text-md); text-overflow: ellipsis; white-space: nowrap; }
+.my-page-saved-service-info > span { overflow: hidden; color: var(--color-services-text); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
+.my-page-saved-service-info small { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); }
+.my-page-saved-service-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--color-line-soft); font-size: var(--text-xs); }
+.my-page-saved-service-foot > span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.my-page-saved-service-foot > span:first-child .ms { color: var(--color-warning); }
+.my-page-saved-service-foot > span:last-child { color: var(--color-services-text); font-weight: var(--weight-bold); }
+.my-page-saved-service-foot small { color: var(--color-muted); }
+.my-page-offered-service > .ms:first-child { background: var(--color-services-soft); color: var(--color-services-icon); }
+.my-page-offered-service:hover { border-color: var(--color-services-accent); background: var(--color-services-soft); }
+.my-page-service-empty { display: grid; justify-items: start; gap: var(--space-2); padding: var(--space-3); border: 1px dashed var(--color-line); border-radius: var(--radius-sm); }
+.my-page-service-empty > .ms { color: var(--color-services-icon); font-size: var(--text-xl); }
+.my-page-service-empty p, .my-page-service-count { margin: 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.5; }
+.my-page-service-empty a { color: var(--color-services-text); font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: none; }
+.my-page-service-count { margin-top: var(--space-3); }
+@media (min-width: 1440px) { .my-page-services { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767.98px) {
+  .my-page-saved-service, .my-page-offered-service { min-height: var(--control-h-xl); }
+  .my-page-services .my-page-heading > .my-page-link { min-height: var(--control-h-xl); }
+}
