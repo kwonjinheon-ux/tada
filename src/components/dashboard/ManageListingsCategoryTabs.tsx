@@ -9,11 +9,12 @@ export type ManageListingsCategory = "all" | "market" | "bargain" | "services";
 type ManageListingsCategoryTabsProps = {
   activeCategory: ManageListingsCategory;
   counts: Record<ManageListingsCategory, number>;
+  baseHref?: string;
 };
 
 const categories: ManageListingsCategory[] = ["all", "market", "bargain", "services"];
 
-export function ManageListingsCategoryTabs({ activeCategory, counts }: ManageListingsCategoryTabsProps) {
+export function ManageListingsCategoryTabs({ activeCategory, counts, baseHref = "/market/dashboard/listings" }: ManageListingsCategoryTabsProps) {
   const { locale, t } = useLanguage();
   const searchParams = useSearchParams();
   const labels: Record<ManageListingsCategory, string> = {
@@ -31,7 +32,7 @@ export function ManageListingsCategoryTabs({ activeCategory, counts }: ManageLis
       query.delete("page");
       if (category === "all") query.delete("category");
       else query.set("category", category);
-      const href = query.toString() ? `/market/dashboard/listings?${query}` : "/market/dashboard/listings";
+      const href = query.toString() ? `${baseHref}?${query}` : baseHref;
       return <Link className={`manage-listings-category-tab${isActive ? " is-active" : ""}`} href={href} aria-current={isActive ? "page" : undefined} key={category}>
         <span>{labels[category]}</span><b>{counts[category]}</b>
       </Link>;

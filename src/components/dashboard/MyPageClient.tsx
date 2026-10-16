@@ -79,7 +79,7 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
     { icon: "ms-search", title: say("Keyword alerts", "키워드 알림"), value: data.savedSearchCount, unit: say("alerts", "개 알림"), href: "/market/dashboard/keywords", description: say("Get notified when a local match appears.", "원하는 항목이 올라오면 알려드려요.") },
   ];
   const manageShortcuts = [
-    { icon: "ms-list-alt", title: say("My listings", "등록 상품·서비스"), value: data.activeListingCount, unit: say("active", "개 진행 중"), href: "/market/dashboard/listings", description: say("Manage your market and service listings.", "등록한 상품과 서비스를 관리하세요.") },
+    { icon: "ms-list-alt", title: say("My items & services", "내 상품·서비스"), value: data.activeListingCount, unit: say("active", "개 진행 중"), href: "/market/dashboard/listings", description: say("Manage your market and service listings.", "등록한 상품과 서비스를 관리하세요.") },
     { icon: "ms-event-available", title: say("Pickups & reservations", "예약 및 수령"), value: data.activeReservationCount, unit: say("active", "건 진행 중"), href: "/market/dashboard/reservations", description: say("Keep upcoming handovers on track.", "예정된 수령과 예약을 확인하세요.") },
   ];
   const savedForLaterPanel = <Panel title={say("Saved & alerts", "나의 찜 & 알림")}><div className="my-page-shortcuts">{libraryShortcuts.map((shortcut) => <Link className="my-page-shortcut" href={shortcut.href} key={shortcut.href}><i className={`ms ${shortcut.icon}`} aria-hidden="true" /><div><strong>{shortcut.title}</strong><span>{countLabel(shortcut.value, shortcut.unit)}</span><small>{shortcut.description}</small></div><i className="ms ms-arrow-forward" aria-hidden="true" /></Link>)}</div></Panel>;

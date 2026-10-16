@@ -13955,3 +13955,63 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .my-page-saved-service, .my-page-offered-service { min-height: var(--control-h-xl); }
   .my-page-services .my-page-heading > .my-page-link { min-height: var(--control-h-xl); }
 }
+
+/* My Page task destinations: one shared hierarchy for listings and reservations. */
+.account-workspace { padding: var(--space-6) var(--space-8) var(--space-12); }
+.account-workspace-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
+.account-workspace-header .account-page-intro { min-width: 0; margin-bottom: 0; }
+.account-workspace-header > .ui-button { flex: 0 0 auto; gap: var(--space-2); text-decoration: none; }
+.account-workspace-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-5); }
+.account-workspace-summary > .ui-panel { display: grid; grid-template-columns: var(--control-h-lg) minmax(0, 1fr); align-items: center; gap: var(--space-1) var(--space-3); min-width: 0; padding: var(--space-3); border-color: var(--color-line-soft); background: var(--color-surface); }
+.account-workspace-summary i { grid-row: span 2; display: grid; width: var(--control-h-lg); height: var(--control-h-lg); place-items: center; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
+.account-workspace-summary .is-market i { background: var(--color-market-soft); color: var(--color-market-icon); }
+.account-workspace-summary .is-services i { background: var(--color-services-soft); color: var(--color-services-icon); }
+.account-workspace-summary span { overflow: hidden; color: var(--color-muted); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
+.account-workspace-summary strong { font-size: var(--text-2xl); line-height: 1; }
+.account-workspace-sections { display: grid; gap: var(--space-4); }
+.account-workspace-list { min-width: 0; padding: 0 var(--space-4); border-color: var(--color-line-soft); background: var(--color-surface); }
+.account-workspace-list-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) 0; }
+.account-workspace-list-heading h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.account-workspace-list-heading h2 span { color: var(--color-primary); }
+.account-workspace-list-heading p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
+.account-workspace-list-heading > a { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.account-workspace-list .manage-listings-grid { border-top-color: var(--color-line-soft); }
+.account-workspace-list .listing-row { background: var(--color-surface); }
+.account-workspace-list .listing-row:last-child { border-bottom: 0; }
+.account-workspace-list .listing-row-title h2 { color: var(--color-ink); font-weight: var(--weight-semibold); }
+.account-workspace .manage-listings-category-tabs { margin-bottom: var(--space-4); }
+.account-workspace .manage-listings-category-tab { background: var(--color-surface); }
+.account-workspace .manage-listings-category-tab.is-active { background: var(--color-primary); }
+.account-reservation-hint { margin: var(--space-2) 0 0; color: var(--color-ink-soft); font-size: var(--text-sm); }
+.account-workspace-quiet { margin: 0; padding: var(--space-6) 0; color: var(--color-muted); font-size: var(--text-sm); }
+.account-workspace .manage-listings-empty { background: var(--color-surface); }
+.account-workspace .manage-listings-empty > a { background: var(--color-primary); color: var(--color-on-primary); }
+.account-workspace .manage-listing-actions a:first-child { border-color: var(--color-primary); color: var(--color-primary-dark); }
+.account-workspace .manage-listing-actions a:first-child:hover { background: var(--color-primary-soft); }
+.messages-list-description { display: block; margin-top: var(--space-2); color: var(--color-muted); font-size: var(--text-xs); line-height: 1.4; }
+.messages-empty-list .ui-button, .messages-select-empty .ui-button { margin-top: var(--space-2); text-decoration: none; }
+.messages-page:not(.is-v0) { background: var(--color-surface); color: var(--color-ink); }
+.messages-page:not(.is-v0) .messages-list-panel { border-right-color: var(--color-line-soft); background: var(--color-surface); }
+.messages-page:not(.is-v0) .messages-thread-panel { background: var(--color-surface-soft); }
+.messages-page:not(.is-v0) .messages-thread-header { border-bottom-color: var(--color-line-soft); background: var(--color-surface); }
+.messages-page:not(.is-v0) .messages-conversation { border-bottom-color: var(--color-line-soft); background: var(--color-surface); }
+.messages-page:not(.is-v0) .messages-conversation:hover { background: var(--color-surface-soft); }
+.messages-page:not(.is-v0) .messages-list-header p { color: var(--color-primary); }
+.messages-page:not(.is-v0) .messages-filter-row button.is-active { background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.messages-page:not(.is-v0) .messages-conversation.is-active { border-right-color: var(--color-primary); background: var(--color-primary-soft); }
+.messages-page:not(.is-v0) .messages-empty-list i, .messages-page:not(.is-v0) .messages-select-empty > i { color: var(--color-primary); }
+@media (max-width: 767.98px) {
+  .account-workspace { padding: var(--space-4) var(--space-4) var(--space-8); }
+  .account-workspace-header { align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+  .account-workspace-header .account-page-intro { flex: 1 1 100%; }
+  .account-workspace-header > .ui-button { min-height: var(--control-h-xl); }
+  .account-workspace-summary { gap: var(--space-2); margin-bottom: var(--space-4); }
+  .account-workspace-summary > .ui-panel { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); padding: var(--space-2); }
+  .account-workspace-summary i { width: var(--control-h-sm); height: var(--control-h-sm); font-size: var(--text-lg); }
+  .account-workspace-summary span { width: 100%; font-size: var(--text-xs); }
+  .account-workspace-summary strong { font-size: var(--text-xl); }
+  .account-workspace-list { padding-inline: var(--space-3); }
+  .account-workspace-list-heading { align-items: flex-start; flex-wrap: wrap; padding-block: var(--space-3); }
+  .account-workspace-list .listing-row { padding-block: var(--space-3); }
+  .messages-list-description { display: none; }
+}

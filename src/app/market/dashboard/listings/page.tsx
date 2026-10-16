@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ManageListingsCategoryTabs, type ManageListingsCategory } from "@/components/dashboard/ManageListingsCategoryTabs";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
+import { AccountLocaleText, AccountWorkspaceHeader, AccountWorkspaceSummary } from "@/components/dashboard/AccountPagePatterns";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
@@ -15,7 +16,7 @@ import { isMultiItemBargain, type BargainListingType } from "@/lib/bargain/listi
 import { LIST_PAGE_SIZE, escapeLikePattern, normaliseSearchTerm, pageRange, parsePageParam, totalPageCount } from "@/lib/list-pagination";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Manage Listings" };
+export const metadata = { title: "My items & services" };
 
 type ListingRow = { id: string; title: string; price_cents: number; status: "published" | "pending" | "sold" | "archived"; created_at: string };
 type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
@@ -35,6 +36,7 @@ const SOURCES = {
 function statusLabel(status: string) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
+const statusLabelsKo: Record<string, string> = { published: "공개 중", pending: "검토 중", sold: "판매 완료", archived: "보관됨", hidden: "비공개" };
 
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 
@@ -72,8 +74,9 @@ async function signThumbnails(supabase: SupabaseClient, kind: Kind, ids: string[
   return new Map([...primaryByListing].map(([listingId, path]) => [listingId, signed.get(path) ?? "/images/logo.png"]));
 }
 
-export default async function ManageListingsPage({ searchParams }: { searchParams: Promise<{ category?: string; q?: string; page?: string }> }) {
+export default async function ManageListingsPage({ searchParams }: { searchParams: Promise<{ category?: string; q?: string; page?: string; version?: string }> }) {
   const params = await searchParams;
+  const isV0 = params.version === "v0";
   const requested = params.category;
   const activeCategory: ManageListingsCategory = requested === "market" || requested === "bargain" || requested === "services" ? requested : "all";
   const term = normaliseSearchTerm(params.q);
@@ -125,26 +128,14 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     })()
     : { market: 0, bargain: 0, services: 0, all: 0 };
 
-  return <section className="dashboard-content manage-listings-content">
-    <header className="manage-listings-heading">
-      <div>
-        <p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p>
-        <h1><TranslatedText translationKey="manageListings" /></h1>
-        <span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span>
-      </div>
-      <Link href={createHref}><i className="ms ms-add" /> <TranslatedText translationKey="createListing" /></Link>
-    </header>
-
-    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} />
-
-    {pageRows.length ? <div className="manage-listings-grid">{pageRows.map(({ kind, row }) => {
+  const listingRows = pageRows.map(({ kind, row }) => {
       if (kind === "services") {
         return <article className="listing-row" key={`service-${row.id}`}>
           <div className="listing-row-media"><img src={imageFor(kind, row.id)} alt="" loading="lazy" /></div>
           <div className="listing-row-body">
-            <div className="listing-row-title"><h2>{row.provider_name}</h2><span className={`is-${row.status}`}>{statusLabel(row.status)}</span></div>
-            <strong className="listing-row-price">Service · {row.category_slug}</strong>
-            <small className="listing-row-meta">Created {dateLabel(row.created_at)}</small>
+            <div className="listing-row-title"><h2>{row.provider_name}</h2><span className={`is-${row.status}`}>{isV0 ? statusLabel(row.status) : <AccountLocaleText en={statusLabel(row.status)} ko={statusLabelsKo[row.status] ?? row.status} />}</span></div>
+            <strong className="listing-row-price">{isV0 ? "Service" : <AccountLocaleText en="Service" ko="서비스" />} · {row.category_slug}</strong>
+            <small className="listing-row-meta">{isV0 ? "Created" : <AccountLocaleText en="Created" ko="등록일" />} {dateLabel(row.created_at)}</small>
           </div>
           <ServiceOwnerActions serviceId={row.id} providerName={row.provider_name} compact />
         </article>;
@@ -155,29 +146,44 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
         return <article className="listing-row" key={`bargain-${row.id}`}>
           <div className="listing-row-media"><img src={imageFor(kind, row.id)} alt="" loading="lazy" /></div>
           <div className="listing-row-body">
-            <div className="listing-row-title"><h2>{row.title}</h2><span className={`is-${row.status}`}>{statusLabel(row.status)}</span></div>
+            <div className="listing-row-title"><h2>{row.title}</h2><span className={`is-${row.status}`}>{isV0 ? statusLabel(row.status) : <AccountLocaleText en={statusLabel(row.status)} ko={statusLabelsKo[row.status] ?? row.status} />}</span></div>
             <strong className="listing-row-price">{formatMarketPrice(row.price_cents)}</strong>
-            <small className="listing-row-meta">Bargain · Created {dateLabel(row.created_at)}</small>
+            <small className="listing-row-meta">{isV0 ? "Bargain · Created" : <><AccountLocaleText en="Bargain" ko="알뜰거래" /> · <AccountLocaleText en="Created" ko="등록일" /></>} {dateLabel(row.created_at)}</small>
           </div>
-          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ms ms-edit" /> Manage</Link><Link href={`/market/${row.id}`}>View sale</Link></div>
+          <div className="listing-row-actions manage-listing-actions"><Link href={manageHref}><i className="ms ms-edit" /> {isV0 ? "Manage" : <AccountLocaleText en="Manage" ko="관리" />}</Link><Link href={`/market/${row.id}`}>{isV0 ? "View sale" : <AccountLocaleText en="View sale" ko="판매 보기" />}</Link></div>
         </article>;
       }
 
       return <article className="listing-row" key={row.id}>
         <div className="listing-row-media"><img src={imageFor(kind, row.id)} alt="" loading="lazy" /></div>
         <div className="listing-row-body">
-          <div className="listing-row-title"><h2>{row.title}</h2><span className={`is-${row.status}`}>{statusLabel(row.status)}</span></div>
+          <div className="listing-row-title"><h2>{row.title}</h2><span className={`is-${row.status}`}>{isV0 ? statusLabel(row.status) : <AccountLocaleText en={statusLabel(row.status)} ko={statusLabelsKo[row.status] ?? row.status} />}</span></div>
           <strong className="listing-row-price">{formatMarketPrice(row.price_cents)}</strong>
-          <small className="listing-row-meta">Created {dateLabel(row.created_at)}</small>
+          <small className="listing-row-meta">{isV0 ? "Created" : <AccountLocaleText en="Created" ko="등록일" />} {dateLabel(row.created_at)}</small>
         </div>
-        <ManageListingActions id={row.id} title={row.title} status={row.status} />
+        <ManageListingActions id={row.id} title={row.title} status={row.status} variant={isV0 ? "v0" : "current"} />
       </article>;
-    })}</div> : term ? (
-      <div className="manage-listings-empty"><i className="ms ms-search" /><h2>No matches for “{term}”</h2><p>Try a shorter word, or clear the search to see everything again.</p></div>
-    ) : (
-      <div className="manage-listings-empty"><i className="ms ms-list-alt" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href="/market/create"><TranslatedText translationKey="createListing" /></Link></div>
-    )}
+  });
+  const emptyState = term ? <div className="manage-listings-empty"><i className="ms ms-search" /><h2>{isV0 ? `No matches for “${term}”` : <AccountLocaleText en={`No matches for “${term}”`} ko={`“${term}” 검색 결과가 없어요`} />}</h2><p>{isV0 ? "Try a shorter word, or clear the search to see everything again." : <AccountLocaleText en="Try a shorter word, or clear the search to see everything again." ko="검색어를 줄이거나 검색을 지우고 다시 확인해 보세요." />}</p></div>
+    : <div className="manage-listings-empty"><i className="ms ms-list-alt" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href={isV0 ? "/market/create" : createHref}><TranslatedText translationKey="createListing" /></Link></div>;
 
+  if (isV0) return <section className="dashboard-content manage-listings-content">
+    <header className="manage-listings-heading"><div><p><TranslatedText translationKey="marketplace" /> &amp; Bargain</p><h1><TranslatedText translationKey="manageListings" /></h1><span>{visibleTotal} <TranslatedText translationKey="totalListings" /></span></div><Link href={createHref}><i className="ms ms-add" /> <TranslatedText translationKey="createListing" /></Link></header>
+    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} baseHref="/market/dashboard/listings-v0" />
+    {pageRows.length ? <div className="manage-listings-grid">{listingRows}</div> : emptyState}
+    <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
+    <ListSearchField placeholder="Search your listings" label="Search your listings" />
+  </section>;
+
+  return <section className="dashboard-content manage-listings-content account-modern account-workspace">
+    <AccountWorkspaceHeader kind="listings" count={tabCounts.all} primaryHref={createHref} searching={Boolean(term)} />
+    <AccountWorkspaceSummary items={[
+      { icon: "ms-shopping-bag", label: "Market items", labelKo: "마켓 상품", value: tabCounts.market, tone: "market" },
+      { icon: "ms-sell", label: "Bargain items", labelKo: "알뜰거래", value: tabCounts.bargain, tone: "market" },
+      { icon: "ms-build", label: "Services", labelKo: "서비스", value: tabCounts.services, tone: "services" },
+    ]} />
+    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} />
+    {pageRows.length ? <div className="ui-panel account-workspace-list"><div className="account-workspace-list-heading"><div><h2><AccountLocaleText en="My items & services" ko="내 상품·서비스" /></h2><p>{visibleTotal} <TranslatedText translationKey="totalListings" /></p></div><Link href="/market/dashboard/messages"><i className="ms ms-chat" aria-hidden="true" /> <TranslatedText translationKey="messages" /></Link></div><div className="manage-listings-grid">{listingRows}</div></div> : emptyState}
     <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
     <ListSearchField placeholder="Search your listings" label="Search your listings" />
   </section>;

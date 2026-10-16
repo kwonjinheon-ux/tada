@@ -18,8 +18,8 @@ type MessageRow = { id: string; conversation_id: string; sender_id: string; reci
 type OfferRow = { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
 type ReviewRow = { offer_id: string; created_at: string };
 
-export default async function MarketMessagesPage({ searchParams }: { searchParams: Promise<{ conversation?: string }> }) {
-  const { conversation: requestedConversationId } = await searchParams;
+export default async function MarketMessagesPage({ searchParams }: { searchParams: Promise<{ conversation?: string; version?: string }> }) {
+  const { conversation: requestedConversationId, version } = await searchParams;
   const user = await getServerUser();
   if (!user) {
     const redirectTo = `/market/dashboard/messages${requestedConversationId ? `?conversation=${encodeURIComponent(requestedConversationId)}` : ""}`;
@@ -98,5 +98,5 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const reviewedAtByOfferId = new Map(((rawReviews ?? []) as ReviewRow[]).map((review) => [review.offer_id, review.created_at]));
   const initialOffers: TradeOffer[] = ((rawOffers ?? []) as OfferRow[]).map((offer) => ({ id: offer.id, conversationId: offer.conversation_id, listingId: offer.listing_id, buyerId: offer.buyer_id, sellerId: offer.seller_id, amountCents: offer.amount_cents, note: offer.note, status: offer.status, createdAt: offer.created_at, respondedAt: offer.responded_at, completedAt: offer.completed_at, reviewedAt: reviewedAtByOfferId.get(offer.id) ?? null }));
 
-  return <MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} />;
+  return <MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialMessages={initialMessages} initialOffers={initialOffers} currentUserId={user.id} variant={version === "v0" ? "v0" : "current"} />;
 }

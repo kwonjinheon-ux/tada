@@ -22,12 +22,15 @@ export const dashboardNavItems: readonly DashboardNavItem[] = [
   { icon: "ms-notifications", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
   { icon: "ms-notifications", translationKey: null, label: "Notifications V0", labelKo: "알림 V0", suffix: "/notifications-v0", marketOnly: true },
   { icon: "ms-chat", translationKey: "messages", label: "Messages", suffix: "/messages" },
+  { icon: "ms-chat", translationKey: null, label: "Messages V0", labelKo: "메시지 V0", suffix: "/messages-v0", marketOnly: true },
   { icon: "ms-favorite", translationKey: "wishlist", label: "Wishlist", suffix: "/wishlist" },
   { icon: "ms-favorite", translationKey: null, label: "Wishlist V0", labelKo: "찜 목록 V0", suffix: "/wishlist-v0", marketOnly: true },
   { icon: "ms-key", translationKey: "keywords", label: "Keywords", suffix: "/keywords" },
   { icon: "ms-key", translationKey: null, label: "Keywords V0", labelKo: "키워드 V0", suffix: "/keywords-v0", marketOnly: true },
-  { icon: "ms-list-alt", translationKey: "manageListings", label: "Manage Listings", suffix: "/listings" },
+  { icon: "ms-list-alt", translationKey: null, label: "My items & services", labelKo: "내 상품·서비스", suffix: "/listings" },
+  { icon: "ms-list-alt", translationKey: null, label: "Manage Listings V0", labelKo: "내 등록 관리 V0", suffix: "/listings-v0", marketOnly: true },
   { icon: "ms-event-available", translationKey: null, label: "Reservations", suffix: "/reservations" },
+  { icon: "ms-event-available", translationKey: null, label: "Reservations V0", labelKo: "예약 및 수령 V0", suffix: "/reservations-v0", marketOnly: true },
   { icon: "ms-map", translationKey: "nearbyMap", label: "Nearby Map", suffix: "/map", railOnly: true },
 ];
 

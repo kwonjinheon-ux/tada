@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
-export function ManageListingActions({ id, title, status }: { id: string; title: string; status: "published" | "pending" | "sold" | "archived" }) {
+export function ManageListingActions({ id, title, status, variant = "current" }: { id: string; title: string; status: "published" | "pending" | "sold" | "archived"; variant?: "current" | "v0" }) {
+  const { locale } = useLanguage();
+  const ko = locale === "ko" && variant !== "v0";
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRelisting, setIsRelisting] = useState(false);
@@ -40,13 +43,14 @@ export function ManageListingActions({ id, title, status }: { id: string; title:
     }
   };
 
-  if (status === "pending") return <div className="listing-row-actions manage-listing-actions"><Link href="/market/dashboard/messages"><i className="ms ms-chat" /> View trade</Link><button type="button" disabled>Editing locked</button></div>;
-  if (status === "sold") return <div className="listing-row-actions manage-listing-actions"><button type="button" disabled><i className="ms ms-check-circle" /> Sold</button><button type="button" disabled>Sale complete</button></div>;
+  if (status === "pending") return <div className="listing-row-actions manage-listing-actions"><Link href="/market/dashboard/messages"><i className="ms ms-chat" /> {ko ? "대화 보기" : "View trade"}</Link><button type="button" disabled>{ko ? "수정 대기" : "Editing locked"}</button></div>;
+  if (status === "sold") return <div className="listing-row-actions manage-listing-actions"><button type="button" disabled><i className="ms ms-check-circle" /> {ko ? "판매 완료" : "Sold"}</button><button type="button" disabled>{ko ? "거래 완료" : "Sale complete"}</button></div>;
 
   return <div className="listing-row-actions manage-listing-actions">
-    {canRelist ? <button className="manage-listing-relist" type="button" onClick={() => void relistListing()} disabled={isRelisting}><i className="ms ms-arrow-upward" /> {isRelisting ? "Relisting..." : "Relist"}</button> : null}
-    {canEdit ? <Link href={`/market/${id}/edit`}><i className="ms ms-edit" /> Edit</Link> : null}
-    <button type="button" onClick={() => void deleteListing()} disabled={!canDelete || isDeleting}><i className="ms ms-delete" /> {isDeleting ? "Deleting..." : "Delete"}</button>
+    {variant !== "v0" ? <Link href={`/market/${id}`}><i className="ms ms-visibility" aria-hidden="true" /> {ko ? "상품 보기" : "View listing"}</Link> : null}
+    {canRelist ? <button className="manage-listing-relist" type="button" onClick={() => void relistListing()} disabled={isRelisting}><i className="ms ms-arrow-upward" /> {isRelisting ? ko ? "다시 등록 중…" : "Relisting..." : ko ? "다시 올리기" : "Relist"}</button> : null}
+    {canEdit ? <Link href={`/market/${id}/edit`}><i className="ms ms-edit" /> {ko ? "수정" : "Edit"}</Link> : null}
+    <button type="button" onClick={() => void deleteListing()} disabled={!canDelete || isDeleting}><i className="ms ms-delete" /> {isDeleting ? ko ? "삭제 중…" : "Deleting..." : ko ? "삭제" : "Delete"}</button>
     {actionError ? <p className="manage-listing-action-error" role="alert">{actionError}</p> : null}
   </div>;
 }
