@@ -21,6 +21,7 @@ export type MarketNotification = {
 };
 
 type Filter = "all" | "unread" | "message" | "offer" | "trade" | "wishlist" | "alerts";
+const EARLIER_PAGE_SIZE = 10;
 
 const filters: Array<{ value: Filter; label: string }> = [
   { value: "all", label: "All" },
@@ -92,6 +93,7 @@ export function MarketNotificationsClient({
   const ko = locale === "ko";
   const [notifications, setNotifications] = useState(initialNotifications);
   const [filter, setFilter] = useState<Filter>("all");
+  const [visibleEarlierCount, setVisibleEarlierCount] = useState(EARLIER_PAGE_SIZE);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
@@ -168,10 +170,11 @@ export function MarketNotificationsClient({
     ];
     const today = localDay(new Date().toISOString());
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const earlierItems = visibleNotifications.filter((item) => new Date(item.createdAt).getTime() < weekAgo);
     const groups = [
       { key: "today", title: ko ? "오늘" : "Today", items: visibleNotifications.filter((item) => localDay(item.createdAt) === today) },
       { key: "week", title: ko ? "이번 주" : "This week", items: visibleNotifications.filter((item) => localDay(item.createdAt) !== today && new Date(item.createdAt).getTime() >= weekAgo) },
-      { key: "earlier", title: ko ? "이전 알림" : "Earlier", items: visibleNotifications.filter((item) => new Date(item.createdAt).getTime() < weekAgo) },
+      { key: "earlier", title: ko ? "이전 알림" : "Earlier", items: earlierItems.slice(0, visibleEarlierCount) },
     ];
     return <div className="dashboard-content notifications-content account-modern account-notifications notifications-redesign">
       <header className="notifications-redesign-intro"><h1>{t("notifications")}</h1><p>{ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."}</p></header>
@@ -179,7 +182,7 @@ export function MarketNotificationsClient({
         <div className="notifications-main-column">
           <div className="notifications-toolbar">
             <div className="notifications-filter-row" role="tablist" aria-label={ko ? "알림 필터" : "Notification filters"}>
-              {modernFilters.map((item) => <button className={filter === item.value ? "is-active" : ""} type="button" role="tab" aria-selected={filter === item.value} key={item.value} onClick={() => setFilter(item.value)}>{ko ? item.ko : item.en}<b>{item.count}</b></button>)}
+              {modernFilters.map((item) => <button className={filter === item.value ? "is-active" : ""} type="button" role="tab" aria-selected={filter === item.value} key={item.value} onClick={() => { setFilter(item.value); setVisibleEarlierCount(EARLIER_PAGE_SIZE); }}>{ko ? item.ko : item.en}<b>{item.count}</b></button>)}
             </div>
             <div className="notifications-heading-actions">
               <Button variant="secondary" size="sm" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}><i className="ms ms-done-all" aria-hidden="true" />{t("markAllRead")}</Button>
@@ -187,7 +190,11 @@ export function MarketNotificationsClient({
             </div>
           </div>
           <div className="notifications-groups" aria-live="polite">
-            {visibleNotifications.length ? groups.filter((group) => group.items.length).map((group) => <section className="notifications-group" key={group.key}><h2>{group.title}</h2><div className="notifications-group-list">{group.items.map((notification) => <Link className={`notification-row ${notification.readAt ? "" : "is-unread"}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.id)}><span className={`notification-icon is-${notification.type}`}><i className={`ms ${iconByType[notification.type]}`} aria-hidden="true" /></span><span className="notification-copy"><strong>{notification.type === "message" && notification.actorName ? `${notification.actorName}${ko ? "님이 새 메시지를 보냈어요." : " sent a new message."}` : notification.title}</strong>{notification.type === "message" && notification.listingTitle ? <small>{notification.listingTitle}</small> : null}{notification.body ? <small>{notification.body}</small> : null}</span><time suppressHydrationWarning>{relativeTime(notification.createdAt, ko)}</time>{!notification.readAt ? <i className="notification-unread-dot" aria-label={ko ? "읽지 않음" : "Unread"} /> : null}<i className="ms ms-chevron-right notification-chevron" aria-hidden="true" /></Link>)}</div></section>) : <div className="notifications-empty ui-panel" role="status"><i className="ms ms-notifications" aria-hidden="true" /><strong>{ko ? filter === "unread" ? "읽지 않은 알림이 없어요" : notifications.length ? "이 필터에 알림이 없어요" : "아직 알림이 없어요" : filter === "unread" ? "You are all caught up" : notifications.length ? "Nothing in this filter" : "No notifications yet"}</strong><span>{ko ? "새로운 소식은 이곳에서 확인할 수 있어요." : "New updates will appear here."}</span>{notifications.length && filter !== "all" ? <Button variant="ghost" size="sm" onClick={() => setFilter("all")}>{ko ? "전체 알림 보기" : "View all"}</Button> : null}</div>}
+            {visibleNotifications.length ? groups.filter((group) => group.items.length).map((group) => <section className="notifications-group" key={group.key}>
+              <h2>{group.title}</h2>
+              <div className="notifications-group-list">{group.items.map((notification) => <Link className={`notification-row ${notification.readAt ? "" : "is-unread"}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.id)}><span className={`notification-icon is-${notification.type}`}><i className={`ms ${iconByType[notification.type]}`} aria-hidden="true" /></span><span className="notification-copy"><strong>{notification.type === "message" && notification.actorName ? `${notification.actorName}${ko ? "님이 새 메시지를 보냈어요." : " sent a new message."}` : notification.title}</strong>{notification.type === "message" && notification.listingTitle ? <small>{notification.listingTitle}</small> : null}{notification.body ? <small>{notification.body}</small> : null}</span><time suppressHydrationWarning>{relativeTime(notification.createdAt, ko)}</time>{!notification.readAt ? <i className="notification-unread-dot" aria-label={ko ? "읽지 않음" : "Unread"} /> : null}<i className="ms ms-chevron-right notification-chevron" aria-hidden="true" /></Link>)}</div>
+              {group.key === "earlier" && earlierItems.length > visibleEarlierCount ? <div className="notifications-load-more"><Button variant="secondary" size="sm" onClick={() => setVisibleEarlierCount((count) => count + EARLIER_PAGE_SIZE)}>{ko ? `더 보기 · ${earlierItems.length - visibleEarlierCount}개 남음` : `Show more · ${earlierItems.length - visibleEarlierCount} left`}<i className="ms ms-expand-more" aria-hidden="true" /></Button></div> : null}
+            </section>) : <div className="notifications-empty ui-panel" role="status"><i className="ms ms-notifications" aria-hidden="true" /><strong>{ko ? filter === "unread" ? "읽지 않은 알림이 없어요" : notifications.length ? "이 필터에 알림이 없어요" : "아직 알림이 없어요" : filter === "unread" ? "You are all caught up" : notifications.length ? "Nothing in this filter" : "No notifications yet"}</strong><span>{ko ? "새로운 소식은 이곳에서 확인할 수 있어요." : "New updates will appear here."}</span>{notifications.length && filter !== "all" ? <Button variant="ghost" size="sm" onClick={() => setFilter("all")}>{ko ? "전체 알림 보기" : "View all"}</Button> : null}</div>}
           </div>
         </div>
         <NotificationsAside ko={ko} />

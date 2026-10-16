@@ -9261,6 +9261,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .notifications-more-menu .ui-button { min-width: 0; }
 .notifications-group { margin-bottom: var(--space-4); }
 .notifications-group h2 { margin: 0 0 var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.notifications-load-more { display: flex; justify-content: center; margin-top: var(--space-3); }
+.notifications-load-more .ui-button { width: auto; min-height: var(--control-h-md); gap: var(--space-1); background: var(--color-surface); }
 .notifications-redesign .notifications-group-list { overflow: hidden; border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); }
 .notifications-redesign .notification-row { min-height: 0; grid-template-columns: var(--control-h-lg) minmax(0, 1fr) auto var(--space-2) var(--space-3); gap: var(--space-3); padding: var(--space-3); border-bottom: 1px solid var(--color-line-soft); }
 .notifications-redesign .notification-row:last-child { border-bottom: 0; }
