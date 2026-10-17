@@ -16,6 +16,7 @@ export type DashboardNavItem = {
 export const dashboardNavItems: readonly DashboardNavItem[] = [
   { icon: "ms-account-circle", translationKey: "myPage", label: "My page", suffix: "/my-page" },
   { icon: "ms-bolt", translationKey: "tadaChargeGuide", label: "Tada Charge guide", suffix: "/tada-charge", marketOnly: true },
+  { icon: "ms-bolt", translationKey: null, label: "Tada Charge guide V2", labelKo: "타다 충전이란 V2", suffix: "/tada-charge-v2", marketOnly: true },
   { icon: "ms-layers", translationKey: "myPageV2", label: "My page V2", suffix: "/my-page-v2" },
   { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
   { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
