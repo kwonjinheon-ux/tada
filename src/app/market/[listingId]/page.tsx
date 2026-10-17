@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { readSingleRow } from "@/lib/supabase/read-single-row";
+import { ListingUnavailable } from "@/components/market/ListingUnavailable";
 import { ListingDetailClient, type ListingDetail } from "@/components/market/ListingDetailClient";
 import { BargainSaleDetailClient } from "@/components/bargain/BargainSaleDetailClient";
 import { bargainTypeRoutes } from "@/lib/bargain/get-bargain-listing-detail";
@@ -68,13 +69,13 @@ async function getListingDetail(
   id: string,
   supabase: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>,
 ): Promise<ListingDetail | null> {
-  const { data, error } = await supabase
+  const data = await readSingleRow(() => supabase
     .from("market_listings")
     .select("id,owner_id,title,description,price_cents,category_slug,subcategory_slug,region_city,region_suburb,item_condition,trade_method,meeting_place,status,created_at,view_count")
     .eq("id", id)
-    .maybeSingle();
+    .maybeSingle(), `listing ${id}`);
 
-  if (error || !data) return null;
+  if (!data) return null;
   const listing = data as MarketListingRow;
   const [{ data: photoRows }, { data: sellerData }, { data: profileData }] = await Promise.all([
     supabase
@@ -217,7 +218,9 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
 export default async function ListingDetailPage({ params }: { params: Promise<{ listingId: string }> }) {
   const { listingId } = await params;
   const supabase = await createServerSupabaseClient();
-  if (!supabase) notFound();
+  // A client we cannot build is a configuration failure, not a listing that
+  // does not exist.
+  if (!supabase) throw new Error("Marketplace storage is unavailable, so this listing cannot be read.");
   const [listing, userResult] = await Promise.all([
     getListingDetail(listingId, supabase),
     supabase.auth.getUser(),
@@ -242,7 +245,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   // to bargain_listings before giving up. A garage sale doesn't need "related P2P
   // items" suggestions, so RelatedListings is deliberately skipped on this branch.
   const bargainResult = await getBargainListingDetail(listingId, supabase, user?.id);
-  if (!bargainResult) notFound();
+  if (!bargainResult) return <MarketDetailShell><ListingUnavailable /></MarketDetailShell>;
 
   if (bargainResult.kind === "multi") {
     // Garage and moving sales keep the browse rail too; they are a market

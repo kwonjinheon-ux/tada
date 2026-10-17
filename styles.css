@@ -1722,6 +1722,9 @@ a {
   font-size: var(--text-md);
 }
 
+/* The empty state also carries the retry on a listing that could not be read. */
+.market-search-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); margin-top: var(--space-2); }
+
 .community-empty-posts .ui-button {
   margin-top: var(--space-2);
   text-decoration: none;

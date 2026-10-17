@@ -1,3 +1,4 @@
+import { readSingleRow } from "@/lib/supabase/read-single-row";
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -61,7 +62,7 @@ export type BargainListingDetailResult =
   | null;
 
 export async function getBargainListingDetail(listingId: string, supabase: SupabaseClient, userId?: string): Promise<BargainListingDetailResult> {
-  const { data } = await supabase.from("bargain_listings").select("id,owner_id,title,description,bargain_type,price_cents,category_slug,subcategory_slug,item_condition,trade_method,meeting_place,status,created_at,main_location,sub_location,region_city,region_suburb,event_start_date,event_end_date,event_start_time,event_end_time,event_address").eq("id", listingId).maybeSingle();
+  const data = await readSingleRow(() => supabase.from("bargain_listings").select("id,owner_id,title,description,bargain_type,price_cents,category_slug,subcategory_slug,item_condition,trade_method,meeting_place,status,created_at,main_location,sub_location,region_city,region_suburb,event_start_date,event_end_date,event_start_time,event_end_time,event_address").eq("id", listingId).maybeSingle(), `bargain listing ${listingId}`);
   if (!data) return null;
   const sale = data as BargainRow;
   const [{ data: photoData }, { data: itemData }, { data: sellerData }, { data: profileData }] = await Promise.all([
