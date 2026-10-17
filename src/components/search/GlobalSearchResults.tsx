@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { SearchNoResults } from "@/components/search/SearchNoResults";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPostFeedResponseSchema, marketFeedResponseSchema } from "@/contracts/api";
 import type { CommunityPost } from "@/data/community-posts";
@@ -72,7 +73,6 @@ export function GlobalSearchResults({ query }: { query: string }) {
     };
   }, [page, results]);
 
-  const pageNumbers = useMemo(() => Array.from({ length: pagedResults.totalPages }, (_, index) => index + 1), [pagedResults.totalPages]);
 
   if (!query) {
     return <div className="global-search-empty" role="status"><i className="ms ms-search" aria-hidden="true" /><strong>{t("search")}</strong><span>{t("tryDifferentSearch")}</span></div>;
@@ -91,9 +91,7 @@ export function GlobalSearchResults({ query }: { query: string }) {
         <div className="community-post-list global-search-community-list">{pagedResults.posts.map((post) => <CommunityPostCard key={post.id} post={post} showTypeBadge={false} />)}</div>
       </section> : null}
       {!isLoading && !results.listings.length && !results.posts.length ? <SearchNoResults /> : null}
-      {pagedResults.totalPages > 1 ? <nav className="global-search-pagination" aria-label={t("search")}>
-        {pageNumbers.map((pageNumber) => <button key={pageNumber} type="button" className={pageNumber === pagedResults.currentPage ? "is-active" : undefined} aria-current={pageNumber === pagedResults.currentPage ? "page" : undefined} onClick={() => setPage(pageNumber)}>{pageNumber}</button>)}
-      </nav> : null}
+      <ListPagination page={pagedResults.currentPage} totalPages={pagedResults.totalPages} onPageChange={setPage} label={t("search")} />
     </div>
   );
 }

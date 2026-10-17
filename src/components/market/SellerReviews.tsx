@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment } from "react";
 import { Avatar } from "@/components/ui/Avatar";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 import { sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/lib/market/seller-reviews";
 
@@ -16,16 +16,6 @@ function RatingStars({ score }: { score: number }) {
   return <span className="seller-review-stars" aria-label={`${score.toFixed(1)} / 5`}>
     {[1, 2, 3, 4, 5].map((star) => <i key={star} className={score >= star ? "ms ms-star" : score >= star - 0.5 ? "ms ms-star-half" : "ms ms-star"} aria-hidden="true" />)}
   </span>;
-}
-
-/**
- * Keeps the strip short on a phone: the first, last, and current pages plus one
- * neighbour on either side, with gaps standing in for the rest.
- */
-function pageWindow(current: number, pageCount: number) {
-  if (pageCount <= 7) return Array.from({ length: pageCount }, (_, index) => index + 1);
-  const pages = [1, pageCount, current, current - 1, current + 1].filter((page) => page >= 1 && page <= pageCount);
-  return [...new Set(pages)].sort((first, second) => first - second);
 }
 
 export function SellerReviews({ sellerId, reviews, total, page, pageCount, sort }: {
@@ -49,7 +39,6 @@ export function SellerReviews({ sellerId, reviews, total, page, pageCount, sort 
 
   if (!total) return <p className="seller-reviews-empty">{t("sellerNoReviews")}</p>;
 
-  const pages = pageWindow(page, pageCount);
 
   return <section className="seller-reviews" aria-labelledby="seller-reviews-title">
     <header>
@@ -78,15 +67,6 @@ export function SellerReviews({ sellerId, reviews, total, page, pageCount, sort 
       </article>)}
     </div>
 
-    {pageCount > 1 ? <nav className="seller-review-pagination" aria-label={t("sellerPaginationLabel")}>
-      {page > 1 ? <Link href={hrefFor(sort, page - 1)} aria-label={t("sellerPreviousPage")} scroll={false}><i className="ms ms-chevron-left" aria-hidden="true" /></Link> : null}
-      {pages.map((entry, index) => <Fragment key={entry}>
-        {index > 0 && entry - pages[index - 1] > 1 ? <span className="seller-review-pagination-gap" aria-hidden="true">…</span> : null}
-        {entry === page
-          ? <span className="is-selected" aria-current="page">{entry}</span>
-          : <Link href={hrefFor(sort, entry)} scroll={false}>{entry}</Link>}
-      </Fragment>)}
-      {page < pageCount ? <Link href={hrefFor(sort, page + 1)} aria-label={t("sellerNextPage")} scroll={false}><i className="ms ms-chevron-right" aria-hidden="true" /></Link> : null}
-    </nav> : null}
+    <ListPagination page={page} totalPages={pageCount} label={t("sellerPaginationLabel")} scroll={false} />
   </section>;
 }
