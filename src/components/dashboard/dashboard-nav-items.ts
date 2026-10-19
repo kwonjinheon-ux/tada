@@ -20,6 +20,7 @@ export const dashboardNavItems: readonly DashboardNavItem[] = [
   { icon: "ms-layers", translationKey: "myPageV2", label: "My page V2", suffix: "/my-page-v2" },
   { icon: "ms-grid-view", translationKey: "dashboard", label: "Dashboard", suffix: "" },
   { icon: "ms-account-circle", translationKey: "profileSettings", label: "Profile Settings", suffix: "/profile" },
+  { icon: "ms-account-circle", translationKey: null, label: "Profile Settings V0", labelKo: "프로필 설정 V0", suffix: "/profile-v0", marketOnly: true },
   { icon: "ms-notifications", translationKey: "notifications", label: "Notifications", suffix: "/notifications" },
   { icon: "ms-notifications", translationKey: null, label: "Notifications V0", labelKo: "알림 V0", suffix: "/notifications-v0", marketOnly: true },
   { icon: "ms-chat", translationKey: "messages", label: "Messages", suffix: "/messages" },

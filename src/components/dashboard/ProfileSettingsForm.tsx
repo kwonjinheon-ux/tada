@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
@@ -15,6 +15,7 @@ type Profile = { display_name: string; phone: string | null; location_mode: "man
 
 export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
+  const isLegacy = usePathname()?.endsWith("/profile-v0") ?? false;
   const { locale, setLocale, t } = useLanguage();
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
@@ -45,6 +46,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
+  const legacySwitch = (label: string, checked = false) => <label className="profile-static-switch"><input type="checkbox" aria-label={label} checked={checked} disabled readOnly /><span aria-hidden="true" /></label>;
 
   const updateLocale = async (nextLocale: SupportedLocale) => {
     setLocale(nextLocale);
@@ -155,6 +157,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   };
 
   return <>
+    {isLegacy ? <header className="profile-v0-note"><div><h1>{locale === "ko" ? "프로필 설정 V0" : "Profile Settings V0"}</h1><p role="note">{locale === "ko" ? "이전 디자인 비교용입니다. 아래 알림·공개 스위치는 실제 계정 설정에 적용되지 않아 사용할 수 없습니다." : "Previous design for comparison. The notification and visibility switches below do not affect your account and are disabled."}</p></div><Link className="ui-button ui-button--secondary ui-button--sm" href="/market/dashboard/profile">{locale === "ko" ? "현재 버전 보기" : "View current version"}</Link></header> : null}
+    {!isLegacy ? <>
     <header className="profile-settings-intro"><Link href="/market/dashboard/my-page" className="my-page-link"><i className="ms ms-arrow-back" aria-hidden="true" />{locale === "ko" ? "마이페이지" : "My Page"}</Link><h1>{locale === "ko" ? "프로필 설정" : "Profile settings"}</h1><p>{locale === "ko" ? "내 정보와 보안을 한곳에서 관리하세요." : "Keep your account details and security up to date."}</p></header>
     <nav className="profile-settings-jump" aria-label={locale === "ko" ? "설정 바로가기" : "Settings shortcuts"}>
       <a href="#profile-account" onClick={() => setIsAccountOpen(true)}>{locale === "ko" ? "내 정보" : "Account"}</a>
@@ -162,6 +166,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       <a href="#profile-security" onClick={() => setIsSecurityOpen(true)}>{locale === "ko" ? "보안" : "Security"}</a>
       <a href="#profile-display">{locale === "ko" ? "화면" : "Display"}</a>
     </nav>
+    </> : null}
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
@@ -188,7 +193,10 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         </section>
       </div>
       <aside className="profile-static-preferences">
-        <section className="ui-panel profile-panel profile-preferences-notice"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림과 공개 설정" : "Notifications & privacy"}</h2></header><p>{locale === "ko" ? "알림 수신과 연락처 공개 설정은 아직 계정에 연결되지 않았습니다. 실제로 적용되는 설정이 준비되면 이곳에서 관리할 수 있어요." : "Notification delivery and contact visibility are not connected to your account yet. You can manage them here when account-level settings are available."}</p></section>
+        {isLegacy ? <>
+          <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{t("contactPreferences")}</h2></header><div className="profile-static-setting-list"><div><strong>{t("allowChat")}</strong>{legacySwitch(t("allowChat"), true)}</div><div><strong>{t("showPhoneNumber")}</strong>{legacySwitch(t("showPhoneNumber"))}</div><div><strong>{t("receiveEmailNotifications")}</strong>{legacySwitch(t("receiveEmailNotifications"), true)}</div></div></section>
+          <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{t("notifications")}</h2></header><div className="profile-static-setting-list"><div><p><strong>{t("chatMessages")}</strong><small>{t("inAppNotifications")}</small></p>{legacySwitch(t("chatMessages"), true)}</div><div><p><strong>{t("priceUpdates")}</strong><small>{t("weeklyNewsletter")}</small></p>{legacySwitch(t("priceUpdates"))}</div><div><p><strong>{t("smsAlerts")}</strong><small>{t("criticalAlerts")}</small></p>{legacySwitch(t("smsAlerts"), true)}</div><div><p><strong>{t("reviews")}</strong><small>{t("criticalAlerts")}</small></p>{legacySwitch(t("reviews"), true)}</div></div></section>
+        </> : <section className="ui-panel profile-panel profile-preferences-notice"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림과 공개 설정" : "Notifications & privacy"}</h2></header><p>{locale === "ko" ? "알림 수신과 연락처 공개 설정은 아직 계정에 연결되지 않았습니다. 실제로 적용되는 설정이 준비되면 이곳에서 관리할 수 있어요." : "Notification delivery and contact visibility are not connected to your account yet. You can manage them here when account-level settings are available."}</p></section>}
       </aside>
     </div>
     <section id="profile-display" className="profile-panel profile-description-text-size-panel">

@@ -86,11 +86,6 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
   const contributionPanel = <Panel title={say("Your Tada footprint", "나의 타다 발자국")}><div className="my-page-impact">{[[data.sales, say("Completed sales", "완료한 판매")], [data.serviceCount, say("Services listed", "등록한 서비스")], [data.postCount, say("Community posts", "커뮤니티 글")]].map(([value, label]) => <div key={label}><strong>{value ?? "—"}</strong><span>{label}</span></div>)}</div><p className="my-page-footnote">{say("Small actions make a stronger community.", "작은 활동이 더 좋은 동네를 만듭니다.")}</p></Panel>;
   return <div className="dashboard-content my-page-content my-page-domain-preview my-page-reference">
     <header className="my-page-title"><h1>{t("myPage")}</h1><p>{say("Your neighbourhood life, in one place.", "나의 동네 생활을 한눈에.")}</p></header>
-    <nav className="my-page-mobile-shortcuts" aria-label={say("Quick actions", "빠른 이동")}>
-      <Link href={inboxHref}><i className="ms ms-chat" aria-hidden="true" /><span>{say("Messages", "메시지")}</span>{data.unread ? <strong>{data.unread}</strong> : null}</Link>
-      <Link href="/market/wishlist"><i className="ms ms-favorite" aria-hidden="true" /><span>{say("Saved", "찜 목록")}</span></Link>
-      <Link href="/market/dashboard/listings"><i className="ms ms-list-alt" aria-hidden="true" /><span>{say("My listings", "내 등록")}</span></Link>
-    </nav>
     {data.unavailable ? <p className="my-page-notice" role="status">{say("Some activity couldn't be loaded. Refresh to try again.", "일부 활동 정보를 불러오지 못했습니다. 새로고침해 주세요.")}</p> : null}
     <div className="my-page-layout"><div className="my-page-main">
       <section className="ui-panel my-page-profile" aria-label={say("Your profile", "내 프로필")}>
