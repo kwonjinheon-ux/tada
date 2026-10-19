@@ -128,18 +128,22 @@ export function AiListingGenerator({
     }
   };
 
+  // The prop that tells GPT which language to write in also decides what the
+  // controls around it read.
+  const say = (en: string, ko: string) => (language === "ko" ? ko : en);
+
   return (
-    <section className="post-ai-generator" aria-label="AI listing generator">
+    <section className="post-ai-generator" aria-label={say("AI listing generator", "AI 상품 작성 도우미")}>
       <div className="post-ai-action-row">
         {isGenerating ? (
-          <div className="post-ai-progress" role="progressbar" aria-label="Creating listing draft" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+          <div className="post-ai-progress" role="progressbar" aria-label={say("Creating listing draft", "초안 작성 중")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
             <span className="post-ai-progress-fill" style={{ width: `${progress}%` }} />
-            <span className="post-ai-progress-label">Creating listing draft {progress}%</span>
+            <span className="post-ai-progress-label">{say("Creating listing draft", "초안 작성 중")} {progress}%</span>
           </div>
         ) : (
           <button className="post-ai-generate-button" type="button" onClick={() => void generate()} disabled={isImagesProcessing}>
             <span className="post-ai-gpt-mark" aria-hidden="true">GPT</span>
-            <span>Generate title & description with ChatGPT</span>
+            <span>{say("Generate title & description with ChatGPT", "ChatGPT로 제목과 설명 만들기")}</span>
           </button>
         )}
       </div>
@@ -150,11 +154,11 @@ export function AiListingGenerator({
       </div>
 
       {draft ? (
-        <aside className="post-ai-preview" aria-label="AI listing draft review">
-          <div className="post-ai-preview-heading"><span>AI draft review</span></div>
-          <p><strong>Title:</strong> {draft.title}</p>
-          {draft.visibleDetails.length ? <div className="post-ai-tags" aria-label="Confirmed visible details">{draft.visibleDetails.map((detail) => <span key={detail}>{detail}</span>)}</div> : null}
-          {draft.sellerConfirmation.length ? <ul className="post-ai-warnings">{draft.sellerConfirmation.map((detail) => <li key={detail}>Confirm before posting: {detail}</li>)}</ul> : null}
+        <aside className="post-ai-preview" aria-label={say("AI listing draft review", "AI 초안 검토")}>
+          <div className="post-ai-preview-heading"><span>{say("AI draft review", "AI 초안 검토")}</span></div>
+          <p><strong>{say("Title:", "제목:")}</strong> {draft.title}</p>
+          {draft.visibleDetails.length ? <div className="post-ai-tags" aria-label={say("Confirmed visible details", "사진에서 확인된 정보")}>{draft.visibleDetails.map((detail) => <span key={detail}>{detail}</span>)}</div> : null}
+          {draft.sellerConfirmation.length ? <ul className="post-ai-warnings">{draft.sellerConfirmation.map((detail) => <li key={detail}>{say("Confirm before posting:", "등록 전 확인하세요:")} {detail}</li>)}</ul> : null}
         </aside>
       ) : null}
     </section>

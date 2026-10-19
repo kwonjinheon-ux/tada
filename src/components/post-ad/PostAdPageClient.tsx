@@ -10,6 +10,7 @@ import { z } from "zod";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
+import { getMarketCategoryLabel, getMarketOptionLabel, localiseOptions } from "@/lib/market/category-label";
 import { isAcceptedMarketListingImage, marketListingImagePolicy, normalizeMarketListingImage } from "@/lib/media/market-listing-image";
 import { getSubcategories, marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { prohibitedMarketplaceItemsMessage, violatesMarketplaceProhibitedItemsPolicy } from "@/lib/market/prohibited-items";
@@ -175,6 +176,15 @@ function appendSmartphoneSpecs(description: string, specs: SmartphoneSpecs) {
 export function PostAdPageClient({ initialListing, listingSpace = "market", initialShopType }: { initialListing?: EditableListingInitialValues; listingSpace?: "market" | "bargain"; initialShopType?: ShopTypeValue }) {
   const router = useRouter();
   const { locale } = useLanguage();
+  const say = (en: string, ko: string) => (locale === "ko" ? ko : en);
+  // Stored values stay English; only what the seller reads is translated.
+  const conditionOptions = localiseOptions(conditions, locale);
+  const tradeMethodOptions = localiseOptions(tradeMethods, locale);
+  const meetingPlaceOptions = localiseOptions(meetingPlaces, locale);
+  const scratchOptions = localiseOptions(smartphoneScratchOptions, locale);
+  const colorOptions = localiseOptions(editorColors, locale);
+  const specLabels = smartphoneSpecLabels.map(({ key, label }) => ({ key, label: getMarketOptionLabel(label, locale) }));
+  const mainCategoryOptions = mainCategories.map(({ label, value }) => ({ label: getMarketCategoryLabel(label, locale), value }));
   const isEditing = Boolean(initialListing);
   const [activeSpace, setActiveSpace] = useState<"market" | "bargain">(listingSpace);
   const isBargainListing = isEditing ? listingSpace === "bargain" : activeSpace === "bargain";
@@ -231,8 +241,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
   const [itemDescriptionError, setItemDescriptionError] = useState<string | null>(null);
   const [importedCategoryKeywords, setImportedCategoryKeywords] = useState<ImportedCategoryKeyword[]>([]);
   const subCategoryOptions = mainCategory
-    ? getSubcategories(mainCategory).map(({ label, value }) => ({ label, value }))
-    : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${category.label} - ${label}`, value })));
+    ? getSubcategories(mainCategory).map(({ label, value }) => ({ label: getMarketCategoryLabel(label, locale), value }))
+    : marketplaceCategories.flatMap((category) => category.subcategories.map(({ label, value }) => ({ label: `${getMarketCategoryLabel(category.label, locale)} - ${getMarketCategoryLabel(label, locale)}`, value })));
   const shouldShowSmartphoneTemplate = mainCategory === "mobile-phones-tablets" && subCategory === "mobile-phones";
   const isMultiItemSale = isBargainListing && isMultiItemBargain(bargainType);
   const fixedBargainPriceCents = isBargainListing ? getBargainTypeMaximumPrice(bargainType) : null;
@@ -517,7 +527,7 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
   };
 
   const addEditorLink = () => {
-    const url = window.prompt("Enter a URL");
+    const url = window.prompt(say("Enter a URL", "링크 주소를 입력하세요"));
     if (!url) return;
 
     const safeUrl = url.trim();
@@ -940,9 +950,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
   const previewPhoto = photos.find((photo) => photo.id === primaryPhotoId) ?? photos[0];
   const previewListing: Listing = {
     id: "listing-preview",
-    title: title.trim() || "Your listing title",
+    title: title.trim() || say("Your listing title", "상품 제목"),
     price: price.trim() ? `$${price.trim()}` : "$0",
-    location: [location.subLocation, location.mainLocation].filter(Boolean).join(", ") || "Choose a location",
+    location: [location.subLocation, location.mainLocation].filter(Boolean).join(", ") || say("Choose a location", "지역을 선택하세요"),
     image: previewPhoto?.url ?? "/images/logo.png",
     imageAlt: title.trim() || "Listing preview",
     status: "available",
@@ -1087,15 +1097,15 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
   }, [initialShopType, isEditing]);
 
   const createHeading = isMultiItemSale
-      ? bargainType === "garage-sale" ? "Register your garage sale" : "Register your moving sale"
-      : isBargainListing ? "Create a bargain listing" : isEditing ? "Edit your listing" : "Create a new listing";
+      ? bargainType === "garage-sale" ? say("Register your garage sale", "차고 세일 등록하기") : say("Register your moving sale", "이사 세일 등록하기")
+      : isBargainListing ? say("Create a bargain listing", "떨이 상품 등록하기") : isEditing ? say("Edit your listing", "내 상품 수정하기") : say("Create a new listing", "새 상품 등록하기");
   const createDescription = isMultiItemSale
-      ? "Add a cover photo, then price and describe every item for local bargain hunters."
-      : isBargainListing ? "Share great local deals at prices people will love." : "Add the details buyers need to find and trust your item.";
+      ? say("Add a cover photo, then price and describe every item for local bargain hunters.", "대표 사진을 올리고, 각 물건의 가격과 설명을 적어 보세요.")
+      : isBargainListing ? say("Share great local deals at prices people will love.", "이웃이 반할 만한 가격으로 좋은 물건을 나눠 보세요.") : say("Add the details buyers need to find and trust your item.", "구매자가 찾고 믿을 수 있도록 상품 정보를 채워 주세요.");
 
   return (
     <main className={`marketplace-page market-create-page ${isBargainListing ? "is-bargain-form" : ""} ${isMultiItemSale ? "is-event-sale" : ""}`}>
-      <aside className="market-filter-panel market-create-filter-rail" aria-label="Market navigation and filters">
+      <aside className="market-filter-panel market-create-filter-rail" aria-label={say("Market navigation and filters", "마켓 메뉴와 필터")}>
         <MarketFilterSidebar
           activeShopType={activeShopType}
           activeCategory={mainCategory || "all"}
@@ -1119,49 +1129,49 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
       </aside>
       <section className="market-results market-create-main">
       <div className="post-ad-page">
-      <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ms ms-chevron-left" aria-hidden="true" /> {isEditing ? "Edit listing" : "Create a new listing"}</Link></div>
+      <div className="post-ad-create-bar"><Link href={listingHomePath}><i className="ms ms-chevron-left" aria-hidden="true" /> {isEditing ? say("Edit listing", "상품 수정") : say("Create a new listing", "새 상품 등록")}</Link></div>
       <header className="post-ad-intro">
         <h1>{createHeading}</h1>
         <p>{createDescription}</p>
       </header>
       <div className="post-ad-layout">
-        <section className="post-ad-card" aria-label={isEditing ? "Edit marketplace listing" : "Create a new marketplace listing"}>
+        <section className="post-ad-card" aria-label={isEditing ? say("Edit marketplace listing", "마켓 상품 수정") : say("Create a new marketplace listing", "마켓 상품 등록")}>
           <form ref={formRef} className="post-ad-form" onSubmit={submit}>
             <div className="post-field post-field-full post-title-field">
-              <div className="post-section-heading"><span>1</span><h2>{isMultiItemSale ? "Event details" : "Basics"}</h2></div>
+              <div className="post-section-heading"><span>1</span><h2>{isMultiItemSale ? say("Event details", "행사 정보") : say("Basics", "기본 정보")}</h2></div>
               {!isEditing && <PostShopTypeSelector activeShopType={activeShopType} onSelect={changeShopType} />}
-                <label htmlFor="post-title">{isMultiItemSale ? "Event title" : "Listing Title"}</label>
-                <input id="post-title" name="title" type="text" minLength={2} maxLength={120} value={title} placeholder={isMultiItemSale ? "e.g. Huge weekend garage sale - everything must go!" : "e.g. iPhone 15 Pro Max - 256GB Titanium"} onChange={(event) => handleTitleChange(event.target.value)} required />
+                <label htmlFor="post-title">{isMultiItemSale ? say("Event title", "행사 제목") : say("Listing Title", "상품 제목")}</label>
+                <input id="post-title" name="title" type="text" minLength={2} maxLength={120} value={title} placeholder={isMultiItemSale ? say("e.g. Huge weekend garage sale - everything must go!", "예) 주말 대형 차고 세일 — 전부 정리합니다!") : say("e.g. iPhone 15 Pro Max - 256GB Titanium", "예) 아이폰 15 프로 맥스 - 256GB 티타늄")} onChange={(event) => handleTitleChange(event.target.value)} required />
                 {isMultiItemSale ? <>
                   <div className="event-schedule-grid">
-                    <label>Start date<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>
-                    <label>End date<input type="date" min={eventStartDate || undefined} value={eventEndDate} onChange={(event) => setEventEndDate(event.target.value)} required /></label>
-                    <label>Start time<input type="time" value={eventStartTime} onChange={(event) => setEventStartTime(event.target.value)} required /></label>
-                    <label>End time<input type="time" value={eventEndTime} onChange={(event) => setEventEndTime(event.target.value)} required /></label>
+                    <label>{say("Start date", "시작 날짜")}<input type="date" value={eventStartDate} onChange={(event) => setEventStartDate(event.target.value)} required /></label>
+                    <label>{say("End date", "종료 날짜")}<input type="date" min={eventStartDate || undefined} value={eventEndDate} onChange={(event) => setEventEndDate(event.target.value)} required /></label>
+                    <label>{say("Start time", "시작 시간")}<input type="time" value={eventStartTime} onChange={(event) => setEventStartTime(event.target.value)} required /></label>
+                    <label>{say("End time", "종료 시간")}<input type="time" value={eventEndTime} onChange={(event) => setEventEndTime(event.target.value)} required /></label>
                   </div>
-                  <label htmlFor="event-address">Event location (full address)</label>
+                  <label htmlFor="event-address">{say("Event location (full address)", "행사 장소 (전체 주소)")}</label>
                   <div className="event-address-input"><i className="ms ms-location-on" aria-hidden="true" /><input id="event-address" type="text" value={eventAddress} onChange={(event) => setEventAddress(event.target.value)} placeholder="123 Sunny Lane, Ponsonby, Auckland" required /></div>
-                  <label htmlFor="event-description">Sale description</label>
+                  <label htmlFor="event-description">{say("Sale description", "세일 설명")}</label>
                   <textarea id="event-description" className="event-description-input" value={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} onChange={(event) => setDescription(event.target.value)} placeholder="Tell people what to expect. Mention special collections, availability, or instructions." maxLength={5_000} required />
                   <input type="hidden" name="body" value={description} />
                 </> : (isBargainListing ? (
-                  <SelectMenu id="bargain-type" name="bargain_type" label="Deal tier" icon="ms-sell" placeholder="Select deal tier" options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
-                ) : <p className="post-field-hint">Your category will be automatically suggested based on the listing title.</p>)}
+                  <SelectMenu id="bargain-type" name="bargain_type" label={say("Deal tier", "떨이 등급")} icon="ms-sell" placeholder={say("Select deal tier", "떨이 등급 선택")} options={bargainListingTypes.filter((option) => !isMultiItemBargain(option.value)).map(({ label, value }) => ({ label, value }))} value={bargainType} onChange={changeBargainType} className="bargain-type-select" disabled={isEditing} />
+                ) : <p className="post-field-hint">{say("Your category will be automatically suggested based on the listing title.", "상품 제목을 바탕으로 카테고리가 자동으로 추천됩니다.")}</p>)}
             </div>
 
             {!isMultiItemSale && <div className="post-form-grid post-form-grid-three post-category-fields">
-              <div className="post-section-heading"><span>3</span><h2>{isMultiItemSale ? "Sale settings" : "Pricing & category"}</h2></div>
+              <div className="post-section-heading"><span>3</span><h2>{isMultiItemSale ? say("Sale settings", "세일 설정") : say("Pricing & category", "가격 & 카테고리")}</h2></div>
               <div className="post-field post-price-field">
-                <label htmlFor="listing-price">Price (NZD)</label>
+                <label htmlFor="listing-price">{say("Price (NZD)", "가격 (NZD)")}</label>
                 <div className="post-price-input">
                   <span>$</span>
                   <input id="listing-price" name="price" type="text" inputMode="decimal" value={fixedBargainPriceCents === null ? price : (fixedBargainPriceCents / 100).toFixed(0)} onChange={(event) => setPrice(event.target.value)} placeholder="0.00" readOnly={fixedBargainPriceCents !== null} aria-describedby={fixedBargainPriceCents !== null ? "bargain-fixed-price-hint" : undefined} />
                 </div>
                 {fixedBargainPriceCents !== null ? <p className="post-field-hint" id="bargain-fixed-price-hint">This deal type has a fixed ${fixedBargainPriceCents / 100} price.</p> : null}
               </div>
-              <SelectMenu id="main-category" name="main_category" label="Main Category" icon="ms-layers" placeholder="Select main category" options={mainCategories} value={mainCategory} onChange={setMainCategory} />
-              <SelectMenu id="sub-category" name="sub_category" label="Sub Category" icon="ms-sell" placeholder="Select sub category" options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
-              <SelectMenu id="item-condition" name="item_condition" label="Item Condition" icon="ms-workspace-premium" placeholder="Brand new" options={conditions} value={itemCondition} onChange={setItemCondition} />
+              <SelectMenu id="main-category" name="main_category" label={say("Main Category", "대분류")} icon="ms-layers" placeholder={say("Select main category", "대분류 선택")} options={mainCategoryOptions} value={mainCategory} onChange={setMainCategory} />
+              <SelectMenu id="sub-category" name="sub_category" label={say("Sub Category", "소분류")} icon="ms-sell" placeholder={say("Select sub category", "소분류 선택")} options={subCategoryOptions} value={subCategory} onChange={setSubCategory} />
+              <SelectMenu id="item-condition" name="item_condition" label={say("Item Condition", "상품 상태")} icon="ms-workspace-premium" placeholder={say("Brand new", "새 상품")} options={conditionOptions} value={itemCondition} onChange={setItemCondition} />
             </div>}
 
             {<fieldset
@@ -1178,8 +1188,8 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
               }}
             >
               <div className="field-label-row">
-                <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? "Photos & GPT details" : "Photos & AI help"}</span></span></legend>
-                <span>{isMultiItemSale ? "One cover photo + up to 10 item photos" : "Up to 10 photos"}</span>
+                <legend><span className="post-section-heading"><span>2</span><span>{isMultiItemSale ? say("Photos & GPT details", "사진 & GPT 설명") : say("Photos & AI help", "사진 & AI 도움")}</span></span></legend>
+                <span>{isMultiItemSale ? say("One cover photo + up to 10 item photos", "대표 사진 1장 + 물건 사진 최대 10장") : say("Up to 10 photos", "사진 최대 10장")}</span>
               </div>
               <input
                 ref={photoInputRef}
@@ -1198,9 +1208,9 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
                 {(!isMultiItemSale || photos.length > 0) ? <div className="post-photo-grid">
                   {(isMultiItemSale ? photos.slice(0, 1) : photos).map((photo, index) => (
                     <div className="post-photo-card" key={photo.id}>
-                      <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label="Use this photo as main thumbnail" onClick={() => setPrimaryPhotoId(photo.id)}>
+                      <button className={`post-photo-slot ${photo.id === primaryPhotoId || (!primaryPhotoId && index === 0) ? "is-main" : ""}`} type="button" aria-label={say("Use this photo as main thumbnail", "이 사진을 대표 사진으로 사용")} onClick={() => setPrimaryPhotoId(photo.id)}>
                         <img src={photo.url} alt={photo.name ?? photo.file?.name ?? "Listing photo"} />
-                        {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>Main</span>}
+                        {(photo.id === primaryPhotoId || (!primaryPhotoId && index === 0)) && <span>{say("Main", "대표")}</span>}
                       </button>
                       <button className="post-photo-remove" type="button" aria-label={`Remove ${photo.name ?? photo.file?.name ?? "listing photo"}`} onClick={() => removePhoto(photo.id)}>
                         <i className="ms ms-close" aria-hidden="true" />
@@ -1208,32 +1218,32 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
                     </div>
                   ))}
                   {!isMultiItemSale && Array.from({ length: Math.min(1, Math.max(0, maxPhotosForCurrentListing - photos.length)) }).map((_, index) => (
-                  <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? "Add a photo" : "Add another photo"} onClick={() => openPhotoPicker(isMultiItemSale ? "cover" : "listing")}>
+                  <button className={`post-photo-upload ${photos.length ? "" : "is-initial"}`} key={`upload-${index}`} type="button" aria-label={index === 0 ? say("Add a photo", "사진 추가") : say("Add another photo", "사진 더 추가")} onClick={() => openPhotoPicker(isMultiItemSale ? "cover" : "listing")}>
                     <i className="ms ms-photo-camera" aria-hidden="true" />
-                    <span>Add</span>
+                    <span>{say("Add", "추가")}</span>
                   </button>
                   ))}
                 </div> : null}
-                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="ms ms-photo-camera" aria-hidden="true" /><span>Add</span></button> : null}</div> : null}
+                {isMultiItemSale ? <div className="event-cover-preview-column"><BargainSaleCoverPreview imageUrl={photos[0]?.url} imageAlt={photos[0]?.name ?? photos[0]?.file?.name} title={title} type={bargainType as "moving-sale" | "garage-sale"} date={eventStartDate} location={eventAddress || [location.subLocation, location.mainLocation].filter(Boolean).join(", ")} description={description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()} />{photos.length === 0 ? <button className="post-photo-upload event-cover-add-button" type="button" aria-label="Add a photo" onClick={() => openPhotoPicker("cover")}><i className="ms ms-photo-camera" aria-hidden="true" /><span>{say("Add", "추가")}</span></button> : null}</div> : null}
               </div>
               <p className="post-upload-hint">
-                <strong>{isMultiItemSale ? "Upload the cover first, then add item photos. GPT fills every item automatically." : "Click to upload or drag and drop multiple photos at once"}</strong>
+                <strong>{isMultiItemSale ? say("Upload the cover first, then add item photos. GPT fills every item automatically.", "대표 사진을 먼저 올린 뒤 물건 사진을 추가하면, GPT가 각 물건을 자동으로 채워 줍니다.") : say("Click to upload or drag and drop multiple photos at once", "클릭해서 올리거나 사진 여러 장을 한 번에 끌어다 놓으세요")}</strong>
               </p>
-              {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="ms ms-ad" aria-hidden="true" /><span>Ad space reserved</span></div> : null}
+              {isMultiItemSale ? <div className="event-cover-ad-slot" aria-hidden="true"><i className="ms ms-ad" aria-hidden="true" /><span>{say("Ad space reserved", "광고 자리")}</span></div> : null}
               {isProcessingPhotos ? <p className="post-photo-processing" role="status">이미지를 처리하고 있습니다…</p> : null}
-              {!isMultiItemSale && <section className="post-photo-ai-help" aria-label="AI help">
+              {!isMultiItemSale && <section className="post-photo-ai-help" aria-label={say("AI help", "AI 도움")}>
                 <AiListingGenerator
                   title={title}
                   description={description}
                   price={price}
-                  condition={conditions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
+                  condition={conditionOptions.find((condition) => condition.value === itemCondition)?.label ?? itemCondition}
                   location={[location.mainLocation, location.subLocation].filter(Boolean).join(", ")}
                   language={locale}
                   listingSpace={listingSpace}
                   additionalDetails={[
-                    { label: "Trade method", value: tradeMethods.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
-                    { label: "Meeting place", value: meetingPlaces.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
-                    ...smartphoneSpecLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
+                    { label: say("Trade method", "거래 방법"), value: tradeMethodOptions.find((method) => method.value === tradeMethod)?.label ?? tradeMethod },
+                    { label: say("Meeting place", "거래 장소"), value: meetingPlaceOptions.find((place) => place.value === meetingPlace)?.label ?? meetingPlace },
+                    ...specLabels.map(({ key, label }) => ({ label, value: smartphoneSpecs[key].trim() })),
                   ].filter(({ value }) => value.length > 0)}
                   imagePaths={photos
                     .filter((photo) => Boolean(photo.draftPath))
@@ -1250,86 +1260,86 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
             {isMultiItemSale ? <BargainSaleItemsEditor photos={eventInventoryPhotos} items={bargainSaleItems} onChange={updateBargainSaleItem} onAddItem={() => openPhotoPicker("inventory")} onRemoveItem={removeBargainSaleItem} onGenerateDescriptions={() => void generateItemDescriptions()} isGeneratingDescriptions={isGeneratingItemDescriptions} generationProgress={itemDescriptionProgress} generationError={itemDescriptionError} /> : null}
 
             {!isMultiItemSale && <div className="post-field post-field-full post-description-field">
-              <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? "Sale description" : "Description"}</h2></div>
+              <div className="post-section-heading"><span>5</span><h2>{isMultiItemSale ? say("Sale description", "세일 설명") : say("Description", "상세 설명")}</h2></div>
               <div className="post-editor">
-                <div className="post-editor-toolbar" aria-label="Description formatting">
-                  <button type="button" aria-label="Undo" title="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="ms ms-rotate-left" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Redo" title="Redo" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("redo")}><i className="ms ms-rotate-right" aria-hidden="true" /></button>
-                  <select aria-label="Text style" title="Text style" defaultValue="p" disabled={isHtmlMode} onChange={(event) => runEditorCommand("formatBlock", `<${event.target.value}>`)}>
-                    <option value="p">Paragraph</option>
-                    <option value="h2">Heading</option>
-                    <option value="h3">Subheading</option>
-                    <option value="blockquote">Quote</option>
+                <div className="post-editor-toolbar" aria-label={say("Description formatting", "설명 서식")}>
+                  <button type="button" aria-label={say("Undo", "실행 취소")} title={say("Undo", "실행 취소")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("undo")}><i className="ms ms-rotate-left" aria-hidden="true" /></button>
+                  <button type="button" aria-label={say("Redo", "다시 실행")} title={say("Redo", "다시 실행")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("redo")}><i className="ms ms-rotate-right" aria-hidden="true" /></button>
+                  <select aria-label={say("Text style", "글 스타일")} title={say("Text style", "글 스타일")} defaultValue="p" disabled={isHtmlMode} onChange={(event) => runEditorCommand("formatBlock", `<${event.target.value}>`)}>
+                    <option value="p">{say("Paragraph", "본문")}</option>
+                    <option value="h2">{say("Heading", "제목")}</option>
+                    <option value="h3">{say("Subheading", "소제목")}</option>
+                    <option value="blockquote">{say("Quote", "인용")}</option>
                   </select>
                   <span className="post-editor-divider" aria-hidden="true" />
-                  <button type="button" aria-label="Bold" title="Bold" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("bold")}><strong>B</strong></button>
-                  <button type="button" aria-label="Italic" title="Italic" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("italic")}><em>I</em></button>
-                  <button type="button" aria-label="Underline" title="Underline" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("underline")}><u>U</u></button>
-                  <button type="button" aria-label="Strikethrough" title="Strikethrough" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("strikeThrough")}><s>S</s></button>
-                  <div className="post-editor-color-palette" role="group" aria-label="Text color">
-                    {editorColors.map((color) => (
-                      <button className={`post-editor-color-swatch ${textColor === color.value ? "is-selected" : ""}`} key={color.value} type="button" aria-label={`Set text color to ${color.label}`} title={color.label} disabled={isHtmlMode} style={{ backgroundColor: color.value }} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                  <button type="button" aria-label={say("Bold", "굵게")} title={say("Bold", "굵게")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("bold")}><strong>B</strong></button>
+                  <button type="button" aria-label={say("Italic", "기울임")} title={say("Italic", "기울임")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("italic")}><em>I</em></button>
+                  <button type="button" aria-label={say("Underline", "밑줄")} title={say("Underline", "밑줄")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("underline")}><u>U</u></button>
+                  <button type="button" aria-label={say("Strikethrough", "취소선")} title={say("Strikethrough", "취소선")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("strikeThrough")}><s>S</s></button>
+                  <div className="post-editor-color-palette" role="group" aria-label={say("Text color", "글자 색")}>
+                    {colorOptions.map((color) => (
+                      <button className={`post-editor-color-swatch ${textColor === color.value ? "is-selected" : ""}`} key={color.value} type="button" aria-label={say(`Set text color to ${color.label}`, `글자 색을 ${color.label}(으)로`)} title={color.label} disabled={isHtmlMode} style={{ backgroundColor: color.value }} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                         setTextColor(color.value);
                         runEditorCommand("foreColor", color.value);
                       }} />
                     ))}
                   </div>
                   <span className="post-editor-divider" aria-hidden="true" />
-                  <button type="button" aria-label="Bulleted list" title="Bulleted list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="ms ms-list" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Numbered list" title="Numbered list" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="ms ms-format-list-numbered" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Insert link" title="Insert link" onMouseDown={(event) => event.preventDefault()} onClick={addEditorLink}><i className="ms ms-link" aria-hidden="true" /></button>
-                  <button type="button" aria-label="Remove formatting" title="Remove formatting" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("removeFormat")}><i className="ms ms-ink-eraser" aria-hidden="true" /></button>
+                  <button type="button" aria-label={say("Bulleted list", "글머리 기호 목록")} title={say("Bulleted list", "글머리 기호 목록")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertUnorderedList")}><i className="ms ms-list" aria-hidden="true" /></button>
+                  <button type="button" aria-label={say("Numbered list", "번호 목록")} title={say("Numbered list", "번호 목록")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("insertOrderedList")}><i className="ms ms-format-list-numbered" aria-hidden="true" /></button>
+                  <button type="button" aria-label={say("Insert link", "링크 넣기")} title={say("Insert link", "링크 넣기")} onMouseDown={(event) => event.preventDefault()} onClick={addEditorLink}><i className="ms ms-link" aria-hidden="true" /></button>
+                  <button type="button" aria-label={say("Remove formatting", "서식 지우기")} title={say("Remove formatting", "서식 지우기")} onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand("removeFormat")}><i className="ms ms-ink-eraser" aria-hidden="true" /></button>
                   <span className="post-editor-divider" aria-hidden="true" />
-                  <button className={isHtmlMode ? "is-active" : ""} type="button" aria-label="Edit HTML source" title="Edit HTML source" onClick={toggleHtmlMode}><i className="ms ms-code" aria-hidden="true" /></button>
+                  <button className={isHtmlMode ? "is-active" : ""} type="button" aria-label={say("Edit HTML source", "HTML 편집")} title={say("Edit HTML source", "HTML 편집")} onClick={toggleHtmlMode}><i className="ms ms-code" aria-hidden="true" /></button>
                 </div>
                 <input type="hidden" name="body" value={description} />
                 {isHtmlMode ? (
-                  <textarea className="post-editor-source" id="post-description" value={description} onChange={(event) => setDescription(event.target.value)} spellCheck={false} aria-label="HTML source" />
+                  <textarea className="post-editor-source" id="post-description" value={description} onChange={(event) => setDescription(event.target.value)} spellCheck={false} aria-label={say("HTML source", "HTML 원본")} />
                 ) : (
                   <div ref={editorRef} id="post-description" className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder="Write a clear, detailed and friendly description buyers can trust. Include the item’s condition, key features, included accessories, any flaws, pickup or delivery details, and why you are selling. This description can be reused until the item sells, so make it helpful and complete." onInput={(event) => setDescription(event.currentTarget.innerHTML)} />
                 )}
               </div>
               {shouldShowSmartphoneTemplate && (
-                <section className="category-template-panel" aria-label="Smartphone listing details">
+                <section className="category-template-panel" aria-label={say("Smartphone listing details", "스마트폰 상세 정보")}>
                   <div className="category-template-heading">
                     <div>
-                      <h2>Smartphone details</h2>
-                      <p>These fields will be added to your listing description when you post.</p>
+                      <h2>{say("Smartphone details", "스마트폰 상세 정보")}</h2>
+                      <p>{say("These fields will be added to your listing description when you post.", "여기 입력한 내용은 등록할 때 상세 설명에 함께 들어갑니다.")}</p>
                     </div>
-                    <span>Electronics / Mobile phones</span>
+                    <span>{say("Electronics / Mobile phones", "전자제품 / 휴대폰")}</span>
                   </div>
                   <div className="category-template-grid">
                     <div className="post-field">
-                      <label htmlFor="smartphone-brand">Brand</label>
-                      <input id="smartphone-brand" type="text" value={smartphoneSpecs.brand} onChange={(event) => updateSmartphoneSpec("brand", event.target.value)} placeholder="e.g. Apple" />
+                      <label htmlFor="smartphone-brand">{say("Brand", "브랜드")}</label>
+                      <input id="smartphone-brand" type="text" value={smartphoneSpecs.brand} onChange={(event) => updateSmartphoneSpec("brand", event.target.value)} placeholder={say("e.g. Apple", "예) 애플")} />
                     </div>
                     <div className="post-field">
-                      <label htmlFor="smartphone-model">Model</label>
-                      <input id="smartphone-model" type="text" value={smartphoneSpecs.model} onChange={(event) => updateSmartphoneSpec("model", event.target.value)} placeholder="e.g. iPhone 15 Pro Max" />
+                      <label htmlFor="smartphone-model">{say("Model", "모델")}</label>
+                      <input id="smartphone-model" type="text" value={smartphoneSpecs.model} onChange={(event) => updateSmartphoneSpec("model", event.target.value)} placeholder={say("e.g. iPhone 15 Pro Max", "예) 아이폰 15 프로 맥스")} />
                     </div>
                     <div className="post-field">
-                      <label htmlFor="smartphone-storage">Storage / HDD capacity</label>
-                      <input id="smartphone-storage" type="text" value={smartphoneSpecs.storage} onChange={(event) => updateSmartphoneSpec("storage", event.target.value)} placeholder="e.g. 256GB" />
+                      <label htmlFor="smartphone-storage">{say("Storage / HDD capacity", "저장 용량")}</label>
+                      <input id="smartphone-storage" type="text" value={smartphoneSpecs.storage} onChange={(event) => updateSmartphoneSpec("storage", event.target.value)} placeholder={say("e.g. 256GB", "예) 256GB")} />
                     </div>
                     <div className="post-field">
-                      <label htmlFor="smartphone-memory">Memory</label>
-                      <input id="smartphone-memory" type="text" value={smartphoneSpecs.memory} onChange={(event) => updateSmartphoneSpec("memory", event.target.value)} placeholder="e.g. 8GB RAM" />
+                      <label htmlFor="smartphone-memory">{say("Memory", "메모리")}</label>
+                      <input id="smartphone-memory" type="text" value={smartphoneSpecs.memory} onChange={(event) => updateSmartphoneSpec("memory", event.target.value)} placeholder={say("e.g. 8GB RAM", "예) RAM 8GB")} />
                     </div>
                     <div className="post-field">
-                      <label htmlFor="smartphone-colour">Colour</label>
-                      <input id="smartphone-colour" type="text" value={smartphoneSpecs.colour} onChange={(event) => updateSmartphoneSpec("colour", event.target.value)} placeholder="e.g. Natural Titanium" />
+                      <label htmlFor="smartphone-colour">{say("Colour", "색상")}</label>
+                      <input id="smartphone-colour" type="text" value={smartphoneSpecs.colour} onChange={(event) => updateSmartphoneSpec("colour", event.target.value)} placeholder={say("e.g. Natural Titanium", "예) 내추럴 티타늄")} />
                     </div>
-              <SelectMenu id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label="LCD Scratch" icon="ms-smartphone" placeholder="Select LCD condition" options={smartphoneScratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
+              <SelectMenu id="smartphone-lcd-scratch" name="smartphone_lcd_scratch" label={say("LCD Scratch", "액정 흠집")} icon="ms-smartphone" placeholder={say("Select LCD condition", "액정 상태 선택")} options={scratchOptions} value={smartphoneSpecs.lcdScratch} onChange={(value) => updateSmartphoneSpec("lcdScratch", value)} />
                   </div>
                 </section>
               )}
             </div>}
 
             {!isMultiItemSale && <div className="post-form-grid post-location-grid">
-              <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? "Event location & trade" : "Location & trade"}</h2></div>
+              <div className="post-section-heading"><span>4</span><h2>{isMultiItemSale ? say("Event location & trade", "행사 장소 & 거래") : say("Location & trade", "지역 & 거래")}</h2></div>
               <ListingLocationSelector value={location} onChange={setLocation} />
-              <SelectMenu id="trade-method" name="trade_method" label="Trade Method" icon="ms-local-shipping" placeholder="Pickup & delivery" options={tradeMethods} value={tradeMethod} onChange={setTradeMethod} />
-              <SelectMenu id="meeting-place" name="meeting_place" label="Meeting Place" icon="ms-apartment" placeholder="Select a safe meeting place" options={meetingPlaces} value={meetingPlace} onChange={setMeetingPlace} />
+              <SelectMenu id="trade-method" name="trade_method" label={say("Trade Method", "거래 방법")} icon="ms-local-shipping" placeholder={say("Pickup & delivery", "직거래 & 배송")} options={tradeMethodOptions} value={tradeMethod} onChange={setTradeMethod} />
+              <SelectMenu id="meeting-place" name="meeting_place" label={say("Meeting Place", "거래 장소")} icon="ms-apartment" placeholder={say("Select a safe meeting place", "안전한 거래 장소 선택")} options={meetingPlaceOptions} value={meetingPlace} onChange={setMeetingPlace} />
             </div>}
 
             {(notice || error) && (
@@ -1339,35 +1349,35 @@ export function PostAdPageClient({ initialListing, listingSpace = "market", init
             )}
 
             {<div className="post-submit-row">
-              <p>By posting, you agree to our <Link href="#">Terms of Service</Link>.</p>
+              <p>{say("By posting, you agree to our ", "등록하면 ")}<Link href="#">{say("Terms of Service", "이용약관")}</Link>{say(".", "에 동의하는 것으로 봅니다.")}</p>
               <PostSubmitButton
                 type="submit"
                 disabled={isSubmitting || isProcessingPhotos}
                 isProgressing={isSubmitting}
                 progress={submitButtonProgress}
               >
-                {isSubmitting ? `${isEditing ? "Saving" : "Posting"} ${submitButtonProgress}%` : isEditing ? "Save changes" : isMultiItemSale ? `Launch ${bargainType === "garage-sale" ? "garage" : "moving"} sale` : "Post Now"}
+                {isSubmitting ? `${isEditing ? say("Saving", "저장 중") : say("Posting", "등록 중")} ${submitButtonProgress}%` : isEditing ? say("Save changes", "변경 사항 저장") : isMultiItemSale ? (bargainType === "garage-sale" ? say("Launch garage sale", "차고 세일 시작") : say("Launch moving sale", "이사 세일 시작")) : say("Post Now", "등록하기")}
               </PostSubmitButton>
             </div>}
           </form>
         </section>
 
-        <aside className="post-ad-sidebar" aria-label="Listing preview and posting tips">
+        <aside className="post-ad-sidebar" aria-label={say("Listing preview and posting tips", "미리보기와 등록 팁")}>
           <MarketListingPreview
             listing={previewListing}
             mainCategory={mainCategory}
             subCategory={subCategory}
-            condition={conditions.find((option) => option.value === itemCondition)?.label ?? itemCondition}
-            tradeMethod={tradeMethods.find((option) => option.value === tradeMethod)?.label ?? tradeMethod}
-            meetingPlace={meetingPlaces.find((option) => option.value === meetingPlace)?.label ?? meetingPlace}
+            condition={conditionOptions.find((option) => option.value === itemCondition)?.label ?? itemCondition}
+            tradeMethod={tradeMethodOptions.find((option) => option.value === tradeMethod)?.label ?? tradeMethod}
+            meetingPlace={meetingPlaceOptions.find((option) => option.value === meetingPlace)?.label ?? meetingPlace}
             description={description}
             smartphoneDetails={smartphoneSpecs}
           />
-          <section className="post-ad-tips" aria-label="Posting tips">
-            <h2>Tips for a great listing</h2>
-          <article><i className="ms ms-lightbulb" aria-hidden="true" /><div><h2>Good Photos</h2><p>Take photos in bright, natural light from multiple angles.</p></div></article>
-          <article><i className="ms ms-check-circle" aria-hidden="true" /><div><h2>Clear Pricing</h2><p>Research similar items to set a competitive price.</p></div></article>
-          <article><i className="ms ms-security" aria-hidden="true" /><div><h2>Safety First</h2><p>Meet in public places and use secure payment methods.</p></div></article>
+          <section className="post-ad-tips" aria-label={say("Posting tips", "등록 팁")}>
+            <h2>{say("Tips for a great listing", "좋은 상품 등록을 위한 팁")}</h2>
+          <article><i className="ms ms-lightbulb" aria-hidden="true" /><div><h2>{say("Good Photos", "좋은 사진")}</h2><p>{say("Take photos in bright, natural light from multiple angles.", "밝은 자연광에서 여러 각도로 찍어 주세요.")}</p></div></article>
+          <article><i className="ms ms-check-circle" aria-hidden="true" /><div><h2>{say("Clear Pricing", "적정한 가격")}</h2><p>{say("Research similar items to set a competitive price.", "비슷한 상품을 찾아보고 합리적인 가격을 정해 보세요.")}</p></div></article>
+          <article><i className="ms ms-security" aria-hidden="true" /><div><h2>{say("Safety First", "안전이 먼저")}</h2><p>{say("Meet in public places and use secure payment methods.", "공공장소에서 만나고 안전한 결제 수단을 사용하세요.")}</p></div></article>
           </section>
         </aside>
       </div>

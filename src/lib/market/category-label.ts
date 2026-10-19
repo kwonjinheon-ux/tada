@@ -139,3 +139,54 @@ export function getMarketCategoryLabel(label: string, locale: SupportedLocale) {
   if (otherCategory) return `기타 ${koreanLabels[otherCategory[1]] ?? otherCategory[1]}`;
   return koreanLabels[label] ?? label;
 }
+
+// The fixed vocabulary the marketplace forms and cards are built from:
+// shop types, deal tiers, conditions, trade methods and the smartphone
+// template. Like the category labels above, the English string is the stored
+// value and this is only how it is shown.
+const koreanOptionLabels: Record<string, string> = {
+  "Second Hands": "중고 거래",
+  "Garage Sale": "차고 세일",
+  "Moving Sale": "이사 세일",
+  "2 Dollar Shop": "2달러 샵",
+  "Group Buy": "공동구매",
+  "$2 Deals": "2달러 상품",
+  "$5 Deals": "5달러 상품",
+  "$10 Deals": "10달러 상품",
+  "Brand new": "새 상품",
+  "Like new": "거의 새것",
+  Excellent: "매우 좋음",
+  Good: "좋음",
+  Fair: "보통",
+  "Pickup & delivery": "직거래 & 배송",
+  "Pickup only": "직거래만",
+  "Delivery only": "배송만",
+  "Public location": "공공장소",
+  "Pickup from home": "집에서 수령",
+  "No visible scratches": "눈에 띄는 흠집 없음",
+  "Light scratches": "약한 흠집",
+  "Deep scratches": "깊은 흠집",
+  "Cracked or damaged": "파손 또는 손상",
+  "Not checked": "확인 안 함",
+  Brand: "브랜드",
+  Model: "모델",
+  "Storage / HDD capacity": "저장 용량",
+  Memory: "메모리",
+  Colour: "색상",
+  "LCD scratch": "액정 흠집",
+  Charcoal: "차콜",
+  Red: "빨강",
+  Orange: "주황",
+  Green: "초록",
+  Blue: "파랑",
+};
+
+export function getMarketOptionLabel(label: string, locale: SupportedLocale) {
+  if (locale !== "ko") return label;
+  return koreanOptionLabels[label] ?? label;
+}
+
+/** A select built from stored English labels, shown in the reader's language. */
+export function localiseOptions<T extends { label: string }>(options: readonly T[], locale: SupportedLocale) {
+  return options.map((option) => ({ ...option, label: getMarketOptionLabel(option.label, locale) }));
+}
