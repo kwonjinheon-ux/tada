@@ -37,7 +37,6 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
   const { locale, t } = useLanguage();
   const ko = locale === "ko";
   const [filter, setFilter] = useState<Area>("all");
-  const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [activityFilter, setActivityFilter] = useState<"all" | "message" | "notification">("all");
   const say = (en: string, kr: string) => ko ? kr : en;
@@ -87,6 +86,11 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
   const contributionPanel = <Panel title={say("Your Tada footprint", "나의 타다 발자국")}><div className="my-page-impact">{[[data.sales, say("Completed sales", "완료한 판매")], [data.serviceCount, say("Services listed", "등록한 서비스")], [data.postCount, say("Community posts", "커뮤니티 글")]].map(([value, label]) => <div key={label}><strong>{value ?? "—"}</strong><span>{label}</span></div>)}</div><p className="my-page-footnote">{say("Small actions make a stronger community.", "작은 활동이 더 좋은 동네를 만듭니다.")}</p></Panel>;
   return <div className="dashboard-content my-page-content my-page-domain-preview my-page-reference">
     <header className="my-page-title"><h1>{t("myPage")}</h1><p>{say("Your neighbourhood life, in one place.", "나의 동네 생활을 한눈에.")}</p></header>
+    <nav className="my-page-mobile-shortcuts" aria-label={say("Quick actions", "빠른 이동")}>
+      <Link href={inboxHref}><i className="ms ms-chat" aria-hidden="true" /><span>{say("Messages", "메시지")}</span>{data.unread ? <strong>{data.unread}</strong> : null}</Link>
+      <Link href="/market/wishlist"><i className="ms ms-favorite" aria-hidden="true" /><span>{say("Saved", "찜 목록")}</span></Link>
+      <Link href="/market/dashboard/listings"><i className="ms ms-list-alt" aria-hidden="true" /><span>{say("My listings", "내 등록")}</span></Link>
+    </nav>
     {data.unavailable ? <p className="my-page-notice" role="status">{say("Some activity couldn't be loaded. Refresh to try again.", "일부 활동 정보를 불러오지 못했습니다. 새로고침해 주세요.")}</p> : null}
     <div className="my-page-layout"><div className="my-page-main">
       <section className="ui-panel my-page-profile" aria-label={say("Your profile", "내 프로필")}>
@@ -104,9 +108,8 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
           <h2>{say("Tada charge", "타다 충전 중")}</h2>
           <div className="my-page-charge-content">
             <div className="my-page-ring" style={{ "--charge": `${charge}%` } as CSSProperties} role="img" aria-label={say(`Profile setup ${charge}% complete`, `프로필 설정 ${charge}% 완료`)}><span><i className="ms ms-bolt" aria-hidden="true" /><strong>{charge}%</strong></span></div>
-            <div className="my-page-charge-summary"><p>{say("Profile setup progress", "프로필 설정 진행률")}</p><ul className={showChargeDetails ? "is-expanded" : ""} id="charge-checks">{checks.map((check) => <li key={check.label}><i className={`ms ${check.done ? "ms-check-circle" : "ms-circle ms--outline"}`} aria-hidden="true" />{check.label}</li>)}</ul><Button variant="primary" size="sm" aria-expanded={showChargeDetails} aria-controls="charge-checks charge-details" onClick={() => setShowChargeDetails(!showChargeDetails)}>{showChargeDetails ? say("Show less", "접기") : say("View details", "자세히 보기")} <i className="ms ms-arrow-forward" aria-hidden="true" /></Button></div>
+            <div className="my-page-charge-summary"><p>{say("Profile setup progress", "프로필 설정 진행률")}</p><ul>{checks.map((check) => <li key={check.label}><i className={`ms ${check.done ? "ms-check-circle" : "ms-circle ms--outline"}`} aria-hidden="true" />{check.label}</li>)}</ul><Link className="ui-button ui-button--primary ui-button--sm" href="/market/dashboard/tada-charge">{say("View details", "자세히 보기")} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
           </div>
-          <p id="charge-details" hidden={!showChargeDetails}>{say("Each completed step contributes equally to your profile setup score. This is not a trust rating or identity verification.", "세 가지 설정의 완료 여부를 같은 비중으로 계산합니다. 신뢰 점수나 신원 인증을 의미하지 않습니다.")} <Link href={profileHref}>{say("Complete your profile", "프로필 완성하기")}</Link></p>
         </div>
       </section>
       <Panel title={<>{say("Check first", "먼저 확인해요")}{attention.length > 0 ? <span className="my-page-attention-count">{attention.length}</span> : null}</>} action={<ActionLink href={notificationsHref}>{say("View notifications", "알림 보기")}</ActionLink>}><div className="my-page-today">{attention.map((item) => <article className={`ui-panel my-page-task is-${item.area}`} key={item.href}><i className={`ms ${item.icon} my-page-task-icon`} aria-hidden="true" /><div><span className="my-page-tag">{item.area === "account" ? say("My account", "내 계정") : labels[item.area]}</span><h3>{item.title}</h3><p>{item.description}</p><ActionLink href={item.href}>{item.action}</ActionLink></div></article>)}</div>{!attention.length ? <div className="my-page-all-caught-up"><i className="ms ms-check-circle" aria-hidden="true" /><div><strong>{say("You’re all caught up", "지금은 확인할 일이 없어요")}</strong><p>{say("New offers, messages and updates will appear here.", "새 제안, 메시지, 중요한 업데이트가 여기에 표시됩니다.")}</p></div></div> : null}</Panel>

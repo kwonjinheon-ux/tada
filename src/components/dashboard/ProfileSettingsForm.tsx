@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { descriptionTextScale, MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizeControls } from "@/components/ui/TextSizeSection";
@@ -11,16 +12,6 @@ import { findMainLocation } from "@/lib/market/nz-location";
 import type { MainLocation } from "@/data/nzLocations";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
-type StaticSwitches = { allowChat: boolean; showPhoneNumber: boolean; emailNotifications: boolean; chatMessages: boolean; priceUpdates: boolean; smsAlerts: boolean; reviews: boolean };
-const PROFILE_PREFERENCES_KEY = "tada-profile-preferences";
-const defaultStaticSwitches: StaticSwitches = { allowChat: true, showPhoneNumber: false, emailNotifications: true, chatMessages: true, priceUpdates: false, smsAlerts: true, reviews: true };
-const readStaticSwitches = (): StaticSwitches => {
-  if (typeof window === "undefined") return defaultStaticSwitches;
-  try {
-    const stored = JSON.parse(window.localStorage.getItem(PROFILE_PREFERENCES_KEY) ?? "null");
-    return stored && typeof stored === "object" ? { ...defaultStaticSwitches, ...stored } : defaultStaticSwitches;
-  } catch { return defaultStaticSwitches; }
-};
 
 export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
@@ -51,11 +42,9 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
-  const [staticSwitches, setStaticSwitches] = useState<StaticSwitches>(readStaticSwitches);
-  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep, staticSwitches: readStaticSwitches() }));
+  const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
-  const staticSwitch = (key: keyof typeof staticSwitches) => <label className="profile-static-switch"><input type="checkbox" checked={staticSwitches[key]} onChange={() => setStaticSwitches((current) => ({ ...current, [key]: !current[key] }))} /><span aria-hidden="true" /></label>;
 
   const updateLocale = async (nextLocale: SupportedLocale) => {
     setLocale(nextLocale);
@@ -80,7 +69,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: nickname });
     if (!error) await supabase.auth.updateUser({ data: { full_name: nickname } });
     setStatus(error ? error.message : "Nickname updated.");
-    if (!error) { setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false); }
+    if (!error) { setDisplayName(nickname); setNicknameDraft(nickname); setSavedSettings((current) => ({ ...current, displayName: nickname })); setIsEditingNickname(false); }
     setIsSavingNickname(false);
   };
 
@@ -134,9 +123,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       : { email: nextEmail, data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } };
     const { error: authError } = await supabase.auth.updateUser(authUpdate);
     if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
-    window.localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify(staticSwitches));
     setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
-    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, location, locale, descriptionTextSizeStep, staticSwitches });
+    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, location, locale, descriptionTextSizeStep });
     setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
     setIsSavingAll(false);
     router.refresh();
@@ -144,7 +132,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
 
   const discardSettings = () => {
     setDisplayName(savedSettings.displayName); setNicknameDraft(savedSettings.displayName); setEmailDraft(savedSettings.email); setPhone(savedSettings.phone);
-    setLocationMode(savedSettings.locationMode); setLocation(savedSettings.location); setLocale(savedSettings.locale); setDescriptionTextSizeStep(savedSettings.descriptionTextSizeStep); setStaticSwitches(savedSettings.staticSwitches);
+    setLocationMode(savedSettings.locationMode); setLocation(savedSettings.location); setLocale(savedSettings.locale); setDescriptionTextSizeStep(savedSettings.descriptionTextSizeStep);
     setIsEditingNickname(false); setStatus("Changes discarded.");
   };
 
@@ -167,6 +155,13 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   };
 
   return <>
+    <header className="profile-settings-intro"><Link href="/market/dashboard/my-page" className="my-page-link"><i className="ms ms-arrow-back" aria-hidden="true" />{locale === "ko" ? "마이페이지" : "My Page"}</Link><h1>{locale === "ko" ? "프로필 설정" : "Profile settings"}</h1><p>{locale === "ko" ? "내 정보와 보안을 한곳에서 관리하세요." : "Keep your account details and security up to date."}</p></header>
+    <nav className="profile-settings-jump" aria-label={locale === "ko" ? "설정 바로가기" : "Settings shortcuts"}>
+      <a href="#profile-account" onClick={() => setIsAccountOpen(true)}>{locale === "ko" ? "내 정보" : "Account"}</a>
+      <a href="#profile-location" onClick={() => setIsLocationOpen(true)}>{locale === "ko" ? "지역" : "Location"}</a>
+      <a href="#profile-security" onClick={() => setIsSecurityOpen(true)}>{locale === "ko" ? "보안" : "Security"}</a>
+      <a href="#profile-display">{locale === "ko" ? "화면" : "Display"}</a>
+    </nav>
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
         <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
@@ -175,7 +170,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
           <label className="profile-language-select"><span>{t("displayLanguage")}</span><select value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select></label>
           <p>{t("supportedNow")}</p>
         </section>
-        <section className={`profile-panel profile-account-panel ${isAccountOpen ? "is-open" : ""}`}>
+        <section id="profile-account" className={`profile-panel profile-account-panel ${isAccountOpen ? "is-open" : ""}`}>
           <button className="profile-section-toggle" type="button" aria-expanded={isAccountOpen} onClick={() => setIsAccountOpen((value) => !value)}><span><i className="ms ms-person" aria-hidden="true" /> {t("account")}</span><i className={`icon icon-expand-${isAccountOpen ? "less" : "more"}`} aria-hidden="true" /></button>
           {isAccountOpen ? <div className="profile-account-content"><div className="profile-account-fields">
             <div className="profile-account-field"><span>{t("nickname")}</span>{isEditingNickname ? <form className="profile-account-nickname-form" onSubmit={(event) => { event.preventDefault(); void saveNickname(); }}><input aria-label={t("nickname")} autoFocus maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} /><button className="profile-primary-button" type="submit" disabled={isSavingNickname}>{isSavingNickname ? t("saving") : t("save")}</button><button className="profile-inline-button" type="button" disabled={isSavingNickname} onClick={() => { setNicknameDraft(displayName); setIsEditingNickname(false); }}>{t("cancel")}</button></form> : <div className="profile-account-value"><strong>{displayName}</strong><button type="button" aria-label="Edit nickname" onClick={() => { setNicknameDraft(displayName); setIsEditingNickname(true); }}><i className="ms ms-edit" aria-hidden="true" /></button></div>}</div>
@@ -183,7 +178,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
             <div className="profile-account-field"><span>{t("phoneNumber")}</span><div className="profile-account-action"><div className="profile-phone"><span>+64</span><input type="tel" value={phone} placeholder="21 555 0123" onChange={(event) => setPhone(event.target.value)} /></div>{phoneVerificationSent ? <div className="phone-verification"><input inputMode="numeric" maxLength={6} value={phoneOtp} placeholder="6-digit SMS code" onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><button className="profile-primary-button" type="button" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{isVerifyingPhoneCode ? t("saving") : t("verify")}</button></div> : <button className="profile-outline-button" type="button" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</button>}</div></div>
           </div></div> : null}
         </section>
-        <section className={`profile-panel profile-security-panel ${isSecurityOpen ? "is-open" : ""}`}>
+        <section id="profile-security" className={`profile-panel profile-security-panel ${isSecurityOpen ? "is-open" : ""}`}>
           <button className="profile-security-toggle" type="button" aria-expanded={isSecurityOpen} onClick={() => setIsSecurityOpen((value) => !value)}><span><i className="ms ms-lock" /> {t("security")}</span><i className={`icon icon-expand-${isSecurityOpen ? "less" : "more"}`} /></button>
           {isSecurityOpen ? <div className="profile-security-content">
             <section className="profile-security-section"><h3>Password</h3><div className="profile-password-grid"><label className="profile-field is-wide"><span>Current Password</span><div className="profile-password-input"><input type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={showCurrentPassword ? "Hide current password" : "Show current password"} onClick={() => setShowCurrentPassword((value) => !value)}><i className={`ms ${showCurrentPassword ? "ms-visibility-off" : "ms-visibility"}`} /></button></div></label><label className="profile-field"><span>New Password</span><div className="profile-password-input"><input type={showNewPassword ? "text" : "password"} minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={showNewPassword ? "Hide new password" : "Show new password"} onClick={() => setShowNewPassword((value) => !value)}><i className={`ms ${showNewPassword ? "ms-visibility-off" : "ms-visibility"}`} /></button></div></label><label className="profile-field"><span>Confirm New Password</span><div className={`profile-password-input ${confirmPassword ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}><input type={showConfirmPassword ? "text" : "password"} minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} onClick={() => setShowConfirmPassword((value) => !value)}><i className={`ms ${showConfirmPassword ? "ms-visibility-off" : "ms-visibility"}`} /></button></div></label></div><div className="profile-panel-action"><button className="profile-primary-button" type="button" disabled={isUpdatingPassword} onClick={() => void updatePassword()}>{isUpdatingPassword ? "Updating…" : "Update Password"}</button></div></section>
@@ -193,11 +188,10 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         </section>
       </div>
       <aside className="profile-static-preferences">
-        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{t("contactPreferences")}</h2></header><div className="profile-static-setting-list"><div><strong>{t("allowChat")}</strong>{staticSwitch("allowChat")}</div><div><strong>{t("showPhoneNumber")}</strong>{staticSwitch("showPhoneNumber")}</div><div><strong>{t("receiveEmailNotifications")}</strong>{staticSwitch("emailNotifications")}</div></div></section>
-        <section className="profile-panel profile-static-preference-panel"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{t("notifications")}</h2></header><div className="profile-static-setting-list"><div><p><strong>{t("chatMessages")}</strong><small>{t("inAppNotifications")}</small></p>{staticSwitch("chatMessages")}</div><div><p><strong>{t("priceUpdates")}</strong><small>{t("weeklyNewsletter")}</small></p>{staticSwitch("priceUpdates")}</div><div><p><strong>{t("smsAlerts")}</strong><small>{t("criticalAlerts")}</small></p>{staticSwitch("smsAlerts")}</div><div><p><strong>{t("reviews")}</strong><small>{t("criticalAlerts")}</small></p>{staticSwitch("reviews")}</div></div></section>
+        <section className="ui-panel profile-panel profile-preferences-notice"><header className="profile-section-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림과 공개 설정" : "Notifications & privacy"}</h2></header><p>{locale === "ko" ? "알림 수신과 연락처 공개 설정은 아직 계정에 연결되지 않았습니다. 실제로 적용되는 설정이 준비되면 이곳에서 관리할 수 있어요." : "Notification delivery and contact visibility are not connected to your account yet. You can manage them here when account-level settings are available."}</p></section>
       </aside>
     </div>
-    <section className="profile-panel profile-description-text-size-panel">
+    <section id="profile-display" className="profile-panel profile-description-text-size-panel">
       <header className="profile-section-heading"><i className="ms ms-format-size" aria-hidden="true" /><h2>Listing description text size</h2></header>
       <p className="profile-description-text-size-help">Set a comfortable size for every listing description. Save changes to apply it across Tada.</p>
       <div className="profile-description-text-size-preview">
@@ -212,7 +206,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         />
       </div>
     </section>
-    <section className={`profile-panel profile-location-privacy-panel ${isLocationOpen ? "is-open" : ""}`}>
+    <section id="profile-location" className={`profile-panel profile-location-privacy-panel ${isLocationOpen ? "is-open" : ""}`}>
       <button className="profile-section-toggle" type="button" aria-expanded={isLocationOpen} onClick={() => setIsLocationOpen((value) => !value)}><span><i className="ms ms-location-on" aria-hidden="true" /> {t("locationPrivacy")}</span><i className={`icon icon-expand-${isLocationOpen ? "less" : "more"}`} aria-hidden="true" /></button>
       {isLocationOpen ? <>
       <div className="profile-location-access"><div><strong>{t("locationAccess")}</strong><span>{locationMode === "current" ? t("usingCurrentLocation") : t("setManually")}</span></div></div>

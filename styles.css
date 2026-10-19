@@ -7663,7 +7663,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 /* Keep profile settings aligned with the dashboard's standard reading scale. */
 .profile-settings-page { font-size: var(--text-lg); line-height: 1.5; }
-.profile-settings-page :where(button, input, select, textarea, strong, b, h1, h2, h3, h4, h5, h6, p, span, small, label) { font-weight: var(--weight-regular) !important; }
+.profile-settings-page :where(input, select, textarea, p, span, small, label) { font-weight: var(--weight-regular); }
 .profile-settings-page .profile-photo-identity strong { font-size: var(--text-2xl); }
 .profile-settings-page .profile-photo-identity span { font-size: var(--text-sm); }
 .profile-settings-page .profile-photo-email,
@@ -9115,6 +9115,52 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-page .profile-static-preferences { gap: 24px; }
   .profile-settings-page .profile-static-preference-panel { padding: 24px; }
   .profile-settings-page .profile-location-privacy-panel { margin-top: 24px; }
+}
+
+/* Profile settings shares My Page's light surfaces and clear account hierarchy. */
+.dashboard-layout > .profile-settings-content.profile-settings-page { width: 100%; min-width: 0; background: var(--color-primary-soft); }
+.profile-settings-page .profile-settings-intro { display: grid; justify-items: start; gap: var(--space-1); margin-bottom: var(--space-4); }
+.profile-settings-page .profile-settings-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-3xl); font-weight: var(--weight-extrabold); }
+.profile-settings-page .profile-settings-intro p { margin: 0; color: var(--color-muted); font-size: var(--text-md); }
+.profile-settings-page .profile-settings-intro .my-page-link { min-height: var(--control-h-xl); }
+.profile-settings-page .profile-settings-jump { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.profile-settings-page .profile-settings-jump a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-primary-strong); font-size: var(--text-md); font-weight: var(--weight-semibold); text-decoration: none; }
+.profile-settings-page .profile-settings-jump a:focus-visible { outline: var(--ring-focus); outline-offset: var(--space-1); }
+.profile-settings-page .profile-panel { border-color: var(--color-line-soft); background: var(--color-surface); box-shadow: none; }
+.profile-settings-page .profile-panel :is(h2, h3, strong) { font-weight: var(--weight-bold); }
+.profile-settings-page :is(.profile-section-toggle, .profile-security-toggle) { min-height: var(--control-h-xl); color: var(--color-ink); font-weight: var(--weight-bold); }
+.profile-settings-page :is(.profile-section-toggle, .profile-security-toggle) > span i { color: var(--color-primary); }
+.profile-settings-page .profile-preferences-notice { display: grid; align-content: start; gap: var(--space-3); }
+.profile-settings-page .profile-preferences-notice .profile-section-heading { margin: 0; }
+.profile-settings-page .profile-preferences-notice p { margin: 0; color: var(--color-muted); font-size: var(--text-md); line-height: 1.6; }
+.profile-settings-page .profile-settings-actions .profile-primary-button { background: var(--color-primary); color: var(--color-on-primary); font-weight: var(--weight-bold); }
+.profile-settings-page .profile-form-status { color: var(--color-ink); }
+.profile-settings-page :is(#profile-account, #profile-security, #profile-location, #profile-display) { scroll-margin-top: var(--space-8); }
+.my-page-mobile-shortcuts { display: none; }
+@media (max-width: 767.98px) {
+  .dashboard-layout > .profile-settings-content.profile-settings-page { padding: var(--space-3) var(--global-shell-mobile-gutter) calc(var(--space-12) + var(--mobile-dock-content-clearance, var(--space-12))); }
+  .profile-settings-page .profile-settings-intro { margin-bottom: var(--space-3); }
+  .profile-settings-page .profile-settings-intro h1 { font-size: var(--text-2xl); }
+  .profile-settings-page .profile-settings-jump { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); }
+  .profile-settings-page .profile-settings-jump a { min-width: 0; padding-inline: var(--space-1); font-size: var(--text-sm); }
+  .profile-settings-page .profile-settings-grid, .profile-settings-page .profile-main-column { gap: var(--space-2); }
+  .profile-settings-page .profile-panel { padding: var(--space-4); }
+  .profile-settings-page .profile-photo-card { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); column-gap: var(--space-4); }
+  .profile-settings-page .profile-avatar-wrap, .profile-settings-page .profile-avatar { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
+  .profile-settings-page .profile-avatar { border-width: 0; box-shadow: none; }
+  .profile-settings-page .profile-camera-button { width: var(--control-h-sm); height: var(--control-h-sm); right: calc(-1 * var(--space-2)); bottom: calc(-1 * var(--space-2)); font-size: var(--text-md); }
+  .profile-settings-page .profile-photo-identity strong { font-size: var(--text-lg); }
+  .profile-settings-page .profile-photo-email, .profile-settings-page .profile-photo-location { font-size: var(--text-sm); }
+  .profile-settings-page .profile-member-since { display: none; }
+  .profile-settings-page .profile-language-panel { padding: var(--space-4) !important; }
+  .profile-settings-page .profile-language-select { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .profile-settings-page .profile-description-text-size-preview { flex-wrap: wrap; }
+  .profile-settings-page .profile-settings-actions { position: sticky; bottom: calc(var(--mobile-dock-content-clearance, var(--space-12)) - var(--space-4)); z-index: 5; padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+  .my-page-reference.my-page-domain-preview .my-page-mobile-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-3); }
+  .my-page-reference.my-page-domain-preview .my-page-mobile-shortcuts a { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-1); min-width: 0; min-height: var(--control-h-xl); padding: var(--space-2); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-primary-strong); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+  .my-page-reference.my-page-domain-preview .my-page-mobile-shortcuts a:focus-visible { outline: var(--ring-focus); outline-offset: var(--space-1); }
+  .my-page-reference.my-page-domain-preview .my-page-mobile-shortcuts strong { display: grid; place-items: center; min-width: var(--space-5); height: var(--space-5); border-radius: var(--radius-pill); background: var(--color-danger); color: var(--color-on-danger); font-size: var(--text-xs); }
+  .my-page-reference.my-page-domain-preview .my-page-main > .my-page-panel:has(.my-page-today) { order: -1; }
 }
 
 /* Reference treatment keeps the existing My Page shell and column structure. */
