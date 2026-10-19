@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProfilePhotoUploader } from "@/components/dashboard/ProfilePhotoUploader";
+import { Button } from "@/components/ui/Button";
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { descriptionTextScale, MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizeControls } from "@/components/ui/TextSizeSection";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -43,6 +44,8 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
+  const [mobileView, setMobileView] = useState<"home" | "identity" | "security" | "notifications" | "privacy" | "display" | "management">("home");
+  const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false);
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
@@ -155,6 +158,78 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); }
     setIsVerifyingPhoneCode(false);
   };
+
+  if (!isLegacy) return <div className="profile-settings-current" data-mobile-view={mobileView}>
+    <header className="profile-settings-intro">
+      <Link href="/market/dashboard/my-page" className="my-page-link"><i className="ms ms-arrow-back" aria-hidden="true" />{locale === "ko" ? "마이페이지" : "My Page"}</Link>
+      <div className="profile-current-title-row">
+        <h1><span className="profile-current-desktop-title">{locale === "ko" ? "프로필 설정" : "Profile settings"}</span><span className="profile-current-mobile-title">{mobileView === "home" ? (locale === "ko" ? "프로필 설정" : "Profile settings") : mobileView === "identity" ? (locale === "ko" ? "내 정보 수정" : "Edit my details") : ({ security: locale === "ko" ? "인증 및 보안" : "Security", notifications: locale === "ko" ? "알림" : "Notifications", privacy: locale === "ko" ? "공개 설정" : "Privacy", display: locale === "ko" ? "언어 및 화면" : "Language & display", management: locale === "ko" ? "계정 관리" : "Account management" } as Record<string, string>)[mobileView]}</span></h1>
+        {mobileView !== "home" ? <Button variant="ghost" size="sm" className="profile-current-mobile-back" onClick={() => setMobileView("home")}>{locale === "ko" ? "설정 목록" : "All settings"}</Button> : null}
+      </div>
+      <p>{locale === "ko" ? "내 정보와 알림, 공개 설정을 간단하게 관리하세요." : "Keep your details and settings in one place."}</p>
+    </header>
+
+    <section className="ui-panel profile-current-hero" aria-label={locale === "ko" ? "내 프로필" : "My profile"}>
+      <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} />
+      <Button variant="secondary" className="profile-current-edit-action" onClick={() => { setMobileView("identity"); setIsAccountOpen(true); requestAnimationFrame(() => document.getElementById("profile-current-identity")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>{locale === "ko" ? "정보 수정" : "Edit details"}</Button>
+    </section>
+
+    <nav className="profile-current-mobile-menu" aria-label={locale === "ko" ? "프로필 설정 메뉴" : "Profile settings menu"}>
+      {[
+        { key: "security", icon: "ms-lock", title: locale === "ko" ? "인증 및 보안" : "Security", detail: locale === "ko" ? "이메일, 전화번호, 비밀번호" : "Email, phone, password" },
+        { key: "notifications", icon: "ms-notifications", title: locale === "ko" ? "알림" : "Notifications", detail: locale === "ko" ? "채팅, 거래, 이메일, 문자" : "Messages, trades, email, SMS" },
+        { key: "privacy", icon: "ms-visibility", title: locale === "ko" ? "공개 설정" : "Privacy", detail: locale === "ko" ? "채팅 허용, 전화번호 공개" : "Chat and phone visibility" },
+        { key: "display", icon: "ms-language", title: locale === "ko" ? "언어 및 화면" : "Language & display", detail: locale === "ko" ? "언어, 글자 크기" : "Language and text size" },
+        { key: "management", icon: "ms-settings", title: locale === "ko" ? "계정 관리" : "Account management", detail: locale === "ko" ? "계정 관리 안내" : "Account information" },
+      ].map((item) => <button key={item.key} type="button" onClick={() => setMobileView(item.key as typeof mobileView)}><i className={`ms ${item.icon}`} aria-hidden="true" /><span><strong>{item.title}</strong><small>{item.detail}</small></span><i className="ms ms-arrow-forward" aria-hidden="true" /></button>)}
+    </nav>
+
+    <div className="profile-current-grid">
+      <div className="profile-current-column">
+        <section id="profile-current-identity" className="ui-panel profile-current-card profile-current-identity">
+          <header className="profile-current-card-heading"><i className="ms ms-person" aria-hidden="true" /><h2>{locale === "ko" ? "내 정보" : "My details"}</h2></header>
+          <label className="profile-current-field"><span>{locale === "ko" ? "이름 또는 닉네임" : "Name or nickname"} <em>*</em></span><input className="ui-input" maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} autoComplete="nickname" /><small>{locale === "ko" ? "다른 이웃에게 표시되는 이름이에요." : "The name other neighbours will see."}</small></label>
+          <div className="profile-current-field"><span>{locale === "ko" ? "지역" : "Location"} <em>*</em></span><ListingLocationSelector value={location} labels={locale === "ko" ? { main: "주요 지역", mainPlaceholder: "지역 선택", sub: "세부 지역", subPlaceholder: "세부 지역 선택" } : undefined} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} /><small>{locale === "ko" ? "가까운 이웃과 연결하는 데 사용해요. 상세 주소는 표시하지 않습니다." : "Used to connect with nearby neighbours. Your exact address is not shown."}</small></div>
+        </section>
+        <section className="ui-panel profile-current-card profile-current-privacy">
+          <header className="profile-current-card-heading"><i className="ms ms-visibility" aria-hidden="true" /><h2>{locale === "ko" ? "공개 설정" : "Privacy"}</h2></header>
+          <div className="profile-current-setting-row"><i className="ms ms-chat" aria-hidden="true" /><span>{locale === "ko" ? "채팅 허용" : "Allow chat"}</span>{legacySwitch(locale === "ko" ? "채팅 허용: 준비 중" : "Allow chat: unavailable")}</div>
+          <div className="profile-current-setting-row"><i className="ms ms-call" aria-hidden="true" /><span>{locale === "ko" ? "전화번호 공개" : "Show phone number"}</span>{legacySwitch(locale === "ko" ? "전화번호 공개: 준비 중" : "Show phone number: unavailable")}</div>
+          <p className="profile-current-unavailable">{locale === "ko" ? "공개 설정은 아직 계정에 연결되지 않아 변경할 수 없습니다." : "Privacy controls are not connected to your account yet."}</p>
+        </section>
+      </div>
+
+      <div className="profile-current-column">
+        <section className="ui-panel profile-current-card profile-current-security">
+          <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2></header>
+          <div className="profile-current-contact-row"><i className="ms ms-call" aria-hidden="true" /><div><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button></div>
+          {phoneVerificationSent ? <div className="profile-current-otp"><label htmlFor="profile-current-otp">{locale === "ko" ? "문자로 받은 6자리 코드" : "6-digit SMS code"}</label><input id="profile-current-otp" className="ui-input" inputMode="numeric" maxLength={6} value={phoneOtp} onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><Button variant="primary" size="sm" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{t("verify")}</Button></div> : null}
+          <div className="profile-current-contact-row"><i className="ms ms-email" aria-hidden="true" /><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div>
+          <div className="profile-current-password-row"><i className="ms ms-lock" aria-hidden="true" /><span>{locale === "ko" ? "비밀번호" : "Password"}</span><Button variant="ghost" size="sm" aria-expanded={isPasswordEditorOpen} onClick={() => setIsPasswordEditorOpen((open) => !open)}>{isPasswordEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경" : "Change")}</Button></div>
+          {isPasswordEditorOpen ? <div className="profile-current-password-fields">
+            <div><label htmlFor="profile-current-password">{locale === "ko" ? "현재 비밀번호" : "Current password"}</label><input id="profile-current-password" className="ui-input" type={showCurrentPassword ? "text" : "password"} autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "현재 비밀번호 표시 전환" : "Toggle current password visibility"} onClick={() => setShowCurrentPassword((value) => !value)}>{showCurrentPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
+            <div><label htmlFor="profile-current-new-password">{locale === "ko" ? "새 비밀번호 · 8자 이상" : "New password · 8+ characters"}</label><input id="profile-current-new-password" className="ui-input" type={showNewPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "새 비밀번호 표시 전환" : "Toggle new password visibility"} onClick={() => setShowNewPassword((value) => !value)}>{showNewPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
+            <div><label htmlFor="profile-current-confirm-password">{locale === "ko" ? "새 비밀번호 확인" : "Confirm new password"}</label><input id="profile-current-confirm-password" className="ui-input" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "비밀번호 확인 표시 전환" : "Toggle confirmation visibility"} onClick={() => setShowConfirmPassword((value) => !value)}>{showConfirmPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
+            {confirmPassword && !passwordsMatch ? <p role="alert">{locale === "ko" ? "새 비밀번호가 일치하지 않습니다." : "New passwords do not match."}</p> : null}
+            <Button variant="primary" disabled={isUpdatingPassword || !passwordsMatch} onClick={() => void updatePassword()}>{isUpdatingPassword ? t("saving") : (locale === "ko" ? "비밀번호 변경" : "Update password")}</Button>
+          </div> : null}
+        </section>
+        <section className="ui-panel profile-current-card profile-current-notifications">
+          <header className="profile-current-card-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림" : "Notifications"}</h2></header>
+          {[["ms-chat", locale === "ko" ? "채팅 메시지" : "Chat messages"], ["ms-notifications", locale === "ko" ? "가격 업데이트" : "Price updates"], ["ms-email", locale === "ko" ? "이메일 알림" : "Email alerts"], ["ms-call", locale === "ko" ? "문자(SMS) 알림" : "SMS alerts"], ["ms-star", locale === "ko" ? "후기 알림" : "Review alerts"]].map(([icon, label]) => <div className="profile-current-setting-row" key={label}><i className={`ms ${icon}`} aria-hidden="true" /><span>{label}</span>{legacySwitch(`${label}: ${locale === "ko" ? "준비 중" : "unavailable"}`)}</div>)}
+          <p className="profile-current-unavailable">{locale === "ko" ? "알림 수신 설정은 준비 중입니다. 현재 알림 동작에는 영향을 주지 않습니다." : "Notification preferences are not available yet and do not change delivery."}</p>
+        </section>
+        <section className="ui-panel profile-current-card profile-current-display">
+          <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 화면" : "Language & display"}</h2></header>
+          <label className="profile-current-field"><span>{locale === "ko" ? "표시 언어" : "Display language"}</span><select className="ui-input" value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select><small>{locale === "ko" ? "언어 선택은 바로 적용됩니다." : "Language changes apply immediately."}</small></label>
+          <div className="profile-current-text-size"><span>{locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"}</span><TextSizeControls value={descriptionTextSizeStep} label={locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"} onChange={(change) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)))} /></div>
+        </section>
+      </div>
+    </div>
+    <section className="ui-panel profile-current-management"><header className="profile-current-card-heading"><i className="ms ms-settings" aria-hidden="true" /><h2>{locale === "ko" ? "계정 관리" : "Account management"}</h2></header><p>{locale === "ko" ? "계정 비활성화·탈퇴 기능은 아직 준비 중입니다. 계정 관련 도움이 필요하면 고객지원에 문의해 주세요." : "Account deactivation and deletion are not available here yet. Contact support if you need account help."}</p></section>
+    <div className="profile-current-actions"><Button variant="secondary" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</Button><Button variant="primary" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</Button></div>
+    {status ? <p className="profile-form-status" role="status">{status}</p> : null}
+  </div>;
 
   return <>
     {isLegacy ? <header className="profile-v0-note"><div><h1>{locale === "ko" ? "프로필 설정 V0" : "Profile Settings V0"}</h1><p role="note">{locale === "ko" ? "이전 디자인 비교용입니다. 아래 알림·공개 스위치는 실제 계정 설정에 적용되지 않아 사용할 수 없습니다." : "Previous design for comparison. The notification and visibility switches below do not affect your account and are disabled."}</p></div><Link className="ui-button ui-button--secondary ui-button--sm" href="/market/dashboard/profile">{locale === "ko" ? "현재 버전 보기" : "View current version"}</Link></header> : null}
