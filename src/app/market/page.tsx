@@ -4,7 +4,10 @@ import { MARKET_PAGE_SIZE, getMergedMarketFeed } from "@/lib/market/feed";
 import { loadPagedFeed } from "@/lib/market/paged-feed";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Market" };
+export const metadata = {
+  title: "Market",
+  description: "Buy and sell with neighbours across New Zealand — secondhand items, garage and moving sales, $2 deals and group buys.",
+};
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

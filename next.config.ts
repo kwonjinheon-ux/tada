@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
+    // The two the product asks for: cards at 70, the detail gallery at 85.
+    // Next 16 refuses any quality that is not declared here.
+    qualities: [70, 85],
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/sign/**" },
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },

@@ -18,19 +18,37 @@ function reportAdEvent(body: Record<string, unknown>) {
   } catch { /* an ad beacon is never worth breaking the page for */ }
 }
 
+const AD_REQUEST_TTL_MS = 60_000;
+const adRequests = new Map<string, { request: Promise<PublicAd | null>; startedAt: number }>();
+
+/** One request per placement and device, however many slots ask for it.
+ *  A feed page mounts the same slot every dozen cards, and each copy used to
+ *  ask the server the same question on its own — a market page sent seven
+ *  requests for two answers. Kept briefly so a later page still gets a fresh
+ *  selection rather than the one chosen on arrival. */
+function requestAd(placement: AdPlacement, device: "desktop" | "mobile") {
+  const key = `${placement}|${device}`;
+  const cached = adRequests.get(key);
+  if (cached && Date.now() - cached.startedAt < AD_REQUEST_TTL_MS) return cached.request;
+
+  const request = fetch(`/api/ads/slot?placement=${placement}&device=${device}`)
+    .then((response) => (response.ok ? response.json() : null))
+    .then((payload) => (payload?.data?.ad ?? null) as PublicAd | null)
+    // Any failure just means no ad, which is the same outcome as an empty slot.
+    .catch(() => null);
+  adRequests.set(key, { request, startedAt: Date.now() });
+  return request;
+}
+
 export function AdSlot({ placement }: { placement: AdPlacement }) {
   const [ad, setAd] = useState<PublicAd | null>(null); const ref = useRef<HTMLDivElement>(null);
   const device = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches ? "mobile" : "desktop";
-  // Aborted on unmount so leaving the page mid-flight does not reject into the
-  // console or set state on a gone component. Any other failure just means no
-  // ad, which is the same outcome as an empty slot.
+  // The request is shared, so it cannot be aborted on unmount — a slot that has
+  // gone simply stops listening for the answer.
   useEffect(() => {
-    const controller = new AbortController();
-    void fetch(`/api/ads/slot?placement=${placement}&device=${device}`, { signal: controller.signal })
-      .then((response) => response.ok ? response.json() : null)
-      .then((payload) => setAd(payload?.data?.ad ?? null))
-      .catch(() => {});
-    return () => controller.abort();
+    let isMounted = true;
+    void requestAd(placement, device).then((next) => { if (isMounted) setAd(next); });
+    return () => { isMounted = false; };
   }, [device, placement]);
   useEffect(() => { if (!ad || !ref.current) return; let timer: number | null = null; const observer = new IntersectionObserver(([entry]) => { if (!entry?.isIntersecting) { if (timer) window.clearTimeout(timer); return; } timer = window.setTimeout(() => reportAdEvent({ adId: ad.id, eventType: "impression", placement, deviceType: device, pagePath: location.pathname, sessionId: sessionId() }), 1000); }, { threshold: .5 }); observer.observe(ref.current); return () => { observer.disconnect(); if (timer) window.clearTimeout(timer); }; }, [ad, device, placement]);
   if (!ad || (placement === "market_sidebar" && device === "mobile")) return null;
