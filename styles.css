@@ -12038,6 +12038,29 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .services-side-rail { grid-column: 1 / -1; }
 }
 
+/* Tablet.
+
+   Between 768px and the desktop layout the page kept the rail from the desktop
+   and the tile grid from the phone, so every category was listed twice and the
+   tiles had an eighth of a 600px column each — four words folded into a 69px
+   box, with each icon starting wherever its label let it. The rail is the
+   category surface at every width above the phone, as it is on Market and
+   Community, so the tiles step aside here the way they already do on a
+   desktop, and what is left gets room to breathe. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .services-category-grid { display: none; }
+  /* Two cards rather than three: 290px of card instead of 190px. */
+  .services-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  /* The four-track banner asks for about 600px of minimums in a 605px column,
+     so it is laid out as copy beside its points, with the image above them. */
+  .services-sponsor-banner { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; }
+  .services-sponsor-banner > img { display: none; }
+  .services-sponsor-banner > button { grid-column: 1 / -1; justify-self: start; }
+  /* The promo panels sit under the results rather than across the viewport,
+     so their edges line up with the list they follow. */
+  .services-side-rail { grid-column: 2; padding-inline: var(--space-6); }
+}
+
 
 /* The Market type row may scroll inside itself on touch screens, but it must
    never widen the Market page or the viewport. */
