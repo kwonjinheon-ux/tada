@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
+import { ServiceCallControl } from "@/components/services/ServiceCallControl";
 import { scrollToListTop } from "@/lib/scroll-to-list-top";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { serviceFeedResponseSchema } from "@/contracts/api";
@@ -278,9 +279,7 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
                 </div>
                 <p className="services-listing-price"><strong>{price}</strong></p>
                 <div className="services-listing-controls">
-                  <a className="ui-button ui-button--secondary services-listing-call" href={`tel:${service.phone.replace(/\s/g, "")}`} aria-label={`${locale === "ko" ? "전화" : "Call"} ${service.provider}: ${service.phone}`}>
-                    <i className="ms ms-call" aria-hidden="true" />
-                  </a>
+                  <ServiceCallControl phone={service.phone} providerName={service.provider} isKorean={locale === "ko"} />
                   <button className="ui-button ui-button--primary services-listing-message" type="button" onClick={() => setNotice(`${text.message}: ${service.provider}`)}><i className="ms ms-chat" aria-hidden="true" /> {text.message}</button>
                 </div>
               </div>

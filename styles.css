@@ -11579,6 +11579,21 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .services-listing-call .ms { flex: 0 0 auto; font-size: var(--text-lg); }
 .services-listing-message .ms { flex: 0 0 auto; font-size: var(--text-lg); }
 
+/* The number only appears where it can be copied; a phone gets the dial link
+   instead, and the two swap at the same breakpoint. */
+.services-listing-copy { display: none; }
+@media (min-width: 768px) {
+  .services-listing-call { display: none; }
+  .services-listing-controls { grid-template-columns: minmax(0, 1fr); }
+  .services-listing-copy { justify-content: flex-start; }
+  .services-listing-copy { min-width: 0; min-height: var(--control-h-lg); display: inline-flex; overflow: hidden; gap: var(--space-1); padding-inline: var(--space-2); border-color: var(--color-line); color: var(--color-ink-soft); font-size: var(--text-sm); }
+  .services-listing-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .services-listing-copy .ms { flex: 0 0 auto; font-size: var(--text-lg); }
+  .services-listing-copy:hover { border-color: var(--color-primary); color: var(--color-primary-strong); }
+  .services-listing-copy.is-copied,
+  .services-listing-copy.is-copied:hover { border-color: var(--color-success); color: var(--color-success); }
+}
+
 .services-listing-save {
   --save-button-size: var(--control-h-md);
   position: absolute;
