@@ -10,12 +10,27 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
   const addLink = () => { const url = window.prompt("Enter a URL")?.trim(); if (url && /^(https?:\/\/|mailto:)/i.test(url)) command("createLink", url); };
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
     if (sourceMode) return;
-    const plainText = event.clipboardData.getData("text/plain");
+    const html = event.clipboardData.getData("text/html");
+    const plainText = event.clipboardData.getData("text/plain") || (html ? new DOMParser().parseFromString(html, "text/html").body.textContent ?? "" : "");
     if (!plainText) return;
     event.preventDefault();
-    editorRef.current?.focus();
-    document.execCommand("insertText", false, plainText.replace(/\r\n?/g, "\n"));
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection) return;
+    editor.focus();
+    const range = selection.rangeCount ? selection.getRangeAt(0) : document.createRange();
+    if (!selection.rangeCount) range.selectNodeContents(editor);
+    range.deleteContents();
+    const fragment = document.createDocumentFragment();
+    plainText.replace(/\r\n?/g, "\n").split("\n").forEach((line, index) => {
+      if (index) fragment.appendChild(document.createElement("br"));
+      fragment.appendChild(document.createTextNode(line));
+    });
+    range.insertNode(fragment);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    onChange(editor.innerHTML);
   };
   const colors = [{ label: "Charcoal", token: "--color-ink" }, { label: "Red", token: "--color-danger" }, { label: "Orange", token: "--color-warning" }, { label: "Green", token: "--color-primary" }, { label: "Blue", token: "--blue-500" }];
   return <div className="post-editor">
