@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ClipboardEvent, useEffect, useRef, useState } from "react";
 
 export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -8,6 +8,15 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
   useEffect(() => { if (!sourceMode && editorRef.current && editorRef.current.innerHTML !== value) editorRef.current.innerHTML = value; }, [sourceMode, value]);
   const command = (name: string, commandValue?: string) => { if (!editorRef.current || sourceMode) return; editorRef.current.focus(); document.execCommand(name, false, commandValue); onChange(editorRef.current.innerHTML); };
   const addLink = () => { const url = window.prompt("Enter a URL")?.trim(); if (url && /^(https?:\/\/|mailto:)/i.test(url)) command("createLink", url); };
+  const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
+    if (sourceMode) return;
+    const plainText = event.clipboardData.getData("text/plain");
+    if (!plainText) return;
+    event.preventDefault();
+    editorRef.current?.focus();
+    document.execCommand("insertText", false, plainText.replace(/\r\n?/g, "\n"));
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
   const colors = [{ label: "Charcoal", token: "--color-ink" }, { label: "Red", token: "--color-danger" }, { label: "Orange", token: "--color-warning" }, { label: "Green", token: "--color-primary" }, { label: "Blue", token: "--blue-500" }];
   return <div className="post-editor">
     <div className="post-editor-toolbar" aria-label={`${label} formatting`}>
@@ -28,6 +37,6 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
       <span className="post-editor-divider" aria-hidden="true" />
       <button className={sourceMode ? "is-active" : ""} type="button" aria-label="Edit HTML source" onClick={() => setSourceMode((current) => !current)}><i className="ms ms-code" aria-hidden="true" /></button>
     </div>
-    {sourceMode ? <textarea className="post-editor-source" id={id} value={value} onChange={(event) => onChange(event.target.value)} spellCheck={false} aria-label={`${label} HTML source`} /> : <div ref={editorRef} id={id} className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder} onInput={(event) => onChange(event.currentTarget.innerHTML)} />}
+    {sourceMode ? <textarea className="post-editor-source" id={id} value={value} onChange={(event) => onChange(event.target.value)} spellCheck={false} aria-label={`${label} HTML source`} /> : <div ref={editorRef} id={id} className="post-editor-content" contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder} onInput={(event) => onChange(event.currentTarget.innerHTML)} onPaste={handlePaste} />}
   </div>;
 }
