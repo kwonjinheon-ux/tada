@@ -46,12 +46,16 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [expandedSection, setExpandedSection] = useState<ProfileSection | null>(null);
+  const [desktopExpandedSections, setDesktopExpandedSections] = useState<ProfileSection[]>([]);
   const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false);
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
   const legacySwitch = (label: string, checked = false) => <label className="profile-static-switch"><input type="checkbox" aria-label={label} checked={checked} disabled readOnly /><span aria-hidden="true" /></label>;
-  const sectionTrigger = (section: ProfileSection, icon: string, title: string, description: string) => <Button variant="ghost" className="profile-current-accordion-trigger" aria-expanded={expandedSection === section} onClick={() => setExpandedSection((current) => current === section ? null : section)}><i className={`ms ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span><i className={`ms ${expandedSection === section ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" /></Button>;
+  const sectionTrigger = (section: ProfileSection, icon: string, title: string, description: string, mode: "mobile" | "desktop" = "mobile") => {
+    const expanded = mode === "mobile" ? expandedSection === section : desktopExpandedSections.includes(section);
+    return <Button variant="ghost" className={`profile-current-accordion-trigger profile-current-${mode}-trigger`} aria-expanded={expanded} onClick={() => mode === "mobile" ? setExpandedSection((current) => current === section ? null : section) : setDesktopExpandedSections((current) => current.includes(section) ? current.filter((item) => item !== section) : [...current, section])}><i className={`ms ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span><i className={`ms ${expanded ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" /></Button>;
+  };
 
   const updateLocale = async (nextLocale: SupportedLocale) => {
     setLocale(nextLocale);
@@ -170,32 +174,25 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       <p>{locale === "ko" ? "내 정보와 알림, 공개 설정을 간단하게 관리하세요." : "Keep your details and settings in one place."}</p>
     </header>
 
-    <section className="ui-panel profile-current-hero" aria-label={locale === "ko" ? "내 프로필" : "My profile"}>
-      <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} />
-      <Button variant="secondary" className="profile-current-edit-action" onClick={() => { setExpandedSection("identity"); requestAnimationFrame(() => document.getElementById("profile-current-identity")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>{locale === "ko" ? "정보 수정" : "Edit details"}</Button>
-    </section>
-
     <div className="profile-current-grid">
       <div className="profile-current-column">
+        <section className="ui-panel profile-current-hero" aria-label={locale === "ko" ? "내 프로필" : "My profile"}>
+          <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} />
+          <Button variant="secondary" className="profile-current-edit-action" onClick={() => { setExpandedSection("identity"); requestAnimationFrame(() => document.getElementById("profile-current-identity")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>{locale === "ko" ? "정보 수정" : "Edit details"}</Button>
+        </section>
         <section id="profile-current-identity" className="ui-panel profile-current-card profile-current-identity" data-mobile-expanded={expandedSection === "identity"}>
-          {sectionTrigger("identity", "ms-person", locale === "ko" ? "내 정보" : "My details", locale === "ko" ? "이름과 지역" : "Name and location")}
-          <header className="profile-current-card-heading"><i className="ms ms-person" aria-hidden="true" /><h2>{locale === "ko" ? "내 정보" : "My details"}</h2></header>
+          {sectionTrigger("identity", "ms-person", locale === "ko" ? "기본 정보" : "Basic details", locale === "ko" ? "이름과 지역" : "Name and location")}
+          <header className="profile-current-card-heading"><i className="ms ms-person" aria-hidden="true" /><h2>{locale === "ko" ? "기본 정보" : "Basic details"}</h2><i className="ms ms-expand-less profile-current-heading-chevron" aria-hidden="true" /></header>
           <label className="profile-current-field"><span>{locale === "ko" ? "이름 또는 닉네임" : "Name or nickname"} <em>*</em></span><input className="ui-input" maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} autoComplete="nickname" /><small>{locale === "ko" ? "다른 이웃에게 표시되는 이름이에요." : "The name other neighbours will see."}</small></label>
           <div className="profile-current-field"><span>{locale === "ko" ? "지역" : "Location"} <em>*</em></span><ListingLocationSelector value={location} labels={locale === "ko" ? { main: "주요 지역", mainPlaceholder: "지역 선택", sub: "세부 지역", subPlaceholder: "세부 지역 선택" } : undefined} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} /><small>{locale === "ko" ? "가까운 이웃과 연결하는 데 사용해요. 상세 주소는 표시하지 않습니다." : "Used to connect with nearby neighbours. Your exact address is not shown."}</small></div>
         </section>
-        <section className="ui-panel profile-current-card profile-current-notifications" data-mobile-expanded={expandedSection === "notifications"}>
-          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon")}
-          <header className="profile-current-card-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림" : "Notifications"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
-          {[["ms-chat", locale === "ko" ? "채팅 메시지" : "Chat messages"], ["ms-notifications", locale === "ko" ? "가격 업데이트" : "Price updates"], ["ms-mail", locale === "ko" ? "이메일 알림" : "Email alerts"], ["ms-sms", locale === "ko" ? "문자(SMS) 알림" : "SMS alerts"], ["ms-star", locale === "ko" ? "후기 알림" : "Review alerts"]].map(([icon, label]) => <div className="profile-current-setting-row" key={label}><i className={`ms ${icon}`} aria-hidden="true" /><span>{label}</span>{legacySwitch(`${label}: ${locale === "ko" ? "준비 중" : "Coming soon"}`)}</div>)}
-          <p className="profile-current-unavailable">{locale === "ko" ? "수신 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 알림을 관리할 수 있어요." : "These preferences cannot be saved yet. The switches will control notifications when the feature is ready."}</p>
-          <Link className="my-page-link profile-current-notifications-link" href="/market/dashboard/notifications">{locale === "ko" ? "알림 보기" : "View notifications"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
-        </section>
+        <section className="ui-panel profile-current-management" data-mobile-expanded={expandedSection === "management"} data-desktop-expanded={desktopExpandedSections.includes("management")}>{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 관리 안내" : "Account information")}{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 비활성화, 탈퇴 등" : "Deactivation, deletion and more", "desktop")}<header className="profile-current-card-heading"><i className="ms ms-settings" aria-hidden="true" /><h2>{locale === "ko" ? "계정 관리" : "Account management"}</h2></header><p>{locale === "ko" ? "계정 비활성화·탈퇴 기능은 아직 준비 중입니다. 계정 관련 도움이 필요하면 고객지원에 문의해 주세요." : "Account deactivation and deletion are not available here yet. Contact support if you need account help."}</p></section>
       </div>
 
       <div className="profile-current-column">
         <section className="ui-panel profile-current-card profile-current-security" data-mobile-expanded={expandedSection === "security"}>
           {sectionTrigger("security", "ms-lock", locale === "ko" ? "인증 및 보안" : "Verification & security", locale === "ko" ? "전화번호, 이메일, 비밀번호" : "Phone, email, password")}
-          <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2></header>
+          <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2><i className="ms ms-expand-less profile-current-heading-chevron" aria-hidden="true" /></header>
           <div className="profile-current-contact-row"><i className="ms ms-call" aria-hidden="true" /><div><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button></div>
           {phoneVerificationSent ? <div className="profile-current-otp"><label htmlFor="profile-current-otp">{locale === "ko" ? "문자로 받은 6자리 코드" : "6-digit SMS code"}</label><input id="profile-current-otp" className="ui-input" inputMode="numeric" maxLength={6} value={phoneOtp} onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><Button variant="primary" size="sm" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{t("verify")}</Button></div> : null}
           <div className="profile-current-contact-row"><i className="ms ms-mail" aria-hidden="true" /><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div>
@@ -208,22 +205,31 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
             <Button variant="primary" disabled={isUpdatingPassword || !passwordsMatch} onClick={() => void updatePassword()}>{isUpdatingPassword ? t("saving") : (locale === "ko" ? "비밀번호 변경" : "Update password")}</Button>
           </div> : null}
         </section>
-        <section className="ui-panel profile-current-card profile-current-privacy" data-mobile-expanded={expandedSection === "privacy"}>
+        <section className="ui-panel profile-current-card profile-current-privacy" data-mobile-expanded={expandedSection === "privacy"} data-desktop-expanded={desktopExpandedSections.includes("privacy")}>
           {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "공개 설정" : "Privacy", locale === "ko" ? "연락처 공개 설정 · 준비 중" : "Contact visibility · Coming soon")}
+          {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "채팅 및 개인정보 설정" : "Chat & privacy", locale === "ko" ? "채팅 허용과 전화번호 공개" : "Chat and phone visibility", "desktop")}
           <header className="profile-current-card-heading"><i className="ms ms-visibility" aria-hidden="true" /><h2>{locale === "ko" ? "공개 설정" : "Privacy"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
           <div className="profile-current-setting-row"><i className="ms ms-chat" aria-hidden="true" /><span>{locale === "ko" ? "채팅 허용" : "Allow chat"}</span>{legacySwitch(locale === "ko" ? "채팅 허용: 준비 중" : "Allow chat: Coming soon")}</div>
           <div className="profile-current-setting-row"><i className="ms ms-call" aria-hidden="true" /><span>{locale === "ko" ? "전화번호 공개" : "Show phone number"}</span>{legacySwitch(locale === "ko" ? "전화번호 공개: 준비 중" : "Show phone number: Coming soon")}</div>
           <p className="profile-current-unavailable">{locale === "ko" ? "공개 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 변경할 수 있어요." : "These visibility settings cannot be saved yet. The switches will work when the feature is ready."}</p>
         </section>
-        <section className="ui-panel profile-current-card profile-current-display" data-mobile-expanded={expandedSection === "display"}>
+        <section className="ui-panel profile-current-card profile-current-display" data-mobile-expanded={expandedSection === "display"} data-desktop-expanded={desktopExpandedSections.includes("display")}>
           {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 화면" : "Language & display", locale === "ko" ? "언어, 글자 크기" : "Language and text size")}
+          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 화면 설정" : "Language & display", locale === "ko" ? "표시 언어와 상품 설명 글자 크기" : "Language and listing text size", "desktop")}
           <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 화면" : "Language & display"}</h2></header>
           <label className="profile-current-field"><span>{locale === "ko" ? "표시 언어" : "Display language"}</span><select className="ui-input" value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select><small>{locale === "ko" ? "언어 선택은 바로 적용됩니다." : "Language changes apply immediately."}</small></label>
           <div className="profile-current-text-size"><span>{locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"}</span><TextSizeControls value={descriptionTextSizeStep} label={locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"} onChange={(change) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)))} /></div>
         </section>
+        <section className="ui-panel profile-current-card profile-current-notifications" data-mobile-expanded={expandedSection === "notifications"} data-desktop-expanded={desktopExpandedSections.includes("notifications")}>
+          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon")}
+          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림 설정" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon", "desktop")}
+          <header className="profile-current-card-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림" : "Notifications"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
+          {[["ms-chat", locale === "ko" ? "채팅 메시지" : "Chat messages"], ["ms-notifications", locale === "ko" ? "가격 업데이트" : "Price updates"], ["ms-mail", locale === "ko" ? "이메일 알림" : "Email alerts"], ["ms-sms", locale === "ko" ? "문자(SMS) 알림" : "SMS alerts"], ["ms-star", locale === "ko" ? "후기 알림" : "Review alerts"]].map(([icon, label]) => <div className="profile-current-setting-row" key={label}><i className={`ms ${icon}`} aria-hidden="true" /><span>{label}</span>{legacySwitch(`${label}: ${locale === "ko" ? "준비 중" : "Coming soon"}`)}</div>)}
+          <p className="profile-current-unavailable">{locale === "ko" ? "수신 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 알림을 관리할 수 있어요." : "These preferences cannot be saved yet. The switches will control notifications when the feature is ready."}</p>
+          <Link className="my-page-link profile-current-notifications-link" href="/market/dashboard/notifications">{locale === "ko" ? "알림 보기" : "View notifications"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
+        </section>
       </div>
     </div>
-    <section className="ui-panel profile-current-management" data-mobile-expanded={expandedSection === "management"}>{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 관리 안내" : "Account information")}<header className="profile-current-card-heading"><i className="ms ms-settings" aria-hidden="true" /><h2>{locale === "ko" ? "계정 관리" : "Account management"}</h2></header><p>{locale === "ko" ? "계정 비활성화·탈퇴 기능은 아직 준비 중입니다. 계정 관련 도움이 필요하면 고객지원에 문의해 주세요." : "Account deactivation and deletion are not available here yet. Contact support if you need account help."}</p></section>
     <div className="profile-current-actions"><Button variant="secondary" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</Button><Button variant="primary" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</Button></div>
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </div>;
