@@ -297,12 +297,14 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
       </section>
 
       <aside className="services-side-rail" aria-label={text.whyTadaServices}>
-        <section className="services-provider-promo ui-card">
-          <span className="ui-pill">{text.providerLabel}</span>
-          <i className="ms ms-show-chart" aria-hidden="true" />
-          <h2>{text.providerTitle}</h2>
-          <p>{text.providerDescription}</p>
-          <button type="button" onClick={() => setNotice(text.providerNotice)}>{text.providerAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
+        {/* The space is for sale, and says so, rather than dressing a
+            placeholder up as a service of our own. */}
+        <section className="services-ad-invite ui-card">
+          <span className="ui-pill">{text.adInviteLabel}</span>
+          <i className="ms ms-campaign" aria-hidden="true" />
+          <h2>{text.adInviteTitle}</h2>
+          <p>{text.adInviteDescription}</p>
+          <button type="button" onClick={() => setNotice(text.adInviteNotice)}>{text.adInviteAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
         </section>
         <section className="services-side-ad" aria-label={text.sidebarAdLabel}>
           <Image src="/images/home/journey-services.png" alt="" fill sizes="(max-width: 1199px) 100vw, 284px" />

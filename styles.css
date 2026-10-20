@@ -11345,8 +11345,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Services categories follow the same single-colour rule as the market rail. */
 .services-mobile-category-rail .mobile-browse-category-icon { color: var(--color-ink); }
 
-.services-provider-promo h2,
-.services-provider-promo p,
+.services-ad-invite h2,
+.services-ad-invite p,
 .services-trust-panel h2,
 .services-trust-panel p,
 .services-request-cta p,
@@ -11356,7 +11356,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   color: var(--color-ink);
 }
 
-.services-provider-promo h2,
+.services-ad-invite h2,
 .services-trust-panel h2,
 .services-request-cta h2 {
   font-size: var(--text-lg);
@@ -11922,14 +11922,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .services-side-ad-content > p { margin: 0; font-size: var(--text-sm); line-height: 1.45; }
 .services-side-ad-content > button { justify-self: start; min-height: var(--control-h-sm); padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
 
-.services-provider-promo {
+.services-ad-invite {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
   background: linear-gradient(135deg, var(--color-primary-soft), var(--color-surface));
 }
 
-.services-provider-promo > i {
+.services-ad-invite > i {
   width: var(--control-h-2xl);
   height: var(--control-h-2xl);
   display: grid;
@@ -11939,7 +11939,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   font-size: var(--text-xl);
 }
 
-.services-provider-promo p,
+.services-ad-invite p,
 .services-trust-panel p,
 .services-request-cta > div > span {
   color: var(--color-muted);
@@ -11947,7 +11947,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   line-height: 1.5;
 }
 
-.services-provider-promo button,
+.services-ad-invite button,
 .services-trust-panel > button {
   justify-self: start;
   padding: 0;
