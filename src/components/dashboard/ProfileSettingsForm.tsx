@@ -13,7 +13,7 @@ import { findMainLocation } from "@/lib/market/nz-location";
 import type { MainLocation } from "@/data/nzLocations";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
-type ProfileSection = "identity" | "security" | "notifications" | "privacy" | "display" | "management";
+type ProfileSection = "identity" | "security" | "display";
 
 export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
@@ -50,17 +50,19 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
+  const hasUnsavedProfileChanges = nicknameDraft.trim() !== savedSettings.displayName || phone !== savedSettings.phone || locationMode !== savedSettings.locationMode || JSON.stringify(location) !== JSON.stringify(savedSettings.location) || descriptionTextSizeStep !== savedSettings.descriptionTextSizeStep;
   const legacySwitch = (label: string, checked = false) => <label className="profile-static-switch"><input type="checkbox" aria-label={label} checked={checked} disabled readOnly /><span aria-hidden="true" /></label>;
   const sectionTrigger = (section: ProfileSection, icon: string, title: string, description: string) => <Button variant="ghost" className="profile-current-accordion-trigger" aria-expanded={expandedSection === section} onClick={() => setExpandedSection((current) => current === section ? null : section)}><i className={`ms ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span><i className={`ms ${expandedSection === section ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" /></Button>;
 
   const updateLocale = async (nextLocale: SupportedLocale) => {
+    const previousLocale = locale;
     setLocale(nextLocale);
     const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setStatus(t("languageSaved")); return; }
+    if (!supabase) { setLocale(previousLocale); setStatus(previousLocale === "ko" ? "언어 설정을 저장할 수 없습니다. 잠시 후 다시 시도해 주세요." : "Language settings are unavailable. Please try again."); return; }
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) { setStatus("Please sign in again."); return; }
+    if (!userData.user) { setLocale(previousLocale); setStatus(previousLocale === "ko" ? "다시 로그인해 주세요." : "Please sign in again."); return; }
     const { error } = await supabase.from("profiles").upsert({ id: userData.user.id, display_name: displayName, preferred_locale: nextLocale });
-    if (error) { setStatus(error.message); return; }
+    if (error) { setLocale(previousLocale); setStatus(error.message); return; }
     setSavedSettings((current) => ({ ...current, locale: nextLocale }));
     setStatus(t("languageSaved"));
   };
@@ -97,10 +99,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const updateEmail = async () => {
     const nextEmail = emailDraft.trim();
     const supabase = createBrowserSupabaseClient();
-    if (!supabase || !nextEmail) { setStatus("Enter a valid email address."); return; }
+    if (!supabase || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) { setStatus(locale === "ko" ? "올바른 이메일 주소를 입력해 주세요." : "Enter a valid email address."); return; }
+    if (nextEmail === email) return;
     setIsUpdatingEmail(true);
     const { error } = await supabase.auth.updateUser({ email: nextEmail });
-    setStatus(error ? error.message : "Check your email to confirm the new address.");
+    setStatus(error ? error.message : (locale === "ko" ? "새 이메일 주소로 보낸 확인 메일을 확인해 주세요." : "Check your email to confirm the new address."));
     setIsUpdatingEmail(false);
   };
 
@@ -111,9 +114,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
 
   const saveAllSettings = async () => {
     const nickname = nicknameDraft.trim();
-    const nextEmail = emailDraft.trim();
     if (nickname.length < 2 || nickname.length > 40) { setStatus("Nickname must be between 2 and 40 characters."); return; }
-    if (!nextEmail) { setStatus("Enter a valid email address."); return; }
     const supabase = createBrowserSupabaseClient();
     if (!supabase) { setStatus("Profile settings are unavailable right now."); return; }
     setIsSavingAll(true);
@@ -125,14 +126,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       ? (await supabase.from("profiles").upsert(profileValues)).error
       : categorizedLocationError;
     if (profileError) { setStatus(profileError.message); setIsSavingAll(false); return; }
-    const authUpdate = nextEmail === savedSettings.email
-      ? { data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } }
-      : { email: nextEmail, data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } };
-    const { error: authError } = await supabase.auth.updateUser(authUpdate);
-    if (authError) { setStatus(authError.message); setIsSavingAll(false); return; }
+    const { error: authError } = await supabase.auth.updateUser({ data: { full_name: nickname, listing_description_text_step: descriptionTextSizeStep } });
+    if (authError) { setStatus(locale === "ko" ? "프로필 정보는 저장됐지만 화면 설정은 저장되지 않았어요. 다시 시도해 주세요." : "Profile details were saved, but display settings were not. Please try again."); setIsSavingAll(false); return; }
     setDisplayName(nickname); setNicknameDraft(nickname); setIsEditingNickname(false);
-    setSavedSettings({ displayName: nickname, email: nextEmail, phone, locationMode, location, locale, descriptionTextSizeStep });
-    setStatus(nextEmail === savedSettings.email ? "Settings saved." : "Settings saved. Confirm the email change from your inbox.");
+    setSavedSettings({ displayName: nickname, email: savedSettings.email, phone, locationMode, location, locale, descriptionTextSizeStep });
+    setStatus(locale === "ko" ? "변경사항을 저장했어요." : "Changes saved.");
     setIsSavingAll(false);
     router.refresh();
   };
@@ -156,7 +154,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     if (!supabase || phoneOtp.length !== 6) { setStatus("Enter the 6-digit SMS code."); return; }
     setIsVerifyingPhoneCode(true);
     const { error } = await supabase.auth.verifyOtp({ phone: targetPhone, token: phoneOtp, type: "phone_change" });
-    setStatus(error ? error.message : "Phone number verified successfully.");
+    setStatus(error ? error.message : phone !== savedSettings.phone ? (locale === "ko" ? "전화번호를 인증했어요. 프로필에도 반영하려면 변경사항을 저장해 주세요." : "Phone verified. Save your changes to update your profile.") : (locale === "ko" ? "전화번호를 인증했어요." : "Phone number verified successfully."));
     if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); }
     setIsVerifyingPhoneCode(false);
   };
@@ -167,12 +165,11 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       <div className="profile-current-title-row">
         <h1>{locale === "ko" ? "프로필 설정" : "Profile settings"}</h1>
       </div>
-      <p>{locale === "ko" ? "내 정보와 알림, 공개 설정을 간단하게 관리하세요." : "Keep your details and settings in one place."}</p>
+      <p>{locale === "ko" ? "내 정보와 계정 보안을 빠르게 확인하고 수정하세요." : "Review and update your details and account security."}</p>
     </header>
 
     <section className="ui-panel profile-current-hero" aria-label={locale === "ko" ? "내 프로필" : "My profile"}>
-      <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} />
-      <Button variant="secondary" className="profile-current-edit-action" onClick={() => { setExpandedSection("identity"); requestAnimationFrame(() => document.getElementById("profile-current-identity")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>{locale === "ko" ? "정보 수정" : "Edit details"}</Button>
+      <ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} memberLabel={locale === "ko" ? "회원" : "Member"} />
     </section>
 
     <div className="profile-current-grid">
@@ -183,13 +180,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
           <label className="profile-current-field"><span>{locale === "ko" ? "이름 또는 닉네임" : "Name or nickname"} <em>*</em></span><input className="ui-input" maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} autoComplete="nickname" /><small>{locale === "ko" ? "다른 이웃에게 표시되는 이름이에요." : "The name other neighbours will see."}</small></label>
           <div className="profile-current-field"><span>{locale === "ko" ? "지역" : "Location"} <em>*</em></span><ListingLocationSelector value={location} labels={locale === "ko" ? { main: "주요 지역", mainPlaceholder: "지역 선택", sub: "세부 지역", subPlaceholder: "세부 지역 선택" } : undefined} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} /><small>{locale === "ko" ? "가까운 이웃과 연결하는 데 사용해요. 상세 주소는 표시하지 않습니다." : "Used to connect with nearby neighbours. Your exact address is not shown."}</small></div>
         </section>
-        <section className="ui-panel profile-current-card profile-current-notifications" data-mobile-expanded={expandedSection === "notifications"}>
-          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon")}
-          <header className="profile-current-card-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림" : "Notifications"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
-          {[["ms-chat", locale === "ko" ? "채팅 메시지" : "Chat messages"], ["ms-notifications", locale === "ko" ? "가격 업데이트" : "Price updates"], ["ms-mail", locale === "ko" ? "이메일 알림" : "Email alerts"], ["ms-sms", locale === "ko" ? "문자(SMS) 알림" : "SMS alerts"], ["ms-star", locale === "ko" ? "후기 알림" : "Review alerts"]].map(([icon, label]) => <div className="profile-current-setting-row" key={label}><i className={`ms ${icon}`} aria-hidden="true" /><span>{label}</span>{legacySwitch(`${label}: ${locale === "ko" ? "준비 중" : "Coming soon"}`)}</div>)}
-          <p className="profile-current-unavailable">{locale === "ko" ? "수신 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 알림을 관리할 수 있어요." : "These preferences cannot be saved yet. The switches will control notifications when the feature is ready."}</p>
-          <Link className="my-page-link profile-current-notifications-link" href="/market/dashboard/notifications">{locale === "ko" ? "알림 보기" : "View notifications"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
-        </section>
       </div>
 
       <div className="profile-current-column">
@@ -198,7 +188,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
           <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2></header>
           <div className="profile-current-contact-row"><i className="ms ms-call" aria-hidden="true" /><div><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button></div>
           {phoneVerificationSent ? <div className="profile-current-otp"><label htmlFor="profile-current-otp">{locale === "ko" ? "문자로 받은 6자리 코드" : "6-digit SMS code"}</label><input id="profile-current-otp" className="ui-input" inputMode="numeric" maxLength={6} value={phoneOtp} onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><Button variant="primary" size="sm" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{t("verify")}</Button></div> : null}
-          <div className="profile-current-contact-row"><i className="ms ms-mail" aria-hidden="true" /><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div>
+          <div className="profile-current-contact-row"><i className="ms ms-mail" aria-hidden="true" /><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isUpdatingEmail || emailDraft.trim() === email} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div>
           <div className="profile-current-password-row"><i className="ms ms-lock" aria-hidden="true" /><span>{locale === "ko" ? "비밀번호" : "Password"}</span><Button variant="ghost" size="sm" aria-expanded={isPasswordEditorOpen} onClick={() => setIsPasswordEditorOpen((open) => !open)}>{isPasswordEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경" : "Change")}</Button></div>
           {isPasswordEditorOpen ? <div className="profile-current-password-fields">
             <div><label htmlFor="profile-current-password">{locale === "ko" ? "현재 비밀번호" : "Current password"}</label><input id="profile-current-password" className="ui-input" type={showCurrentPassword ? "text" : "password"} autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "현재 비밀번호 표시 전환" : "Toggle current password visibility"} onClick={() => setShowCurrentPassword((value) => !value)}>{showCurrentPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
@@ -208,13 +198,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
             <Button variant="primary" disabled={isUpdatingPassword || !passwordsMatch} onClick={() => void updatePassword()}>{isUpdatingPassword ? t("saving") : (locale === "ko" ? "비밀번호 변경" : "Update password")}</Button>
           </div> : null}
         </section>
-        <section className="ui-panel profile-current-card profile-current-privacy" data-mobile-expanded={expandedSection === "privacy"}>
-          {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "공개 설정" : "Privacy", locale === "ko" ? "연락처 공개 설정 · 준비 중" : "Contact visibility · Coming soon")}
-          <header className="profile-current-card-heading"><i className="ms ms-visibility" aria-hidden="true" /><h2>{locale === "ko" ? "공개 설정" : "Privacy"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
-          <div className="profile-current-setting-row"><i className="ms ms-chat" aria-hidden="true" /><span>{locale === "ko" ? "채팅 허용" : "Allow chat"}</span>{legacySwitch(locale === "ko" ? "채팅 허용: 준비 중" : "Allow chat: Coming soon")}</div>
-          <div className="profile-current-setting-row"><i className="ms ms-call" aria-hidden="true" /><span>{locale === "ko" ? "전화번호 공개" : "Show phone number"}</span>{legacySwitch(locale === "ko" ? "전화번호 공개: 준비 중" : "Show phone number: Coming soon")}</div>
-          <p className="profile-current-unavailable">{locale === "ko" ? "공개 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 변경할 수 있어요." : "These visibility settings cannot be saved yet. The switches will work when the feature is ready."}</p>
-        </section>
         <section className="ui-panel profile-current-card profile-current-display" data-mobile-expanded={expandedSection === "display"}>
           {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 화면" : "Language & display", locale === "ko" ? "언어, 글자 크기" : "Language and text size")}
           <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 화면" : "Language & display"}</h2></header>
@@ -223,8 +206,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         </section>
       </div>
     </div>
-    <section className="ui-panel profile-current-management" data-mobile-expanded={expandedSection === "management"}>{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 관리 안내" : "Account information")}<header className="profile-current-card-heading"><i className="ms ms-settings" aria-hidden="true" /><h2>{locale === "ko" ? "계정 관리" : "Account management"}</h2></header><p>{locale === "ko" ? "계정 비활성화·탈퇴 기능은 아직 준비 중입니다. 계정 관련 도움이 필요하면 고객지원에 문의해 주세요." : "Account deactivation and deletion are not available here yet. Contact support if you need account help."}</p></section>
-    <div className="profile-current-actions"><Button variant="secondary" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</Button><Button variant="primary" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</Button></div>
+    {hasUnsavedProfileChanges || isSavingAll ? <div className="profile-current-actions"><Button variant="secondary" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</Button><Button variant="primary" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</Button></div> : null}
     {status ? <p className="profile-form-status" role="status">{status}</p> : null}
   </div>;
 
@@ -241,7 +223,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     </> : null}
     <div className="profile-settings-grid profile-settings-grid-refined">
       <div className="profile-main-column">
-        <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} /></section>
+        <section className="profile-panel profile-photo-panel"><ProfilePhotoUploader initialPath={avatarPath} displayName={displayName} email={email} memberSince={memberSince} locationLabel={locationLabel || null} memberLabel={locale === "ko" ? "회원" : "Member"} /></section>
         <section className="profile-panel profile-language-panel">
           <header className="profile-section-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{t("languageSettings")}</h2></header>
           <label className="profile-language-select"><span>{t("displayLanguage")}</span><select value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select></label>

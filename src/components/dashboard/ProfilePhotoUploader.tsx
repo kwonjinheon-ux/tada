@@ -18,7 +18,7 @@ const angle = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 const centre = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null }) {
+export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel, memberLabel = "Member" }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null; memberLabel?: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorImageRef = useRef<HTMLImageElement>(null);
@@ -187,7 +187,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
         <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button>
       </div>
       <div className="profile-photo-details">
-        <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
+        <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>{memberLabel}</span></div>
         {email && <p className="profile-photo-email">{email}</p>}
         {locationLabel && <p className="profile-photo-location"><i className="ms ms-location-on" aria-hidden="true" /> {locationLabel}</p>}
         {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
