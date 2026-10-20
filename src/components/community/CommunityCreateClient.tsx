@@ -9,7 +9,7 @@ import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
 import { PostSubmitButton } from "@/components/post-ad/PostSubmitButton";
-import { allowsAnonymousCommunityPost, communityPostCreateResponseSchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostBodyTextLength, communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
@@ -85,7 +85,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
       setError(t("communityEventScheduleInvalid"));
       return;
     }
-    if (body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) {
+    if (communityPostBodyTextLength(body) < 20) {
       setError(t("communityCreateBodyRequired"));
       return;
     }

@@ -223,11 +223,20 @@ export function allowsAnonymousCommunityPost(categorySlug: string) {
   return categorySlug === "free-board" || categorySlug === "qna";
 }
 
+export function communityPostBodyTextLength(value: string) {
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .length;
+}
+
 export const communityPostCreateRequestSchema = z.object({
   categorySlug: communityPostCategorySchema,
   isAnonymous: z.boolean().default(false),
   title: z.string().trim().min(4).max(120),
-  body: z.string().trim().min(20).max(5_000),
+  body: z.string().max(5_000).refine((value) => communityPostBodyTextLength(value) >= 20, "Post details must contain at least 20 characters."),
   mainLocation: z.string().trim().min(2).max(80),
   subLocation: z.string().trim().max(80).optional(),
   imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),

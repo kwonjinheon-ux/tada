@@ -1,4 +1,4 @@
-import { allowsAnonymousCommunityPost, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostBodyTextLength, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
@@ -47,7 +47,23 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const payload = communityPostCreateRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return apiFailure("BAD_REQUEST", "Please complete each required field.", 400);
+  if (!payload.success) {
+    const firstIssue = payload.error.issues[0];
+    const field = firstIssue?.path[0];
+    const message = field === "categorySlug"
+      ? "Choose a category before publishing."
+      : field === "title"
+        ? "Add a title with at least 4 characters."
+        : field === "body"
+          ? "Add at least 20 characters of detail to your post."
+          : field === "mainLocation"
+            ? "Choose a main location before publishing."
+            : field === "eventStartAt" || field === "eventEndAt"
+              ? "Choose a valid event start and end time."
+              : "Please complete each required field.";
+    return apiFailure("BAD_REQUEST", message, 400, { field: typeof field === "string" ? field : null });
+  }
+  if (communityPostBodyTextLength(payload.data.body) < 20) return apiFailure("BAD_REQUEST", "Add at least 20 characters of detail to your post.", 400, { field: "body" });
   if (payload.data.isAnonymous && !allowsAnonymousCommunityPost(payload.data.categorySlug)) return apiFailure("BAD_REQUEST", "Anonymous posting is only available in Q&A or the free board.", 400);
   if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return apiFailure("BAD_REQUEST", prohibitedPublicContentMessage, 400);
 
