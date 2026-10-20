@@ -22,6 +22,8 @@ export default async function ProfileSettingsPage() {
       <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
           email={user.email ?? ""}
+          emailVerified={Boolean(user.email_confirmed_at)}
+          initialVerifiedPhone={user.phone_confirmed_at ? user.phone ?? "" : ""}
           avatarPath={user.user_metadata?.avatar_path}
           memberSince={new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at))}
           initialDescriptionTextSizeStep={typeof user.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5 ? user.user_metadata.listing_description_text_step : 0}

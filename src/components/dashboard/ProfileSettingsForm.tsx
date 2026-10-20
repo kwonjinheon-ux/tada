@@ -13,9 +13,14 @@ import { findMainLocation } from "@/lib/market/nz-location";
 import type { MainLocation } from "@/data/nzLocations";
 
 type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale };
-type ProfileSection = "identity" | "security" | "notifications" | "privacy" | "display" | "management";
+type ProfileSection = "identity" | "security" | "privacy" | "display" | "management";
 
-export function ProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
+function normaliseNzPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits ? `+${digits.startsWith("64") ? digits : `64${digits.replace(/^0/, "")}`}` : "";
+}
+
+export function ProfileSettingsForm({ email, emailVerified, initialVerifiedPhone, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; emailVerified: boolean; initialVerifiedPhone: string; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
   const router = useRouter();
   const isLegacy = usePathname()?.endsWith("/profile-v0") ?? false;
   const { locale, setLocale, t } = useLanguage();
@@ -35,6 +40,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [emailDraft, setEmailDraft] = useState(email);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [phone, setPhone] = useState(initialProfile.phone ?? "");
+  const [verifiedPhone, setVerifiedPhone] = useState(initialVerifiedPhone);
   const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
   const [location, setLocation] = useState(() => ({ mainLocation: (findMainLocation(initialProfile.main_location ?? initialProfile.region_city) ?? "") as MainLocation | "", subLocation: initialProfile.sub_location ?? initialProfile.region_suburb ?? "", locality: initialProfile.locality, rawSuburb: initialProfile.raw_suburb, region: initialProfile.region, latitude: initialProfile.latitude, longitude: initialProfile.longitude }));
   const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialDescriptionTextSizeStep);
@@ -51,6 +57,9 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
+  const phoneIsVerified = Boolean(phone.trim() && verifiedPhone && normaliseNzPhone(phone) === normaliseNzPhone(verifiedPhone));
+  const emailIsVerified = Boolean(emailVerified && emailDraft.trim().toLowerCase() === email.trim().toLowerCase());
+  const verificationChip = (verified: boolean) => <span className={`ui-pill${verified ? " ui-pill--success" : ""}`}>{verified ? t("verified") : (locale === "ko" ? "미인증" : "Not verified")}</span>;
   const legacySwitch = (label: string, checked = false) => <label className="profile-static-switch"><input type="checkbox" aria-label={label} checked={checked} disabled readOnly /><span aria-hidden="true" /></label>;
   const sectionTrigger = (section: ProfileSection, icon: string, title: string, description: string, mode: "mobile" | "desktop" = "mobile") => {
     const expanded = mode === "mobile" ? expandedSection === section : desktopExpandedSections.includes(section);
@@ -108,11 +117,6 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
     setIsUpdatingEmail(false);
   };
 
-  const normalisedPhone = () => {
-    const digits = phone.replace(/\D/g, "");
-    return digits ? (digits.startsWith("64") ? `+${digits}` : `+64${digits.replace(/^0/, "")}`) : "";
-  };
-
   const saveAllSettings = async () => {
     const nickname = nicknameDraft.trim();
     const nextEmail = emailDraft.trim();
@@ -148,7 +152,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   };
 
   const sendPhoneCode = async () => {
-    const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
+    const supabase = createBrowserSupabaseClient(); const targetPhone = normaliseNzPhone(phone);
     if (!supabase || !targetPhone) { setStatus("Enter a valid New Zealand phone number first."); return; }
     setIsSendingPhoneCode(true);
     const { error } = await supabase.auth.updateUser({ phone: targetPhone });
@@ -156,12 +160,12 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
   };
 
   const verifyPhoneCode = async () => {
-    const supabase = createBrowserSupabaseClient(); const targetPhone = normalisedPhone();
+    const supabase = createBrowserSupabaseClient(); const targetPhone = normaliseNzPhone(phone);
     if (!supabase || phoneOtp.length !== 6) { setStatus("Enter the 6-digit SMS code."); return; }
     setIsVerifyingPhoneCode(true);
     const { error } = await supabase.auth.verifyOtp({ phone: targetPhone, token: phoneOtp, type: "phone_change" });
     setStatus(error ? error.message : "Phone number verified successfully.");
-    if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); }
+    if (!error) { setVerifiedPhone(targetPhone); setPhoneVerificationSent(false); setPhoneOtp(""); }
     setIsVerifyingPhoneCode(false);
   };
 
@@ -171,7 +175,7 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
       <div className="profile-current-title-row">
         <h1>{locale === "ko" ? "프로필 설정" : "Profile settings"}</h1>
       </div>
-      <p>{locale === "ko" ? "내 정보와 알림, 공개 설정을 간단하게 관리하세요." : "Keep your details and settings in one place."}</p>
+      <p>{locale === "ko" ? "내 정보와 계정 설정을 간단하게 관리하세요." : "Keep your details and account settings in one place."}</p>
     </header>
 
     <div className="profile-current-grid">
@@ -193,10 +197,10 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
         <section className="ui-panel profile-current-card profile-current-security" data-mobile-expanded={expandedSection === "security"}>
           {sectionTrigger("security", "ms-lock", locale === "ko" ? "인증 및 보안" : "Verification & security", locale === "ko" ? "전화번호, 이메일, 비밀번호" : "Phone, email, password")}
           <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2><i className="ms ms-expand-less profile-current-heading-chevron" aria-hidden="true" /></header>
-          <div className="profile-current-contact-row"><i className="ms ms-call" aria-hidden="true" /><div><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button></div>
+          <div className="profile-current-contact-row"><div><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><div className="profile-current-contact-actions">{verificationChip(phoneIsVerified)}{!phoneIsVerified ? <Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button> : null}</div></div>
           {phoneVerificationSent ? <div className="profile-current-otp"><label htmlFor="profile-current-otp">{locale === "ko" ? "문자로 받은 6자리 코드" : "6-digit SMS code"}</label><input id="profile-current-otp" className="ui-input" inputMode="numeric" maxLength={6} value={phoneOtp} onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><Button variant="primary" size="sm" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{t("verify")}</Button></div> : null}
-          <div className="profile-current-contact-row"><i className="ms ms-mail" aria-hidden="true" /><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div>
-          <div className="profile-current-password-row"><i className="ms ms-lock" aria-hidden="true" /><span>{locale === "ko" ? "비밀번호" : "Password"}</span><Button variant="ghost" size="sm" aria-expanded={isPasswordEditorOpen} onClick={() => setIsPasswordEditorOpen((open) => !open)}>{isPasswordEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경" : "Change")}</Button></div>
+          <div className="profile-current-contact-row"><div><label htmlFor="profile-current-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><div className="profile-current-contact-actions">{verificationChip(emailIsVerified)}{emailDraft.trim() !== email ? <Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button> : null}</div></div>
+          <div className="profile-current-password-row"><span>{locale === "ko" ? "비밀번호" : "Password"}</span><Button variant="ghost" size="sm" aria-expanded={isPasswordEditorOpen} onClick={() => setIsPasswordEditorOpen((open) => !open)}>{isPasswordEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경" : "Change")}</Button></div>
           {isPasswordEditorOpen ? <div className="profile-current-password-fields">
             <div><label htmlFor="profile-current-password">{locale === "ko" ? "현재 비밀번호" : "Current password"}</label><input id="profile-current-password" className="ui-input" type={showCurrentPassword ? "text" : "password"} autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "현재 비밀번호 표시 전환" : "Toggle current password visibility"} onClick={() => setShowCurrentPassword((value) => !value)}>{showCurrentPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
             <div><label htmlFor="profile-current-new-password">{locale === "ko" ? "새 비밀번호 · 8자 이상" : "New password · 8+ characters"}</label><input id="profile-current-new-password" className="ui-input" type={showNewPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "새 비밀번호 표시 전환" : "Toggle new password visibility"} onClick={() => setShowNewPassword((value) => !value)}>{showNewPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
@@ -209,24 +213,16 @@ export function ProfileSettingsForm({ email, avatarPath, memberSince, initialPro
           {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "공개 설정" : "Privacy", locale === "ko" ? "연락처 공개 설정 · 준비 중" : "Contact visibility · Coming soon")}
           {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "채팅 및 개인정보 설정" : "Chat & privacy", locale === "ko" ? "채팅 허용과 전화번호 공개" : "Chat and phone visibility", "desktop")}
           <header className="profile-current-card-heading"><i className="ms ms-visibility" aria-hidden="true" /><h2>{locale === "ko" ? "공개 설정" : "Privacy"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
-          <div className="profile-current-setting-row"><i className="ms ms-chat" aria-hidden="true" /><span>{locale === "ko" ? "채팅 허용" : "Allow chat"}</span>{legacySwitch(locale === "ko" ? "채팅 허용: 준비 중" : "Allow chat: Coming soon")}</div>
-          <div className="profile-current-setting-row"><i className="ms ms-call" aria-hidden="true" /><span>{locale === "ko" ? "전화번호 공개" : "Show phone number"}</span>{legacySwitch(locale === "ko" ? "전화번호 공개: 준비 중" : "Show phone number: Coming soon")}</div>
+          <div className="profile-current-setting-row"><span>{locale === "ko" ? "채팅 허용" : "Allow chat"}</span>{legacySwitch(locale === "ko" ? "채팅 허용: 준비 중" : "Allow chat: Coming soon")}</div>
+          <div className="profile-current-setting-row"><span>{locale === "ko" ? "전화번호 공개" : "Show phone number"}</span>{legacySwitch(locale === "ko" ? "전화번호 공개: 준비 중" : "Show phone number: Coming soon")}</div>
           <p className="profile-current-unavailable">{locale === "ko" ? "공개 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 변경할 수 있어요." : "These visibility settings cannot be saved yet. The switches will work when the feature is ready."}</p>
         </section>
         <section className="ui-panel profile-current-card profile-current-display" data-mobile-expanded={expandedSection === "display"} data-desktop-expanded={desktopExpandedSections.includes("display")}>
-          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 화면" : "Language & display", locale === "ko" ? "언어, 글자 크기" : "Language and text size")}
-          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 화면 설정" : "Language & display", locale === "ko" ? "표시 언어와 상품 설명 글자 크기" : "Language and listing text size", "desktop")}
-          <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 화면" : "Language & display"}</h2></header>
+          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 글씨 크기" : "Language & text size", locale === "ko" ? "표시 언어, 상품 설명 글씨 크기" : "Language and listing text size")}
+          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 글씨 크기 설정" : "Language & text size", locale === "ko" ? "표시 언어와 상품 설명 글씨 크기" : "Language and listing text size", "desktop")}
+          <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 글씨 크기" : "Language & text size"}</h2></header>
           <label className="profile-current-field"><span>{locale === "ko" ? "표시 언어" : "Display language"}</span><select className="ui-input" value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select><small>{locale === "ko" ? "언어 선택은 바로 적용됩니다." : "Language changes apply immediately."}</small></label>
-          <div className="profile-current-text-size"><span>{locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"}</span><TextSizeControls value={descriptionTextSizeStep} label={locale === "ko" ? "상품 설명 글자 크기" : "Listing description text size"} onChange={(change) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)))} /></div>
-        </section>
-        <section className="ui-panel profile-current-card profile-current-notifications" data-mobile-expanded={expandedSection === "notifications"} data-desktop-expanded={desktopExpandedSections.includes("notifications")}>
-          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon")}
-          {sectionTrigger("notifications", "ms-notifications", locale === "ko" ? "알림 설정" : "Notifications", locale === "ko" ? "알림 수신 설정 · 준비 중" : "Notification preferences · Coming soon", "desktop")}
-          <header className="profile-current-card-heading"><i className="ms ms-notifications" aria-hidden="true" /><h2>{locale === "ko" ? "알림" : "Notifications"}</h2><span className="ui-pill">{locale === "ko" ? "준비 중" : "Coming soon"}</span></header>
-          {[["ms-chat", locale === "ko" ? "채팅 메시지" : "Chat messages"], ["ms-notifications", locale === "ko" ? "가격 업데이트" : "Price updates"], ["ms-mail", locale === "ko" ? "이메일 알림" : "Email alerts"], ["ms-sms", locale === "ko" ? "문자(SMS) 알림" : "SMS alerts"], ["ms-star", locale === "ko" ? "후기 알림" : "Review alerts"]].map(([icon, label]) => <div className="profile-current-setting-row" key={label}><i className={`ms ${icon}`} aria-hidden="true" /><span>{label}</span>{legacySwitch(`${label}: ${locale === "ko" ? "준비 중" : "Coming soon"}`)}</div>)}
-          <p className="profile-current-unavailable">{locale === "ko" ? "수신 설정은 아직 저장되지 않습니다. 기능이 준비되면 이 토글로 알림을 관리할 수 있어요." : "These preferences cannot be saved yet. The switches will control notifications when the feature is ready."}</p>
-          <Link className="my-page-link profile-current-notifications-link" href="/market/dashboard/notifications">{locale === "ko" ? "알림 보기" : "View notifications"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
+          <div className="profile-current-text-size"><span>{locale === "ko" ? "상품 설명 글씨 크기" : "Listing description text size"}</span><TextSizeControls value={descriptionTextSizeStep} label={locale === "ko" ? "상품 설명 글씨 크기" : "Listing description text size"} onChange={(change) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)))} /></div>
         </section>
       </div>
     </div>
