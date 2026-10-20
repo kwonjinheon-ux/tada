@@ -61,7 +61,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
         </header>
         <CommunityEventSchedule id={post.id} title={post.title} location={post.location} eventDate={post.eventDate} eventStartAt={post.eventStartAt} eventEndAt={post.eventEndAt} />
         <ImageGallery images={post.images} className="community-detail-gallery" priority />
-        <div className="community-detail-body" dangerouslySetInnerHTML={{ __html: post.body }} />
+        <div className="community-detail-body post-rich-text" dangerouslySetInnerHTML={{ __html: post.body }} />
         <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} title={post.title} body={post.body} commentCount={post.responseCount} score={post.score} myVote={post.myVote} shareCount={post.shareCount} initialIsSaved={post.isSaved} isOwner={post.isOwner} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>
       </article>
       <ListingComments listingId={post.id} space="community" />
