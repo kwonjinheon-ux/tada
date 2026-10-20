@@ -30,7 +30,25 @@ const prohibitedContentPatterns = [
 export const prohibitedPublicContentMessage = "This content cannot be published on Tada because it contains prohibited or unsafe material.";
 export const prohibitedServiceContentMessage = "This service cannot be listed on Tada because it contains prohibited or unsafe content.";
 
-export function containsProhibitedPublicContent(...values: Array<string | null | undefined>) {
+/**
+ * The first prohibited term in the given text, or null when there is none.
+ *
+ * A warning that only says a post contains something prohibited leaves the
+ * writer re-reading their own paragraphs, so the term itself comes back and
+ * the message can quote it. The patterns carry no global flag, so exec keeps
+ * no position between calls.
+ */
+export function findProhibitedPublicContent(...values: Array<string | null | undefined>) {
   const content = values.filter((value): value is string => typeof value === "string").join(" ");
-  return prohibitedContentPatterns.some((pattern) => pattern.test(content));
+  for (const pattern of prohibitedContentPatterns) {
+    const match = pattern.exec(content);
+    // Some patterns read the character on either side of a word so they do not
+    // match inside a longer one, so a match can carry a space or a comma.
+    if (match) return match[0].replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "") || match[0];
+  }
+  return null;
+}
+
+export function containsProhibitedPublicContent(...values: Array<string | null | undefined>) {
+  return findProhibitedPublicContent(...values) !== null;
 }

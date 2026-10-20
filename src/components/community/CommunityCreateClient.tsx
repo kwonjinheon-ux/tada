@@ -15,7 +15,7 @@ import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
-import { containsProhibitedPublicContent } from "@/lib/safety/prohibited-content";
+import { findProhibitedPublicContent } from "@/lib/safety/prohibited-content";
 
 type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; locality: string | null; rawSuburb: string | null; region: string | null; latitude: number | null; longitude: number | null };
 
@@ -44,7 +44,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const [minimumEventDateTime] = useState(() => toLocalDateTimeInputValue(new Date()));
-  const unsafeMessage = locale === "ko" ? "금지되거나 안전하지 않은 표현은 입력할 수 없습니다." : "Prohibited or unsafe terms cannot be used in a public post.";
+  const unsafeMessage = (term: string) => locale === "ko" ? `금지되거나 안전하지 않은 표현이 들어 있습니다: “${term}”` : `This post contains a prohibited or unsafe term: “${term}”`;
   const isEventCategory = categorySlug === "events";
   const allowsAnonymous = allowsAnonymousCommunityPost(categorySlug);
 
@@ -69,8 +69,15 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
       setError(t("communityCreateCategoryRequired"));
       return;
     }
-    if (containsProhibitedPublicContent(title, body)) {
-      setError(unsafeMessage);
+    // Checked here, on the way out, and never while the post is being written.
+    // The title and the editor used to drop any change that matched this list,
+    // which is a poor fit for a rich-text editor: the editor keeps what was
+    // pasted in its own DOM, so a paragraph copied from another post that
+    // happened to mention one of these words stayed on screen while the form
+    // held nothing, and the only complaint was that the post was too short.
+    const prohibitedTerm = findProhibitedPublicContent(title, body);
+    if (prohibitedTerm) {
+      setError(unsafeMessage(prohibitedTerm));
       return;
     }
     if (title.trim().length < 4) {
@@ -134,12 +141,12 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
                   It steps aside the moment the writer starts, rather than
                   sitting over the form for the whole composition. */}
               {hasStartedWriting ? null : <p className="community-create-legal-notice" role="note"><i className="ms ms-gavel" aria-hidden="true" />{t("communityCreateLegalNotice")}</p>}
-              <div className="post-field"><label htmlFor="community-title">{t(isEventCategory ? "communityEventNameLabel" : "communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => { if (containsProhibitedPublicContent(event.target.value)) { setError(unsafeMessage); return; } setTitle(event.target.value); }} minLength={4} maxLength={120} placeholder={t(isEventCategory ? "communityEventNamePlaceholder" : "communityTitlePlaceholder")} required /></div>
+              <div className="post-field"><label htmlFor="community-title">{t(isEventCategory ? "communityEventNameLabel" : "communityTitleLabel")}</label><input id="community-title" value={title} onChange={(event) => setTitle(event.target.value)} minLength={4} maxLength={120} placeholder={t(isEventCategory ? "communityEventNamePlaceholder" : "communityTitlePlaceholder")} required /></div>
               {isEventCategory ? <div className="event-schedule-grid">
                 <div className="post-field"><label htmlFor="community-event-start">{t("communityEventStartLabel")}</label><input id="community-event-start" type="datetime-local" min={minimumEventDateTime} value={eventStartAt} onChange={(event) => { setEventStartAt(event.target.value); if (eventEndAt && event.target.value >= eventEndAt) setEventEndAt(""); }} required /></div>
                 <div className="post-field"><label htmlFor="community-event-end">{t("communityEventEndLabel")}</label><input id="community-event-end" type="datetime-local" min={eventStartAt || minimumEventDateTime} value={eventEndAt} onChange={(event) => setEventEndAt(event.target.value)} required /></div>
               </div> : null}
-              <div className="post-field"><label htmlFor="community-body">{t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")} value={body} onChange={(value) => { if (containsProhibitedPublicContent(value)) { setError(unsafeMessage); return; } setBody(value); }} placeholder={t(isEventCategory ? "communityEventDetailsPlaceholder" : "communityDetailsPlaceholder")} /></div>
+              <div className="post-field"><label htmlFor="community-body">{t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")} value={body} onChange={setBody} placeholder={t(isEventCategory ? "communityEventDetailsPlaceholder" : "communityDetailsPlaceholder")} /></div>
             </section>
 
             <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>{t("communityAddImages")}</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>
