@@ -14,6 +14,7 @@ import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
 import { scrollToListTop } from "@/lib/scroll-to-list-top";
+import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { serviceFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { ServicesFeedQuery, ServicesFeedResult } from "@/lib/services/feed";
@@ -131,11 +132,11 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
   // Picking a category closes the rail and takes the reader straight to the
   // filtered list, which on a phone is otherwise hidden behind the drawer.
   /** Puts a filter change on the URL without asking the server for the page. */
-  const applyBrowseParams = (params: URLSearchParams) => {
+  const applyBrowseParams = (params: URLSearchParams, { replace = false } = {}) => {
     const query = params.toString();
     const nextUrl = `/services${query ? `?${query}` : ""}`;
     if (`${window.location.pathname}${window.location.search}` === nextUrl) return;
-    window.history.pushState(window.history.state, "", nextUrl);
+    window.history[replace ? "replaceState" : "pushState"](window.history.state, "", nextUrl);
     setPushedSearch(query);
   };
   const chooseCategory = (category: ServiceCategoryId | "all") => {
@@ -146,13 +147,20 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
     setNotice("");
     scrollToListTop(resultsRef.current);
   };
-  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
+  const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "", { replace = false } = {}) => {
     const params = new URLSearchParams(window.location.search);
     // Written even when empty, so All New Zealand reads as a choice.
     params.set("mainLocation", nextMainLocation);
     params.set("subLocation", nextSubLocation);
-    applyBrowseParams(params);
+    applyBrowseParams(params, { replace });
   };
+  // The reader's own area to begin with, the way Market and Community open.
+  // It is not a choice they made, so it does not earn a history entry.
+  useProfileMainLocation({
+    hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
+    mainLocation,
+    onResolve: (profileMainLocation) => chooseLocation(profileMainLocation, "", { replace: true }),
+  });
 
   return (
     <main className="marketplace-page services-page">
