@@ -19,14 +19,14 @@ export type CommunityCategory =
 
 export const communityCategories: Array<{ value: CommunityCategory; labelKey: TranslationKey; icon: string }> = [
   { value: "all", labelKey: "all", icon: "ms-grid-view" },
-  { value: "qna", labelKey: "communityCategoryQnA", icon: "ms-help" },
   { value: "free-board", labelKey: "communityCategoryFreeBoard", icon: "ms-forum" },
-  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "ms-campaign" },
-  { value: "events", labelKey: "communityCategoryEvents", icon: "ms-event" },
+  { value: "qna", labelKey: "communityCategoryQnA", icon: "ms-help" },
   { value: "recommendations", labelKey: "communityCategoryRecommendations", icon: "ms-thumb-up" },
-  { value: "together", labelKey: "communityCategoryTogether", icon: "ms-groups" },
-  { value: "parents-kids", labelKey: "communityCategoryParenting", icon: "ms-stroller" },
+  { value: "local-noticeboard", labelKey: "communityCategoryLocalNoticeboard", icon: "ms-campaign" },
   { value: "immigration", labelKey: "communityCategoryImmigration", icon: "ms-flight-takeoff" },
+  { value: "parents-kids", labelKey: "communityCategoryParenting", icon: "ms-stroller" },
+  { value: "events", labelKey: "communityCategoryEvents", icon: "ms-event" },
+  { value: "together", labelKey: "communityCategoryTogether", icon: "ms-groups" },
 ];
 
 // This is the single category catalogue used by both community browsing and
