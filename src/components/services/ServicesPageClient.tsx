@@ -14,6 +14,7 @@ import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
 import { ServiceCallControl } from "@/components/services/ServiceCallControl";
+import { AdSlot } from "@/components/advertising/AdSlot";
 import { scrollToListTop } from "@/lib/scroll-to-list-top";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { serviceFeedResponseSchema } from "@/contracts/api";
@@ -306,15 +307,7 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
           <p>{text.adInviteDescription}</p>
           <button type="button" onClick={() => setNotice(text.adInviteNotice)}>{text.adInviteAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
         </section>
-        <section className="services-side-ad" aria-label={text.sidebarAdLabel}>
-          <Image src="/images/home/journey-services.png" alt="" fill sizes="(max-width: 1199px) 100vw, 284px" />
-          <div className="services-side-ad-content">
-            <span>{text.sidebarAdLabel}</span>
-            <strong>{text.sidebarAdTitle}</strong>
-            <p>{text.sidebarAdDescription}</p>
-            <button type="button" onClick={() => chooseCategory("cleaning")}>{text.sidebarAdAction} <i className="ms ms-arrow-forward" aria-hidden="true" /></button>
-          </div>
-        </section>
+        <AdSlot placement="market_sidebar" />
       </aside>
     </main>
   );
