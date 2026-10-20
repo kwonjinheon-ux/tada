@@ -12677,13 +12677,62 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .service-review-open:hover { background: var(--color-primary-soft); }
 .service-profile-reviews-heading { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }
 .service-profile-reviews-heading .service-review-open { flex: 0 0 auto; }
-.service-review-backdrop { z-index: 80; display: grid; place-items: center; padding: var(--space-4); }
-.service-review-dialog { width: min(100%, 30rem); display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
-.service-review-inline { width: 100%; margin-top: var(--space-2); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-soft); box-shadow: none; }
-.service-review-inline header { position: relative; }
-.service-review-inline-close { display: grid; place-items: center; width: var(--control-h-sm); height: var(--control-h-sm); margin-left: auto; padding: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: var(--color-muted); cursor: pointer; }
-.service-review-inline-close:hover { background: var(--color-surface); color: var(--color-ink); }
-.service-review-dialog header { display: flex; gap: var(--space-3); align-items: center; }.service-review-dialog header > i { color: var(--color-warning); font-size: var(--text-2xl); }.service-review-dialog header div { display: grid; gap: 2px; }.service-review-dialog header p, .service-review-dialog h2 { margin: 0; }.service-review-dialog header p { color: var(--color-muted); font-size: var(--text-xs); }.service-review-dialog h2 { color: var(--color-ink); font-size: var(--text-xl); }.service-review-dialog fieldset { margin: 0; padding: 0; border: 0; }.service-review-dialog legend, .service-review-dialog label > span { display: block; margin-bottom: var(--space-2); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-bold); }.service-review-stars { display: flex; gap: var(--space-1); }.service-review-stars button { width: var(--control-h-lg); height: var(--control-h-lg); padding: 0; border: 0; border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-line); font-size: var(--text-xl); cursor: pointer; }.service-review-stars button .ms { color: inherit; }.service-review-stars button.is-selected { color: var(--color-warning); }.service-review-stars button:focus-visible { outline: none; box-shadow: var(--ring-focus); }.service-review-rating-value { display: block; margin-top: var(--space-2); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); }.service-review-dialog textarea { width: 100%; resize: vertical; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-md); color: var(--color-ink); font: inherit; line-height: 1.5; }.service-review-dialog textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--ring-focus); }.service-review-dialog footer { display: flex; justify-content: flex-end; gap: var(--space-2); }.service-review-dialog footer button { min-height: var(--control-h-lg); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink-soft); font: inherit; font-weight: var(--weight-bold); cursor: pointer; }.service-review-dialog footer button:last-child { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }.service-review-error { margin: 0; color: var(--color-danger); font-size: var(--text-sm); }
+/* Writing a review is one short task, so it takes the surface that suits one:
+   a sheet rising from the bottom edge on a phone, where the thumb already is,
+   and a card in the middle of a desktop. The panel scrolls, never the page
+   behind it. */
+.service-review-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--space-4); }
+.service-review-dialog { width: min(100%, 30rem); max-height: min(86vh, 44rem); overflow-y: auto; overscroll-behavior: contain; display: grid; align-content: start; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
+
+.service-review-dialog header { display: flex; gap: var(--space-3); align-items: start; }
+.service-review-dialog header > div { display: grid; gap: 2px; min-width: 0; }
+.service-review-dialog header p, .service-review-dialog h2 { margin: 0; }
+.service-review-dialog header p { color: var(--color-muted); font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: .04em; text-transform: uppercase; }
+.service-review-dialog h2 { color: var(--color-ink); font-size: var(--text-xl); line-height: 1.3; }
+.service-review-close { flex: 0 0 auto; width: var(--control-h-md); height: var(--control-h-md); margin-left: auto; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-circle); background: var(--color-surface-soft); color: var(--color-muted); cursor: pointer; }
+.service-review-close:hover { background: var(--color-line-soft); color: var(--color-ink); }
+.service-review-close:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+
+.service-review-dialog fieldset { margin: 0; padding: 0; border: 0; }
+.service-review-dialog legend, .service-review-dialog label > span { display: block; margin-bottom: var(--space-2); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+
+/* The stars carry the choice, so they are the biggest control here. */
+.service-review-stars { display: flex; gap: var(--space-1); }
+.service-review-stars button { width: var(--control-h-xl); height: var(--control-h-xl); padding: 0; border: 0; border-radius: var(--radius-md); background: var(--color-surface-soft); color: var(--color-line); font-size: var(--text-2xl); cursor: pointer; transition: color var(--transition-fast), background var(--transition-fast); }
+.service-review-stars button .ms { color: inherit; }
+.service-review-stars button:hover { background: var(--color-warning-soft); }
+.service-review-stars button.is-selected { background: var(--color-warning-soft); color: var(--color-warning); }
+.service-review-stars button:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.service-review-rating-value { display: flex; align-items: baseline; gap: var(--space-1); margin-top: var(--space-2); color: var(--color-muted); font-size: var(--text-sm); }
+.service-review-rating-value strong { color: var(--color-ink); font-size: var(--text-lg); }
+.service-review-rating-value span { color: var(--color-ink-soft); font-weight: var(--weight-semibold); }
+
+.service-review-comment { display: grid; }
+.service-review-dialog textarea { width: 100%; min-height: calc(var(--space-12) * 2); resize: vertical; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-md); color: var(--color-ink); font: inherit; line-height: 1.5; }
+.service-review-dialog textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--ring-focus); }
+.service-review-comment small { justify-self: end; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+
+.service-review-dialog footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+/* The standard asks every dismissible popup to say how it closes. */
+.service-review-dismiss-hint { margin: 0; color: var(--color-muted); font-size: var(--text-xs); }
+.service-review-actions { display: flex; gap: var(--space-2); margin-left: auto; }
+.service-review-dialog footer button { min-height: var(--control-h-lg); padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink-soft); font: inherit; font-weight: var(--weight-bold); cursor: pointer; }
+.service-review-dialog footer button:last-child { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
+.service-review-dialog footer button:disabled { opacity: .6; cursor: default; }
+.service-review-error { margin: 0; color: var(--color-danger); font-size: var(--text-sm); }
+
+@media (max-width: 767.98px) {
+  .service-review-backdrop { place-items: end stretch; padding: 0; }
+  .service-review-dialog { width: 100%; max-height: 88dvh; gap: var(--space-3); padding: var(--space-4) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .service-review-dialog h2 { font-size: var(--text-lg); }
+  /* Five targets across the narrowest screen, each still a comfortable tap. */
+  .service-review-stars { gap: var(--space-2); justify-content: space-between; }
+  .service-review-stars button { flex: 1 1 0; height: var(--control-h-2xl); }
+  .service-review-dialog footer { flex-direction: column-reverse; align-items: stretch; gap: var(--space-2); }
+  .service-review-actions { margin-left: 0; }
+  .service-review-actions button { flex: 1 1 0; }
+  .service-review-dismiss-hint { text-align: center; }
+}
 
 /* ==========================================================================
    Group Buy
