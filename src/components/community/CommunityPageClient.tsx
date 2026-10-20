@@ -21,6 +21,7 @@ import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
 import type { CommunityFeedResult } from "@/lib/community/post-feed";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
+import { scrollToListTop } from "@/lib/scroll-to-list-top";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
 const CommunityBlogPost = dynamic(() => import("@/components/community/CommunityBlogPost").then((module) => module.CommunityBlogPost));
@@ -158,7 +159,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   const chooseCategory = (category: CommunityCategory) => {
     updateCategoryUrl(category);
     setIsFilterOpen(false);
-    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToListTop(resultsRef.current);
   };
   const chooseChip = (chip: string) => {
     const category = chip === "recommendations" ? "recommendations" : "all";

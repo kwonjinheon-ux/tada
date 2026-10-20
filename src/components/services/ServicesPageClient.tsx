@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { type MainLocation } from "@/data/nzLocations";
 import { serviceBadgeLabel, serviceDetailsSummary, serviceCategories, servicesCategoryLabels, servicesText, type ServiceCategoryId, type ServiceListing } from "@/data/services";
 import { ServiceSaveButton } from "@/components/services/ServiceSaveButton";
+import { scrollToListTop } from "@/lib/scroll-to-list-top";
 import { serviceFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { ServicesFeedQuery, ServicesFeedResult } from "@/lib/services/feed";
@@ -143,7 +144,7 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
     applyBrowseParams(params);
     setIsFilterOpen(false);
     setNotice("");
-    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToListTop(resultsRef.current);
   };
   const chooseLocation = (nextMainLocation: MainLocation | "", nextSubLocation = "") => {
     const params = new URLSearchParams(window.location.search);
