@@ -9181,15 +9181,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-page:has(.profile-v0-note) .profile-photo-location { font-size: var(--text-md); }
 }
 
-/* Profile settings: one live editor, adapted to the desktop overview and mobile menu. */
+/* Profile settings: one live editor, with inline mobile disclosures. */
 .profile-settings-page:has(.profile-settings-current) { background: var(--color-surface); }
 .profile-settings-current { display: grid; gap: var(--space-4); min-width: 0; color: var(--color-ink); }
 .profile-settings-current .profile-settings-intro { margin: 0; }
 .profile-settings-current .profile-settings-intro h1 { font-weight: var(--weight-bold); }
 .profile-settings-current .profile-current-title-row { display: flex; align-items: center; gap: var(--space-3); }
-.profile-settings-current .profile-current-mobile-title { display: none; }
-.profile-settings-current .profile-current-mobile-back,
-.profile-settings-current .profile-current-mobile-menu { display: none; }
+.profile-settings-current .profile-current-accordion-trigger { display: none; }
 .profile-settings-current .profile-current-hero,
 .profile-settings-current .profile-current-card,
 .profile-settings-current .profile-current-management { min-width: 0; border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: none; }
@@ -9264,25 +9262,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-current { gap: var(--space-3); }
   .profile-settings-current .profile-settings-intro { margin: 0; }
   .profile-settings-current .profile-settings-intro > p { display: none; }
-  .profile-settings-current .profile-current-title-row { justify-content: space-between; }
-  .profile-settings-current .profile-current-desktop-title { display: none; }
-  .profile-settings-current .profile-current-mobile-title { display: inline; }
-  .profile-settings-current .profile-current-mobile-back { display: inline-flex; }
-  .profile-settings-current[data-mobile-view="home"] .profile-current-mobile-back { display: none; }
-  .profile-settings-current .profile-current-mobile-menu,
-  .profile-settings-current .profile-current-hero,
-  .profile-settings-current .profile-current-card,
-  .profile-settings-current .profile-current-management,
-  .profile-settings-current .profile-current-actions { display: none; }
-  .profile-settings-current[data-mobile-view="home"] .profile-current-mobile-menu { display: grid; gap: var(--space-2); }
-  .profile-settings-current[data-mobile-view="home"] .profile-current-hero,
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-hero { display: grid; }
-  .profile-settings-current .profile-current-mobile-menu button { display: grid; grid-template-columns: var(--control-h-xl) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-height: calc(var(--space-12) + var(--space-10)); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-ink); text-align: left; cursor: pointer; }
-  .profile-settings-current .profile-current-mobile-menu button > .ms:first-child { display: grid; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
-  .profile-settings-current .profile-current-mobile-menu button > .ms:last-child { color: var(--color-muted); }
-  .profile-settings-current .profile-current-mobile-menu button span { display: grid; gap: var(--space-1); }
-  .profile-settings-current .profile-current-mobile-menu button strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
-  .profile-settings-current .profile-current-mobile-menu button small { color: var(--color-muted); font-size: var(--text-sm); }
   .profile-settings-current .profile-current-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); padding: var(--space-5); background: var(--color-surface); }
   .profile-settings-current .profile-photo-card { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); text-align: center; }
   .profile-settings-current .profile-photo-details { justify-items: center; text-align: center; }
@@ -9291,23 +9270,29 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-current .profile-photo-identity { justify-content: center; }
   .profile-settings-current .profile-photo-email { display: none; }
   .profile-settings-current .ui-button.profile-current-edit-action { width: min(100%, calc(var(--space-12) * 5)); }
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-hero { border: 0; box-shadow: none; background: transparent; padding: 0; }
-  .profile-settings-current[data-mobile-view="identity"] .profile-photo-details,
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-edit-action { display: none; }
   .profile-settings-current .profile-current-grid,
   .profile-settings-current .profile-current-column { display: contents; }
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-identity,
-  .profile-settings-current[data-mobile-view="security"] .profile-current-security,
-  .profile-settings-current[data-mobile-view="notifications"] .profile-current-notifications,
-  .profile-settings-current[data-mobile-view="privacy"] .profile-current-privacy,
-  .profile-settings-current[data-mobile-view="display"] .profile-current-display,
-  .profile-settings-current[data-mobile-view="management"] .profile-current-management { display: block; }
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-actions,
-  .profile-settings-current[data-mobile-view="security"] .profile-current-actions,
-  .profile-settings-current[data-mobile-view="display"] .profile-current-actions { display: flex; }
-  .profile-settings-current .profile-current-card { padding: var(--space-4); }
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-identity { border: 0; box-shadow: none; }
-  .profile-settings-current[data-mobile-view="identity"] .profile-current-identity .profile-current-card-heading { display: none; }
+  .profile-settings-current .profile-current-identity { order: 1; }
+  .profile-settings-current .profile-current-security { order: 2; }
+  .profile-settings-current .profile-current-notifications { order: 3; }
+  .profile-settings-current .profile-current-privacy { order: 4; }
+  .profile-settings-current .profile-current-display { order: 5; }
+  .profile-settings-current .profile-current-management { order: 6; display: block; }
+  .profile-settings-current .profile-current-actions { order: 7; display: none; }
+  .profile-settings-current .profile-form-status { order: 8; }
+  .profile-settings-current[data-mobile-expanded="identity"] .profile-current-actions,
+  .profile-settings-current[data-mobile-expanded="security"] .profile-current-actions,
+  .profile-settings-current[data-mobile-expanded="display"] .profile-current-actions { display: flex; }
+  .profile-settings-current .profile-current-card,
+  .profile-settings-current .profile-current-management { padding: var(--space-4); }
+  .profile-settings-current .profile-current-card-heading { display: none; }
+  .profile-settings-current .profile-current-accordion-trigger.ui-button { display: grid; grid-template-columns: var(--control-h-xl) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--control-h-xl); padding: 0; border: 0; background: transparent; color: var(--color-ink); text-align: left; }
+  .profile-settings-current .profile-current-accordion-trigger > .ms:first-child { display: grid; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
+  .profile-settings-current .profile-current-accordion-trigger > .ms:last-child { color: var(--color-muted); }
+  .profile-settings-current .profile-current-accordion-trigger span { display: grid; gap: var(--space-1); }
+  .profile-settings-current .profile-current-accordion-trigger strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
+  .profile-settings-current .profile-current-accordion-trigger small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+  .profile-settings-current :is(.profile-current-card, .profile-current-management)[data-mobile-expanded="false"] > :not(.profile-current-accordion-trigger):not(.profile-current-card-heading) { display: none; }
   .profile-settings-current .profile-current-actions { position: sticky; bottom: var(--mobile-dock-content-clearance, var(--space-12)); justify-content: stretch; padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); }
   .profile-settings-current .profile-current-actions .ui-button { flex: 1; min-width: 0; min-height: var(--control-h-xl); }
 }
