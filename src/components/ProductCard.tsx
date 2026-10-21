@@ -135,7 +135,7 @@ function ProductCardComponent({ listing, priority = false, initialIsSaved = fals
             {listing.badge === "Newly Listed" ? <span className="product-badge-mobile-label" aria-hidden="true">N</span> : null}
           </span>
         ) : null}
-        {listing.status === "sold" ? <span className="product-sold-out">{t("soldOut")}</span> : null}
+        {listing.status === "sold" ? <span className="product-sold-out">{isGroupBuy ? t("groupBuyCompleted") : t("soldOut")}</span> : null}
       </div>
       <div className="product-body">
         {/* Comment-count badge — parked for reuse on a different category later.

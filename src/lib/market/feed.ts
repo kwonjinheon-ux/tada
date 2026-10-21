@@ -116,7 +116,7 @@ function decodeMergedCursor(cursor: string | undefined): MergedCursorPayload | n
   } catch { return null; }
 }
 
-type GroupBuyFeedRow = { id: string; title: string; closes_at: string; handover_at: string; pickup_address: string | null; delivery_areas: string[]; cover_image_path: string | null; cover_image_alt: string | null; group_buy_items: Array<{ photo_path: string | null; photo_alt: string | null; display_order: number }>; created_at: string };
+type GroupBuyFeedRow = { id: string; title: string; status: "open" | "closed" | "cancelled"; closes_at: string; handover_at: string; pickup_address: string | null; delivery_areas: string[]; cover_image_path: string | null; cover_image_alt: string | null; group_buy_items: Array<{ photo_path: string | null; photo_alt: string | null; display_order: number }>; created_at: string };
 
 function formatGroupBuyPeriod(closesAt: string, handoverAt: string) {
   const format = (value: string) => new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric", timeZone: "Pacific/Auckland" }).format(new Date(value));
@@ -124,7 +124,7 @@ function formatGroupBuyPeriod(closesAt: string, handoverAt: string) {
 }
 
 async function getGroupBuyFeed(supabase: SupabaseClient, query: FeedQuery, cursor: Cursor | null, pageSize: number): Promise<{ listings: Listing[]; nextCursor: string | null; total: number }> {
-  let request = supabase.from("group_buys").select("id,title,closes_at,handover_at,pickup_address,delivery_areas,cover_image_path,cover_image_alt,group_buy_items(photo_path,photo_alt,display_order),created_at", { count: "exact" }).eq("status", "open");
+  let request = supabase.from("group_buys").select("id,title,status,closes_at,handover_at,pickup_address,delivery_areas,cover_image_path,cover_image_alt,group_buy_items(photo_path,photo_alt,display_order),created_at", { count: "exact" });
   if (query.q) request = request.ilike("title", `%${safeSearch(query.q)}%`);
   // Group buys predate the marketplace location fields and store their place as
   // free-form pickup text. Do not drop them from the All feed when the user's
@@ -135,7 +135,7 @@ async function getGroupBuyFeed(supabase: SupabaseClient, query: FeedQuery, curso
   const page = rows.slice(0, pageSize);
   const coverPathFor = (row: GroupBuyFeedRow) => row.cover_image_path ?? [...row.group_buy_items].sort((a, b) => a.display_order - b.display_order).find((item) => item.photo_path)?.photo_path ?? null;
   const signedImages = await getSignedStorageImages("group-buy-images", page.flatMap((row) => { const path = coverPathFor(row); return path ? [path] : []; }), "thumbnail");
-  const listings = page.map((row) => { const coverPath = coverPathFor(row); const fallbackItem = [...row.group_buy_items].sort((a, b) => a.display_order - b.display_order).find((item) => item.photo_path); return { id: row.id, title: row.title, price: "", location: row.pickup_address ?? (row.delivery_areas.join(", ") || "New Zealand"), image: coverPath ? signedImages.get(coverPath) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE, imageAlt: row.cover_image_alt ?? fallbackItem?.photo_alt ?? row.title, bargainType: "groupbuy", eventDateRange: formatGroupBuyPeriod(row.closes_at, row.handover_at), status: "available" as const, isOwner: false, sortValue: row.created_at } satisfies Listing; });
+  const listings = page.map((row) => { const coverPath = coverPathFor(row); const fallbackItem = [...row.group_buy_items].sort((a, b) => a.display_order - b.display_order).find((item) => item.photo_path); const isClosed = row.status === "closed" || row.status === "cancelled" || new Date(row.closes_at).getTime() <= Date.now(); return { id: row.id, title: row.title, price: "", location: row.pickup_address ?? (row.delivery_areas.join(", ") || "New Zealand"), image: coverPath ? signedImages.get(coverPath) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE, imageAlt: row.cover_image_alt ?? fallbackItem?.photo_alt ?? row.title, bargainType: "groupbuy", eventDateRange: formatGroupBuyPeriod(row.closes_at, row.handover_at), status: isClosed ? "sold" as const : "available" as const, isOwner: false, sortValue: row.created_at } satisfies Listing; });
   const last = page.at(-1);
   return { listings, nextCursor: rows.length > pageSize && last ? encodeCursor(last.created_at, last.id) : null, total: count ?? 0 };
 }
