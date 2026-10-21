@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeHttpUrl, youtubeVideoId } from "@/lib/community/post-links";
 
 export const apiErrorCodeSchema = z.enum([
   "BAD_REQUEST",
@@ -240,6 +241,9 @@ export const communityPostCreateRequestSchema = z.object({
   mainLocation: z.string().trim().min(2).max(80),
   subLocation: z.string().trim().max(80).optional(),
   imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),
+  // Both optional, and both read by the same rules the form shows the writer.
+  sourceUrl: z.string().trim().max(500).refine((value) => value === "" || isSafeHttpUrl(value), "Enter a source link that starts with http:// or https://.").default(""),
+  videoUrl: z.string().trim().max(500).refine((value) => value === "" || youtubeVideoId(value) !== null, "Enter a YouTube video link.").default(""),
   eventStartAt: z.string().datetime({ offset: true }).nullable().optional(),
   eventEndAt: z.string().datetime({ offset: true }).nullable().optional(),
 }).superRefine((post, context) => {

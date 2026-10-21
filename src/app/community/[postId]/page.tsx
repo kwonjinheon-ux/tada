@@ -25,7 +25,7 @@ export default async function CommunityPostPage({ params, searchParams }: { para
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     const postRequest = async () => {
-      const current = await supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,category_slug,title,body,region_city,region_suburb,event_start_at,event_end_at,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
+      const current = await supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,category_slug,title,body,region_city,region_suburb,event_start_at,event_end_at,source_url,video_url,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
       if (current.error?.code !== "42703" && current.error?.code !== "PGRST204") return current;
       return supabase.from("community_posts").select("id,author_id,is_anonymous,post_type,category_slug,title,body,region_city,region_suburb,created_at,view_count,score,share_count").eq("id", postId).eq("status", "published").maybeSingle();
     };
@@ -61,6 +61,10 @@ export default async function CommunityPostPage({ params, searchParams }: { para
       const detail: CommunityPostDetail = { id: post.id, type: post.post_type as CommunityPostDetail["type"], title: post.title, body: sanitizePostHtml(post.body), location: [post.region_suburb, post.region_city].filter(Boolean).join(", ") || "New Zealand", createdAt: formatDate(post.created_at), eventDate: formatCommunityEventSchedule("event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null, "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null), authorName: author?.display_name ?? null, authorAvatarUrl: avatarUrl, isAnonymous: post.is_anonymous, viewCount: post.view_count ?? 0, score: post.score ?? 0, myVote: vote?.value === -1 || vote?.value === 1 ? vote.value : 0, shareCount: post.share_count ?? 0, responseCount: responseCount ?? 0, isOwner: user?.id === post.author_id, isSaved: Boolean(saved), images: paths.map((path) => ({ src: urls.get(path), alt: post.title })).filter((image): image is { src: string; alt: string } => Boolean(image.src)) };
       detail.eventStartAt = "event_start_at" in post && typeof post.event_start_at === "string" ? post.event_start_at : null;
       detail.eventEndAt = "event_end_at" in post && typeof post.event_end_at === "string" ? post.event_end_at : null;
+      // Both columns arrive only once the migration has been applied, the
+      // same way the event schedule does.
+      detail.sourceUrl = "source_url" in post && typeof post.source_url === "string" ? post.source_url : null;
+      detail.videoUrl = "video_url" in post && typeof post.video_url === "string" ? post.video_url : null;
       const postCategory = communityPostCategorySchema.safeParse("category_slug" in post ? post.category_slug : null);
       return <CommunityPostDetailClient post={detail} relatedCategory={urlCategory ?? (postCategory.success ? postCategory.data : undefined)} initialAction={initialAction} />;
     }

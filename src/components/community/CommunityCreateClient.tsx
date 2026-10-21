@@ -16,6 +16,7 @@ import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 import { findProhibitedPublicContent } from "@/lib/safety/prohibited-content";
+import { isSafeHttpUrl, youtubeThumbnailUrl, youtubeVideoId } from "@/lib/community/post-links";
 
 type LocationDraft = { mainLocation: MainLocation | ""; subLocation: string; locality: string | null; rawSuburb: string | null; region: string | null; latitude: number | null; longitude: number | null };
 
@@ -33,6 +34,8 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   // The notice is for a blank form; a title or a line of the post is enough
   // to say it has been read.
   const hasStartedWriting = Boolean(title.trim()) || Boolean(body.replace(/<[^>]*>/g, " ").trim());
@@ -47,6 +50,11 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
   const unsafeMessage = (term: string) => locale === "ko" ? `금지되거나 안전하지 않은 표현이 들어 있습니다: “${term}”` : `This post contains a prohibited or unsafe term: “${term}”`;
   const isEventCategory = categorySlug === "events";
   const allowsAnonymous = allowsAnonymousCommunityPost(categorySlug);
+  // Read as the writer types, so a mistyped link is caught beside the box
+  // rather than at the end of the form.
+  const videoId = youtubeVideoId(videoUrl);
+  const isSourceValid = !sourceUrl.trim() || isSafeHttpUrl(sourceUrl);
+  const isVideoValid = !videoUrl.trim() || videoId !== null;
 
   useEffect(() => { setCategorySlug(initialCategory); setIsAnonymous(false); }, [initialCategory]);
 
@@ -96,6 +104,14 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
       setError(t("communityCreateBodyRequired"));
       return;
     }
+    if (!isSourceValid) {
+      setError(t("communitySourceLinkInvalid"));
+      return;
+    }
+    if (!isVideoValid) {
+      setError(t("communityVideoLinkInvalid"));
+      return;
+    }
     if (!location.mainLocation) {
       setError(t("communityCreateLocationRequired"));
       return;
@@ -105,7 +121,7 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
     const response = await fetch("/api/community/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorySlug, isAnonymous: allowsAnonymous && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths, eventStartAt: isEventCategory ? new Date(eventStartAt).toISOString() : null, eventEndAt: isEventCategory ? new Date(eventEndAt).toISOString() : null }),
+      body: JSON.stringify({ categorySlug, isAnonymous: allowsAnonymous && isAnonymous, title, body, mainLocation: location.mainLocation, subLocation: location.subLocation, imagePaths, sourceUrl: sourceUrl.trim(), videoUrl: videoUrl.trim(), eventStartAt: isEventCategory ? new Date(eventStartAt).toISOString() : null, eventEndAt: isEventCategory ? new Date(eventEndAt).toISOString() : null }),
     });
     const result = await readApiResponse(response, communityPostCreateResponseSchema);
     if (result.error) {
@@ -147,6 +163,21 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
                 <div className="post-field"><label htmlFor="community-event-end">{t("communityEventEndLabel")}</label><input id="community-event-end" type="datetime-local" min={eventStartAt || minimumEventDateTime} value={eventEndAt} onChange={(event) => setEventEndAt(event.target.value)} required /></div>
               </div> : null}
               <div className="post-field"><label htmlFor="community-body">{t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")} value={body} onChange={setBody} placeholder={t(isEventCategory ? "communityEventDetailsPlaceholder" : "communityDetailsPlaceholder")} /></div>
+              <div className="community-link-fields">
+                <div className="post-field">
+                  <label htmlFor="community-source-url"><i className="ms ms-newspaper" aria-hidden="true" />{t("communitySourceLinkLabel")}</label>
+                  <input id="community-source-url" type="url" inputMode="url" value={sourceUrl} maxLength={500} placeholder={t("communitySourceLinkPlaceholder")} aria-invalid={!isSourceValid} onChange={(event) => setSourceUrl(event.target.value)} />
+                  <p className={`post-field-hint${isSourceValid ? "" : " is-invalid"}`}>{isSourceValid ? t("communitySourceLinkHint") : t("communitySourceLinkInvalid")}</p>
+                </div>
+                <div className="post-field">
+                  <label htmlFor="community-video-url"><i className="ms ms-play-circle" aria-hidden="true" />{t("communityVideoLinkLabel")}</label>
+                  <input id="community-video-url" type="url" inputMode="url" value={videoUrl} maxLength={500} placeholder={t("communityVideoLinkPlaceholder")} aria-invalid={!isVideoValid} onChange={(event) => setVideoUrl(event.target.value)} />
+                  <p className={`post-field-hint${isVideoValid ? "" : " is-invalid"}`}>{isVideoValid ? t("communityVideoLinkHint") : t("communityVideoLinkInvalid")}</p>
+                  {/* The still is the quickest way to tell a pasted link is
+                      the video the writer meant. */}
+                  {videoId ? <p className="community-video-preview"><img src={youtubeThumbnailUrl(videoId)} alt="" loading="lazy" /><span>{t("communityVideoLinkReady")}</span></p> : null}
+                </div>
+              </div>
             </section>
 
             <section className="post-photo-field"><div className="post-section-heading"><span>3</span><h2>{t("communityAddImages")}</h2></div><CommunityImageAttachments onChange={setImagePaths} /></section>

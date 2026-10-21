@@ -10221,6 +10221,35 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .post-rich-text pre, .post-editor-content pre { margin: 0 0 var(--space-3); padding: var(--space-3); overflow-x: auto; border-radius: var(--radius-sm); background: var(--color-surface-soft); }
 .post-rich-text pre code, .post-editor-content pre code { padding: 0; background: none; }
 
+/* What a post points at, under its body: the video it is about and where
+   its story came from. The player keeps a 16:9 box of its own so the page
+   does not jump when the iframe loads, and the source reads as a row that
+   leads somewhere rather than as a bare link in a paragraph. */
+.community-post-links { display: grid; gap: var(--space-3); }
+.community-post-video { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--color-line-soft); border-radius: var(--radius-card); background: var(--color-surface-sunken); }
+.community-post-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.community-post-source { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h-xl); padding: 0 var(--space-4); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-ink); text-decoration: none; }
+.community-post-source:hover { border-color: var(--color-line); background: var(--color-surface); }
+.community-post-source > i { color: var(--color-ink-soft); font-size: var(--text-2xl); }
+.community-post-source > i:last-child { margin-left: auto; font-size: var(--text-lg); }
+.community-post-source span { display: grid; gap: 2px; min-width: 0; }
+.community-post-source strong { font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.community-post-source small { overflow: hidden; color: var(--color-ink-soft); font-size: var(--text-md); text-overflow: ellipsis; white-space: nowrap; }
+
+/* The same two links while they are being written. */
+.community-link-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.community-link-fields > .post-field { align-content: start; }
+.community-link-fields label { display: inline-flex; align-items: center; gap: var(--space-2); }
+.community-link-fields label i { color: var(--color-ink-soft); font-size: var(--text-xl); }
+.community-link-fields input[aria-invalid="true"] { border-color: var(--color-danger); }
+.community-link-fields .post-field-hint.is-invalid { color: var(--color-danger); }
+.community-video-preview { display: flex; align-items: center; gap: var(--space-3); margin: 0; padding: var(--space-2); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-md); }
+.community-video-preview img { width: calc(var(--space-12) * 2); aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-xs); }
+
+@media (max-width: 767.98px) {
+  .community-link-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (max-width: 767.98px) {
   .listing-detail-page .listing-comments-heading h2 { font-size: var(--text-lg); }
   .listing-detail-page .listing-comments-heading span { font-size: var(--text-xs); }

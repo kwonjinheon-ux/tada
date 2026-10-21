@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ListingComments } from "@/components/market/ListingComments";
 import { CommunityPostActions } from "@/components/community/CommunityPostActions";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
+import { CommunityPostLinks } from "@/components/community/CommunityPostLinks";
 import { CommunityPostOwnerMenu } from "@/components/community/CommunityPostOwnerMenu";
 import { CommunityCategoryPosts } from "@/components/community/CommunityCategoryPosts";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
@@ -21,7 +22,7 @@ import { CommunityEventSchedule } from "@/components/community/CommunityEventSch
 
 const HtmlEditor = dynamic(() => import("@/components/ui/HtmlEditor").then((module) => module.HtmlEditor));
 
-export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; eventDate?: string; eventStartAt?: string | null; eventEndAt?: string | null; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[] };
+export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; eventDate?: string; eventStartAt?: string | null; eventEndAt?: string | null; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[]; sourceUrl?: string | null; videoUrl?: string | null };
 
 export function CommunityPostDetailClient({ post, relatedCategory, initialAction }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all">; initialAction?: "edit" | "delete" }) {
   const { t, locale } = useLanguage();
@@ -62,6 +63,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
         <CommunityEventSchedule id={post.id} title={post.title} location={post.location} eventDate={post.eventDate} eventStartAt={post.eventStartAt} eventEndAt={post.eventEndAt} />
         <ImageGallery images={post.images} className="community-detail-gallery" priority />
         <div className="community-detail-body post-rich-text" dangerouslySetInnerHTML={{ __html: post.body }} />
+        <CommunityPostLinks sourceUrl={post.sourceUrl} videoUrl={post.videoUrl} />
         <footer className="community-detail-post-footer"><div className="community-detail-post-actions"><CommunityPostActions postId={post.id} title={post.title} body={post.body} commentCount={post.responseCount} score={post.score} myVote={post.myVote} shareCount={post.shareCount} initialIsSaved={post.isSaved} isOwner={post.isOwner} /><CommunityPostOwnerMenu postId={post.id} onEdit={post.isOwner ? openEditDialog : undefined} onDelete={post.isOwner ? () => setIsDeleteDialogOpen(true) : undefined} /></div></footer>
       </article>
       <ListingComments listingId={post.id} space="community" />

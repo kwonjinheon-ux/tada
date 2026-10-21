@@ -50,17 +50,19 @@ export async function POST(request: Request) {
   if (!payload.success) {
     const firstIssue = payload.error.issues[0];
     const field = firstIssue?.path[0];
-    const message = field === "categorySlug"
-      ? "Choose a category before publishing."
-      : field === "title"
-        ? "Add a title with at least 4 characters."
-        : field === "body"
-          ? "Add at least 20 characters of detail to your post."
-          : field === "mainLocation"
-            ? "Choose a main location before publishing."
-            : field === "eventStartAt" || field === "eventEndAt"
-              ? "Choose a valid event start and end time."
-              : "Please complete each required field.";
+    // One line per field, rather than a ternary that grows a level each time
+    // the form gains a box.
+    const messages: Record<string, string> = {
+      categorySlug: "Choose a category before publishing.",
+      title: "Add a title with at least 4 characters.",
+      body: "Add at least 20 characters of detail to your post.",
+      mainLocation: "Choose a main location before publishing.",
+      sourceUrl: "Check the source link: it should start with http:// or https://.",
+      videoUrl: "Check the video link: paste a YouTube address.",
+      eventStartAt: "Choose a valid event start and end time.",
+      eventEndAt: "Choose a valid event start and end time.",
+    };
+    const message = (typeof field === "string" ? messages[field] : undefined) ?? "Please complete each required field.";
     return apiFailure("BAD_REQUEST", message, 400, { field: typeof field === "string" ? field : null });
   }
   if (communityPostBodyTextLength(payload.data.body) < 20) return apiFailure("BAD_REQUEST", "Add at least 20 characters of detail to your post.", 400, { field: "body" });
@@ -84,6 +86,10 @@ export async function POST(request: Request) {
       body: payload.data.body,
       region_city: payload.data.mainLocation,
       region_suburb: payload.data.subLocation || null,
+      // Only sent when the writer added one, so a post without links still
+      // writes on a database that has yet to take this migration.
+      ...(payload.data.sourceUrl ? { source_url: payload.data.sourceUrl } : {}),
+      ...(payload.data.videoUrl ? { video_url: payload.data.videoUrl } : {}),
       ...(payload.data.categorySlug === "events" ? {
         event_start_at: payload.data.eventStartAt,
         event_end_at: payload.data.eventEndAt,
@@ -93,6 +99,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error && payload.data.categorySlug === "events" && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Event posting is temporarily unavailable. Please try again later.", 503);
+  if (error && (payload.data.sourceUrl || payload.data.videoUrl) && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Source and video links are temporarily unavailable. Please publish without them.", 503);
   if (error || !data) return apiFailure("INTERNAL", "We couldn't publish your post. Please try again.", 500);
   if (payload.data.imagePaths.length) {
     const { error: imageError } = await supabase.from("community_post_images").insert(payload.data.imagePaths.map((storage_path, display_order) => ({ post_id: data.id, owner_id: user.id, storage_path, display_order })));
