@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, type ReactNode } from "react";
+import { IconButton } from "@/components/ui/IconButton";
 
 type TextSizeSectionProps = {
   title: string;
@@ -14,6 +15,8 @@ type TextSizeControlsProps = {
   value: number;
   onChange: (change: -1 | 1) => void;
   label: string;
+  locale?: string;
+  showValue?: boolean;
 };
 
 export const MAX_DESCRIPTION_TEXT_SIZE_STEP = 5;
@@ -23,21 +26,23 @@ export function descriptionTextScale(sizeStep: number) {
   return 1 + sizeStep * DESCRIPTION_TEXT_SIZE_STEP;
 }
 
-export function TextSizeControls({ value, onChange, label }: TextSizeControlsProps) {
+export function TextSizeControls({ value, onChange, label, locale, showValue }: TextSizeControlsProps) {
   return (
-    <div className="text-size-controls" aria-label={label}>
-      <button type="button" aria-label="Decrease text size" disabled={value === 0} onClick={() => onChange(-1)}>
+    <div className={`text-size-controls${showValue ? " text-size-controls--value" : ""}`} aria-label={label}>
+      <IconButton aria-label={locale === "ko" ? "글씨 작게" : "Decrease text size"} disabled={value === 0} onClick={() => onChange(-1)}>
         <i className="ms ms-remove" aria-hidden="true" />
-      </button>
-      <button type="button" aria-label="Increase text size" disabled={value === MAX_DESCRIPTION_TEXT_SIZE_STEP} onClick={() => onChange(1)}>
+      </IconButton>
+      {showValue ? <output aria-live="polite">{Math.round(descriptionTextScale(value) * 100)}%</output> : null}
+      <IconButton aria-label={locale === "ko" ? "글씨 크게" : "Increase text size"} disabled={value === MAX_DESCRIPTION_TEXT_SIZE_STEP} onClick={() => onChange(1)}>
         <i className="ms ms-add" aria-hidden="true" />
-      </button>
+      </IconButton>
     </div>
   );
 }
 
-export function TextSizePreferencePreview({ value, onChange, locale }: { value: number; onChange: (change: -1 | 1) => void; locale: string }) {
+export function TextSizePreferencePreview({ value, onChange, locale, variant = "default" }: { value: number; onChange: (change: -1 | 1) => void; locale: string; variant?: "default" | "settings" }) {
   const isKorean = locale === "ko";
+  if (variant === "settings") return <div className="profile-description-text-size-preview profile-description-text-size-preview--settings"><TextSizeControls value={value} label={isKorean ? "상품 설명 글씨 크기" : "Listing description text size"} locale={locale} showValue onChange={onChange} /><p style={{ "--text-scale": descriptionTextScale(value) } as CSSProperties}>{isKorean ? "상품 설명이 이 크기로 표시됩니다." : "Listing descriptions will appear at this size."}</p></div>;
   return (
     <div className="profile-description-text-size-preview">
       <div>
@@ -46,7 +51,7 @@ export function TextSizePreferencePreview({ value, onChange, locale }: { value: 
           {isKorean ? "상품 설명이 이 크기로 표시됩니다." : "Listing descriptions will appear at this size."}
         </p>
       </div>
-      <TextSizeControls value={value} label={isKorean ? "상품 설명 글씨 크기" : "Listing description text size"} onChange={onChange} />
+      <TextSizeControls value={value} label={isKorean ? "상품 설명 글씨 크기" : "Listing description text size"} locale={locale} onChange={onChange} />
     </div>
   );
 }

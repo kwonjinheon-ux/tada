@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
-import { Avatar } from "@/components/ui/Avatar";
+import { ProfileIdentitySummary } from "@/components/dashboard/ProfileIdentitySummary";
 import { Button } from "@/components/ui/Button";
 import { JourneyCard, ProgressStepper, type ActiveJourneyItem } from "@/components/dashboard/ActiveJourneyCarousel";
 import { MyPageDiscoverPanel } from "@/components/dashboard/MyPageDiscoverPanel";
@@ -89,16 +89,7 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
     {data.unavailable ? <p className="my-page-notice" role="status">{say("Some activity couldn't be loaded. Refresh to try again.", "일부 활동 정보를 불러오지 못했습니다. 새로고침해 주세요.")}</p> : null}
     <div className="my-page-layout"><div className="my-page-main">
       <section className="ui-panel my-page-profile" aria-label={say("Your profile", "내 프로필")}>
-        <div className="my-page-identity">
-          <Link href={profileHref} aria-label={say("Edit profile photo", "프로필 사진 수정")} className="my-page-avatar-link"><Avatar src={data.avatar} name={data.name} className="my-page-avatar" /><span><i className="ms ms-photo-camera" aria-hidden="true" /></span></Link>
-          <div>
-            <div className="my-page-name"><h2>{data.name}</h2><span className="ui-pill ui-pill--warning">{say("Member", "회원")}</span></div>
-            <p><i className="ms ms-location-on" aria-hidden="true" /> {data.location || say("Set your location", "지역을 설정해 주세요")}</p>
-            <p className="my-page-profile-extra"><i className="ms ms-calendar-today" aria-hidden="true" /> {say("Joined", "가입")} {new Intl.DateTimeFormat(ko ? "ko-KR" : "en-NZ", { month: "long", year: "numeric" }).format(new Date(data.joined))}</p>
-            <p className="my-page-profile-extra">{say("Good people, great deals, better community.", "좋은 이웃, 기분 좋은 거래, 함께하는 동네.")}</p>
-            <Link className="ui-button ui-button--secondary ui-button--sm" href={profileHref}>{say("Edit profile", "프로필 수정")}</Link>
-          </div>
-        </div>
+        <ProfileIdentitySummary name={data.name} avatarUrl={data.avatar} location={data.location} joinedAt={data.joined} photoHref={profileHref} description={say("Good people, great deals, better community.", "좋은 이웃, 기분 좋은 거래, 함께하는 동네.")} action={<Link className="ui-button ui-button--secondary ui-button--sm" href={profileHref}>{say("Edit profile", "프로필 수정")}</Link>} />
         <div className="my-page-charge">
           <h2>{say("Tada charge", "타다 충전 중")}</h2>
           <div className="my-page-charge-content">

@@ -12,6 +12,8 @@ This folder is the maintained source of truth for product, design, architecture,
 6. [Migration plan](./operations/migration-plan.md)
 7. [Local development and deployment](./operations/development-and-deployment.md)
 
+For account identity, reusable profile UI, and verification rules, see [Profile and Auth](./architecture/profile-and-auth.md).
+
 ## Current state
 
 - Legacy HTML/CSS/JS in the project root remains the visual reference during migration.

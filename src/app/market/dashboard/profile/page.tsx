@@ -10,10 +10,10 @@ export default async function ProfileSettingsPage() {
   if (!user) redirect("/login");
   const supabase = await createServerSupabaseClient();
   const profileResult = supabase
-    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, main_location, sub_location, locality, raw_suburb, region, latitude, longitude, preferred_locale, profile_visibility").eq("id", user.id).maybeSingle()
+    ? await supabase.from("profiles").select("display_name, avatar_path, phone, location_mode, region_city, region_suburb, main_location, sub_location, locality, raw_suburb, region, latitude, longitude, preferred_locale, profile_visibility").eq("id", user.id).maybeSingle()
     : { data: null, error: null };
   const { data: profile } = profileResult.error && supabase
-    ? await supabase.from("profiles").select("display_name, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
+    ? await supabase.from("profiles").select("display_name, avatar_path, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
     : profileResult;
   const categorizedProfile = profile as (typeof profile & { main_location?: string | null; sub_location?: string | null; locality?: string | null; raw_suburb?: string | null; region?: string | null; profile_visibility?: string | null }) | null;
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
@@ -26,6 +26,8 @@ export default async function ProfileSettingsPage() {
   const completedTradeCount = completedTradeResults && completedTradeResults.every((result) => !result.error && result.count !== null)
     ? completedTradeResults.reduce((total, result) => total + (result.count ?? 0), 0)
     : null;
+  const avatarPath = profile?.avatar_path || user.user_metadata?.avatar_path || null;
+  const signedAvatar = avatarPath && supabase ? await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : null;
   return (
       <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
@@ -33,8 +35,13 @@ export default async function ProfileSettingsPage() {
           completedTradeCount={completedTradeCount}
           emailVerified={Boolean(user.email_confirmed_at)}
           initialVerifiedPhone={user.phone_confirmed_at ? user.phone ?? "" : ""}
-          avatarPath={user.user_metadata?.avatar_path}
-          memberSince={new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric" }).format(new Date(user.created_at))}
+          avatarPath={avatarPath}
+          avatarUrl={signedAvatar?.data?.signedUrl ?? null}
+          userId={user.id}
+          hasPassword={user.identities?.some((identity) => identity.provider === "email") ?? true}
+          initialPendingEmail={user.new_email}
+          profileVisibilityAvailable={!profileResult.error}
+          memberSince={user.created_at}
           initialDescriptionTextSizeStep={typeof user.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5 ? user.user_metadata.listing_description_text_step : 0}
           initialProfile={{
             display_name: displayName,

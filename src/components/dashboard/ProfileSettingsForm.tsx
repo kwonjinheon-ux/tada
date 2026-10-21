@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { persistProfilePhoto, ProfilePhotoUploader, type ProfilePhotoDraft } from "@/components/dashboard/ProfilePhotoUploader";
-import { Button } from "@/components/ui/Button";
+import { ProfileSettingsEditor } from "@/components/dashboard/ProfileSettingsEditor";
 import { languageOptions, SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { MAX_DESCRIPTION_TEXT_SIZE_STEP, TextSizePreferencePreview } from "@/components/ui/TextSizeSection";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -12,18 +12,23 @@ import { ListingLocationSelector } from "@/components/market/ListingLocationSele
 import { findMainLocation } from "@/lib/market/nz-location";
 import type { MainLocation } from "@/data/nzLocations";
 
-type ProfileVisibility = "public" | "members" | "trade_partners";
-type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale; profile_visibility: ProfileVisibility };
-type ProfileSection = "identity" | "security" | "privacy" | "display" | "management";
+export type ProfileVisibility = "public" | "members" | "trade_partners";
+export type Profile = { display_name: string; phone: string | null; location_mode: "manual" | "current"; region_city: string | null; region_suburb: string | null; main_location: string | null; sub_location: string | null; locality: string | null; raw_suburb: string | null; region: string | null; latitude: number | null; longitude: number | null; preferred_locale: SupportedLocale; profile_visibility: ProfileVisibility };
+export type ProfileSettingsProps = { email: string; emailVerified: boolean; initialVerifiedPhone: string; completedTradeCount: number | null; avatarPath?: string | null; avatarUrl?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number; userId?: string; hasPassword?: boolean; initialPendingEmail?: string | null; profileVisibilityAvailable?: boolean };
+
+export function ProfileSettingsForm(props: ProfileSettingsProps) {
+  const isLegacy = usePathname()?.endsWith("/profile-v0") ?? false;
+  return isLegacy ? <LegacyProfileSettingsForm {...props} /> : <ProfileSettingsEditor {...props} />;
+}
 
 function normaliseNzPhone(value: string) {
   const digits = value.replace(/\D/g, "");
   return digits ? `+${digits.startsWith("64") ? digits : `64${digits.replace(/^0/, "")}`}` : "";
 }
 
-export function ProfileSettingsForm({ email, emailVerified, initialVerifiedPhone, completedTradeCount, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: { email: string; emailVerified: boolean; initialVerifiedPhone: string; completedTradeCount: number | null; avatarPath?: string | null; memberSince?: string | null; initialProfile: Profile; initialDescriptionTextSizeStep: number }) {
+function LegacyProfileSettingsForm({ email, avatarPath, memberSince, initialProfile, initialDescriptionTextSizeStep }: ProfileSettingsProps) {
   const router = useRouter();
-  const isLegacy = usePathname()?.endsWith("/profile-v0") ?? false;
+  const isLegacy = true;
   const { locale, setLocale, t } = useLanguage();
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [nicknameDraft, setNicknameDraft] = useState(initialProfile.display_name);
@@ -41,7 +46,6 @@ export function ProfileSettingsForm({ email, emailVerified, initialVerifiedPhone
   const [emailDraft, setEmailDraft] = useState(email);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [phone, setPhone] = useState(initialProfile.phone ?? "");
-  const [verifiedPhone, setVerifiedPhone] = useState(initialVerifiedPhone);
   const [locationMode, setLocationMode] = useState<"manual" | "current">(initialProfile.location_mode);
   const [location, setLocation] = useState(() => ({ mainLocation: (findMainLocation(initialProfile.main_location ?? initialProfile.region_city) ?? "") as MainLocation | "", subLocation: initialProfile.sub_location ?? initialProfile.region_suburb ?? "", locality: initialProfile.locality, rawSuburb: initialProfile.raw_suburb, region: initialProfile.region, latitude: initialProfile.latitude, longitude: initialProfile.longitude }));
   const [descriptionTextSizeStep, setDescriptionTextSizeStep] = useState(initialDescriptionTextSizeStep);
@@ -54,30 +58,12 @@ export function ProfileSettingsForm({ email, emailVerified, initialVerifiedPhone
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [status, setStatus] = useState("");
   const [avatarDraft, setAvatarDraft] = useState<ProfilePhotoDraft | null>(null);
-  const [expandedSection, setExpandedSection] = useState<ProfileSection | null>(null);
-  const [desktopExpandedSections, setDesktopExpandedSections] = useState<ProfileSection[]>([]);
-  const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false);
-  const [isPhoneEditorOpen, setIsPhoneEditorOpen] = useState(false);
-  const [isEmailEditorOpen, setIsEmailEditorOpen] = useState(false);
   const [savedSettings, setSavedSettings] = useState(() => ({ displayName: initialProfile.display_name, email, phone: initialProfile.phone ?? "", locationMode: initialProfile.location_mode, location, locale: initialProfile.preferred_locale, descriptionTextSizeStep: initialDescriptionTextSizeStep, profileVisibility: initialProfile.profile_visibility }));
   const passwordsMatch = Boolean(confirmPassword) && newPassword === confirmPassword;
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
-  const phoneIsVerified = Boolean(phone.trim() && verifiedPhone && normaliseNzPhone(phone) === normaliseNzPhone(verifiedPhone));
-  const emailIsVerified = Boolean(emailVerified && emailDraft.trim().toLowerCase() === email.trim().toLowerCase());
-  const profileSetupProgress = Math.round([Boolean(nicknameDraft.trim() && (avatarDraft || avatarPath)), phoneIsVerified, Boolean(locationLabel)].filter(Boolean).length / 3 * 100);
-  const previewStats = <div className="profile-current-preview-stats">
-    <div><strong>{profileSetupProgress}%</strong><span>{locale === "ko" ? "타다 충전 중" : "Tada Charge"}</span><small>{locale === "ko" ? "프로필 설정 진행률" : "Profile setup progress"}</small></div>
-    <div><strong>{completedTradeCount === null ? "—" : completedTradeCount}</strong><span>{locale === "ko" ? "완료한 거래" : "Completed trades"}</span><small>{locale === "ko" ? "마켓·알뜰거래" : "Market & bargain"}</small></div>
-  </div>;
   const changeDescriptionTextSize = (change: -1 | 1) => setDescriptionTextSizeStep((value) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, value + change)));
   useEffect(() => () => { if (avatarDraft) URL.revokeObjectURL(avatarDraft.url); }, [avatarDraft]);
-  const verificationChip = (verified: boolean) => <span className={`ui-pill${verified ? " ui-pill--success" : ""}`}>{verified ? t("verified") : (locale === "ko" ? "미인증" : "Not verified")}</span>;
   const legacySwitch = (label: string, checked = false) => <label className="profile-static-switch"><input type="checkbox" aria-label={label} checked={checked} disabled readOnly /><span aria-hidden="true" /></label>;
-  const sectionTrigger = (section: ProfileSection, icon: string, title: string, description: string, mode: "mobile" | "desktop" = "mobile") => {
-    const expanded = mode === "mobile" ? expandedSection === section : desktopExpandedSections.includes(section);
-    return <Button variant="ghost" className={`profile-current-accordion-trigger profile-current-${mode}-trigger`} aria-expanded={expanded} onClick={() => mode === "mobile" ? setExpandedSection((current) => current === section ? null : section) : setDesktopExpandedSections((current) => current.includes(section) ? current.filter((item) => item !== section) : [...current, section])}><i className={`ms ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span><i className={`ms ${expanded ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" /></Button>;
-  };
-
   const updateLocale = async (nextLocale: SupportedLocale) => {
     setLocale(nextLocale);
     const supabase = createBrowserSupabaseClient();
@@ -189,85 +175,10 @@ export function ProfileSettingsForm({ email, emailVerified, initialVerifiedPhone
     setIsVerifyingPhoneCode(true);
     const { error } = await supabase.auth.verifyOtp({ phone: targetPhone, token: phoneOtp, type: "phone_change" });
     setStatus(error ? error.message : "Phone number verified successfully.");
-    if (!error) { setVerifiedPhone(targetPhone); setPhoneVerificationSent(false); setPhoneOtp(""); }
+    if (!error) { setPhoneVerificationSent(false); setPhoneOtp(""); }
     setIsVerifyingPhoneCode(false);
   };
 
-  if (!isLegacy) return <div className="profile-settings-current" data-mobile-expanded={expandedSection ?? "none"}>
-    <header className="profile-settings-intro">
-      <Link href="/market/dashboard/my-page" className="my-page-link"><i className="ms ms-arrow-back" aria-hidden="true" />{locale === "ko" ? "마이페이지" : "My Page"}</Link>
-      <div className="profile-current-title-row">
-        <h1>{locale === "ko" ? "프로필 설정" : "Profile settings"}</h1>
-      </div>
-      <p>{locale === "ko" ? "내 정보와 계정 설정을 간단하게 관리하세요." : "Keep your details and account settings in one place."}</p>
-    </header>
-
-    <div className="profile-current-grid">
-      <div className="profile-current-column">
-        <div className="profile-current-preview-rail">
-        <section className="ui-panel profile-current-hero" aria-label={locale === "ko" ? "내 프로필 미리보기" : "My profile preview"}>
-          <div className="profile-current-mobile-original"><ProfilePhotoUploader initialPath={avatarPath} displayName={nicknameDraft} email={email} memberSince={memberSince} locationLabel={locationLabel || null} locale={locale === "ko" ? "ko" : "en"} previewUrl={avatarDraft?.url} onDraftChange={setAvatarDraft} /><Button variant="secondary" className="profile-current-edit-action" onClick={() => { setExpandedSection("identity"); requestAnimationFrame(() => document.getElementById("profile-current-identity")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>{locale === "ko" ? "정보 수정" : "Edit details"}</Button>{previewStats}</div>
-          <div className="profile-current-desktop-preview">
-          <div className="profile-current-preview-heading"><strong>{locale === "ko" ? "내 프로필 미리보기" : "My profile preview"}</strong></div>
-          <ProfilePhotoUploader initialPath={avatarPath} displayName={nicknameDraft} locationLabel={locationLabel || null} previewUrl={avatarDraft?.url} presentation="preview" locale={locale === "ko" ? "ko" : "en"} />
-          {previewStats}
-          </div>
-        </section>
-        <div className="profile-current-actions"><Button variant="secondary" disabled={isSavingAll} onClick={discardSettings}>{t("discard")}</Button><Button variant="primary" disabled={isSavingAll} onClick={() => void saveAllSettings()}>{isSavingAll ? t("saving") : t("saveChanges")}</Button></div>
-        </div>
-        <section id="profile-current-identity" className="ui-panel profile-current-card profile-current-identity" data-mobile-expanded={expandedSection === "identity"}>
-          {sectionTrigger("identity", "ms-person", locale === "ko" ? "기본 정보" : "Basic details", locale === "ko" ? "이름과 지역" : "Name and location")}
-          <header className="profile-current-card-heading"><i className="ms ms-person" aria-hidden="true" /><h2>{locale === "ko" ? "기본 정보" : "Basic details"}</h2><i className="ms ms-expand-less profile-current-heading-chevron" aria-hidden="true" /></header>
-          <div className="profile-current-photo-row profile-current-desktop-only"><ProfilePhotoUploader initialPath={avatarPath} displayName={nicknameDraft} presentation="editor" locale={locale === "ko" ? "ko" : "en"} previewUrl={avatarDraft?.url} onDraftChange={setAvatarDraft} /></div>
-          <label className="profile-current-field profile-current-nickname"><span>{locale === "ko" ? "닉네임" : "Nickname"} <em>*</em></span><span className="profile-current-input-wrap"><input className="ui-input" minLength={2} maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} autoComplete="nickname" /><small>{nicknameDraft.length}/40</small></span></label>
-          <div className="profile-current-field profile-current-location"><span>{locale === "ko" ? "지역과 우리 동네" : "Location & neighbourhood"} <em>*</em></span><ListingLocationSelector value={location} labels={locale === "ko" ? { main: "지역 (시/도)", mainPlaceholder: "지역 선택", sub: "우리 동네 (시/구)", subPlaceholder: "동네 선택" } : { main: "Area", mainPlaceholder: "Select area", sub: "Neighbourhood", subPlaceholder: "Select neighbourhood" }} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} /><small>{locale === "ko" ? "상세 주소는 다른 이웃에게 표시되지 않아요." : "Your exact address is not shown to neighbours."}</small></div>
-          <label className="profile-current-field profile-current-mobile-original"><span>{locale === "ko" ? "이름 또는 닉네임" : "Name or nickname"} <em>*</em></span><input className="ui-input" maxLength={40} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} autoComplete="nickname" /><small>{locale === "ko" ? "다른 이웃에게 표시되는 이름이에요." : "The name other neighbours will see."}</small></label>
-          <div className="profile-current-field profile-current-mobile-original"><span>{locale === "ko" ? "지역" : "Location"} <em>*</em></span><ListingLocationSelector value={location} labels={locale === "ko" ? { main: "주요 지역", mainPlaceholder: "지역 선택", sub: "세부 지역", subPlaceholder: "세부 지역 선택" } : undefined} onChange={(nextLocation) => { setLocation(nextLocation); setLocationMode(nextLocation.latitude === null ? "manual" : "current"); }} /><small>{locale === "ko" ? "가까운 이웃과 연결하는 데 사용해요. 상세 주소는 표시하지 않습니다." : "Used to connect with nearby neighbours. Your exact address is not shown."}</small></div>
-        </section>
-        <section className="ui-panel profile-current-management" data-mobile-expanded={expandedSection === "management"} data-desktop-expanded={desktopExpandedSections.includes("management")}>{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 관리 안내" : "Account information")}{sectionTrigger("management", "ms-settings", locale === "ko" ? "계정 관리" : "Account management", locale === "ko" ? "계정 비활성화, 탈퇴 등" : "Deactivation, deletion and more", "desktop")}<header className="profile-current-card-heading"><i className="ms ms-settings" aria-hidden="true" /><h2>{locale === "ko" ? "계정 관리" : "Account management"}</h2></header><p>{locale === "ko" ? "계정 비활성화·탈퇴 기능은 아직 준비 중입니다. 계정 관련 도움이 필요하면 고객지원에 문의해 주세요." : "Account deactivation and deletion are not available here yet. Contact support if you need account help."}</p></section>
-      </div>
-
-      <div className="profile-current-column">
-        <section className="ui-panel profile-current-card profile-current-security" data-mobile-expanded={expandedSection === "security"} data-desktop-expanded={desktopExpandedSections.includes("security")}>
-          {sectionTrigger("security", "ms-lock", locale === "ko" ? "인증 및 보안" : "Verification & security", locale === "ko" ? "전화번호, 이메일, 비밀번호" : "Phone, email, password")}
-          {sectionTrigger("security", "ms-lock", locale === "ko" ? "인증 및 보안" : "Verification & security", locale === "ko" ? "이메일 · 전화번호 · 비밀번호" : "Email · phone · password", "desktop")}
-          <header className="profile-current-card-heading"><i className="ms ms-lock" aria-hidden="true" /><h2>{locale === "ko" ? "인증 및 보안" : "Verification & security"}</h2><i className="ms ms-expand-less profile-current-heading-chevron" aria-hidden="true" /></header>
-          <div className="profile-current-contact-row profile-current-desktop-only"><span className="profile-current-contact-label">{locale === "ko" ? "휴대폰 인증" : "Phone verification"}</span><span className="profile-current-contact-value">{phone || (locale === "ko" ? "등록된 번호 없음" : "No number added")}{verificationChip(phoneIsVerified)}</span><Button variant="secondary" size="sm" aria-expanded={isPhoneEditorOpen} onClick={() => setIsPhoneEditorOpen((open) => !open)}>{isPhoneEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경하기" : "Change")}</Button></div>
-          {isPhoneEditorOpen ? <div className="profile-current-contact-editor profile-current-desktop-only"><label htmlFor="profile-current-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-current-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /><Button variant="secondary" size="sm" disabled={isSendingPhoneCode || phoneIsVerified} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button></div> : null}
-          <div className="profile-current-contact-row profile-current-mobile-original"><div><label htmlFor="profile-mobile-phone">{locale === "ko" ? "전화번호" : "Phone"}</label><input id="profile-mobile-phone" className="ui-input" type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => setPhone(event.target.value)} /></div><div className="profile-current-contact-actions">{verificationChip(phoneIsVerified)}{!phoneIsVerified ? <Button variant="secondary" size="sm" disabled={isSendingPhoneCode} onClick={() => void sendPhoneCode()}>{isSendingPhoneCode ? t("saving") : t("verify")}</Button> : null}</div></div>
-          {phoneVerificationSent ? <div className="profile-current-otp"><label htmlFor="profile-current-otp">{locale === "ko" ? "문자로 받은 6자리 코드" : "6-digit SMS code"}</label><input id="profile-current-otp" className="ui-input" inputMode="numeric" maxLength={6} value={phoneOtp} onChange={(event) => setPhoneOtp(event.target.value.replace(/\D/g, ""))} /><Button variant="primary" size="sm" disabled={isVerifyingPhoneCode} onClick={() => void verifyPhoneCode()}>{t("verify")}</Button></div> : null}
-          <div className="profile-current-contact-row profile-current-desktop-only"><span className="profile-current-contact-label">{locale === "ko" ? "이메일" : "Email"}</span><span className="profile-current-contact-value">{email}{verificationChip(emailIsVerified)}</span><Button variant="secondary" size="sm" aria-expanded={isEmailEditorOpen} onClick={() => setIsEmailEditorOpen((open) => !open)}>{isEmailEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경하기" : "Change")}</Button></div>
-          {isEmailEditorOpen ? <div className="profile-current-contact-editor profile-current-desktop-only"><label htmlFor="profile-current-email">{locale === "ko" ? "새 이메일" : "New email"}</label><input id="profile-current-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /><Button variant="secondary" size="sm" disabled={isUpdatingEmail || emailDraft.trim() === email} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button></div> : null}
-          <div className="profile-current-contact-row profile-current-mobile-original"><div><label htmlFor="profile-mobile-email">{locale === "ko" ? "이메일" : "Email"}</label><input id="profile-mobile-email" className="ui-input" type="email" autoComplete="email" value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} /></div><div className="profile-current-contact-actions">{verificationChip(emailIsVerified)}{emailDraft.trim() !== email ? <Button variant="secondary" size="sm" disabled={isUpdatingEmail} onClick={() => void updateEmail()}>{isUpdatingEmail ? t("saving") : t("update")}</Button> : null}</div></div>
-          <div className="profile-current-password-row"><span>{locale === "ko" ? "비밀번호" : "Password"}</span><Button variant="ghost" size="sm" aria-expanded={isPasswordEditorOpen} onClick={() => setIsPasswordEditorOpen((open) => !open)}>{isPasswordEditorOpen ? (locale === "ko" ? "접기" : "Close") : (locale === "ko" ? "변경" : "Change")}</Button></div>
-          {isPasswordEditorOpen ? <div className="profile-current-password-fields">
-            <div><label htmlFor="profile-current-password">{locale === "ko" ? "현재 비밀번호" : "Current password"}</label><input id="profile-current-password" className="ui-input" type={showCurrentPassword ? "text" : "password"} autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "현재 비밀번호 표시 전환" : "Toggle current password visibility"} onClick={() => setShowCurrentPassword((value) => !value)}>{showCurrentPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
-            <div><label htmlFor="profile-current-new-password">{locale === "ko" ? "새 비밀번호 · 8자 이상" : "New password · 8+ characters"}</label><input id="profile-current-new-password" className="ui-input" type={showNewPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "새 비밀번호 표시 전환" : "Toggle new password visibility"} onClick={() => setShowNewPassword((value) => !value)}>{showNewPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
-            <div><label htmlFor="profile-current-confirm-password">{locale === "ko" ? "새 비밀번호 확인" : "Confirm new password"}</label><input id="profile-current-confirm-password" className="ui-input" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /><button type="button" aria-label={locale === "ko" ? "비밀번호 확인 표시 전환" : "Toggle confirmation visibility"} onClick={() => setShowConfirmPassword((value) => !value)}>{showConfirmPassword ? (locale === "ko" ? "숨기기" : "Hide") : (locale === "ko" ? "보기" : "Show")}</button></div>
-            {confirmPassword && !passwordsMatch ? <p role="alert">{locale === "ko" ? "새 비밀번호가 일치하지 않습니다." : "New passwords do not match."}</p> : null}
-            <Button variant="primary" disabled={isUpdatingPassword || !passwordsMatch} onClick={() => void updatePassword()}>{isUpdatingPassword ? t("saving") : (locale === "ko" ? "비밀번호 변경" : "Update password")}</Button>
-          </div> : null}
-        </section>
-        <section className="ui-panel profile-current-card profile-current-privacy" data-mobile-expanded={expandedSection === "privacy"} data-desktop-expanded={desktopExpandedSections.includes("privacy")}>
-          {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "공개 설정" : "Privacy", locale === "ko" ? "프로필과 연락처 공개 범위" : "Profile and contact visibility")}
-          {sectionTrigger("privacy", "ms-visibility", locale === "ko" ? "프로필과 연락처 공개 범위" : "Profile & contact visibility", locale === "ko" ? "전체·회원·거래 상대 선택" : "Choose who can view your profile", "desktop")}
-          <header className="profile-current-card-heading"><i className="ms ms-visibility" aria-hidden="true" /><h2>{locale === "ko" ? "프로필과 연락처 공개 범위" : "Profile & contact visibility"}</h2></header>
-          <div className="profile-current-privacy-options">
-            <label className="profile-current-field" htmlFor="profile-visibility"><span>{locale === "ko" ? "전체 판매자 프로필 공개 범위" : "Full seller profile visibility"}</span><select id="profile-visibility" className="ui-input" value={profileVisibility} onChange={(event) => setProfileVisibility(event.target.value as ProfileVisibility)}><option value="public">{locale === "ko" ? "전체 공개" : "Everyone"}</option><option value="members">{locale === "ko" ? "타다 회원만" : "Tada members"}</option><option value="trade_partners">{locale === "ko" ? "거래가 확정된 상대만" : "Confirmed trade partners"}</option></select><small>{locale === "ko" ? "전체 판매자 프로필 페이지에 적용됩니다. 상품·후기에 표시되는 이름, 사진, 평점은 계속 보일 수 있어요." : "Applies to the full seller profile page. Your name, photo and ratings can still appear with listings and reviews."}</small></label>
-            <div className="profile-current-contact-privacy"><span><strong>{locale === "ko" ? "연락처 공개 범위" : "Contact visibility"}</strong><small>{locale === "ko" ? "전화번호는 공개 프로필에 표시되지 않아요." : "Your phone number is not shown on your public profile."}</small></span><span className="ui-pill">{locale === "ko" ? "비공개" : "Private"}</span></div>
-          </div>
-        </section>
-        <section className="ui-panel profile-current-card profile-current-display" data-mobile-expanded={expandedSection === "display"} data-desktop-expanded={desktopExpandedSections.includes("display")}>
-          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 글씨 크기" : "Language & text size", locale === "ko" ? "표시 언어, 상품 설명 글씨 크기" : "Language and listing text size")}
-          {sectionTrigger("display", "ms-language", locale === "ko" ? "언어 및 글씨 크기 설정" : "Language & text size", locale === "ko" ? "표시 언어와 상품 설명 글씨 크기" : "Language and listing text size", "desktop")}
-          <header className="profile-current-card-heading"><i className="ms ms-language" aria-hidden="true" /><h2>{locale === "ko" ? "언어 및 글씨 크기" : "Language & text size"}</h2></header>
-          <label className="profile-current-field"><span>{locale === "ko" ? "표시 언어" : "Display language"}</span><select className="ui-input" value={locale} onChange={(event) => void updateLocale(event.target.value as SupportedLocale)}>{languageOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.label} ({option.nativeLabel})</option>)}</select><small>{locale === "ko" ? "언어 선택은 바로 적용됩니다." : "Language changes apply immediately."}</small></label>
-          <div className="profile-current-text-size"><span>{locale === "ko" ? "상품 설명 글씨 크기" : "Listing description text size"}</span><small>{locale === "ko" ? "변경사항 저장을 누르면 상품 상세 설명에 적용됩니다." : "Save changes to apply this to listing descriptions."}</small><TextSizePreferencePreview value={descriptionTextSizeStep} locale={locale} onChange={changeDescriptionTextSize} /></div>
-        </section>
-      </div>
-    </div>
-    {status ? <p className="profile-form-status" role="status">{status}</p> : null}
-  </div>;
 
   return <>
     {isLegacy ? <header className="profile-v0-note"><div><h1>{locale === "ko" ? "프로필 설정 V0" : "Profile Settings V0"}</h1><p role="note">{locale === "ko" ? "이전 디자인 비교용입니다. 아래 알림·공개 스위치는 실제 계정 설정에 적용되지 않아 사용할 수 없습니다." : "Previous design for comparison. The notification and visibility switches below do not affect your account and are disabled."}</p></div><Link className="ui-button ui-button--secondary ui-button--sm" href="/market/dashboard/profile">{locale === "ko" ? "현재 버전 보기" : "View current version"}</Link></header> : null}
