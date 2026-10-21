@@ -69,7 +69,7 @@ export async function getBargainListingDetail(listingId: string, supabase: Supab
     supabase.from("bargain_listing_photos").select("id,storage_path,original_name,is_primary,display_order").eq("listing_id", sale.id).order("display_order"),
     supabase.from("bargain_listing_items").select("id,photo_id,title,category_slug,price_cents,description,display_order,status").eq("listing_id", sale.id).order("display_order"),
     sale.owner_id ? supabase.from("market_seller_profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
-    sale.owner_id ? supabase.from("profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
+    sale.owner_id ? supabase.from("public_member_profiles").select("id,display_name,avatar_path").eq("id", sale.owner_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const { data: reservationData } = userId
     ? await supabase.from("bargain_item_reservations").select("id,item_id,buyer_id,status,pickup_start_at,pickup_end_at,expires_at").eq("listing_id", sale.id).eq(userId === sale.owner_id ? "seller_id" : "buyer_id", userId)

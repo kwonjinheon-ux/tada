@@ -2844,6 +2844,10 @@ a {
 .seller-public-profile-card h1 { margin: 2px 0 0; overflow: hidden; color: var(--blue-900); font-size: var(--text-2xl); line-height: 1.25; overflow-wrap: anywhere; }
 
 .seller-profile-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin: 0; padding-top: var(--space-4); border-top: 1px solid var(--neutral-250); }
+.seller-profile-access-notice { display: flex; align-items: flex-start; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft); }
+.seller-profile-access-notice > .ms { color: var(--color-primary); font-size: var(--text-xl); }
+.seller-profile-access-notice > div { display: grid; gap: var(--space-2); }
+.seller-profile-access-notice strong { color: var(--color-ink); font-size: var(--text-md); }
 .seller-profile-stats > div { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; text-align: center; }
 .seller-profile-stats dt { color: var(--blue-soft-650); font-size: var(--text-xs); }
 .seller-profile-stats dd { display: inline-flex; align-items: center; gap: var(--space-1); margin: 0; color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-bold); }
@@ -9181,265 +9185,187 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-settings-page:has(.profile-v0-note) .profile-photo-location { font-size: var(--text-md); }
 }
 
-/* Profile settings: one live editor, with inline mobile disclosures. */
-.profile-settings-page:has(.profile-settings-current) { background: var(--color-surface); }
+/* Profile settings: a focused editor beside a single preview rail. */
+.profile-settings-page:has(.profile-settings-current) { background: var(--color-background); }
 .profile-settings-current { display: grid; gap: var(--space-4); min-width: 0; color: var(--color-ink); }
 .profile-settings-current .profile-settings-intro { margin: 0; }
 .profile-settings-current .profile-settings-intro h1 { font-weight: var(--weight-bold); }
-.profile-settings-current .profile-current-title-row { display: flex; align-items: center; gap: var(--space-3); }
-.profile-settings-current .profile-current-accordion-trigger { display: none; }
-.profile-settings-current .profile-current-hero,
-.profile-settings-current .profile-current-card,
-.profile-settings-current .profile-current-management { min-width: 0; border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: none; }
-.profile-settings-current .profile-current-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5); padding: var(--space-4) var(--space-6); background: var(--color-surface-soft); }
-.profile-settings-current .profile-photo-card { grid-template-columns: calc(var(--space-12) * 2 + var(--space-6)) minmax(0, 1fr); justify-items: start; gap: var(--space-5); }
-.profile-settings-current .profile-photo-details { justify-items: start; text-align: left; }
-.profile-settings-current .profile-avatar-wrap,
-.profile-settings-current .profile-avatar { width: calc(var(--space-12) * 2 + var(--space-6)); height: calc(var(--space-12) * 2 + var(--space-6)); }
-.profile-settings-current .profile-avatar { border: var(--space-1) solid var(--color-surface); box-shadow: 0 0 0 var(--space-1) var(--color-primary-soft); }
-.profile-settings-current .profile-camera-button { width: var(--control-h-lg); height: var(--control-h-lg); border: 2px solid var(--color-surface); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-lg); }
-.profile-settings-current .profile-camera-button .ms { color: inherit; }
-.profile-settings-current .profile-photo-identity strong { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
-.profile-settings-current .profile-photo-identity span { border-radius: var(--radius-pill); background: var(--color-primary-soft); color: var(--color-primary-strong); }
-.profile-settings-current .profile-photo-email,
-.profile-settings-current .profile-photo-location { color: var(--color-muted); font-size: var(--text-md); }
-.profile-settings-current .profile-photo-location .ms { display: none; }
-.profile-settings-current .profile-member-since,
-.profile-settings-current .profile-photo-help { display: none; }
-.profile-settings-current .ui-button.passkey-button { width: auto; }
-.profile-settings-current .profile-current-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: var(--space-4); }
-.profile-settings-current .profile-current-column { display: grid; align-content: start; gap: var(--space-3); min-width: 0; }
-.profile-settings-current .profile-current-card,
-.profile-settings-current .profile-current-management { padding: var(--space-5); }
-.profile-settings-current .profile-current-card-heading { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h-lg); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line-soft); }
-.profile-settings-current .profile-current-card-heading > .ms { display: grid; place-items: center; width: var(--control-h-md); height: var(--control-h-md); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
-.profile-settings-current .profile-current-card-heading h2 { margin: 0; color: var(--color-ink); font-size: var(--text-xl); font-weight: var(--weight-bold); }
-.profile-settings-current .profile-current-card-heading .ui-pill { margin-left: auto; }
-.profile-settings-current .profile-current-field { display: grid; gap: var(--space-2); margin-top: var(--space-4); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); }
+.profile-settings-current .profile-current-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; gap: var(--space-3); }
+.profile-settings-current .profile-current-column { display: contents; }
+.profile-settings-current :is(.profile-current-card, .profile-current-hero, .profile-current-management) { min-width: 0; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: none; }
+.profile-settings-current .profile-current-identity { display: grid; grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); grid-template-rows: auto auto 1fr; column-gap: var(--space-3); padding: var(--space-3); }
+.profile-settings-current .profile-current-security { grid-column: 1; grid-row: 2; }
+.profile-settings-current .profile-current-privacy { grid-column: 1; grid-row: 3; }
+.profile-settings-current .profile-current-display { grid-column: 1; grid-row: 4; }
+.profile-settings-current .profile-current-management { grid-column: 1; grid-row: 5; }
+.profile-settings-current .profile-current-preview-rail { display: grid; grid-column: 2; grid-row: 1 / span 5; align-content: start; gap: var(--space-3); min-width: 0; }
+.profile-settings-current .profile-current-hero { display: grid; justify-items: center; gap: var(--space-4); padding: var(--space-4); }
+.profile-settings-current .profile-current-desktop-preview { display: grid; justify-items: center; gap: var(--space-4); width: 100%; }
+.profile-settings-current .profile-current-preview-heading { width: 100%; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.profile-settings-current .profile-current-preview-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; padding-top: var(--space-3); border-top: 1px solid var(--color-line-soft); }
+.profile-settings-current .profile-current-preview-stats > div { display: grid; justify-items: center; gap: var(--space-1); min-width: 0; padding-inline: var(--space-2); text-align: center; }
+.profile-settings-current .profile-current-preview-stats > div + div { border-left: 1px solid var(--color-line-soft); }
+.profile-settings-current .profile-current-preview-stats strong { color: var(--color-ink); font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.profile-settings-current .profile-current-preview-stats span { color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.profile-settings-current .profile-current-preview-stats small { color: var(--color-muted); font-size: var(--text-xs); }
+.profile-settings-current .profile-photo-card--preview { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-2); padding: 0; text-align: center; }
+.profile-settings-current .profile-photo-card--preview .profile-avatar-wrap,
+.profile-settings-current .profile-photo-card--preview .profile-avatar { width: calc(var(--space-12) * 2); height: calc(var(--space-12) * 2); margin: 0; }
+.profile-settings-current .profile-photo-card--preview .profile-avatar,
+.profile-settings-current .profile-photo-card--editor .profile-avatar { background: var(--color-primary-soft); box-shadow: none; }
+.profile-settings-current .profile-photo-card--preview .profile-photo-details { justify-items: center; text-align: center; }
+.profile-settings-current .profile-photo-card--preview .profile-avatar-placeholder,
+.profile-settings-current .profile-photo-card--editor .profile-avatar-placeholder { color: var(--color-primary); }
+.profile-settings-current .profile-photo-card--preview .profile-avatar-placeholder .ms,
+.profile-settings-current .profile-photo-card--editor .profile-avatar-placeholder .ms { color: inherit; }
+.profile-settings-current .profile-photo-card--preview .profile-photo-identity strong { font-size: var(--text-lg); }
+.profile-settings-current .profile-photo-card--preview .profile-photo-location .ms { display: inline; }
+.profile-settings-current .profile-current-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); width: 100%; }
+.profile-settings-current .profile-current-actions .ui-button { width: 100%; min-width: 0; min-height: var(--control-h-xl); }
+.profile-settings-current .profile-current-card-heading { display: flex; grid-column: 1 / -1; align-items: center; gap: var(--space-2); min-height: var(--control-h-lg); margin-bottom: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-line-soft); }
+.profile-settings-current .profile-current-card-heading > .ms:first-child { display: none; }
+.profile-settings-current .profile-current-card-heading h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.profile-settings-current .profile-current-heading-chevron { margin-left: auto; color: var(--color-primary); }
+.profile-settings-current .profile-current-mobile-original,
+.profile-settings-current .profile-current-mobile-trigger,
+.profile-settings-current .profile-current-identity .profile-current-desktop-trigger { display: none; }
+.profile-settings-current .profile-current-photo-row { display: grid; grid-column: 1; grid-row: 2 / 4; align-self: stretch; place-items: center; min-width: 0; min-height: calc(var(--space-12) * 5); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-primary-soft); }
+.profile-settings-current .profile-photo-card--editor { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-2); padding: 0; text-align: center; }
+.profile-settings-current .profile-photo-card--editor .profile-avatar-wrap,
+.profile-settings-current .profile-photo-card--editor .profile-avatar { width: calc(var(--space-12) * 3); height: calc(var(--space-12) * 3); margin: 0; }
+.profile-settings-current .profile-photo-card--editor .profile-avatar { overflow: hidden; border: 0; border-radius: var(--radius-circle); box-shadow: none; }
+.profile-settings-current .profile-photo-card--editor .profile-avatar img { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; }
+.profile-settings-current .profile-photo-card--editor .profile-photo-details { display: grid; justify-items: center; text-align: center; }
+.profile-settings-current .profile-photo-change { padding: var(--space-1) var(--space-2); border: 0; background: transparent; color: var(--color-primary-strong); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); cursor: pointer; }
+.profile-settings-current .profile-photo-change:focus-visible { outline: var(--ring-focus); outline-offset: var(--space-1); }
+.profile-settings-current .profile-current-field { display: grid; align-content: start; gap: var(--space-2); min-width: 0; color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-medium); }
 .profile-settings-current .profile-current-field em { color: var(--color-danger); font-style: normal; }
 .profile-settings-current .profile-current-field small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-.profile-settings-current .profile-current-field .ui-input { width: 100%; min-height: var(--control-h-xl); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-lg); }
-.profile-settings-current .profile-current-field .listing-location-selector { min-width: 0; padding: 0; border: 0; }
-.profile-settings-current .profile-current-field .listing-location-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-.profile-settings-current .profile-current-field .listing-location-fields label { font-size: var(--text-sm); }
-.profile-settings-current .profile-current-setting-row,
+.profile-settings-current .profile-current-field .ui-input { width: 100%; min-height: var(--control-h-xl); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-md); }
+.profile-settings-current .profile-current-nickname { grid-column: 2; grid-row: 2; }
+.profile-settings-current .profile-current-input-wrap { position: relative; min-width: 0; }
+.profile-settings-current .profile-current-input-wrap .ui-input { padding-right: var(--space-12); }
+.profile-settings-current .profile-current-input-wrap small { position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%); }
+.profile-settings-current .profile-current-location { grid-column: 2; grid-row: 3; }
+.profile-settings-current .profile-current-location > span,
+.profile-settings-current .profile-current-location > small { display: none; }
+.profile-settings-current .profile-current-location .listing-location-selector { min-width: 0; padding: 0; border: 0; }
+.profile-settings-current .profile-current-location .listing-location-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+.profile-settings-current .profile-current-location .listing-location-fields label { font-size: var(--text-md); }
+.profile-settings-current .profile-current-identity > .profile-current-mobile-original { display: none; }
+.profile-settings-current :is(.profile-current-security, .profile-current-privacy, .profile-current-display, .profile-current-management) { overflow: hidden; }
+.profile-settings-current .profile-current-desktop-trigger.ui-button { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); width: 100%; min-height: var(--control-h-xl); padding: var(--space-3); border: 0; background: var(--color-surface-soft); color: var(--color-ink); text-align: left; }
+.profile-settings-current .profile-current-desktop-trigger > .ms:first-child { display: none; }
+.profile-settings-current .profile-current-desktop-trigger > .ms:last-child { color: var(--color-muted); }
+.profile-settings-current .profile-current-desktop-trigger span { display: grid; gap: var(--space-1); }
+.profile-settings-current .profile-current-desktop-trigger strong { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+.profile-settings-current .profile-current-desktop-trigger small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+.profile-settings-current :is(.profile-current-security, .profile-current-privacy, .profile-current-display, .profile-current-management) > .profile-current-card-heading { display: none; }
+.profile-settings-current :is(.profile-current-card, .profile-current-management)[data-desktop-expanded="false"] > :not(.profile-current-accordion-trigger):not(.profile-current-card-heading) { display: none; }
 .profile-settings-current .profile-current-contact-row,
-.profile-settings-current .profile-current-password-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); min-height: var(--control-h-xl); border-bottom: 1px solid var(--color-line-soft); }
-.profile-settings-current .profile-current-setting-row:last-of-type,
-.profile-settings-current .profile-current-contact-row:last-of-type { border-bottom: 0; }
-.profile-settings-current .profile-current-setting-row > span,
-.profile-settings-current .profile-current-password-row > span { color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-medium); }
-.profile-settings-current .profile-current-setting-row .profile-static-switch { cursor: not-allowed; opacity: .55; }
-.profile-settings-current .profile-current-unavailable { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: var(--text-sm); line-height: 1.5; }
-.profile-settings-current .profile-current-contact-row { padding-block: var(--space-2); }
-.profile-settings-current .profile-current-contact-row > div { display: grid; gap: var(--space-1); min-width: 0; }
-.profile-settings-current .profile-current-contact-row label,
-.profile-settings-current .profile-current-otp label { color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-contact-row input { width: 100%; min-width: 0; min-height: var(--control-h-lg); font-size: var(--text-md); }
-.profile-settings-current .profile-current-contact-row .ui-button { min-height: var(--control-h-lg); }
-.profile-settings-current .profile-current-otp { display: grid; gap: var(--space-2); padding-block: var(--space-3); }
-.profile-settings-current .profile-current-otp input { min-height: var(--control-h-xl); }
-.profile-settings-current .profile-current-password-fields { display: grid; gap: var(--space-3); padding-block: var(--space-3); }
+.profile-settings-current .profile-current-password-row,
+.profile-settings-current .profile-current-setting-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); min-height: var(--control-h-xl); margin-inline: var(--space-3); padding-block: var(--space-2); border-bottom: 1px solid var(--color-line-soft); }
+.profile-settings-current .profile-current-contact-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; }
+.profile-settings-current .profile-current-contact-row:last-of-type,
+.profile-settings-current .profile-current-setting-row:last-of-type { border-bottom: 0; }
+.profile-settings-current .profile-current-contact-label,
+.profile-settings-current .profile-current-setting-row strong { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+.profile-settings-current .profile-current-contact-value { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); min-width: 0; overflow-wrap: anywhere; color: var(--color-muted); font-size: var(--text-md); }
+.profile-settings-current .profile-current-contact-editor,
+.profile-settings-current .profile-current-otp,
+.profile-settings-current .profile-current-password-fields { display: grid; gap: var(--space-2); margin: var(--space-3); }
+.profile-settings-current .profile-current-contact-editor { grid-template-columns: minmax(0, 1fr) auto; }
+.profile-settings-current .profile-current-contact-editor label { grid-column: 1 / -1; }
+.profile-settings-current .profile-current-contact-editor .ui-input,
+.profile-settings-current .profile-current-otp .ui-input,
+.profile-settings-current .profile-current-password-fields .ui-input { min-width: 0; min-height: var(--control-h-xl); }
 .profile-settings-current .profile-current-password-fields > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1); }
-.profile-settings-current .profile-current-password-fields label { grid-column: 1 / -1; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-password-fields input { grid-column: 1; min-width: 0; min-height: var(--control-h-xl); }
-.profile-settings-current .profile-current-password-fields > div button { grid-column: 2; min-height: var(--control-h-xl); border: 0; background: transparent; color: var(--color-primary); cursor: pointer; }
-.profile-settings-current .profile-current-password-fields p { margin: 0; color: var(--color-danger); font-size: var(--text-sm); }
-.profile-settings-current .profile-current-text-size { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); font-size: var(--text-md); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-management { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); background: var(--color-surface-soft); }
-.profile-settings-current .profile-current-management .profile-current-card-heading { border: 0; padding: 0; }
-.profile-settings-current .profile-current-management p { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
-.profile-settings-current .profile-current-actions { display: flex; justify-content: flex-end; gap: var(--space-2); padding-top: var(--space-2); }
-.profile-settings-current .profile-current-actions .ui-button { min-width: calc(var(--space-12) * 3); }
-.profile-settings-current .profile-form-status { margin: 0; }
-@media (min-width: 768px) {
-  .profile-settings-page:has(.profile-settings-current) { background: var(--color-background); }
-  .profile-settings-current .profile-current-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-4); background: var(--color-surface); }
-  .profile-settings-current .profile-photo-card { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); gap: var(--space-4); }
-  .profile-settings-current .profile-avatar-wrap,
-  .profile-settings-current .profile-avatar { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
-  .profile-settings-current .profile-photo-identity strong { font-size: var(--text-xl); }
-  .profile-settings-current .profile-photo-identity span { display: none; }
-  .profile-settings-current .profile-photo-email,
-  .profile-settings-current .profile-photo-location { font-size: var(--text-sm); overflow-wrap: anywhere; }
-  .profile-settings-current .profile-current-card,
-  .profile-settings-current .profile-current-management { padding: 0 0 var(--space-4); overflow: hidden; }
-  .profile-settings-current .profile-current-management { display: block; }
-  .profile-settings-current .profile-current-card-heading,
-  .profile-settings-current .profile-current-desktop-trigger.ui-button { min-height: var(--control-h-2xl); margin: 0 0 var(--space-2); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-line-soft); background: var(--color-primary-soft); }
-  .profile-settings-current .profile-current-card-heading { gap: var(--space-2); }
-  .profile-settings-current .profile-current-card-heading h2 { font-size: var(--text-lg); }
-  .profile-settings-current .profile-current-heading-chevron { margin-left: auto; color: var(--color-primary); }
-  .profile-settings-current .profile-current-heading-chevron.ms { font-size: var(--text-xl); }
-  .profile-settings-current .profile-current-desktop-trigger.ui-button { display: grid; grid-template-columns: var(--control-h-md) minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); width: 100%; color: var(--color-ink); text-align: left; }
-  .profile-settings-current .profile-current-desktop-trigger > .ms:first-child { display: grid; place-items: center; width: var(--control-h-md); height: var(--control-h-md); border-radius: var(--radius-circle); background: var(--color-surface); color: var(--color-primary); font-size: var(--text-lg); }
-  .profile-settings-current .profile-current-desktop-trigger > .ms:last-child { color: var(--color-primary); }
-  .profile-settings-current .profile-current-desktop-trigger span { display: grid; gap: var(--space-1); }
-  .profile-settings-current .profile-current-desktop-trigger strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
-  .profile-settings-current .profile-current-desktop-trigger small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-  .profile-settings-current :is(.profile-current-privacy, .profile-current-display, .profile-current-management) .profile-current-card-heading { display: none; }
-  .profile-settings-current :is(.profile-current-card, .profile-current-management)[data-desktop-expanded="false"] > :not(.profile-current-accordion-trigger):not(.profile-current-card-heading) { display: none; }
-  .profile-settings-current .profile-current-card:has(> .profile-current-desktop-trigger)[data-desktop-expanded="false"],
-  .profile-settings-current .profile-current-management[data-desktop-expanded="false"] { padding-bottom: 0; }
-  .profile-settings-current .profile-current-card:has(> .profile-current-desktop-trigger)[data-desktop-expanded="false"] > .profile-current-desktop-trigger,
-  .profile-settings-current .profile-current-management[data-desktop-expanded="false"] > .profile-current-desktop-trigger { margin-bottom: 0; border-bottom: 0; }
-  .profile-settings-current .profile-current-field,
-  .profile-settings-current .profile-current-contact-row,
-  .profile-settings-current .profile-current-password-row,
-  .profile-settings-current .profile-current-otp,
-  .profile-settings-current .profile-current-password-fields,
-  .profile-settings-current .profile-current-setting-row,
-  .profile-settings-current .profile-current-unavailable,
-  .profile-settings-current .profile-current-text-size,
-  .profile-settings-current .profile-current-management p { margin-inline: var(--space-4); }
-  .profile-settings-current .profile-current-field { margin-top: var(--space-3); }
-  .profile-settings-current .profile-current-actions { position: sticky; z-index: 3; bottom: 0; padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-sm); }
-}
+.profile-settings-current .profile-current-password-fields label { grid-column: 1 / -1; }
+.profile-settings-current .profile-current-password-fields > div button { border: 0; background: transparent; color: var(--color-primary); }
+.profile-settings-current .profile-current-password-fields p { color: var(--color-danger); }
+.profile-settings-current .profile-current-setting-row > span { display: grid; gap: var(--space-1); }
+.profile-settings-current .profile-current-setting-row small,
+.profile-settings-current .profile-current-unavailable,
+.profile-settings-current .profile-current-management p { color: var(--color-muted); font-size: var(--text-sm); }
+.profile-settings-current .profile-current-unavailable,
+.profile-settings-current .profile-current-management p { margin: var(--space-3); }
+.profile-settings-current .profile-current-setting-row .profile-static-switch { cursor: not-allowed; opacity: .55; }
+.profile-settings-current .profile-current-privacy-options { display: grid; gap: var(--space-3); margin: var(--space-3); }
+.profile-settings-current .profile-current-privacy-options .profile-current-field { margin: 0; }
+.profile-settings-current .profile-current-privacy-options .ui-input { min-height: var(--control-h-xl); }
+.profile-settings-current .profile-current-contact-privacy { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-line-soft); }
+.profile-settings-current .profile-current-contact-privacy > span:first-child { display: grid; gap: var(--space-1); }
+.profile-settings-current .profile-current-contact-privacy strong { font-size: var(--text-md); }
+.profile-settings-current .profile-current-contact-privacy small { color: var(--color-muted); font-size: var(--text-sm); }
+.profile-settings-current .profile-current-display .profile-current-field,
+.profile-settings-current .profile-current-text-size { margin: var(--space-3); }
+.profile-settings-current .profile-current-text-size { display: grid; gap: var(--space-2); }
+.profile-settings-current .profile-current-text-size > small { color: var(--color-muted); font-size: var(--text-sm); }
+.profile-settings-current .profile-description-text-size-preview { gap: var(--space-3); padding: var(--space-3); background: var(--color-surface-soft); border-color: var(--color-line); }
+.profile-settings-current .profile-current-actions .ui-button:focus-visible,
+.profile-settings-current .profile-current-desktop-trigger:focus-visible { outline: var(--ring-focus); outline-offset: var(--space-1); }
 @media (min-width: 1024px) {
-  .profile-settings-current .profile-current-field .listing-location-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-settings-current .profile-current-preview-rail { position: sticky; top: calc(var(--desktop-header-height) + var(--space-3)); max-height: calc(100dvh - var(--desktop-header-height) - var(--space-6)); }
+  .profile-settings-current .profile-current-hero { min-height: 0; overflow: auto; }
 }
 @media (min-width: 768px) and (max-width: 1023.98px) {
   .profile-settings-current .profile-current-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-settings-current .profile-current-preview-rail { grid-column: 1; grid-row: 1; }
+  .profile-settings-current .profile-current-identity { grid-row: 2; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .profile-settings-current .profile-current-security { grid-row: 3; }
+  .profile-settings-current .profile-current-privacy { grid-row: 4; }
+  .profile-settings-current .profile-current-display { grid-row: 5; }
+  .profile-settings-current .profile-current-management { grid-row: 6; }
 }
 @media (max-width: 767.98px) {
+  .profile-settings-page:has(.profile-settings-current) { background: var(--color-surface); }
   .profile-settings-current { gap: var(--space-3); }
-  .profile-settings-current .profile-settings-intro { margin: 0; }
   .profile-settings-current .profile-settings-intro > p { display: none; }
-  .profile-settings-current .profile-current-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); padding: var(--space-5); background: var(--color-surface); }
-  .profile-settings-current .profile-photo-card { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); text-align: center; }
-  .profile-settings-current .profile-photo-details { justify-items: center; text-align: center; }
-  .profile-settings-current .profile-avatar-wrap,
-  .profile-settings-current .profile-avatar { width: calc(var(--space-12) * 2 + var(--space-6)); height: calc(var(--space-12) * 2 + var(--space-6)); }
-  .profile-settings-current .profile-photo-identity { justify-content: center; }
-  .profile-settings-current .profile-photo-email { display: none; }
   .profile-settings-current .profile-current-grid,
-  .profile-settings-current .profile-current-column { display: contents; }
-  .profile-settings-current .profile-current-hero { order: 0; }
-  .profile-settings-current .profile-current-identity { order: 1; }
+  .profile-settings-current .profile-current-preview-rail { display: contents; }
+  .profile-settings-current :is(.profile-current-hero, .profile-current-identity, .profile-current-security, .profile-current-privacy, .profile-current-display, .profile-current-management, .profile-current-actions) { grid-column: auto; grid-row: auto; }
+  .profile-settings-current .profile-current-mobile-original { display: grid; }
+  .profile-settings-current .profile-current-identity > .profile-current-mobile-original { display: grid; }
+  .profile-settings-current .profile-current-desktop-preview,
+  .profile-settings-current .profile-current-desktop-only,
+  .profile-settings-current .profile-current-nickname,
+  .profile-settings-current .profile-current-location { display: none; }
+  .profile-settings-current .profile-current-hero { order: 0; justify-items: center; padding: var(--space-4); }
+  .profile-settings-current .profile-current-hero > .profile-current-mobile-original { justify-items: center; gap: var(--space-3); width: 100%; }
+  .profile-settings-current .profile-current-hero .profile-photo-card--standard { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-3); text-align: center; }
+  .profile-settings-current .profile-current-hero .profile-photo-card--standard .profile-photo-details { justify-items: center; text-align: center; }
+  .profile-settings-current .profile-current-hero .profile-avatar-wrap,
+  .profile-settings-current .profile-current-hero .profile-avatar { width: calc(var(--space-12) * 2 + var(--space-6)); height: calc(var(--space-12) * 2 + var(--space-6)); }
+  .profile-settings-current .profile-current-hero .profile-photo-email { display: none; }
+  .profile-settings-current .ui-button.profile-current-edit-action { width: min(100%, calc(var(--space-12) * 5)); }
+  .profile-settings-current .profile-current-mobile-original > .profile-current-preview-stats { margin-top: var(--space-2); }
+  .profile-settings-current .profile-current-identity { display: block; order: 1; padding: var(--space-4); }
   .profile-settings-current .profile-current-security { order: 2; }
   .profile-settings-current .profile-current-privacy { order: 3; }
   .profile-settings-current .profile-current-display { order: 4; }
-  .profile-settings-current .profile-current-management { order: 5; display: block; }
-  .profile-settings-current .profile-current-actions { order: 6; display: flex; }
-  .profile-settings-current .profile-form-status { order: 7; }
-  .profile-settings-current .profile-current-card,
-  .profile-settings-current .profile-current-management { padding: var(--space-4); }
-  .profile-settings-current .profile-current-card-heading { display: none; }
+  .profile-settings-current .profile-current-management { order: 5; }
+  .profile-settings-current :is(.profile-current-security, .profile-current-privacy, .profile-current-display, .profile-current-management) { overflow: visible; }
+  .profile-settings-current :is(.profile-current-card, .profile-current-management) { padding: var(--space-4); }
+  .profile-settings-current .profile-current-card-heading,
+  .profile-settings-current .profile-current-desktop-trigger.ui-button { display: none; }
   .profile-settings-current .profile-current-mobile-trigger.ui-button { display: grid; grid-template-columns: var(--control-h-xl) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--control-h-xl); padding: 0; border: 0; background: transparent; color: var(--color-ink); text-align: left; }
-  .profile-settings-current .profile-current-accordion-trigger > .ms:first-child { display: grid; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
-  .profile-settings-current .profile-current-accordion-trigger > .ms:last-child { color: var(--color-muted); }
-  .profile-settings-current .profile-current-accordion-trigger span { display: grid; gap: var(--space-1); }
-  .profile-settings-current .profile-current-accordion-trigger strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
-  .profile-settings-current .profile-current-accordion-trigger small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+  .profile-settings-current .profile-current-mobile-trigger > .ms:first-child { display: grid; place-items: center; width: var(--control-h-xl); height: var(--control-h-xl); border-radius: var(--radius-circle); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
+  .profile-settings-current .profile-current-mobile-trigger span { display: grid; gap: var(--space-1); }
+  .profile-settings-current .profile-current-mobile-trigger strong { font-size: var(--text-lg); }
+  .profile-settings-current .profile-current-mobile-trigger small { color: var(--color-muted); font-size: var(--text-sm); }
   .profile-settings-current :is(.profile-current-card, .profile-current-management)[data-mobile-expanded="false"] > :not(.profile-current-accordion-trigger):not(.profile-current-card-heading) { display: none; }
-  .profile-settings-current .profile-current-actions { position: sticky; bottom: var(--mobile-dock-content-clearance, var(--space-12)); justify-content: stretch; padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); }
-  .profile-settings-current .profile-current-actions .ui-button { flex: 1; min-width: 0; min-height: var(--control-h-xl); }
-  .profile-settings-current .profile-current-contact-row { grid-template-columns: minmax(0, 1fr); }
-}
-
-/* Profile settings: reference-inspired editor and a truthful public preview. */
-.profile-settings-current .profile-current-preview-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); }
-.profile-settings-current .profile-current-preview-heading .ms { color: var(--color-primary); font-size: var(--text-xl); }
-.profile-settings-current .profile-current-preview-note { margin: 0; color: var(--color-muted); font-size: var(--text-sm); text-align: center; }
-.profile-settings-current .profile-current-preview-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft); }
-.profile-settings-current .profile-current-preview-stats > div { display: grid; justify-items: center; gap: var(--space-1); min-width: 0; padding-inline: var(--space-2); text-align: center; }
-.profile-settings-current .profile-current-preview-stats > div + div { border-left: 1px solid var(--color-line-soft); }
-.profile-settings-current .profile-current-preview-stats strong { color: var(--color-ink); font-size: var(--text-lg); font-weight: var(--weight-bold); }
-.profile-settings-current .profile-current-preview-stats span { color: var(--color-muted); font-size: var(--text-sm); }
-.profile-settings-current .profile-current-setting-row > span { display: grid; gap: var(--space-1); }
-.profile-settings-current .profile-current-setting-row strong { color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-setting-row small { color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-.profile-settings-current .profile-current-photo-row { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; gap: var(--space-3); margin-top: var(--space-4); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-photo-card--editor { display: flex; align-items: center; justify-content: flex-start; gap: var(--space-4); padding: 0; text-align: left; }
-.profile-settings-current .profile-photo-card--editor .profile-avatar-wrap { flex: none; width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); margin: 0; }
-.profile-settings-current .profile-photo-card--editor .profile-avatar { width: 100%; height: 100%; }
-.profile-settings-current .profile-photo-card--editor .profile-photo-details { display: grid; justify-items: start; gap: var(--space-1); text-align: left; }
-.profile-settings-current .profile-photo-card--editor .profile-photo-help { display: block; margin: 0; color: var(--color-muted); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-.profile-settings-current .profile-photo-card--editor .profile-camera-button { width: var(--control-h-sm); height: var(--control-h-sm); font-size: var(--text-md); }
-.profile-settings-current .profile-current-nickname { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; }
-.profile-settings-current .profile-current-input-wrap { position: relative; min-width: 0; }
-.profile-settings-current .profile-current-input-wrap .ui-input { padding-right: var(--space-12); }
-.profile-settings-current .profile-current-input-wrap small { position: absolute; right: var(--space-3); top: 50%; transform: translateY(-50%); color: var(--color-muted); font-size: var(--text-sm); }
-.profile-settings-current .profile-current-location { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: start; }
-.profile-settings-current .profile-current-location > span { padding-top: var(--space-3); }
-.profile-settings-current .profile-current-location > small { grid-column: 2; }
-.profile-settings-current .profile-current-contact-row { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr) auto; gap: var(--space-3); }
-.profile-settings-current .profile-current-contact-label { color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-contact-value { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); min-width: 0; overflow-wrap: anywhere; color: var(--color-muted); font-size: var(--text-md); }
-.profile-settings-current .profile-current-contact-editor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; padding-block: var(--space-3); }
-.profile-settings-current .profile-current-contact-editor label { grid-column: 1 / -1; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.profile-settings-current .profile-current-contact-editor .ui-input { min-width: 0; }
-.profile-settings-current .profile-current-password-row { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr) auto; }
-.profile-settings-current .profile-current-password-row::after { content: "••••••••"; grid-column: 2; grid-row: 1; color: var(--color-muted); letter-spacing: var(--space-1); }
-.profile-settings-current .profile-current-password-row > .ui-button { grid-column: 3; grid-row: 1; }
-.profile-settings-current .profile-current-hero { box-shadow: var(--shadow-xs); }
-.profile-settings-current .profile-photo-card--preview { padding: 0; }
-.profile-settings-current .profile-photo-card--preview .profile-photo-identity strong { color: var(--color-ink); }
-.profile-settings-current .profile-photo-card--preview .profile-photo-location .ms { display: inline; }
-@media (min-width: 768px) {
-  .profile-settings-current .profile-current-photo-row,
-  .profile-settings-current .profile-current-nickname,
-  .profile-settings-current .profile-current-location,
-  .profile-settings-current .profile-current-contact-row,
-  .profile-settings-current .profile-current-contact-editor,
-  .profile-settings-current .profile-current-password-row,
-  .profile-settings-current .profile-current-setting-row,
-  .profile-settings-current .profile-current-text-size,
-  .profile-settings-current .profile-current-management p { margin-inline: var(--space-4); }
-  .profile-settings-current .profile-current-card,
-  .profile-settings-current .profile-current-management { box-shadow: var(--shadow-xs); }
-  .profile-settings-current .profile-current-hero { display: grid; justify-items: center; gap: var(--space-5); padding: var(--space-5); }
-  .profile-settings-current .profile-photo-card--preview { display: grid; justify-items: center; gap: var(--space-2); }
-  .profile-settings-current .profile-photo-card--preview .profile-avatar-wrap,
-  .profile-settings-current .profile-photo-card--preview .profile-avatar { width: calc(var(--space-12) * 2); height: calc(var(--space-12) * 2); }
-  .profile-settings-current .profile-photo-card--preview .profile-photo-details { justify-items: center; text-align: center; }
-  .profile-settings-current .profile-current-identity .profile-current-card-heading { background: var(--color-primary-soft); }
-  .profile-settings-current .profile-current-identity .profile-current-card-heading > .ms { background: var(--color-primary); color: var(--color-on-primary); }
-  .profile-settings-current .profile-current-contact-editor { margin-inline: var(--space-4); }
-  .profile-settings-current .profile-current-setting-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .profile-settings-current .profile-current-actions { align-self: end; }
-}
-@media (min-width: 1024px) {
-  .profile-settings-current .profile-current-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
-  .profile-settings-current .profile-current-column { display: contents; }
-  .profile-settings-current .profile-current-identity { grid-column: 1; grid-row: 1; }
-  .profile-settings-current .profile-current-privacy { grid-column: 1; grid-row: 2; }
-  .profile-settings-current .profile-current-security { grid-column: 1; grid-row: 3; }
-  .profile-settings-current .profile-current-display { grid-column: 1; grid-row: 4; }
-  .profile-settings-current .profile-current-management { grid-column: 1; grid-row: 5; }
-  .profile-settings-current .profile-current-hero { grid-column: 2; grid-row: 1; }
-  .profile-settings-current .profile-current-actions { grid-column: 2; grid-row: 5; }
-  .profile-settings-current .profile-current-field .listing-location-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 768px) and (max-width: 1023.98px) {
-  .profile-settings-current .profile-current-hero { order: -1; }
-  .profile-settings-current .profile-current-actions { position: static; }
-}
-@media (max-width: 767.98px) {
-  .profile-settings-current .profile-current-hero { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: stretch; gap: var(--space-3); padding: var(--space-4); }
-  .profile-settings-current .profile-photo-card--preview { display: flex; align-items: center; justify-content: flex-start; gap: var(--space-4); padding: 0; text-align: left; }
-  .profile-settings-current .profile-photo-card--preview .profile-avatar-wrap,
-  .profile-settings-current .profile-photo-card--preview .profile-avatar { flex: none; width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); margin: 0; }
-  .profile-settings-current .profile-photo-card--preview .profile-photo-details { justify-items: start; text-align: left; }
-  .profile-settings-current .profile-current-preview-note { text-align: left; }
-  .profile-settings-current .profile-current-preview-stats { display: none; }
-  .profile-settings-current .profile-current-photo-row,
-  .profile-settings-current .profile-current-nickname,
-  .profile-settings-current .profile-current-location { grid-template-columns: minmax(0, 1fr); }
-  .profile-settings-current .profile-current-location > span { padding: 0; }
-  .profile-settings-current .profile-current-location > small { grid-column: 1; }
-  .profile-settings-current .profile-current-contact-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .profile-settings-current .profile-current-contact-label { grid-column: 1 / -1; }
-  .profile-settings-current .profile-current-contact-value { grid-column: 1; }
-  .profile-settings-current .profile-current-contact-row > .ui-button { grid-column: 2; }
-  .profile-settings-current .profile-current-password-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .profile-settings-current .profile-current-password-row::after { display: none; }
-  .profile-settings-current .profile-current-password-row > .ui-button { grid-column: 2; }
-  .profile-settings-current .profile-current-privacy { order: 2; }
-  .profile-settings-current .profile-current-security { order: 3; }
-  .profile-settings-current .profile-current-actions { display: flex; order: 6; }
-  .profile-settings-current .profile-current-actions .ui-button:first-child { display: none; }
-  .profile-settings-current .profile-current-actions .ui-button:last-child { width: 100%; }
+  .profile-settings-current .profile-current-field { margin-top: var(--space-4); }
+  .profile-settings-current .profile-current-field .ui-input { font-size: var(--font-size-mobile-control); }
+  .profile-settings-current .profile-current-location .listing-location-fields { grid-template-columns: minmax(0, 1fr); }
+  .profile-settings-current .profile-current-contact-row.profile-current-mobile-original { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .profile-settings-current .profile-current-contact-row > .profile-current-contact-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+  .profile-settings-current .profile-current-setting-row small { display: none; }
+  .profile-settings-current .profile-current-actions { display: none; order: 6; grid-template-columns: repeat(2, minmax(0, 1fr)); position: static; padding: var(--space-2) 0; }
+  .profile-settings-current[data-mobile-expanded="identity"] .profile-current-actions,
+  .profile-settings-current[data-mobile-expanded="security"] .profile-current-actions,
+  .profile-settings-current[data-mobile-expanded="privacy"] .profile-current-actions,
+  .profile-settings-current[data-mobile-expanded="display"] .profile-current-actions { display: grid; }
+  .profile-settings-current .profile-form-status { order: 7; }
 }
 
 /* Reference treatment keeps the existing My Page shell and column structure. */

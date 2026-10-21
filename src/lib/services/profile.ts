@@ -61,7 +61,7 @@ export async function loadServiceProfile(supabase: SupabaseClient, serviceId: st
     getSignedStorageImages("service-listing-images", galleryPaths, "gallery"),
     getSignedStorageImages("service-listing-images", logoPath ? [logoPath] : [], "card"),
     reviewerIds.length
-      ? supabase.from("profiles").select("id,display_name").in("id", reviewerIds)
+      ? supabase.from("public_member_profiles").select("id,display_name").in("id", reviewerIds)
         .then(({ data: profiles }) => new Map(((profiles ?? []) as Array<{ id: string; display_name: string | null }>).map((row) => [row.id, row.display_name])))
       : Promise.resolve(new Map<string, string | null>()),
   ]);

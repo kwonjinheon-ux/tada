@@ -5,6 +5,7 @@ import { SellerReviews } from "@/components/market/SellerReviews";
 import { SELLER_REVIEWS_PER_PAGE, sellerReviewSorts, type SellerReview, type SellerReviewSort } from "@/lib/market/seller-reviews";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
+import { getServerUser } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,6 +16,7 @@ type SellerRow = {
   avatar_path: string | null;
   rating_average?: number | string;
   rating_count?: number;
+  profile_visibility?: "public" | "members" | "trade_partners";
 };
 type ReviewRow = { id: string; score: number | string; comment: string | null; created_at: string; rater_id: string };
 type ReviewerRow = { id: string; display_name: string; avatar_path: string | null };
@@ -36,16 +38,44 @@ export default async function SellerProfilePage({ params, searchParams }: {
   const supabase = await createServerSupabaseClient();
   if (!supabase) notFound();
 
-  const { data: sellerData } = await supabase
+  const sellerResult = await supabase
     .from("market_seller_profiles")
-    .select("id,display_name,avatar_path,rating_average,rating_count")
+    .select("id,display_name,avatar_path,rating_average,rating_count,profile_visibility")
     .eq("id", sellerId)
     .maybeSingle();
-  const { data: profileData } = sellerData
+  const { data: sellerData } = sellerResult.error && ["42703", "PGRST204"].includes(sellerResult.error.code)
+    ? await supabase.from("market_seller_profiles").select("id,display_name,avatar_path,rating_average,rating_count").eq("id", sellerId).maybeSingle()
+    : sellerResult;
+  const profileResult = sellerData
     ? { data: null }
-    : await supabase.from("profiles").select("id,display_name,avatar_path").eq("id", sellerId).maybeSingle();
+    : await supabase.from("public_member_profiles").select("id,display_name,avatar_path,profile_visibility").eq("id", sellerId).maybeSingle();
+  const { data: profileData } = "error" in profileResult && profileResult.error && ["42703", "PGRST204"].includes(profileResult.error.code)
+    ? await supabase.from("public_member_profiles").select("id,display_name,avatar_path").eq("id", sellerId).maybeSingle()
+    : profileResult;
   const seller = (sellerData ?? profileData) as SellerRow | null;
   if (!seller) notFound();
+
+  const visibility = seller.profile_visibility ?? "public";
+  const viewer = visibility === "public" ? null : await getServerUser();
+  let restrictedTo: "members" | "trade_partners" | undefined;
+  if (visibility === "members" && !viewer) restrictedTo = "members";
+  if (visibility === "trade_partners" && viewer?.id !== seller.id) {
+    if (!viewer) restrictedTo = "trade_partners";
+    else {
+      const relationships = await Promise.all([
+        supabase.from("market_trade_offers").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).in("status", ["accepted", "completed"]).limit(1),
+        supabase.from("market_trade_offers").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).in("status", ["accepted", "completed"]).limit(1),
+        supabase.from("bargain_item_reservations").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).in("status", ["confirmed", "on_the_way", "picked_up"]).limit(1),
+        supabase.from("bargain_item_reservations").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).in("status", ["confirmed", "on_the_way", "picked_up"]).limit(1),
+      ]);
+      if (!relationships.some((result) => !result.error && (result.data?.length ?? 0) > 0)) restrictedTo = "trade_partners";
+    }
+  }
+
+  if (restrictedTo) {
+    const signedAvatar = seller.avatar_path ? await getSignedStorageImage("profile-avatars", seller.avatar_path, "avatar") : null;
+    return <main className="seller-public-profile"><PageContainer><SellerProfileCard seller={{ name: seller.display_name || "Tada seller", avatarUrl: signedAvatar, ratingAverage: 0, ratingCount: 0, listingCount: 0 }} restrictedTo={restrictedTo} loginHref={!viewer ? `/login?redirectTo=${encodeURIComponent(`/market/sellers/${sellerId}`)}` : undefined} /></PageContainer></main>;
+  }
 
   const sort = readSort(query.sort);
   const requestedPage = Number(readParam(query.page));

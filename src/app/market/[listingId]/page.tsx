@@ -89,7 +89,7 @@ async function getListingDetail(
       .eq("id", listing.owner_id)
       .maybeSingle(),
     supabase
-      .from("profiles")
+      .from("public_member_profiles")
       .select("id,display_name,avatar_path")
       .eq("id", listing.owner_id)
       .maybeSingle(),

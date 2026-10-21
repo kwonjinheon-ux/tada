@@ -12,13 +12,32 @@ const MAX_ZOOM = 4;
 
 type Transform = { x: number; y: number; zoom: number; rotation: number };
 type Point = { x: number; y: number };
+export type ProfilePhotoDraft = { blob: Blob; url: string };
+
+export async function persistProfilePhoto(blob: Blob) {
+  const supabase = createBrowserSupabaseClient();
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error("Please sign in again.");
+  const path = `${userData.user.id}/avatar.jpg`;
+  const { error: uploadError } = await supabase.storage.from("profile-avatars").upload(path, blob, { cacheControl: "3600", contentType: "image/jpeg", upsert: true });
+  if (uploadError) throw uploadError;
+  const { error: profileError } = await supabase.from("profiles").update({ avatar_path: path }).eq("id", userData.user.id);
+  if (profileError) throw profileError;
+  const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
+  if (metadataError) throw metadataError;
+  const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(path, 3600);
+  const updatedUrl = signed?.signedUrl ? `${signed.signedUrl}&v=${Date.now()}` : null;
+  window.dispatchEvent(new CustomEvent("profile-avatar-updated", { detail: updatedUrl }));
+  return updatedUrl;
+}
 
 const distance = (a: Point, b: Point) => Math.hypot(b.x - a.x, b.y - a.y);
 const angle = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 const centre = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel, presentation = "standard", locale = "en" }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null; presentation?: "standard" | "editor" | "preview"; locale?: "en" | "ko" }) {
+export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel, presentation = "standard", locale = "en", previewUrl, onDraftChange }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null; presentation?: "standard" | "editor" | "preview"; locale?: "en" | "ko"; previewUrl?: string | null; onDraftChange?: (draft: ProfilePhotoDraft) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorImageRef = useRef<HTMLImageElement>(null);
@@ -31,6 +50,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const avatarFallback = getAvatarFallback(displayName);
+  const visibleAvatarUrl = previewUrl ?? avatarUrl;
 
   useEffect(() => {
     if (!initialPath) return;
@@ -44,6 +64,10 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
     window.addEventListener("profile-avatar-updated", syncAvatar);
     return () => window.removeEventListener("profile-avatar-updated", syncAvatar);
   }, []);
+
+  useEffect(() => {
+    if (onDraftChange && !previewUrl) setStatus("");
+  }, [onDraftChange, previewUrl]);
 
   useEffect(() => () => {
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
@@ -137,7 +161,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
     const image = editorImageRef.current;
     if (!editorUrl || !image?.complete || !image.naturalWidth) return;
     setIsUploading(true);
-    setStatus("Saving photo…");
+    setStatus(onDraftChange ? "Preparing photo…" : "Saving photo…");
 
     try {
       const canvas = document.createElement("canvas");
@@ -158,24 +182,13 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
       if (!blob) throw new Error("Unable to prepare the image.");
-
-      const supabase = createBrowserSupabaseClient();
-      if (!supabase) throw new Error("Supabase is not configured.");
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) throw new Error("Please sign in again.");
-      const path = `${userData.user.id}/avatar.jpg`;
-      const { error: uploadError } = await supabase.storage.from("profile-avatars").upload(path, blob, { cacheControl: "3600", contentType: "image/jpeg", upsert: true });
-      if (uploadError) throw uploadError;
-      const { error: profileError } = await supabase.from("profiles").update({ avatar_path: path }).eq("id", userData.user.id);
-      if (profileError) throw profileError;
-      const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
-      if (metadataError) throw metadataError;
-      const { data: signed } = await supabase.storage.from("profile-avatars").createSignedUrl(path, 3600);
-      const updatedUrl = signed?.signedUrl ? `${signed.signedUrl}&v=${Date.now()}` : null;
-      setAvatarUrl(updatedUrl);
-      window.dispatchEvent(new CustomEvent("profile-avatar-updated", { detail: updatedUrl }));
+      if (onDraftChange) {
+        onDraftChange({ blob, url: URL.createObjectURL(blob) });
+      } else {
+        setAvatarUrl(await persistProfilePhoto(blob));
+      }
       closeEditor();
-      setStatus("Photo updated successfully.");
+      setStatus(onDraftChange ? (locale === "ko" ? "사진이 준비됐어요. 변경사항 저장을 눌러 적용하세요." : "Photo ready. Save changes to apply it.") : "Photo updated successfully.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to save the photo.");
     } finally {
@@ -187,13 +200,13 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
     <div className={`profile-photo-card profile-photo-card--${presentation}`}>
       {presentation !== "preview" ? <input ref={inputRef} className="profile-photo-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={selectPhoto} /> : null}
       <div className="profile-avatar-wrap">
-        {presentation === "preview" ? <div className="profile-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}</div> : <button className="profile-avatar" type="button" aria-label={avatarUrl ? "Adjust profile photo" : "Upload profile photo"} onClick={() => avatarUrl ? openEditor(avatarUrl) : inputRef.current?.click()}>
-          {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}
+        {presentation === "preview" || presentation === "editor" ? <div className="profile-avatar" aria-hidden="true">{visibleAvatarUrl ? <img src={visibleAvatarUrl} alt="" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}</div> : <button className="profile-avatar" type="button" aria-label={visibleAvatarUrl ? "Adjust profile photo" : "Upload profile photo"} onClick={() => visibleAvatarUrl ? openEditor(visibleAvatarUrl) : inputRef.current?.click()}>
+          {visibleAvatarUrl ? <img src={visibleAvatarUrl} alt="Your profile" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}
         </button>}
-        {presentation !== "preview" ? <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button> : null}
+        {presentation === "standard" ? <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button> : null}
       </div>
       <div className="profile-photo-details">
-        {presentation === "editor" ? <><button className="ui-button ui-button--secondary ui-button--sm" type="button" disabled={isUploading} onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" aria-hidden="true" />{locale === "ko" ? "사진 변경" : "Change photo"}</button><p className="profile-photo-help">JPG, PNG, GIF, WEBP · {locale === "ko" ? "최대 5MB" : "Max 5MB"}</p></> : <>
+        {presentation === "editor" ? <button className="profile-photo-change" type="button" disabled={isUploading} onClick={() => inputRef.current?.click()}>{locale === "ko" ? "사진 변경" : "Change photo"}</button> : <>
           <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong>{presentation === "standard" ? <span>Member</span> : null}</div>
           {presentation === "standard" && email ? <p className="profile-photo-email">{email}</p> : null}
           {locationLabel && <p className="profile-photo-location"><i className="ms ms-location-on" aria-hidden="true" /> {locationLabel}</p>}
@@ -204,9 +217,9 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
       </div>
 
       {editorUrl && (
-        <DialogOverlay className="avatar-editor-backdrop" aria-label="Adjust profile photo" onClose={closeEditor}>
+        <DialogOverlay className="avatar-editor-backdrop" aria-label={locale === "ko" ? "프로필 사진 조정" : "Adjust profile photo"} onClose={closeEditor}>
           <section className="avatar-editor">
-            <div className="avatar-editor-heading"><h2>Adjust profile photo</h2><button type="button" aria-label="Close photo editor" onClick={closeEditor}><i className="ms ms-close" /></button></div>
+            <div className="avatar-editor-heading"><h2>{locale === "ko" ? "프로필 사진 조정" : "Adjust profile photo"}</h2><button type="button" aria-label={locale === "ko" ? "사진 편집기 닫기" : "Close photo editor"} onClick={closeEditor}><i className="ms ms-close" /></button></div>
             <div
               ref={previewRef}
               className="avatar-editor-preview"
@@ -220,7 +233,7 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
               <span className="avatar-editor-frame" aria-hidden="true" />
             </div>
             <p className="avatar-editor-hint"><i className="ms ms-touch-app" /> Drag to move · pinch to zoom · twist to rotate</p>
-            <div className="avatar-editor-actions"><button className="profile-outline-button" type="button" onClick={closeEditor}>Cancel</button><button className="profile-primary-button" type="button" disabled={isUploading} onClick={() => void saveCroppedAvatar()}>{isUploading ? "Saving…" : "Save photo"}</button></div>
+            <div className="avatar-editor-actions"><button className="profile-outline-button" type="button" onClick={closeEditor}>{locale === "ko" ? "취소" : "Cancel"}</button><button className="profile-primary-button" type="button" disabled={isUploading} onClick={() => void saveCroppedAvatar()}>{isUploading ? (locale === "ko" ? "준비 중…" : "Preparing…") : onDraftChange ? (locale === "ko" ? "이 사진 사용" : "Use this photo") : (locale === "ko" ? "사진 저장" : "Save photo")}</button></div>
           </section>
         </DialogOverlay>
       )}

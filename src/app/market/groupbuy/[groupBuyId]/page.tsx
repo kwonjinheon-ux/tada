@@ -13,7 +13,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
   if (!data) notFound();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: sellerProfile } = await supabase
-    .from("profiles")
+    .from("public_member_profiles")
     .select("display_name,avatar_path,region_city,region_suburb")
     .eq("id", data.owner_id)
     .maybeSingle();

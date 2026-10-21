@@ -36,6 +36,21 @@ export function TextSizeControls({ value, onChange, label }: TextSizeControlsPro
   );
 }
 
+export function TextSizePreferencePreview({ value, onChange, locale }: { value: number; onChange: (change: -1 | 1) => void; locale: string }) {
+  const isKorean = locale === "ko";
+  return (
+    <div className="profile-description-text-size-preview">
+      <div>
+        <span aria-live="polite">{isKorean ? "미리보기" : "Preview"} · {Math.round(descriptionTextScale(value) * 100)}%</span>
+        <p style={{ "--text-scale": descriptionTextScale(value) } as CSSProperties}>
+          {isKorean ? "상품 설명이 이 크기로 표시됩니다." : "Listing descriptions will appear at this size."}
+        </p>
+      </div>
+      <TextSizeControls value={value} label={isKorean ? "상품 설명 글씨 크기" : "Listing description text size"} onChange={onChange} />
+    </div>
+  );
+}
+
 export function TextSizeSection({ title, children, headerAction, className, sizeStep = 0 }: TextSizeSectionProps) {
   const textScale = descriptionTextScale(sizeStep);
 
