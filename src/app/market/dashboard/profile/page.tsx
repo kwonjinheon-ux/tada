@@ -17,11 +17,18 @@ export default async function ProfileSettingsPage() {
     : profileResult;
   const categorizedProfile = profile as (typeof profile & { main_location?: string | null; sub_location?: string | null; locality?: string | null; raw_suburb?: string | null; region?: string | null }) | null;
   const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Tada User";
+  const previewMetrics = supabase ? await Promise.all([
+    supabase.from("market_trade_offers").select("id", { count: "exact", head: true }).eq("seller_id", user.id).eq("status", "completed"),
+    supabase.from("market_trade_offers").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).eq("status", "completed"),
+    supabase.from("market_seller_ratings").select("id", { count: "exact", head: true }).eq("seller_id", user.id),
+  ]) : null;
 
   return (
       <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
           email={user.email ?? ""}
+          userId={user.id}
+          previewCounts={previewMetrics?.every((result) => !result.error) ? { sold: previewMetrics[0].count ?? 0, bought: previewMetrics[1].count ?? 0, reviews: previewMetrics[2].count ?? 0 } : null}
           emailVerified={Boolean(user.email_confirmed_at)}
           initialVerifiedPhone={user.phone_confirmed_at ? user.phone ?? "" : ""}
           avatarPath={user.user_metadata?.avatar_path}

@@ -18,7 +18,7 @@ const angle = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 const centre = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null }) {
+export function ProfilePhotoUploader({ initialPath, displayName, email, memberSince, locationLabel, presentation = "standard", locale = "en" }: { initialPath?: string | null; displayName?: string | null; email?: string; memberSince?: string | null; locationLabel?: string | null; presentation?: "standard" | "editor" | "preview"; locale?: "en" | "ko" }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorImageRef = useRef<HTMLImageElement>(null);
@@ -38,6 +38,12 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
     if (!supabase) return;
     void supabase.storage.from("profile-avatars").createSignedUrl(initialPath, 3600).then(({ data }) => setAvatarUrl(data?.signedUrl ?? null));
   }, [initialPath]);
+
+  useEffect(() => {
+    const syncAvatar = (event: Event) => setAvatarUrl((event as CustomEvent<string | null>).detail);
+    window.addEventListener("profile-avatar-updated", syncAvatar);
+    return () => window.removeEventListener("profile-avatar-updated", syncAvatar);
+  }, []);
 
   useEffect(() => () => {
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
@@ -178,20 +184,22 @@ export function ProfilePhotoUploader({ initialPath, displayName, email, memberSi
   };
 
   return (
-    <div className="profile-photo-card">
-      <input ref={inputRef} className="profile-photo-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={selectPhoto} />
+    <div className={`profile-photo-card profile-photo-card--${presentation}`}>
+      {presentation !== "preview" ? <input ref={inputRef} className="profile-photo-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={selectPhoto} /> : null}
       <div className="profile-avatar-wrap">
-        <button className="profile-avatar" type="button" aria-label={avatarUrl ? "Adjust profile photo" : "Upload profile photo"} onClick={() => avatarUrl ? openEditor(avatarUrl) : inputRef.current?.click()}>
+        {presentation === "preview" ? <div className="profile-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}</div> : <button className="profile-avatar" type="button" aria-label={avatarUrl ? "Adjust profile photo" : "Upload profile photo"} onClick={() => avatarUrl ? openEditor(avatarUrl) : inputRef.current?.click()}>
           {avatarUrl ? <img src={avatarUrl} alt="Your profile" /> : <span className="profile-avatar-placeholder"><i className="ms ms-person" /></span>}
-        </button>
-        <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button>
+        </button>}
+        {presentation !== "preview" ? <button className="profile-camera-button" type="button" disabled={isUploading} aria-label="Upload a new profile photo" onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" /></button> : null}
       </div>
       <div className="profile-photo-details">
-        <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong><span>Member</span></div>
-        {email && <p className="profile-photo-email">{email}</p>}
-        {locationLabel && <p className="profile-photo-location"><i className="ms ms-location-on" aria-hidden="true" /> {locationLabel}</p>}
-        {memberSince && <p className="profile-member-since">Joined {memberSince}</p>}
-        <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 5MB</p>
+        {presentation === "editor" ? <><button className="ui-button ui-button--secondary ui-button--sm" type="button" disabled={isUploading} onClick={() => inputRef.current?.click()}><i className="ms ms-photo-camera" aria-hidden="true" />{locale === "ko" ? "사진 변경" : "Change photo"}</button><p className="profile-photo-help">JPG, PNG, GIF, WEBP · {locale === "ko" ? "최대 5MB" : "Max 5MB"}</p></> : <>
+          <div className="profile-photo-identity"><strong>{displayName || avatarFallback.initial}</strong>{presentation === "standard" ? <span>Member</span> : null}</div>
+          {presentation === "standard" && email ? <p className="profile-photo-email">{email}</p> : null}
+          {locationLabel && <p className="profile-photo-location"><i className="ms ms-location-on" aria-hidden="true" /> {locationLabel}</p>}
+          {presentation === "standard" && memberSince ? <p className="profile-member-since">Joined {memberSince}</p> : null}
+          {presentation === "standard" ? <p className="profile-photo-help">JPG, GIF, PNG or WEBP · Max 5MB</p> : null}
+        </>}
         {status && <p className="profile-upload-status" role="status">{status}</p>}
       </div>
 
