@@ -49,10 +49,11 @@ export function GroupBuyDetailClient({ groupBuy, isOwner = false }: { groupBuy: 
     <section className="market-results groupbuy-detail" aria-label={groupBuy.title}>
       <MarketBreadcrumb />
 
-      <header className="groupbuy-hero ui-card">
+      <header className={`groupbuy-hero ui-card ${isClosed ? "is-closed" : ""}`}>
         <div className="groupbuy-hero-media">
           <ImageGallery images={[{ src: groupBuy.coverImage, alt: groupBuy.coverAlt }]} priority />
           <span className={`groupbuy-status is-${groupBuy.status}`}>{text.status[groupBuy.status]}</span>
+          {isClosed ? <span className="product-sold-out">{text.completed}</span> : null}
         </div>
         <div className="groupbuy-hero-copy">
           <h1>{groupBuy.title}</h1>
