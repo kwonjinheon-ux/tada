@@ -84,8 +84,6 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
   const dirty = Boolean(photoDraft) || name !== snapshot.name || JSON.stringify(location) !== JSON.stringify(snapshot.location) || visibility !== snapshot.visibility || textStep !== snapshot.textStep;
   const busy = saving || securityBusy || localeSaving || loggingOut || deleting;
-  // Match the saved profile checks on My Page; unsaved edits do not inflate this value.
-  const profileProgress = Math.round([Boolean(snapshot.name.trim() && (savedAvatar || avatarPath)), Boolean(verifiedPhone), Boolean(snapshot.location.mainLocation || snapshot.location.subLocation)].filter(Boolean).length / 3 * 100);
   const visibilityLabel = !profileVisibilityAvailable ? say("Setting unavailable", "설정 확인 불가") : visibility === "members" ? say("Tada members only", "타다 회원만") : visibility === "trade_partners" ? say("Neighbours in an active trade", "거래 중인 이웃들만") : say("Everyone", "전체 공개");
   const authProviderName = authProvider === "google" ? "Google" : authProvider === "apple" ? "Apple" : authProvider === "facebook" ? "Facebook" : authProvider === "github" ? "GitHub" : authProvider === "azure" ? "Microsoft" : null;
   const message = (section: keyof typeof feedback, text: string, error = false) => setFeedback((current) => ({ ...current, [section]: { text, error } }));
@@ -329,7 +327,20 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
         </SettingsSection>
       </fieldset>
       <aside className="profile-editor-rail" aria-label={say("Profile preview and save actions", "프로필 미리보기와 저장")}>
-        <div className="ui-panel profile-editor-preview"><h2>{say("My profile preview", "내 프로필 미리보기")}</h2><ProfileIdentitySummary name={name} avatarUrl={photoDraft?.url ?? savedAvatar} location={locationLabel} joinedAt={memberSince} onPhotoEdit={() => document.getElementById(PHOTO_INPUT_ID)?.click()} /><div className="profile-editor-stats"><div><strong>{profileProgress}%</strong><div className="seller-trust-battery profile-editor-charge-battery" role="progressbar" aria-label={say("Profile setup progress", "프로필 설정 진행률")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={profileProgress}><span className="seller-trust-battery-shell"><span className="seller-trust-battery-fill" style={{ width: `${profileProgress}%` }} /></span><span className="seller-trust-battery-tip" aria-hidden="true" /></div><span>{say("Charging Tada", "타다 충전 중")}</span><small>{say("Profile setup progress", "프로필 설정 진행률")}</small></div><div><strong>{completedPurchaseCount === null ? "—" : `${completedPurchaseCount}${ko ? "건" : ""}`}</strong><span>{say("Purchases", "구매")}</span></div><div><strong>{completedSaleCount === null ? "—" : `${completedSaleCount}${ko ? "건" : ""}`}</strong><span>{say("Sales", "판매")}</span></div></div></div>
+        <div className="ui-panel profile-editor-preview">
+          <h2>{say("My profile preview", "내 프로필 미리보기")}</h2>
+          <ProfileIdentitySummary name={name} avatarUrl={photoDraft?.url ?? savedAvatar} location={locationLabel} joinedAt={memberSince} onPhotoEdit={() => document.getElementById(PHOTO_INPUT_ID)?.click()} />
+          <div className="profile-editor-stats">
+            <div>
+              <div className="my-page-ring profile-editor-charge-ring" style={{ "--charge": "20%" } as CSSProperties} role="img" aria-label={say("Starting Tada Charge: 20 percent", "시작 충전도 20퍼센트")}>
+                <span><i className="ms ms-bolt" aria-hidden="true" /><strong>20%</strong></span>
+              </div>
+              <span>{say("Starting Charge", "시작 충전도")}</span>
+            </div>
+            <div><strong>{completedPurchaseCount === null ? "—" : `${completedPurchaseCount}${ko ? "건" : ""}`}</strong><span>{say("Purchases", "구매")}</span></div>
+            <div><strong>{completedSaleCount === null ? "—" : `${completedSaleCount}${ko ? "건" : ""}`}</strong><span>{say("Sales", "판매")}</span></div>
+          </div>
+        </div>
         <div className="profile-editor-actions" data-visible={dirty || saving}><Button variant="secondary" disabled={!dirty || busy} onClick={discard}>{t("cancel")}</Button><Button variant="primary" disabled={!dirty || busy} onClick={() => void save()}>{saving ? t("saving") : t("saveChanges")}</Button></div>
         <div className="profile-editor-save-feedback">{notice("profile")}{dirty && !feedback.profile ? <p>{say("You have unsaved changes.", "저장하지 않은 변경사항이 있어요.")}</p> : null}</div>
       </aside>

@@ -9266,14 +9266,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .profile-editor-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-line-soft); }
 .profile-editor-stats > div { display: grid; align-content: start; justify-items: center; gap: var(--space-1); min-width: 0; text-align: center; }
 .profile-editor-stats > div + div { align-content: center; border-left: 1px solid var(--color-line-soft); }
-.seller-trust-battery.profile-editor-charge-battery { --trust-fill: var(--color-success); justify-self: center; width: min(100%, calc(var(--space-12) * 2)); margin: 0 0 var(--space-1); }
-.profile-editor-charge-battery .seller-trust-battery-shell { box-sizing: border-box; height: calc(var(--control-h-xs) / 5); padding: 0; border-width: 1px; border-radius: var(--radius-pill); }
-.profile-editor-charge-battery .seller-trust-battery-tip { width: calc(var(--space-3) / 5); height: calc(var(--space-3) / 5); border-radius: var(--radius-pill); }
-.profile-editor-charge-battery .seller-trust-battery-fill { min-width: 0; }
+.profile-editor-charge-ring.my-page-ring { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); padding: var(--space-1); }
+.profile-editor-charge-ring.my-page-ring .ms { font-size: var(--text-lg); }
+.profile-editor-charge-ring.my-page-ring strong { font-size: var(--text-lg); line-height: 1; }
 .profile-editor-stats strong { color: var(--color-ink); font-size: var(--text-xl); font-weight: var(--weight-bold); }
-.profile-editor-stats > div:first-child strong { color: var(--color-success); }
+.profile-editor-stats .profile-editor-charge-ring strong { color: var(--color-ink); }
 .profile-editor-stats span { color: var(--color-muted); font-size: var(--text-sm); }
-.profile-editor-stats small { color: var(--color-muted); font-size: var(--text-xs); }
+.profile-editor-stats .profile-editor-charge-ring > span { color: var(--color-ink); }
 .profile-editor-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .profile-editor-actions .ui-button { width: 100%; min-width: 0; min-height: var(--control-h-xl); }
 .profile-editor-actions > .ui-button--secondary { background: var(--color-surface); }
@@ -9339,11 +9338,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .profile-editor-actions[data-visible="true"] { display: grid; }
   .profile-editor-save-feedback { font-size: var(--text-sm); }
   .profile-editor-stats { padding-top: var(--space-2); margin-top: var(--space-2); }
-  .profile-editor-stats > div { display: flex; align-items: baseline; justify-content: center; gap: var(--space-2); }
-  .profile-editor-stats > div:first-child { display: grid; justify-items: center; gap: var(--space-1); }
+  .profile-editor-stats > div { align-content: center; }
   .profile-editor-stats strong { font-size: var(--text-lg); }
   .profile-editor-stats span { font-size: var(--text-xs); }
-  .profile-editor-stats small { display: none; }
   .profile-editor-info-row { align-items: start; }
 }
 @media (max-width: 360px) {
