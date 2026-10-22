@@ -3,6 +3,7 @@ import { MarketNotificationsClient, type MarketNotification } from "@/components
 import { defaultNotificationPreferences, type NotificationPreferences } from "@/components/notifications/NotificationSettingsDialog";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const metadata = { title: "Notifications" };
 
@@ -57,8 +58,40 @@ export default async function MarketNotificationsPage() {
       .eq("user_id", user.id).order("created_at", { ascending: false }).limit(100)).data
     : null;
   const preferences = { ...defaultNotificationPreferences, ...(preferenceResult.data ?? {}) } as NotificationPreferences;
-  const notifications = ((notificationResult.data ?? fallbackRows ?? []) as NotificationRow[]).map((notification) => {
+  const rows = (notificationResult.data ?? fallbackRows ?? []) as NotificationRow[];
+  const listingIds = [...new Set(rows.flatMap((row) => row.listing_id ? [row.listing_id] : []))];
+  const postIds = [...new Set(rows.flatMap((row) => row.community_post_id ? [row.community_post_id] : []))];
+  const serviceIds = [...new Set(rows.flatMap((row) => row.service_listing_id ? [row.service_listing_id] : []))];
+  const [marketPhotos, postPhotos, servicePhotos] = supabase ? await Promise.all([
+    listingIds.length ? supabase.from("market_listing_photos").select("listing_id,storage_path,is_primary,display_order").in("listing_id", listingIds).order("display_order") : Promise.resolve({ data: [] }),
+    postIds.length ? supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", postIds).order("display_order") : Promise.resolve({ data: [] }),
+    serviceIds.length ? supabase.from("service_listing_photos").select("listing_id,storage_path,photo_kind,display_order").in("listing_id", serviceIds).order("display_order") : Promise.resolve({ data: [] }),
+  ]) : [{ data: [] }, { data: [] }, { data: [] }];
+  const marketPaths = new Map<string, string>();
+  for (const photo of marketPhotos.data ?? []) {
+    if (photo.storage_path && (!marketPaths.has(photo.listing_id) || photo.is_primary)) marketPaths.set(photo.listing_id, photo.storage_path);
+  }
+  const postPaths = new Map<string, string>();
+  for (const photo of postPhotos.data ?? []) {
+    if (photo.storage_path && !postPaths.has(photo.post_id)) postPaths.set(photo.post_id, photo.storage_path);
+  }
+  const servicePaths = new Map<string, { path: string; kind: string | null }>();
+  for (const photo of servicePhotos.data ?? []) {
+    const current = servicePaths.get(photo.listing_id);
+    if (photo.storage_path && (!current || (current.kind === "logo" && photo.photo_kind !== "logo"))) {
+      servicePaths.set(photo.listing_id, { path: photo.storage_path, kind: photo.photo_kind });
+    }
+  }
+  const [marketImages, postImages, serviceImages] = await Promise.all([
+    getSignedStorageImages("market-listing-images", [...marketPaths.values()], "card"),
+    getSignedStorageImages("community-post-images", [...postPaths.values()], "card"),
+    getSignedStorageImages("service-listing-images", [...servicePaths.values()].map((photo) => photo.path), "card"),
+  ]);
+  const notifications = rows.map((notification) => {
     const context = getNotificationContext(notification.metadata);
+    const marketPath = marketPaths.get(notification.listing_id ?? "");
+    const postPath = postPaths.get(notification.community_post_id ?? "");
+    const servicePath = servicePaths.get(notification.service_listing_id ?? "")?.path;
     return {
       id: notification.id,
       type: notification.type,
@@ -72,6 +105,10 @@ export default async function MarketNotificationsPage() {
       listingId: notification.listing_id,
       communityPostId: notification.community_post_id ?? null,
       serviceListingId: notification.service_listing_id ?? null,
+      imageUrl: (marketPath ? marketImages.get(marketPath) : null)
+        ?? (postPath ? postImages.get(postPath) : null)
+        ?? (servicePath ? serviceImages.get(servicePath) : null)
+        ?? null,
       readAt: notification.read_at,
       createdAt: notification.created_at,
     };

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Fragment, useMemo, useState } from "react";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -22,6 +23,7 @@ export type MarketNotification = {
   listingId: string | null;
   communityPostId: string | null;
   serviceListingId: string | null;
+  imageUrl: string | null;
   readAt: string | null;
   createdAt: string;
 };
@@ -116,6 +118,7 @@ function mapRealtimeNotification(row: Record<string, unknown>): MarketNotificati
     listingId: typeof row.listing_id === "string" ? row.listing_id : null,
     communityPostId: typeof row.community_post_id === "string" ? row.community_post_id : null,
     serviceListingId: typeof row.service_listing_id === "string" ? row.service_listing_id : null,
+    imageUrl: null,
     readAt: typeof row.read_at === "string" ? row.read_at : null,
     createdAt: typeof row.created_at === "string" ? row.created_at : new Date().toISOString(),
   };
@@ -149,6 +152,51 @@ function NotificationsAside({ ko }: { ko: boolean }) {
   </aside>;
 }
 
+function NotificationHeaderActions({
+  ko, unreadCount, notificationCount, isMarkingAll, isDeletingAll, isConfirmingDeleteAll,
+  onMarkAllRead, onDeleteAll, onConfirmDelete, onOpenSettings,
+}: {
+  ko: boolean;
+  unreadCount: number;
+  notificationCount: number;
+  isMarkingAll: boolean;
+  isDeletingAll: boolean;
+  isConfirmingDeleteAll: boolean;
+  onMarkAllRead: () => void;
+  onDeleteAll: () => void;
+  onConfirmDelete: (confirm: boolean) => void;
+  onOpenSettings: () => void;
+}) {
+  const mobileMenu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const closeOnOutside = (event: PointerEvent) => {
+      if (mobileMenu.current && !mobileMenu.current.contains(event.target as Node)) mobileMenu.current.open = false;
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && mobileMenu.current?.open) mobileMenu.current.open = false;
+    };
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => { document.removeEventListener("pointerdown", closeOnOutside); document.removeEventListener("keydown", closeOnEscape); };
+  }, []);
+  const closeMenu = () => { if (mobileMenu.current) mobileMenu.current.open = false; };
+  const renderActions = () => <>
+    <Button variant="secondary" size="sm" className="bulk-action-button" disabled={!unreadCount || isMarkingAll} onClick={() => { closeMenu(); onMarkAllRead(); }}><i className="ms ms-done-all" aria-hidden="true" />{ko ? "모두 읽음 처리" : "Mark all read"}</Button>
+    {isConfirmingDeleteAll ? <>
+      <Button variant="secondary" size="sm" className="bulk-action-button is-danger" disabled={isDeletingAll} onClick={() => { closeMenu(); onDeleteAll(); }}><i className="ms ms-delete" aria-hidden="true" />{ko ? "모두 삭제할까요?" : "Delete all?"}</Button>
+      <Button variant="secondary" size="sm" className="bulk-action-button" disabled={isDeletingAll} onClick={() => { closeMenu(); onConfirmDelete(false); }}><i className="ms ms-close" aria-hidden="true" />{ko ? "취소" : "Cancel"}</Button>
+    </> : <Button variant="secondary" size="sm" className="bulk-action-button is-danger" disabled={!notificationCount} onClick={() => onConfirmDelete(true)}><i className="ms ms-delete" aria-hidden="true" />{ko ? "모두 삭제" : "Delete all"}</Button>}
+    <Button variant="secondary" size="sm" className="bulk-action-button" onClick={() => { closeMenu(); onOpenSettings(); }}><i className="ms ms-settings" aria-hidden="true" />{ko ? "알림 설정" : "Notification settings"}</Button>
+  </>;
+  return <div className="notifications-heading-actions">
+    <div className="notifications-desktop-actions">{renderActions()}</div>
+    <details className="notifications-mobile-actions notifications-more" ref={mobileMenu}>
+      <summary className="icon-button" aria-label={ko ? "알림 작업 더보기" : "More notification actions"}><i className="ms ms-more-vert" aria-hidden="true" /></summary>
+      <div className="ui-panel notifications-more-menu">{renderActions()}</div>
+    </details>
+  </div>;
+}
+
 export function MarketNotificationsClient({
   initialNotifications,
   initialPreferences,
@@ -161,6 +209,7 @@ export function MarketNotificationsClient({
   userId: string;
 }) {
   const { t, locale } = useLanguage();
+  const router = useRouter();
   const legacy = usePathname().endsWith("/notifications-v0");
   const ko = locale === "ko";
   const [notifications, setNotifications] = useState(initialNotifications);
@@ -174,7 +223,10 @@ export function MarketNotificationsClient({
   const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unreadCount = notifications.filter((notification) => !notification.readAt).length;
+
+  useEffect(() => { setNotifications(initialNotifications); }, [initialNotifications]);
 
   const updatePreference = async (key: NotificationPreferenceKey, enabled: boolean) => {
     if (!settingsAvailable || savingPreference) return;
@@ -204,19 +256,21 @@ export function MarketNotificationsClient({
         const notification = mapRealtimeNotification(payload.new as Record<string, unknown>);
         if (!notification) return;
         setNotifications((current) => current.some((item) => item.id === notification.id) ? current : [notification, ...current]);
+        if (refreshTimer.current) clearTimeout(refreshTimer.current);
+        refreshTimer.current = setTimeout(() => router.refresh(), 750);
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, (payload) => {
         const notification = mapRealtimeNotification(payload.new as Record<string, unknown>);
         if (!notification) return;
-        setNotifications((current) => current.map((item) => item.id === notification.id ? notification : item));
+        setNotifications((current) => current.map((item) => item.id === notification.id ? { ...notification, imageUrl: item.imageUrl } : item));
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "market_notifications" }, (payload) => {
         const id = (payload.old as { id?: string }).id;
         if (id) setNotifications((current) => current.filter((item) => item.id !== id));
       })
       .subscribe();
-    return () => { void supabase.removeChannel(channel).catch(() => undefined); };
-  }, [userId]);
+    return () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); void supabase.removeChannel(channel).catch(() => undefined); };
+  }, [router, userId]);
 
   const visibleNotifications = useMemo(() => notifications.filter((notification) => {
     if (filter === "unread") return !notification.readAt;
@@ -296,11 +350,18 @@ export function MarketNotificationsClient({
     return <div className="dashboard-content notifications-content account-modern account-notifications notifications-redesign">
       <header className="notifications-redesign-intro">
         <div><h1>{t("notifications")}</h1><p>{ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."}</p></div>
-        <div className="notifications-heading-actions">
-          <Button variant="secondary" size="sm" disabled={!unreadCount || isMarkingAll} onClick={() => void markAllRead()}><i className="ms ms-done-all" aria-hidden="true" />{t("markAllRead")}</Button>
-          <details className="notifications-more"><summary aria-label={ko ? "알림 더 보기" : "More notification actions"}><i className="ms ms-more-vert" aria-hidden="true" /></summary><div className="ui-panel notifications-more-menu">{isConfirmingDeleteAll ? <><p>{ko ? "모든 알림을 삭제할까요?" : "Delete all notifications?"}</p><Button variant="danger" size="sm" disabled={isDeletingAll} onClick={() => void deleteAll()}>{t("deleteAllConfirm")}</Button><Button variant="ghost" size="sm" onClick={() => setIsConfirmingDeleteAll(false)}>{t("cancel")}</Button></> : <Button variant="ghost" size="sm" disabled={!notifications.length} onClick={() => setIsConfirmingDeleteAll(true)}><i className="ms ms-delete" aria-hidden="true" />{t("deleteAll")}</Button>}</div></details>
-          <Button variant="secondary" size="sm" onClick={() => { setSettingsError(null); setSettingsOpen(true); }}><i className="ms ms-settings" aria-hidden="true" />{ko ? "알림 설정" : "Settings"}</Button>
-        </div>
+        <NotificationHeaderActions
+          ko={ko}
+          unreadCount={unreadCount}
+          notificationCount={notifications.length}
+          isMarkingAll={isMarkingAll}
+          isDeletingAll={isDeletingAll}
+          isConfirmingDeleteAll={isConfirmingDeleteAll}
+          onMarkAllRead={() => void markAllRead()}
+          onDeleteAll={() => void deleteAll()}
+          onConfirmDelete={setIsConfirmingDeleteAll}
+          onOpenSettings={() => { setSettingsError(null); setSettingsOpen(true); }}
+        />
       </header>
       {actionError ? <p className="notifications-action-error" role="alert">{actionError}<Button variant="ghost" size="sm" onClick={() => setActionError(null)}>{ko ? "닫기" : "Dismiss"}</Button></p> : null}
       <div className="notifications-redesign-layout">
@@ -315,7 +376,7 @@ export function MarketNotificationsClient({
               {group.key === "earlier" ? <NotificationsServicePromo ko={ko} inline /> : null}
               <section className="notifications-group">
                 <h2>{group.title}</h2>
-                <div className="notifications-group-list">{group.items.map((notification) => <Link className={`notification-row ${notification.groupUnreadCount ? "is-unread" : ""}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.groupIds)}><span className={`notification-icon is-${notification.type}`}><i className={`ms ${iconByType[notification.type]}`} aria-hidden="true" /></span><span className="notification-copy"><strong>{displayTitle(notification, ko)}</strong>{notification.type === "message" && notification.listingTitle ? <small>{notification.listingTitle}</small> : null}{notification.type === "community" && typeof notification.metadata.postTitle === "string" ? <small>{notification.metadata.postTitle}</small> : null}{notification.body ? <small>{notification.body}</small> : null}</span><time suppressHydrationWarning>{relativeTime(notification.createdAt, ko)}</time>{notification.groupUnreadCount ? <i className="notification-unread-dot" aria-label={ko ? "읽지 않음" : "Unread"} /> : null}<i className="ms ms-chevron-right notification-chevron" aria-hidden="true" /></Link>)}</div>
+                <div className="notifications-group-list">{group.items.map((notification) => <Link className={`notification-row ${notification.groupUnreadCount ? "is-unread" : ""} ${notification.imageUrl ? "has-thumbnail" : ""}`} href={notification.href} key={notification.id} onClick={() => void markRead(notification.groupIds)}><span className={`notification-icon is-${notification.type}`}><i className={`ms ${iconByType[notification.type]}`} aria-hidden="true" /></span><span className="notification-copy"><strong>{displayTitle(notification, ko)}</strong>{notification.type === "message" && notification.listingTitle ? <small>{notification.listingTitle}</small> : null}{notification.type === "community" && typeof notification.metadata.postTitle === "string" ? <small>{notification.metadata.postTitle}</small> : null}{notification.body ? <small>{notification.body}</small> : null}</span><span className="notification-thumbnail-slot">{notification.imageUrl ? <Image src={notification.imageUrl} alt="" width={40} height={40} /> : null}</span><time suppressHydrationWarning>{relativeTime(notification.createdAt, ko)}</time>{notification.groupUnreadCount ? <i className="notification-unread-dot" aria-label={ko ? "읽지 않음" : "Unread"} /> : null}<i className="ms ms-chevron-right notification-chevron" aria-hidden="true" /></Link>)}</div>
                 {group.key === "earlier" && earlierItems.length > visibleEarlierCount ? <div className="notifications-load-more"><Button variant="secondary" size="sm" onClick={() => setVisibleEarlierCount((count) => count + EARLIER_PAGE_SIZE)}>{ko ? `더 보기 · ${earlierItems.length - visibleEarlierCount}개 남음` : `Show more · ${earlierItems.length - visibleEarlierCount} left`}<i className="ms ms-expand-more" aria-hidden="true" /></Button></div> : null}
               </section>
             </Fragment>) : <div className="notifications-empty ui-panel" role="status"><i className="ms ms-notifications" aria-hidden="true" /><strong>{ko ? filter === "unread" ? "읽지 않은 알림이 없어요" : notifications.length ? "이 필터에 알림이 없어요" : "아직 알림이 없어요" : filter === "unread" ? "You are all caught up" : notifications.length ? "Nothing in this filter" : "No notifications yet"}</strong><span>{ko ? "새로운 소식은 이곳에서 확인할 수 있어요." : "New updates will appear here."}</span>{notifications.length && filter !== "all" ? <Button variant="ghost" size="sm" onClick={() => setFilter("all")}>{ko ? "전체 알림 보기" : "View all"}</Button> : null}</div>}
