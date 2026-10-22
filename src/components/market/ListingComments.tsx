@@ -94,6 +94,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const lastScrolledComment = useRef<string | null>(null);
   // A draft is checked when it is sent, not as it is written: refusing the
   // keystroke meant a comment pasted from somewhere else simply never
   // appeared in the box, with the reason sitting under the whole thread.
@@ -127,6 +128,35 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     setIsLoading(!readCachedComments(listingId, space));
     void refreshComments();
   }, [listingId, refreshComments, space]);
+
+  useEffect(() => {
+    if (space !== "community") return;
+    const revealComment = () => {
+      const hash = window.location.hash;
+      if (!hash.startsWith("#comment-")) return;
+      const commentId = hash.slice("#comment-".length);
+      const target = comments.find((item) => item.id === commentId);
+      if (!target || target.deletedAt) return;
+      if (lastScrolledComment.current === commentId) return;
+      const parentIds: string[] = [];
+      let parentId = target.parentId;
+      while (parentId) {
+        parentIds.push(parentId);
+        parentId = comments.find((item) => item.id === parentId)?.parentId ?? null;
+      }
+      if (parentIds.some((id) => !expandedThreads.has(id))) {
+        setExpandedThreads((current) => new Set([...current, ...parentIds]));
+        return;
+      }
+      requestAnimationFrame(() => {
+        const element = document.getElementById(`comment-${commentId}`);
+        if (element) { element.scrollIntoView({ behavior: "smooth", block: "center" }); lastScrolledComment.current = commentId; }
+      });
+    };
+    revealComment();
+    window.addEventListener("hashchange", revealComment);
+    return () => window.removeEventListener("hashchange", revealComment);
+  }, [comments, expandedThreads, space]);
 
   const commentsByParent = useMemo(() => {
     const groups = new Map<string | null, ListingComment[]>();
@@ -265,7 +295,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     const isReplying = replyTo?.id === comment.id;
     const isThreadOpen = expandedThreads.has(comment.id);
 
-    return <article className={`listing-comment depth-${comment.depth}`} key={comment.id}>
+    return <article id={`comment-${comment.id}`} className={`listing-comment depth-${comment.depth}`} key={comment.id}>
       <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
       <div className="listing-comment-content">
         <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt, t("listingCommentJustNow"))}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">{t("listingCommentEdited")}</span> : null}</div>

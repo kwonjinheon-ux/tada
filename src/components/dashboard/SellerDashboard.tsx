@@ -13,9 +13,9 @@ import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 type DashboardListing = { id: string; title: string; price_cents: number; view_count: number; status: "published" | "pending" | "sold" | "archived" };
 type DashboardPhoto = { listing_id: string; storage_path: string; display_order: number };
 type DashboardMetrics = { total_views: number | string; total_saves: number | string; total_sales: number | string };
-type ActivityRow = { id: string; type: "message" | "offer" | "trade" | "keyword" | "wishlist"; title: string; body: string; href: string; created_at: string };
+type ActivityRow = { id: string; type: "message" | "offer" | "trade" | "keyword" | "wishlist" | "community" | "service_review"; title: string; body: string; href: string; created_at: string };
 
-const activityIconByType = { message: ["ms ms-chat", "is-slate"], offer: ["ms ms-handshake", "is-amber"], trade: ["ms ms-check-circle", "is-green"], keyword: ["ms ms-notifications", "is-blue"], wishlist: ["ms ms-favorite", "is-amber"] } as const;
+const activityIconByType = { message: ["ms ms-chat", "is-slate"], offer: ["ms ms-handshake", "is-amber"], trade: ["ms ms-check-circle", "is-green"], keyword: ["ms ms-notifications", "is-blue"], wishlist: ["ms ms-favorite", "is-amber"], community: ["ms ms-chat", "is-blue"], service_review: ["ms ms-star", "is-amber"] } as const;
 
 function formatCount(value: number) {
   return new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 }).format(value);

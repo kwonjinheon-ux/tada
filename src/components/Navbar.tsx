@@ -198,14 +198,20 @@ export function Navbar() {
         .is("read_at", null);
       setUnreadNotificationCount(count ?? 0);
     };
+    let notificationRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const queueNotificationRefresh = () => {
+      if (notificationRefreshTimer) clearTimeout(notificationRefreshTimer);
+      notificationRefreshTimer = setTimeout(() => { void refreshNotificationCount(); }, 150);
+    };
     const channel = supabase
       .channel(`market-unread-count:${userId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_messages", filter: `recipient_id=eq.${userId}` }, () => { void refreshUnreadCount(); })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, () => { void refreshNotificationCount(); })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, () => { void refreshNotificationCount(); })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, queueNotificationRefresh)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, queueNotificationRefresh)
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "market_notifications" }, queueNotificationRefresh)
       .subscribe();
-    return () => { void supabase.removeChannel(channel).catch(() => undefined); };
+    return () => { if (notificationRefreshTimer) clearTimeout(notificationRefreshTimer); void supabase.removeChannel(channel).catch(() => undefined); };
   }, [userId]);
 
   useEffect(() => {
