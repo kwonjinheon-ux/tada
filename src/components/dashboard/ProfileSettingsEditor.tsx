@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -34,7 +34,7 @@ function SettingsSection({ id, title, icon, summary, open, pinned, onToggle, chi
   </section>;
 }
 
-export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPhone, completedTradeCount, avatarPath, avatarUrl, memberSince, initialProfile, initialDescriptionTextSizeStep, userId, hasPassword = true, initialPendingEmail, profileVisibilityAvailable = true }: ProfileSettingsProps) {
+export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPhone, completedPurchaseCount, completedSaleCount, avatarPath, avatarUrl, memberSince, initialProfile, initialDescriptionTextSizeStep, userId, hasPassword = true, initialPendingEmail, profileVisibilityAvailable = true }: ProfileSettingsProps) {
   const router = useRouter();
   const { locale, setLocale, t } = useLanguage();
   const ko = locale === "ko";
@@ -69,19 +69,27 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const [showPasswords, setShowPasswords] = useState(false);
   const [exitAction, setExitAction] = useState<"logout" | "back" | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [deletionStep, setDeletionStep] = useState<0 | 1 | 2>(0);
+  const [deletionPhrase, setDeletionPhrase] = useState("");
+  const [deletionAcknowledged, setDeletionAcknowledged] = useState(false);
+  const [deletionPassword, setDeletionPassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deletionError, setDeletionError] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const exitDialogRef = useRef<HTMLElement>(null);
+  const deletionDialogRef = useRef<HTMLElement>(null);
   const normalisePhone = (value: string) => { const digits = value.replace(/\D/g, ""); return digits ? `+${digits.startsWith("64") ? digits : `64${digits.replace(/^0/, "")}`}` : ""; };
   const phoneVerified = Boolean(verifiedPhone && normalisePhone(phone) === normalisePhone(verifiedPhone));
   const displayedPhone = verifiedPhone || initialProfile.phone || "";
   const locationLabel = [location.subLocation, location.mainLocation].filter(Boolean).join(", ");
   const dirty = Boolean(photoDraft) || name !== snapshot.name || JSON.stringify(location) !== JSON.stringify(snapshot.location) || visibility !== snapshot.visibility || textStep !== snapshot.textStep;
-  const busy = saving || securityBusy || localeSaving || loggingOut;
+  const busy = saving || securityBusy || localeSaving || loggingOut || deleting;
   // Match the saved profile checks on My Page; unsaved edits do not inflate this value.
   const profileProgress = Math.round([Boolean(snapshot.name.trim() && (savedAvatar || avatarPath)), Boolean(verifiedPhone), Boolean(snapshot.location.mainLocation || snapshot.location.subLocation)].filter(Boolean).length / 3 * 100);
-  const visibilityLabel = visibility === "members" ? say("Tada members", "타다 회원만") : visibility === "trade_partners" ? say("Confirmed trade partners", "거래가 확정된 상대만") : say("Everyone", "전체 공개");
+  const visibilityLabel = visibility === "members" ? say("Tada members only", "타다 회원만") : visibility === "trade_partners" ? say("Neighbours in an active trade", "거래 중인 이웃들만") : say("Everyone", "전체 공개");
   const message = (section: keyof typeof feedback, text: string, error = false) => setFeedback((current) => ({ ...current, [section]: { text, error } }));
   const notice = (section: keyof typeof feedback) => feedback[section] ? <p id={`profile-editor-feedback-${section}`} className={`profile-editor-feedback${feedback[section]?.error ? " is-error" : ""}`} role={feedback[section]?.error ? "alert" : "status"}>{feedback[section]?.text}</p> : null;
+  const closeDeletion = useCallback(() => { if (deleting) return; setDeletionStep(0); setDeletionPhrase(""); setDeletionAcknowledged(false); setDeletionPassword(""); setDeletionError(""); }, [deleting]);
 
   useEffect(() => { const query = window.matchMedia("(min-width: 1024px)"); const sync = () => setDesktop(query.matches); sync(); query.addEventListener("change", sync); return () => query.removeEventListener("change", sync); }, []);
   useEffect(() => { const viewport = window.visualViewport; const sync = () => setKeyboardInset(viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0); viewport?.addEventListener("resize", sync); viewport?.addEventListener("scroll", sync); return () => { viewport?.removeEventListener("resize", sync); viewport?.removeEventListener("scroll", sync); }; }, []);
@@ -105,6 +113,24 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     window.addEventListener("keydown", close);
     return () => { document.body.style.overflow = overflow; window.removeEventListener("keydown", close); previous?.focus(); };
   }, [exitAction, loggingOut]);
+  useEffect(() => {
+    if (!deletionStep) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    deletionDialogRef.current?.querySelector<HTMLElement>("input, button")?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDeletion();
+      if (event.key !== "Tab") return;
+      const controls = deletionDialogRef.current?.querySelectorAll<HTMLElement>("a[href], input:not(:disabled), button:not(:disabled)");
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = overflow; window.removeEventListener("keydown", onKeyDown); previous?.focus(); };
+  }, [deletionStep, deleting, closeDeletion]);
 
   const toggle = (section: Section) => setExpanded((current) => current === section ? null : section);
   const authErrorText = (error: unknown, fallback: string) => {
@@ -188,9 +214,21 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     finally { setSecurityBusy(false); }
   };
   const changePassword = async () => {
-    if (!currentPassword || password.length < 8 || password !== confirmation) { message("security", say("Enter your current password and matching new passwords of at least 8 characters.", "현재 비밀번호와 8자 이상의 새 비밀번호를 입력하고, 새 비밀번호 확인을 일치시켜 주세요."), true); return; }
+    if ((hasPassword && !currentPassword) || password.length < 8 || password !== confirmation) { message("security", say("Enter matching new passwords of at least 8 characters and your current password when requested.", "8자 이상의 새 비밀번호와 확인을 일치시키고, 기존 비밀번호가 있다면 함께 입력해 주세요."), true); return; }
     setSecurityBusy(true);
-    try { const { client } = await authenticatedUser(); const { error } = await client.auth.updateUser({ password, current_password: currentPassword }); if (error) throw error; setCurrentPassword(""); setPassword(""); setConfirmation(""); setSecurityEditor(null); message("security", say("Your password has been changed.", "비밀번호를 변경했습니다.")); }
+    try {
+      const { client, user } = await authenticatedUser();
+      if (hasPassword) {
+        if (!user.email) throw new Error(say("This account has no email sign-in password.", "이 계정에는 이메일 로그인 비밀번호가 없습니다."));
+        const verified = await client.auth.signInWithPassword({ email: user.email, password: currentPassword });
+        if (verified.error) throw verified.error;
+        if (verified.data.user?.id !== user.id) throw new Error(say("Account verification failed. Please sign in again.", "계정 확인에 실패했습니다. 다시 로그인해 주세요."));
+      }
+      const { error } = await client.auth.updateUser({ password });
+      if (error) throw error;
+      setCurrentPassword(""); setPassword(""); setConfirmation(""); setSecurityEditor(null);
+      message("security", hasPassword ? say("Your password has been changed.", "비밀번호를 변경했습니다.") : say("An email sign-in password has been set.", "이메일 로그인 비밀번호를 설정했습니다.")); router.refresh();
+    }
     catch (error) { message("security", authErrorText(error, say("Unable to change your password.", "비밀번호를 변경하지 못했습니다.")), true); }
     finally { setSecurityBusy(false); }
   };
@@ -200,6 +238,21 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     try { const client = requireClient(); const { error } = await client.auth.signOut({ scope: "local" }); if (error) throw error; setExitAction(null); router.replace("/login"); router.refresh(); }
     catch (error) { setExitAction(null); message("management", error instanceof Error ? error.message : say("Unable to log out. Please try again.", "로그아웃하지 못했습니다. 다시 시도해 주세요."), true); }
     finally { setLoggingOut(false); }
+  };
+  const deleteAccount = async () => {
+    if (deleting || deletionStep !== 2 || deletionPhrase.trim() !== (ko ? "탈퇴합니다" : "DELETE MY ACCOUNT") || !deletionAcknowledged || (hasPassword && !deletionPassword)) return;
+    setDeleting(true); setDeletionError("");
+    try {
+      const { client } = await authenticatedUser();
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) throw new Error(say("Please sign in again before deleting your account.", "탈퇴하려면 다시 로그인해 주세요."));
+      const response = await fetch("/api/account", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ phrase: deletionPhrase.trim(), acknowledged: deletionAcknowledged, finalConfirmation: true, password: deletionPassword, locale: ko ? "ko" : "en" }) });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.error?.message ?? say("Your account could not be deleted. Please try again.", "탈퇴를 완료하지 못했습니다. 다시 시도해 주세요."));
+      await client.auth.signOut({ scope: "local" }).catch(() => undefined);
+      router.replace("/login?accountDeleted=1"); router.refresh();
+    } catch (error) { setDeletionError(error instanceof Error ? error.message : say("Your account could not be deleted.", "탈퇴를 완료하지 못했습니다.")); }
+    finally { setDeleting(false); }
   };
   const chip = (verified: boolean) => <span className={`ui-pill${verified ? " ui-pill--success" : ""}`}>{verified ? say("Verified", "인증됨") : say("Not verified", "미인증")}</span>;
 
@@ -224,29 +277,46 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
           {securityEditor === "phone" ? <div className="profile-editor-inline"><label className="ui-field" htmlFor="profile-editor-phone"><span>{t("phoneNumber")} <small>{say("Optional", "선택")}</small></span><input autoFocus id="profile-editor-phone" className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => { setPhone(event.target.value); if (sentPhone && normalisePhone(event.target.value) !== sentPhone) { setSentPhone(""); setOtp(""); } }} /></label>
             {sentPhone ? <><label className="ui-field" htmlFor="profile-editor-otp"><span>{say("Verification code", "인증 코드")}</span><input id="profile-editor-otp" className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} /></label><div className="profile-editor-inline-actions"><Button variant="primary" disabled={busy || otp.length !== 6} onClick={() => void verifyCode()}>{securityBusy ? t("saving") : say("Verify number", "인증하기")}</Button><Button variant="ghost" size="sm" disabled={busy || resendSeconds > 0} onClick={() => void sendCode()}>{say("Resend code", "코드 다시 받기")}{resendSeconds > 0 ? ` (${resendSeconds}s)` : ""}</Button></div></> : <Button variant="primary" size="sm" disabled={busy || !phone.trim() || phoneVerified} onClick={() => void sendCode()}>{securityBusy ? t("saving") : say("Send verification code", "인증 코드 받기")}</Button>}
             <small>{say("Your phone number is optional and is not shown on your public profile.", "전화번호 등록은 선택이며 공개 프로필에 표시되지 않아요.")}</small></div> : null}
-          <div className="profile-editor-security-row"><strong>{t("password")}</strong><div className="profile-editor-contact-value"><span>{hasPassword ? "••••••••" : say("Managed by your sign-in provider", "로그인 서비스에서 관리")}</span></div>{hasPassword ? <Button variant="secondary" size="sm" disabled={busy} aria-expanded={securityEditor === "password"} onClick={() => openSecurity("password")}>{securityEditor === "password" ? say("Close", "접기") : say("Change", "변경")}</Button> : null}</div>
-          {securityEditor === "password" ? <div className="profile-editor-inline">{[{ id: "current", title: t("currentPassword"), value: currentPassword, set: setCurrentPassword, autocomplete: "current-password" }, { id: "new", title: say("New password · 8+ characters", "새 비밀번호 · 8자 이상"), value: password, set: setPassword, autocomplete: "new-password" }, { id: "confirm", title: t("confirmNewPassword"), value: confirmation, set: setConfirmation, autocomplete: "new-password" }].map((field) => <label className="ui-field" key={field.id} htmlFor={`profile-editor-password-${field.id}`}><span>{field.title}</span><input id={`profile-editor-password-${field.id}`} className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type={showPasswords ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.set(event.target.value)} /></label>)}<label className="profile-editor-show-password"><input type="checkbox" checked={showPasswords} onChange={(event) => setShowPasswords(event.target.checked)} />{say("Show passwords", "비밀번호 보기")}</label>{confirmation && confirmation !== password ? <small className="profile-editor-field-error">{say("The new passwords do not match.", "새 비밀번호가 일치하지 않습니다.")}</small> : null}<Button variant="primary" size="sm" disabled={busy} onClick={() => void changePassword()}>{securityBusy ? t("saving") : t("updatePassword")}</Button></div> : null}
+          <div className="profile-editor-security-row"><strong>{t("password")}</strong><div className="profile-editor-contact-value"><span>{hasPassword ? "••••••••" : say("No email password set", "이메일 비밀번호 없음")}</span></div><Button variant="secondary" size="sm" disabled={busy} aria-expanded={securityEditor === "password"} aria-controls={securityEditor === "password" ? "profile-editor-password-fields" : undefined} onClick={() => openSecurity("password")}>{securityEditor === "password" ? say("Close password form", "비밀번호 설정 닫기") : hasPassword ? say("Change password", "비밀번호 변경") : say("Set password", "비밀번호 설정")}</Button></div>
+          {securityEditor === "password" ? <div id="profile-editor-password-fields" className="profile-editor-inline">{[...(hasPassword ? [{ id: "current", title: t("currentPassword"), value: currentPassword, set: setCurrentPassword, autocomplete: "current-password" }] : []), { id: "new", title: say("New password · 8+ characters", "새 비밀번호 · 8자 이상"), value: password, set: setPassword, autocomplete: "new-password" }, { id: "confirm", title: t("confirmNewPassword"), value: confirmation, set: setConfirmation, autocomplete: "new-password" }].map((field) => <label className="ui-field" key={field.id} htmlFor={`profile-editor-password-${field.id}`}><span>{field.title}</span><input id={`profile-editor-password-${field.id}`} className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type={showPasswords ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.set(event.target.value)} /></label>)}<label className="profile-editor-show-password"><input type="checkbox" checked={showPasswords} onChange={(event) => setShowPasswords(event.target.checked)} />{say("Show passwords", "비밀번호 보기")}</label>{confirmation && confirmation !== password ? <small className="profile-editor-field-error">{say("The new passwords do not match.", "새 비밀번호가 일치하지 않습니다.")}</small> : null}<Button variant="primary" size="sm" disabled={busy} onClick={() => void changePassword()}>{securityBusy ? t("saving") : hasPassword ? t("updatePassword") : say("Set password", "비밀번호 설정")}</Button></div> : null}
           {notice("security")}<p className="profile-editor-help">{say("Email and phone changes take effect after their own verification.", "이메일·전화번호 변경은 별도 인증 후 적용돼요.")}</p>
         </SettingsSection>
         <SettingsSection id="privacy" title={say("Privacy", "공개 범위")} icon="ms-visibility" summary={`${visibilityLabel} · ${say("Contacts private", "연락처 비공개")}`} open={isOpen("privacy")} onToggle={() => toggle("privacy")}>
-          <label className="ui-field" htmlFor="profile-editor-visibility"><span>{say("Seller profile visibility", "판매자 프로필 공개 범위")}</span><select id="profile-editor-visibility" className="ui-input" disabled={!profileVisibilityAvailable || saving} value={visibility} onChange={(event) => setVisibility(event.target.value as ProfileVisibility)}><option value="public">{say("Everyone", "전체 공개")}</option><option value="members">{say("Tada members", "타다 회원만")}</option><option value="trade_partners">{say("Confirmed trade partners", "거래가 확정된 상대만")}</option></select><small>{say("Your name, photo and ratings may still appear with listings and reviews.", "상품·후기에는 이름과 사진, 평점이 표시될 수 있어요.")}</small></label>
+          <label className="ui-field" htmlFor="profile-editor-visibility"><span>{say("Seller profile visibility", "판매자 프로필 공개 범위")}</span><span className="profile-editor-native-select"><select id="profile-editor-visibility" className="ui-input" disabled={!profileVisibilityAvailable || saving} value={visibility} onChange={(event) => setVisibility(event.target.value as ProfileVisibility)}><option value="public">{say("Everyone", "전체 공개")}</option><option value="members">{say("Tada members only", "타다 회원만")}</option><option value="trade_partners">{say("Neighbours in an active trade", "거래 중인 이웃들만")}</option></select><i className="ms ms-expand-more" aria-hidden="true" /></span><small>{say("Your name, photo and ratings may still appear with listings and reviews.", "상품·후기에는 이름과 사진, 평점이 표시될 수 있어요.")}</small></label>
           <div className="profile-editor-info-row"><div><strong>{say("Contact details", "연락처")}</strong><p>{say("Your phone number is not shown on your public profile.", "전화번호는 공개 프로필에 표시되지 않아요.")}</p></div><span className="ui-pill">{say("Private", "비공개")}</span></div>
         </SettingsSection>
         <SettingsSection id="display" title={say("Language & text size", "언어 및 글씨 크기")} icon="ms-language" summary={`${ko ? "한국어" : "English"} · ${say("Listing text", "상품 설명")} ${Math.round(descriptionTextScale(textStep) * 100)}%`} open={isOpen("display")} onToggle={() => toggle("display")}>
-          <label className="ui-field" htmlFor="profile-editor-language"><span>{t("displayLanguage")}</span><select id="profile-editor-language" className="ui-input" value={locale} disabled={busy} onChange={(event) => void changeLocale(event.target.value as SupportedLocale)}>{languageOptions.filter((option) => option.code === "en" || option.code === "ko").map((option) => <option key={option.code} value={option.code}>{option.nativeLabel}</option>)}</select><small>{say("Language changes apply immediately.", "언어는 바로 적용돼요.")}</small></label>{notice("display")}
+          <label className="ui-field" htmlFor="profile-editor-language"><span>{t("displayLanguage")}</span><span className="profile-editor-native-select"><select id="profile-editor-language" className="ui-input" value={locale} disabled={busy} onChange={(event) => void changeLocale(event.target.value as SupportedLocale)}>{languageOptions.filter((option) => option.code === "en" || option.code === "ko").map((option) => <option key={option.code} value={option.code}>{option.nativeLabel}</option>)}</select><i className="ms ms-expand-more" aria-hidden="true" /></span><small>{say("Language changes apply immediately.", "언어는 바로 적용돼요.")}</small></label>{notice("display")}
           <div className="profile-editor-text-size"><strong>{say("Listing description text size", "상품 설명 글씨 크기")}</strong><TextSizePreferencePreview variant="settings" value={textStep} locale={locale} onChange={(change) => setTextStep((current) => Math.min(MAX_DESCRIPTION_TEXT_SIZE_STEP, Math.max(0, current + change)))} /></div>
         </SettingsSection>
-        <SettingsSection id="management" title={say("Account management", "계정 관리")} icon="ms-settings" summary={say("Log out · Account help", "로그아웃 · 계정 도움")} open={isOpen("management")} onToggle={() => toggle("management")}>
+        <SettingsSection id="management" title={say("Account management", "계정 관리")} icon="ms-settings" summary={say("Log out · Delete account", "로그아웃 · 회원 탈퇴")} open={isOpen("management")} onToggle={() => toggle("management")}>
           <div className="profile-editor-info-row"><div><strong>{t("logOut")}</strong><p>{say("Log out on this device.", "현재 기기에서 로그아웃합니다.")}</p></div><Button variant="secondary" size="sm" disabled={busy} onClick={() => dirty ? setExitAction("logout") : void leave("logout")}>{loggingOut ? t("loggingOut") : t("logOut")}</Button></div>
-          <div className="profile-editor-info-row"><div><strong>{say("Account help", "계정 도움")}</strong><p>{say("Contact us about account changes or closure.", "계정 변경이나 탈퇴가 필요하면 문의해 주세요.")}</p></div><Link className="my-page-link" href="/contact">{say("Contact us", "문의하기")}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>{notice("management")}
+          <div className="profile-editor-info-row"><div><strong>{say("Delete account", "회원 탈퇴")}</strong><p>{say("Permanently delete your account and its associated content.", "계정과 연결된 콘텐츠가 영구 삭제됩니다.")}</p></div><Button variant="secondary" size="sm" className="profile-editor-delete-trigger" disabled={busy} onClick={() => { setDeletionError(""); setDeletionStep(1); }}>{say("Delete account", "탈퇴하기")}</Button></div>{notice("management")}
         </SettingsSection>
       </fieldset>
       <aside className="profile-editor-rail" aria-label={say("Profile preview and save actions", "프로필 미리보기와 저장")}>
-        <div className="ui-panel profile-editor-preview"><h2>{say("My profile preview", "내 프로필 미리보기")}</h2><ProfileIdentitySummary name={name} avatarUrl={photoDraft?.url ?? savedAvatar} location={locationLabel} joinedAt={memberSince} onPhotoEdit={() => document.getElementById(PHOTO_INPUT_ID)?.click()} /><div className="profile-editor-stats"><div><strong>{profileProgress}%</strong><span>{say("Tada Charge", "타다 충전")}</span><small>{say("Profile setup progress", "프로필 설정 진행률")}</small></div><div><strong>{completedTradeCount === null ? "—" : `${completedTradeCount}${ko ? "건" : ""}`}</strong><span>{say("Completed trades", "완료한 거래")}</span></div></div></div>
+        <div className="ui-panel profile-editor-preview"><h2>{say("My profile preview", "내 프로필 미리보기")}</h2><ProfileIdentitySummary name={name} avatarUrl={photoDraft?.url ?? savedAvatar} location={locationLabel} joinedAt={memberSince} onPhotoEdit={() => document.getElementById(PHOTO_INPUT_ID)?.click()} /><div className="profile-editor-stats"><div><strong>{profileProgress}%</strong><div className="seller-trust-battery profile-editor-charge-battery" role="progressbar" aria-label={say("Profile setup progress", "프로필 설정 진행률")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={profileProgress}><span className="seller-trust-battery-shell"><span className="seller-trust-battery-fill" style={{ width: `${profileProgress}%` }} /></span><span className="seller-trust-battery-tip" aria-hidden="true" /></div><span>{say("Charging Tada", "타다 충전 중")}</span><small>{say("Profile setup progress", "프로필 설정 진행률")}</small></div><div><strong>{completedPurchaseCount === null ? "—" : `${completedPurchaseCount}${ko ? "건" : ""}`}</strong><span>{say("Purchases", "구매")}</span></div><div><strong>{completedSaleCount === null ? "—" : `${completedSaleCount}${ko ? "건" : ""}`}</strong><span>{say("Sales", "판매")}</span></div></div></div>
         <div className="profile-editor-actions" data-visible={dirty || saving}><Button variant="secondary" disabled={!dirty || busy} onClick={discard}>{t("cancel")}</Button><Button variant="primary" disabled={!dirty || busy} onClick={() => void save()}>{saving ? t("saving") : t("saveChanges")}</Button></div>
         <div className="profile-editor-save-feedback">{notice("profile")}{dirty && !feedback.profile ? <p>{say("You have unsaved changes.", "저장하지 않은 변경사항이 있어요.")}</p> : null}</div>
       </aside>
     </div>
     {exitAction ? <DialogOverlay className="profile-editor-exit-overlay" onClose={() => { if (!loggingOut) setExitAction(null); }} isDismissible={!loggingOut} aria-labelledby="profile-editor-exit-title"><section ref={exitDialogRef} className="ui-panel profile-editor-exit-dialog"><h2 id="profile-editor-exit-title">{say("Leave without saving?", "저장하지 않고 나갈까요?")}</h2><p>{say("Your unsaved profile changes will be lost.", "저장하지 않은 프로필 변경사항이 사라집니다.")}</p><p>{say("Tap outside to close.", "바깥을 누르면 닫힙니다.")}</p><div><Button variant="secondary" autoFocus disabled={loggingOut} onClick={() => setExitAction(null)}>{say("Keep editing", "계속 수정")}</Button><Button variant="primary" disabled={loggingOut} onClick={() => void leave(exitAction)}>{loggingOut ? t("loggingOut") : exitAction === "logout" ? t("logOut") : say("Leave", "나가기")}</Button></div></section></DialogOverlay> : null}
+    {deletionStep ? <DialogOverlay className="profile-editor-exit-overlay" onClose={closeDeletion} isDismissible={!deleting} aria-labelledby="profile-editor-delete-title"><section ref={deletionDialogRef} className="ui-panel profile-editor-exit-dialog profile-editor-delete-dialog" aria-busy={deleting}>
+      <h2 id="profile-editor-delete-title">{deletionStep === 1 ? say("Delete your account?", "정말 탈퇴하시겠어요?") : say("Final confirmation", "마지막으로 확인해 주세요")}</h2>
+      {deletionStep === 1 ? <>
+        <p>{say("Your profile, listings and activity will be permanently removed. Finish any ongoing trades first. Type the phrase below and confirm that you understand.", "프로필, 등록물과 활동이 영구 삭제됩니다. 진행 중인 거래는 먼저 마무리해 주세요. 아래 문구를 직접 입력하고 내용을 확인해 주세요.")}</p>
+        <label className="ui-field" htmlFor="profile-editor-delete-phrase"><span>{say("Type DELETE MY ACCOUNT", "‘탈퇴합니다’를 입력해 주세요")}</span><input id="profile-editor-delete-phrase" className="ui-input" value={deletionPhrase} onChange={(event) => setDeletionPhrase(event.target.value)} autoComplete="off" /></label>
+        {hasPassword ? <label className="ui-field" htmlFor="profile-editor-delete-password"><span>{say("Current password", "현재 비밀번호")}</span><input id="profile-editor-delete-password" className="ui-input" type="password" autoComplete="current-password" value={deletionPassword} onChange={(event) => setDeletionPassword(event.target.value)} /></label> : null}
+        <label className="profile-editor-delete-check"><input type="checkbox" checked={deletionAcknowledged} onChange={(event) => setDeletionAcknowledged(event.target.checked)} /><span>{say("I understand this cannot be undone and my account content will be removed.", "탈퇴 후 복구할 수 없고 계정 콘텐츠가 삭제됨을 이해했습니다.")}</span></label>
+        <p className="profile-editor-dismiss-hint">{say("Click or tap outside to close.", "바깥을 누르면 닫힙니다.")}</p>
+        <div><Button variant="secondary" onClick={closeDeletion}>{t("cancel")}</Button><Button variant="danger" disabled={deletionPhrase.trim() !== (ko ? "탈퇴합니다" : "DELETE MY ACCOUNT") || !deletionAcknowledged || (hasPassword && !deletionPassword)} onClick={() => setDeletionStep(2)}>{say("Continue", "다음 확인")}</Button></div>
+      </> : <>
+        <p>{say("This is your final confirmation. Deleting your account is permanent and cannot be undone.", "마지막 확인입니다. 계정을 삭제하면 되돌릴 수 없습니다.")}</p>
+        {dirty ? <p>{say("Unsaved profile changes will also be lost.", "저장하지 않은 프로필 변경사항도 사라집니다.")}</p> : null}
+        {deletionError ? <p role="alert" className="profile-editor-field-error">{deletionError} <Link href="/contact">{say("Contact support", "고객지원 문의")}</Link></p> : null}
+        <p className="profile-editor-dismiss-hint">{say("Click or tap outside to close.", "바깥을 누르면 닫힙니다.")}</p>
+        <div><Button variant="secondary" disabled={deleting} onClick={() => setDeletionStep(1)}>{say("Go back", "돌아가기")}</Button><Button variant="danger" disabled={deleting} onClick={() => void deleteAccount()}>{deleting ? say("Deleting…", "탈퇴 처리 중…") : say("Permanently delete account", "계정 영구 삭제")}</Button></div>
+      </>}
+    </section></DialogOverlay> : null}
   </div>;
 }

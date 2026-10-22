@@ -23,8 +23,11 @@ export default async function ProfileSettingsPage() {
     supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).eq("status", "picked_up"),
     supabase.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).eq("status", "picked_up"),
   ]) : null;
-  const completedTradeCount = completedTradeResults && completedTradeResults.every((result) => !result.error && result.count !== null)
-    ? completedTradeResults.reduce((total, result) => total + (result.count ?? 0), 0)
+  const completedSaleCount = completedTradeResults && [completedTradeResults[0], completedTradeResults[2]].every((result) => !result.error && result.count !== null)
+    ? (completedTradeResults[0].count ?? 0) + (completedTradeResults[2].count ?? 0)
+    : null;
+  const completedPurchaseCount = completedTradeResults && [completedTradeResults[1], completedTradeResults[3]].every((result) => !result.error && result.count !== null)
+    ? (completedTradeResults[1].count ?? 0) + (completedTradeResults[3].count ?? 0)
     : null;
   const avatarPath = profile?.avatar_path || user.user_metadata?.avatar_path || null;
   const signedAvatar = avatarPath && supabase ? await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : null;
@@ -32,7 +35,8 @@ export default async function ProfileSettingsPage() {
       <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
           email={user.email ?? ""}
-          completedTradeCount={completedTradeCount}
+          completedPurchaseCount={completedPurchaseCount}
+          completedSaleCount={completedSaleCount}
           emailVerified={Boolean(user.email_confirmed_at)}
           initialVerifiedPhone={user.phone_confirmed_at ? user.phone ?? "" : ""}
           avatarPath={avatarPath}

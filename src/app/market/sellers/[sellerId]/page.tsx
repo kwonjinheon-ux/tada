@@ -63,10 +63,10 @@ export default async function SellerProfilePage({ params, searchParams }: {
     if (!viewer) restrictedTo = "trade_partners";
     else {
       const relationships = await Promise.all([
-        supabase.from("market_trade_offers").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).in("status", ["accepted", "completed"]).limit(1),
-        supabase.from("market_trade_offers").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).in("status", ["accepted", "completed"]).limit(1),
-        supabase.from("bargain_item_reservations").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).in("status", ["confirmed", "on_the_way", "picked_up"]).limit(1),
-        supabase.from("bargain_item_reservations").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).in("status", ["confirmed", "on_the_way", "picked_up"]).limit(1),
+        supabase.from("market_trade_offers").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).eq("status", "accepted").limit(1),
+        supabase.from("market_trade_offers").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).eq("status", "accepted").limit(1),
+        supabase.from("bargain_item_reservations").select("id").eq("seller_id", seller.id).eq("buyer_id", viewer.id).in("status", ["confirmed", "on_the_way"]).limit(1),
+        supabase.from("bargain_item_reservations").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).in("status", ["confirmed", "on_the_way"]).limit(1),
       ]);
       if (!relationships.some((result) => !result.error && (result.data?.length ?? 0) > 0)) restrictedTo = "trade_partners";
     }
