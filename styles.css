@@ -7356,8 +7356,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   /* The three sections are the point of the header, and at 12px beside a
-     580px search field they read as small print. On a desktop they take the
-     body size, sit on a pill of their own so each one is a target rather
+     580px search field they read as small print. On a desktop they take a
+     step up and sit on a pill of their own, so each one is a target rather
      than a word, and the section being read keeps the brand colour. Below
      this width the header has its own row and its own menu button, so none
      of this applies there. */
@@ -7365,13 +7365,13 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-pill);
-    font-size: var(--text-base);
+    font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     transition: background-color 140ms ease, color 140ms ease;
   }
 
   .primary-nav i {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
   }
 
   .primary-nav a:hover {
