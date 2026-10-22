@@ -12,6 +12,10 @@ export default async function ProfileSettingsPage() {
   const profileResult = supabase
     ? await supabase.from("profiles").select("display_name, avatar_path, phone, location_mode, region_city, region_suburb, main_location, sub_location, locality, raw_suburb, region, latitude, longitude, preferred_locale, profile_visibility").eq("id", user.id).maybeSingle()
     : { data: null, error: null };
+  // An older location schema must not disable an otherwise available privacy setting.
+  const visibilityResult = profileResult.error && supabase
+    ? await supabase.from("profiles").select("profile_visibility").eq("id", user.id).maybeSingle()
+    : profileResult;
   const { data: profile } = profileResult.error && supabase
     ? await supabase.from("profiles").select("display_name, avatar_path, phone, location_mode, region_city, region_suburb, latitude, longitude, preferred_locale").eq("id", user.id).maybeSingle()
     : profileResult;
@@ -31,6 +35,16 @@ export default async function ProfileSettingsPage() {
     : null;
   const avatarPath = profile?.avatar_path || user.user_metadata?.avatar_path || null;
   const signedAvatar = avatarPath && supabase ? await supabase.storage.from("profile-avatars").createSignedUrl(avatarPath, 3600) : null;
+  const identityProviders = user.identities?.map((identity) => identity.provider) ?? [];
+  const metadataProviders = Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers.filter((provider: unknown): provider is string => typeof provider === "string")
+    : [];
+  const primaryProvider = typeof user.app_metadata?.provider === "string" ? user.app_metadata.provider : null;
+  const authProviders = identityProviders.length
+    ? identityProviders
+    : metadataProviders.length
+      ? metadataProviders
+      : primaryProvider ? [primaryProvider] : [];
   return (
       <div className="dashboard-content profile-settings-content profile-settings-page">
         <ProfileSettingsForm
@@ -42,9 +56,10 @@ export default async function ProfileSettingsPage() {
           avatarPath={avatarPath}
           avatarUrl={signedAvatar?.data?.signedUrl ?? null}
           userId={user.id}
-          hasPassword={user.identities?.some((identity) => identity.provider === "email") ?? true}
+          hasPassword={authProviders.includes("email")}
+          authProvider={authProviders.find((provider) => provider !== "email") ?? null}
           initialPendingEmail={user.new_email}
-          profileVisibilityAvailable={!profileResult.error}
+          profileVisibilityAvailable={Boolean(supabase && !visibilityResult.error)}
           memberSince={user.created_at}
           initialDescriptionTextSizeStep={typeof user.user_metadata?.listing_description_text_step === "number" && user.user_metadata.listing_description_text_step >= 0 && user.user_metadata.listing_description_text_step <= 5 ? user.user_metadata.listing_description_text_step : 0}
           initialProfile={{
@@ -61,7 +76,7 @@ export default async function ProfileSettingsPage() {
             latitude: profile?.latitude ? Number(profile.latitude) : null,
             longitude: profile?.longitude ? Number(profile.longitude) : null,
             preferred_locale: ["en", "ko", "zh", "ja", "es", "hi", "ar"].includes(profile?.preferred_locale ?? "") ? profile?.preferred_locale as "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar" : "en",
-            profile_visibility: categorizedProfile?.profile_visibility === "members" || categorizedProfile?.profile_visibility === "trade_partners" ? categorizedProfile.profile_visibility : "public",
+            profile_visibility: visibilityResult.data?.profile_visibility === "members" || visibilityResult.data?.profile_visibility === "trade_partners" ? visibilityResult.data.profile_visibility : "public",
           }}
         />
       </div>

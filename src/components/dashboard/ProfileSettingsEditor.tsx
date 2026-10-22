@@ -11,7 +11,7 @@ import { ProfileIdentitySummary } from "@/components/dashboard/ProfileIdentitySu
 import { ProfilePhotoUploader, persistProfilePhoto, type ProfilePhotoDraft } from "@/components/dashboard/ProfilePhotoUploader";
 import type { ProfileSettingsProps, ProfileVisibility } from "@/components/dashboard/ProfileSettingsForm";
 import { useLanguage, languageOptions, type SupportedLocale } from "@/components/LanguageProvider";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { createBrowserSupabaseClient, createTransientAuthClient } from "@/lib/supabase/client";
 import { findMainLocation } from "@/lib/market/nz-location";
 import type { MainLocation } from "@/data/nzLocations";
 
@@ -34,7 +34,7 @@ function SettingsSection({ id, title, icon, summary, open, pinned, onToggle, chi
   </section>;
 }
 
-export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPhone, completedPurchaseCount, completedSaleCount, avatarPath, avatarUrl, memberSince, initialProfile, initialDescriptionTextSizeStep, userId, hasPassword = true, initialPendingEmail, profileVisibilityAvailable = true }: ProfileSettingsProps) {
+export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPhone, completedPurchaseCount, completedSaleCount, avatarPath, avatarUrl, memberSince, initialProfile, initialDescriptionTextSizeStep, userId, hasPassword = true, authProvider, initialPendingEmail, profileVisibilityAvailable = true }: ProfileSettingsProps) {
   const router = useRouter();
   const { locale, setLocale, t } = useLanguage();
   const ko = locale === "ko";
@@ -86,7 +86,8 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const busy = saving || securityBusy || localeSaving || loggingOut || deleting;
   // Match the saved profile checks on My Page; unsaved edits do not inflate this value.
   const profileProgress = Math.round([Boolean(snapshot.name.trim() && (savedAvatar || avatarPath)), Boolean(verifiedPhone), Boolean(snapshot.location.mainLocation || snapshot.location.subLocation)].filter(Boolean).length / 3 * 100);
-  const visibilityLabel = visibility === "members" ? say("Tada members only", "타다 회원만") : visibility === "trade_partners" ? say("Neighbours in an active trade", "거래 중인 이웃들만") : say("Everyone", "전체 공개");
+  const visibilityLabel = !profileVisibilityAvailable ? say("Setting unavailable", "설정 확인 불가") : visibility === "members" ? say("Tada members only", "타다 회원만") : visibility === "trade_partners" ? say("Neighbours in an active trade", "거래 중인 이웃들만") : say("Everyone", "전체 공개");
+  const authProviderName = authProvider === "google" ? "Google" : authProvider === "apple" ? "Apple" : authProvider === "facebook" ? "Facebook" : authProvider === "github" ? "GitHub" : authProvider === "azure" ? "Microsoft" : null;
   const message = (section: keyof typeof feedback, text: string, error = false) => setFeedback((current) => ({ ...current, [section]: { text, error } }));
   const notice = (section: keyof typeof feedback) => feedback[section] ? <p id={`profile-editor-feedback-${section}`} className={`profile-editor-feedback${feedback[section]?.error ? " is-error" : ""}`} role={feedback[section]?.error ? "alert" : "status"}>{feedback[section]?.text}</p> : null;
   const closeDeletion = useCallback(() => { if (deleting) return; setDeletionStep(0); setDeletionPhrase(""); setDeletionAcknowledged(false); setDeletionPassword(""); setDeletionError(""); }, [deleting]);
@@ -135,7 +136,7 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const toggle = (section: Section) => setExpanded((current) => current === section ? null : section);
   const authErrorText = (error: unknown, fallback: string) => {
     if (ko && typeof error === "object" && error && "code" in error) {
-      const messages: Record<string, string> = { otp_expired: "인증 코드가 만료됐거나 올바르지 않습니다. 코드를 확인하거나 다시 받아 주세요.", over_sms_send_rate_limit: "인증 코드를 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.", over_email_send_rate_limit: "메일을 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.", phone_exists: "다른 계정에서 사용 중인 전화번호입니다.", email_exists: "다른 계정에서 사용 중인 이메일입니다.", invalid_credentials: "현재 로그인 정보 또는 비밀번호가 올바르지 않습니다.", same_password: "기존 비밀번호와 다른 새 비밀번호를 입력해 주세요.", weak_password: "더 안전한 비밀번호를 입력해 주세요.", reauthentication_needed: "보안을 위해 다시 로그인한 뒤 변경해 주세요." };
+      const messages: Record<string, string> = { otp_expired: "인증 코드가 만료됐거나 올바르지 않습니다. 코드를 확인하거나 다시 받아 주세요.", over_sms_send_rate_limit: "인증 코드를 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.", over_email_send_rate_limit: "메일을 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.", phone_exists: "다른 계정에서 사용 중인 전화번호입니다.", email_exists: "다른 계정에서 사용 중인 이메일입니다.", invalid_credentials: "현재 로그인 정보 또는 비밀번호가 올바르지 않습니다.", current_password_mismatch: "현재 비밀번호가 올바르지 않습니다.", current_password_required: "현재 비밀번호를 입력해 주세요.", reauthentication_not_valid: "현재 비밀번호가 올바르지 않습니다.", same_password: "기존 비밀번호와 다른 새 비밀번호를 입력해 주세요.", weak_password: "더 안전한 비밀번호를 입력해 주세요.", reauthentication_needed: "보안을 위해 다시 로그인한 뒤 변경해 주세요." };
       if (messages[String(error.code)]) return messages[String(error.code)];
     }
     return error instanceof Error ? error.message : fallback;
@@ -152,12 +153,30 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     if (error || !data.user || (userId && data.user.id !== userId)) throw new Error(say("Please sign in again before changing your settings.", "설정을 변경하려면 다시 로그인해 주세요."));
     return { client, user: data.user };
   };
-  const openSecurity = (editor: SecurityEditor) => { setSecurityEditor((current) => current === editor ? null : editor); setFeedback((current) => ({ ...current, security: undefined })); };
+  const openSecurity = (editor: SecurityEditor) => {
+    if (securityEditor === "password") { setCurrentPassword(""); setPassword(""); setConfirmation(""); setShowPasswords(false); }
+    setSecurityEditor((current) => current === editor ? null : editor);
+    setFeedback((current) => ({ ...current, security: undefined }));
+  };
 
   const save = async () => {
     if (!dirty || busy) return;
-    if (name.trim().length < 2 || name.trim().length > 40) { setFieldError("name"); setExpanded("identity"); message("profile", say("Enter a nickname between 2 and 40 characters.", "닉네임은 2~40자로 입력해 주세요."), true); requestAnimationFrame(() => nameRef.current?.focus()); return; }
-    if (!location.mainLocation) { setFieldError("location"); setExpanded("identity"); message("profile", say("Choose your main location.", "지역을 선택해 주세요."), true); requestAnimationFrame(() => document.getElementById("listing-main-location")?.parentElement?.querySelector<HTMLButtonElement>(".post-select-trigger")?.focus()); return; }
+    const visibilityOnly = profileVisibilityAvailable && visibility !== snapshot.visibility && name === snapshot.name
+      && JSON.stringify(location) === JSON.stringify(snapshot.location) && textStep === snapshot.textStep && !photoDraft;
+    if (visibilityOnly) {
+      setSaving(true); setFeedback((current) => ({ ...current, profile: undefined }));
+      try {
+        const { client, user } = await authenticatedUser();
+        const saved = await client.from("profiles").update({ profile_visibility: visibility }).eq("id", user.id).select("profile_visibility").maybeSingle();
+        if (saved.error || saved.data?.profile_visibility !== visibility) throw new Error(say("Your privacy choice could not be saved. Please try again.", "공개 범위를 저장하지 못했습니다. 다시 시도해 주세요."));
+        setSnapshot((current) => ({ ...current, visibility }));
+        message("profile", say("Your profile visibility has been saved.", "프로필 공개 범위를 저장했습니다.")); router.refresh();
+      } catch (error) { message("profile", error instanceof Error ? error.message : say("Unable to save your privacy choice.", "공개 범위를 저장하지 못했습니다."), true); }
+      finally { setSaving(false); }
+      return;
+    }
+    if (name !== snapshot.name && (name.trim().length < 2 || name.trim().length > 40)) { setFieldError("name"); setExpanded("identity"); message("profile", say("Enter a nickname between 2 and 40 characters.", "닉네임은 2~40자로 입력해 주세요."), true); requestAnimationFrame(() => nameRef.current?.focus()); return; }
+    if (JSON.stringify(location) !== JSON.stringify(snapshot.location) && !location.mainLocation) { setFieldError("location"); setExpanded("identity"); message("profile", say("Choose your main location.", "지역을 선택해 주세요."), true); requestAnimationFrame(() => document.getElementById("listing-main-location")?.parentElement?.querySelector<HTMLButtonElement>(".post-select-trigger")?.focus()); return; }
     setFieldError(null); setSaving(true); setFeedback((current) => ({ ...current, profile: undefined }));
     try {
       const { client, user } = await authenticatedUser();
@@ -165,6 +184,10 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
       const result = await client.from("profiles").upsert({ ...values, main_location: location.mainLocation, sub_location: location.subLocation || null, locality: location.locality, raw_suburb: location.rawSuburb, region: location.region });
       const error = result.error && ["42703", "PGRST204"].includes(result.error.code) ? (await client.from("profiles").upsert(values)).error : result.error;
       if (error) throw error;
+      if (profileVisibilityAvailable && visibility !== snapshot.visibility) {
+        const saved = await client.from("profiles").select("profile_visibility").eq("id", user.id).maybeSingle();
+        if (saved.error || saved.data?.profile_visibility !== visibility) throw new Error(say("Your privacy choice could not be confirmed. Please try saving again.", "공개 범위가 저장됐는지 확인하지 못했습니다. 다시 저장해 주세요."));
+      }
       const metadata = await client.auth.updateUser({ data: { full_name: name.trim(), listing_description_text_step: textStep } });
       if (metadata.error) throw new Error(say("Your profile was saved, but display preferences could not be saved. Please retry.", "프로필은 저장됐지만 화면 설정을 저장하지 못했습니다. 다시 저장해 주세요.") + ` ${metadata.error.message}`);
       setName(name.trim()); setSnapshot({ name: name.trim(), location, visibility, textStep });
@@ -214,20 +237,21 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     finally { setSecurityBusy(false); }
   };
   const changePassword = async () => {
-    if ((hasPassword && !currentPassword) || password.length < 8 || password !== confirmation) { message("security", say("Enter matching new passwords of at least 8 characters and your current password when requested.", "8자 이상의 새 비밀번호와 확인을 일치시키고, 기존 비밀번호가 있다면 함께 입력해 주세요."), true); return; }
+    if (!hasPassword) return;
+    if (!currentPassword || password.length < 8 || password !== confirmation) { message("security", say("Enter your current password and matching new passwords of at least 8 characters.", "현재 비밀번호와 일치하는 8자 이상의 새 비밀번호를 입력해 주세요."), true); return; }
     setSecurityBusy(true);
     try {
       const { client, user } = await authenticatedUser();
-      if (hasPassword) {
-        if (!user.email) throw new Error(say("This account has no email sign-in password.", "이 계정에는 이메일 로그인 비밀번호가 없습니다."));
-        const verified = await client.auth.signInWithPassword({ email: user.email, password: currentPassword });
-        if (verified.error) throw verified.error;
-        if (verified.data.user?.id !== user.id) throw new Error(say("Account verification failed. Please sign in again.", "계정 확인에 실패했습니다. 다시 로그인해 주세요."));
-      }
-      const { error } = await client.auth.updateUser({ password });
+      const verifier = createTransientAuthClient();
+      if (!verifier || !user.email) throw new Error(say("Password verification is unavailable. Please try again later.", "현재 비밀번호를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요."));
+      const verified = await verifier.auth.signInWithPassword({ email: user.email, password: currentPassword });
+      if (verified.error?.code === "invalid_credentials") throw new Error(say("The current password is incorrect.", "현재 비밀번호가 올바르지 않습니다."));
+      if (verified.error) throw verified.error;
+      if (verified.data.user?.id !== user.id) throw new Error(say("Account verification failed. Please sign in again.", "계정 확인에 실패했습니다. 다시 로그인해 주세요."));
+      const { error } = await client.auth.updateUser({ password, current_password: currentPassword });
       if (error) throw error;
       setCurrentPassword(""); setPassword(""); setConfirmation(""); setSecurityEditor(null);
-      message("security", hasPassword ? say("Your password has been changed.", "비밀번호를 변경했습니다.") : say("An email sign-in password has been set.", "이메일 로그인 비밀번호를 설정했습니다.")); router.refresh();
+      message("security", say("Your password has been changed.", "비밀번호를 변경했습니다.")); router.refresh();
     }
     catch (error) { message("security", authErrorText(error, say("Unable to change your password.", "비밀번호를 변경하지 못했습니다.")), true); }
     finally { setSecurityBusy(false); }
@@ -277,12 +301,22 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
           {securityEditor === "phone" ? <div className="profile-editor-inline"><label className="ui-field" htmlFor="profile-editor-phone"><span>{t("phoneNumber")} <small>{say("Optional", "선택")}</small></span><input autoFocus id="profile-editor-phone" className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type="tel" autoComplete="tel" value={phone} placeholder="021 555 0123" onChange={(event) => { setPhone(event.target.value); if (sentPhone && normalisePhone(event.target.value) !== sentPhone) { setSentPhone(""); setOtp(""); } }} /></label>
             {sentPhone ? <><label className="ui-field" htmlFor="profile-editor-otp"><span>{say("Verification code", "인증 코드")}</span><input id="profile-editor-otp" className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} /></label><div className="profile-editor-inline-actions"><Button variant="primary" disabled={busy || otp.length !== 6} onClick={() => void verifyCode()}>{securityBusy ? t("saving") : say("Verify number", "인증하기")}</Button><Button variant="ghost" size="sm" disabled={busy || resendSeconds > 0} onClick={() => void sendCode()}>{say("Resend code", "코드 다시 받기")}{resendSeconds > 0 ? ` (${resendSeconds}s)` : ""}</Button></div></> : <Button variant="primary" size="sm" disabled={busy || !phone.trim() || phoneVerified} onClick={() => void sendCode()}>{securityBusy ? t("saving") : say("Send verification code", "인증 코드 받기")}</Button>}
             <small>{say("Your phone number is optional and is not shown on your public profile.", "전화번호 등록은 선택이며 공개 프로필에 표시되지 않아요.")}</small></div> : null}
-          <div className="profile-editor-security-row"><strong>{t("password")}</strong><div className="profile-editor-contact-value"><span>{hasPassword ? "••••••••" : say("No email password set", "이메일 비밀번호 없음")}</span></div><Button variant="secondary" size="sm" disabled={busy} aria-expanded={securityEditor === "password"} aria-controls={securityEditor === "password" ? "profile-editor-password-fields" : undefined} onClick={() => openSecurity("password")}>{securityEditor === "password" ? say("Close password form", "비밀번호 설정 닫기") : hasPassword ? say("Change password", "비밀번호 변경") : say("Set password", "비밀번호 설정")}</Button></div>
-          {securityEditor === "password" ? <div id="profile-editor-password-fields" className="profile-editor-inline">{[...(hasPassword ? [{ id: "current", title: t("currentPassword"), value: currentPassword, set: setCurrentPassword, autocomplete: "current-password" }] : []), { id: "new", title: say("New password · 8+ characters", "새 비밀번호 · 8자 이상"), value: password, set: setPassword, autocomplete: "new-password" }, { id: "confirm", title: t("confirmNewPassword"), value: confirmation, set: setConfirmation, autocomplete: "new-password" }].map((field) => <label className="ui-field" key={field.id} htmlFor={`profile-editor-password-${field.id}`}><span>{field.title}</span><input id={`profile-editor-password-${field.id}`} className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type={showPasswords ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.set(event.target.value)} /></label>)}<label className="profile-editor-show-password"><input type="checkbox" checked={showPasswords} onChange={(event) => setShowPasswords(event.target.checked)} />{say("Show passwords", "비밀번호 보기")}</label>{confirmation && confirmation !== password ? <small className="profile-editor-field-error">{say("The new passwords do not match.", "새 비밀번호가 일치하지 않습니다.")}</small> : null}<Button variant="primary" size="sm" disabled={busy} onClick={() => void changePassword()}>{securityBusy ? t("saving") : hasPassword ? t("updatePassword") : say("Set password", "비밀번호 설정")}</Button></div> : null}
+          <div className="profile-editor-security-row">
+            <strong>{t("password")}</strong>
+            <div className="profile-editor-contact-value"><span>{hasPassword ? "••••••••" : authProviderName ? `${authProviderName} ${say("sign-in", "로그인")}` : authProvider ? say("Linked sign-in", "외부 로그인") : say("Sign-in method unavailable", "로그인 방식 확인 필요")}</span></div>
+            {hasPassword ? <Button variant="secondary" size="sm" disabled={busy} aria-expanded={securityEditor === "password"} aria-controls={securityEditor === "password" ? "profile-editor-password-fields" : undefined} onClick={() => openSecurity("password")}>{securityEditor === "password" ? say("Close password form", "비밀번호 변경 닫기") : say("Change password", "비밀번호 변경")}</Button> : null}
+          </div>
+          {!hasPassword ? <p className="profile-editor-help">{authProviderName
+            ? say(`You sign in with ${authProviderName}. There is no Tada email password to change. Manage your password in your ${authProviderName} account settings.`, `${authProviderName} 계정으로 로그인 중이에요. 타다에서 변경할 이메일 비밀번호는 없습니다. 비밀번호는 ${authProviderName} 계정 설정에서 변경해 주세요.`)
+            : authProvider
+              ? say("This account uses a linked sign-in method, not a Tada email password. Manage your password with your sign-in provider.", "이 계정은 타다 이메일 비밀번호 대신 외부 로그인 방식을 사용해요. 비밀번호는 연결된 로그인 서비스에서 변경해 주세요.")
+              : say("We could not confirm your sign-in method. Please sign in again or contact support if you expected an email password.", "로그인 방식을 확인하지 못했어요. 다시 로그인해 보거나 이메일 비밀번호가 있어야 한다면 고객지원에 문의해 주세요.")}</p> : null}
+          {hasPassword && securityEditor === "password" ? <div id="profile-editor-password-fields" className="profile-editor-inline">{[{ id: "current", title: t("currentPassword"), value: currentPassword, set: setCurrentPassword, autocomplete: "current-password" }, { id: "new", title: say("New password · 8+ characters", "새 비밀번호 · 8자 이상"), value: password, set: setPassword, autocomplete: "new-password" }, { id: "confirm", title: t("confirmNewPassword"), value: confirmation, set: setConfirmation, autocomplete: "new-password" }].map((field) => <label className="ui-field" key={field.id} htmlFor={`profile-editor-password-${field.id}`}><span>{field.title}</span><input id={`profile-editor-password-${field.id}`} className="ui-input" disabled={securityBusy} aria-invalid={feedback.security?.error || undefined} aria-describedby={feedback.security?.error ? "profile-editor-feedback-security" : undefined} type={showPasswords ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.set(event.target.value)} /></label>)}<label className="profile-editor-show-password"><input type="checkbox" checked={showPasswords} onChange={(event) => setShowPasswords(event.target.checked)} />{say("Show passwords", "비밀번호 보기")}</label>{confirmation && confirmation !== password ? <small className="profile-editor-field-error">{say("The new passwords do not match.", "새 비밀번호가 일치하지 않습니다.")}</small> : null}<Button variant="primary" size="sm" disabled={busy} onClick={() => void changePassword()}>{securityBusy ? t("saving") : t("updatePassword")}</Button></div> : null}
           {notice("security")}<p className="profile-editor-help">{say("Email and phone changes take effect after their own verification.", "이메일·전화번호 변경은 별도 인증 후 적용돼요.")}</p>
         </SettingsSection>
         <SettingsSection id="privacy" title={say("Privacy", "공개 범위")} icon="ms-visibility" summary={`${visibilityLabel} · ${say("Contacts private", "연락처 비공개")}`} open={isOpen("privacy")} onToggle={() => toggle("privacy")}>
-          <label className="ui-field" htmlFor="profile-editor-visibility"><span>{say("Seller profile visibility", "판매자 프로필 공개 범위")}</span><span className="profile-editor-native-select"><select id="profile-editor-visibility" className="ui-input" disabled={!profileVisibilityAvailable || saving} value={visibility} onChange={(event) => setVisibility(event.target.value as ProfileVisibility)}><option value="public">{say("Everyone", "전체 공개")}</option><option value="members">{say("Tada members only", "타다 회원만")}</option><option value="trade_partners">{say("Neighbours in an active trade", "거래 중인 이웃들만")}</option></select><i className="ms ms-expand-more" aria-hidden="true" /></span><small>{say("Your name, photo and ratings may still appear with listings and reviews.", "상품·후기에는 이름과 사진, 평점이 표시될 수 있어요.")}</small></label>
+          <label className="ui-field" htmlFor="profile-editor-visibility"><span>{say("Seller profile visibility", "판매자 프로필 공개 범위")}</span><span className="profile-editor-native-select"><select id="profile-editor-visibility" className="ui-input" disabled={!profileVisibilityAvailable || saving} aria-describedby={!profileVisibilityAvailable ? "profile-editor-visibility-unavailable" : "profile-editor-visibility-hint"} value={profileVisibilityAvailable ? visibility : ""} onChange={(event) => setVisibility(event.target.value as ProfileVisibility)}><option value="" disabled>{say("Setting unavailable", "설정 확인 불가")}</option><option value="public">{say("Everyone", "전체 공개")}</option><option value="members">{say("Tada members only", "타다 회원만")}</option><option value="trade_partners">{say("Neighbours in an active trade", "거래 중인 이웃들만")}</option></select><i className="ms ms-expand-more" aria-hidden="true" /></span><small id="profile-editor-visibility-hint">{say("Your name, photo and ratings may still appear with listings and reviews.", "상품·후기에는 이름과 사진, 평점이 표시될 수 있어요.")}</small></label>
+          {!profileVisibilityAvailable ? <p id="profile-editor-visibility-unavailable" role="alert" className="profile-editor-feedback is-error">{say("We could not load your profile visibility. Try again later; if this continues, contact support.", "프로필 공개 범위를 확인하지 못해 변경할 수 없어요. 잠시 후 다시 시도하고, 계속되면 고객지원에 문의해 주세요.")}</p> : null}
           <div className="profile-editor-info-row"><div><strong>{say("Contact details", "연락처")}</strong><p>{say("Your phone number is not shown on your public profile.", "전화번호는 공개 프로필에 표시되지 않아요.")}</p></div><span className="ui-pill">{say("Private", "비공개")}</span></div>
         </SettingsSection>
         <SettingsSection id="display" title={say("Language & text size", "언어 및 글씨 크기")} icon="ms-language" summary={`${ko ? "한국어" : "English"} · ${say("Listing text", "상품 설명")} ${Math.round(descriptionTextScale(textStep) * 100)}%`} open={isOpen("display")} onToggle={() => toggle("display")}>
