@@ -9631,9 +9631,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist .wishlist-item-actions a, .account-wishlist .wishlist-item-actions button { min-height: var(--control-h-sm); padding: 0 var(--space-2); font-size: var(--text-xs); white-space: nowrap; }
 .account-wishlist .wishlist-item-actions a { gap: var(--space-1); background: var(--color-primary-soft); color: var(--color-primary-strong); }
 .account-wishlist .wishlist-item-actions a i { font-size: var(--text-md); }
-.account-wishlist .wishlist-item-actions .wishlist-remove-action { margin-left: auto; border: 0; background: transparent; color: var(--color-danger); }
-.account-wishlist .wishlist-remove-action i { margin: 0; font-size: var(--text-lg); }
-.account-wishlist .wishlist-remove-action span { display: none; }
+.account-wishlist .wishlist-item-actions .wishlist-remove-action { margin-left: auto; border: 1px solid var(--color-line-soft); background: var(--color-surface); color: var(--color-ink-soft); }
+.account-wishlist .wishlist-remove-action i { margin: 0; font-size: var(--text-sm); }
+.account-wishlist .wishlist-remove-action span { display: inline; }
+@media (hover: hover) and (pointer: fine) {
+  .account-wishlist .wishlist-item-actions .wishlist-remove-action:hover:not(:disabled) { border-color: var(--color-line); background: var(--color-surface-soft); color: var(--color-ink); }
+}
 .account-wishlist .wishlist-aside { display: grid; gap: var(--space-3); }
 .account-wishlist .wishlist-aside .ui-panel { margin: 0; border: 1px solid var(--color-line-soft); border-radius: var(--radius-lg); box-shadow: none; }
 .account-wishlist .wishlist-overview { display: none; }
@@ -9652,7 +9655,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .account-wishlist .wishlist-item { grid-template-columns: var(--space-12) minmax(0, 1fr) auto; gap: var(--space-4); }
   .account-wishlist .listing-row-media { width: var(--space-12); height: var(--space-12); }
   .account-wishlist .wishlist-item-actions { grid-column: 3; width: auto; }
-  .account-wishlist .wishlist-remove-action span { display: inline; }
   .account-wishlist .wishlist-overview { display: block; padding: var(--space-4); }
   .account-wishlist .wishlist-overview > div { display: flex; align-items: center; justify-content: space-between; padding-block: var(--space-2); border-top: 1px solid var(--color-line-soft); }
   .account-wishlist .wishlist-overview span { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-ink-soft); font-size: var(--text-sm); }

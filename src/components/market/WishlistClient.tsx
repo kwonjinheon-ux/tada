@@ -155,7 +155,7 @@ export function WishlistClient({ initialItems, recentlyViewed, initialFilter = "
           <div className="listing-row-actions wishlist-item-actions">
             <Link href={item.space === "community" ? `/community/${item.id}` : item.space === "service" ? `/services/${item.id}` : `/market/${item.id}`}>{legacy || !ko ? item.space === "community" ? "View post" : item.space === "service" ? "View service" : "View listing" : item.space === "community" ? "글 보기" : item.space === "service" ? "서비스 보기" : "상품 보기"}<i className="ms ms-chevron-right" aria-hidden="true" /></Link>
             {item.space === "market" ? <button className="wishlist-secondary-action" type="button" disabled={messagingId === item.id} onClick={() => void openConversation(item.id)}>{!legacy && ko ? messagingId === item.id ? "여는 중…" : "문의하기" : messagingId === item.id ? "Opening..." : "Message"}</button> : null}
-            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} aria-label={ko ? `${item.title} 찜 해제` : `Remove ${item.title} from saved items`} onClick={() => void removeItem(item)}><i className="ms ms-favorite" aria-hidden="true" /><span>{!legacy && ko ? "찜 해제" : "Remove"}</span></button>
+            <button className="wishlist-remove-action" type="button" disabled={updatingIds.has(itemKey(item))} aria-label={ko ? `${item.title} 찜 해제` : `Remove ${item.title} from saved items`} onClick={() => void removeItem(item)}><i className="ms ms-close" aria-hidden="true" /><span>{!legacy && ko ? "찜 해제" : "Remove"}</span></button>
           </div>
         </article>)}
       </section> : <section className="wishlist-discovery" aria-labelledby="wishlist-discovery-title">
