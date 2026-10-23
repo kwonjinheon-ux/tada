@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { useLanguage } from "@/components/LanguageProvider";
 import { DashboardAdBanner } from "@/components/dashboard/AccountPagePatterns";
+import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
 export type WishlistItem = {
   id: string;
@@ -208,7 +209,7 @@ export function WishlistClient({ initialItems, recentlyViewed, initialFilter = "
   </DialogOverlay> : null;
 
   if (!legacy) return <div className="dashboard-content profile-settings-content wishlist-content account-modern account-wishlist">
-    <header className="wishlist-page-intro"><h1>{ko ? "찜 목록" : "Saved items"}</h1><p>{ko ? "마음에 담아둔 상품과 글, 서비스를 한눈에 살펴보세요." : "Find your saved items, posts and services in one place."}</p></header>
+    <header className="wishlist-page-intro"><div className="account-page-intro-title"><BackToMyPage /><h1>{ko ? "찜 목록" : "Saved items"}</h1></div><p>{ko ? "마음에 담아둔 상품과 글, 서비스를 한눈에 살펴보세요." : "Find your saved items, posts and services in one place."}</p></header>
     <div className="wishlist-redesign-layout"><div className="wishlist-main-column">
       <form className="wishlist-search" role="search" onSubmit={(event) => event.preventDefault()}><i className="ms ms-search" aria-hidden="true" /><input className="ui-input" type="search" value={search} onChange={(event) => changeSearch(event.target.value)} aria-label={ko ? "찜 목록 검색" : "Search saved items"} placeholder={ko ? "찜한 상품, 글, 서비스 검색" : "Search your saved items"} />{search ? <IconButton type="button" onClick={() => changeSearch("")} aria-label={ko ? "검색어 지우기" : "Clear search"}><i className="ms ms-close" aria-hidden="true" /></IconButton> : null}</form>
       <div className="wishlist-tabs" role="tablist" aria-label={ko ? "찜 목록 필터" : "Saved item filters"}>{filters.map((option) => <button className={filter === option ? "is-active" : ""} type="button" role="tab" key={option} aria-selected={filter === option} onClick={() => changeFilter(option)}>{option !== "all" ? <i className={`ms ${filterIcons[option]} is-${option}`} aria-hidden="true" /> : null}{ko ? { all: "전체", market: "마켓", community: "커뮤니티", service: "서비스" }[option] : filterLabels[option]}<b>{searchedItems.filter((item) => matchesFilter(item, option)).length}</b></button>)}</div>

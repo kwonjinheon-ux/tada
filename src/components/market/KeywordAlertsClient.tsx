@@ -105,7 +105,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
   };
 
   if (!legacy) return <div className="dashboard-content keywords-content account-modern account-keywords">
-    <AccountPageIntro icon="ms-key" title={ko ? "관심 키워드" : "Saved keywords"} description={ko ? "찾는 상품이 올라오면 알려드려요." : "Get notified when something you're looking for is listed."} />
+    <AccountPageIntro icon="ms-key" title={ko ? "관심 키워드" : "Saved keywords"} description={ko ? "찾는 상품이 올라오면 알려드려요." : "Get notified when something you're looking for is listed."} backToMyPage />
     <div className="keyword-redesign-layout">
       <div className="keyword-main-column">
         <form className="ui-panel keyword-create-panel" onSubmit={addKeyword}>

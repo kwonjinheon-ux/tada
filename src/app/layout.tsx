@@ -4,6 +4,7 @@ import "./icon-font.css";
 import "../../styles.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
+import { NavigationHistoryTracker } from "@/components/layout/NavigationHistory";
 import { getRequestLocale } from "@/lib/locale-cookie";
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       </head>
       <body>
         <LanguageProvider initialLocale={locale}>
+          <NavigationHistoryTracker />
           <Navbar />
           {children}
         </LanguageProvider>

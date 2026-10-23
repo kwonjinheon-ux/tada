@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { useLanguage } from "@/components/LanguageProvider";
+import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
 type AccountWorkspaceKind = "listings" | "reservations";
 
@@ -36,13 +37,14 @@ type AccountPageIntroProps = {
   title: string;
   description: string;
   detail?: string;
+  backToMyPage?: boolean;
 };
 
 /** The small, consistent introduction shared by My Page's destination screens. */
-export function AccountPageIntro({ icon, title, description, detail }: AccountPageIntroProps) {
-  return <header className="account-page-intro">
+export function AccountPageIntro({ icon, title, description, detail, backToMyPage = false }: AccountPageIntroProps) {
+  return <header className={`account-page-intro${backToMyPage ? " has-back" : ""}`}>
     <span className="account-page-intro-icon"><i className={`ms ${icon}`} aria-hidden="true" /></span>
-    <div><h1>{title}</h1><p>{description}</p>{detail ? <span className="account-page-intro-detail">{detail}</span> : null}</div>
+    <div><div className="account-page-intro-title">{backToMyPage ? <BackToMyPage /> : null}<h1>{title}</h1></div><p>{description}</p>{detail ? <span className="account-page-intro-detail">{detail}</span> : null}</div>
   </header>;
 }
 

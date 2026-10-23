@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 import { NotificationSettingsDialog, type NotificationPreferenceKey, type NotificationPreferences } from "@/components/notifications/NotificationSettingsDialog";
+import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
 export type MarketNotification = {
   id: string;
@@ -349,7 +350,7 @@ export function MarketNotificationsClient({
     ];
     return <div className="dashboard-content notifications-content account-modern account-notifications notifications-redesign">
       <header className="notifications-redesign-intro">
-        <div><h1>{t("notifications")}</h1><p>{ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."}</p></div>
+        <div><div className="account-page-intro-title"><BackToMyPage /><h1>{t("notifications")}</h1></div><p>{ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."}</p></div>
         <NotificationHeaderActions
           ko={ko}
           unreadCount={unreadCount}
