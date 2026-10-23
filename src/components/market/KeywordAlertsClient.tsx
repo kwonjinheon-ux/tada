@@ -9,6 +9,7 @@ import { AccountPageIntro, DashboardAdBanner } from "@/components/dashboard/Acco
 import { Button } from "@/components/ui/Button";
 
 export type KeywordAlert = { id: string; keyword: string; categorySlug: string | null };
+type KeywordAlertResponse = { id: string; keyword: string; category_slug: string | null };
 
 const keywordRemovalDelayMs = 160;
 
@@ -16,6 +17,7 @@ function getAlertCategory(alert: KeywordAlert) {
   const categorySlug = alert.categorySlug ?? suggestCategoryFromTitle(alert.keyword)?.mainCategory ?? null;
   const category = marketplaceCategories.find(({ value }) => value === categorySlug);
   return {
+    slug: categorySlug,
     label: category?.label ?? "General",
     tone: categorySlug ? `keyword-chip-${categorySlug}` : "keyword-chip-general",
   };
@@ -32,6 +34,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [leavingId, setLeavingId] = useState<string | null>(null);
   const [notificationEnabled, setNotificationEnabled] = useState(initialNotificationEnabled);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const [savingNotification, setSavingNotification] = useState(false);
   const [notificationError, setNotificationError] = useState<string | null>(null);
 
@@ -58,12 +61,13 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
     setError(null);
     try {
       const response = await fetch("/api/market/keywords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword }) });
-      const payload = await response.json().catch(() => null) as { alert?: KeywordAlert; error?: string } | null;
+      const payload = await response.json().catch(() => null) as { alert?: KeywordAlertResponse; error?: string } | null;
       if (!response.ok || !payload?.alert) {
         setError(payload?.error ?? "Unable to add this keyword right now.");
         return;
       }
-      setAlerts((current) => [payload.alert!, ...current]);
+      const savedAlert = payload.alert;
+      setAlerts((current) => [{ id: savedAlert.id, keyword: savedAlert.keyword, categorySlug: savedAlert.category_slug }, ...current]);
       setKeyword("");
     } catch {
       setError("Unable to reach keyword alerts right now.");
@@ -117,7 +121,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
             const category = getAlertCategory(alert);
             return <div className={`keyword-saved-row${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id}>
               <i className="ms ms-search keyword-saved-icon" aria-hidden="true" />
-              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{alert.categorySlug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
+              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
               <Link className="ui-button ui-button--secondary ui-button--sm keyword-search-link" href={`/market?q=${encodeURIComponent(alert.keyword)}`} aria-label={ko ? `${alert.keyword} 지금 검색` : `Search ${alert.keyword} now`}><i className="ms ms-search" aria-hidden="true" />{ko ? "검색" : "Search"}</Link>
               <Button variant="ghost" size="sm" className="keyword-remove-button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={ko ? `${alert.keyword} 삭제` : `Remove ${alert.keyword}`}><i className="ms ms-delete" aria-hidden="true" /><span>{ko ? "삭제" : "Remove"}</span></Button>
             </div>;
@@ -126,12 +130,20 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
         </section>
       </div>
       <aside className="keyword-side-column" aria-label={ko ? "키워드 알림 안내" : "Keyword alert information"}>
-        <section className="ui-panel keyword-status-panel">
-          <div className="keyword-status-heading"><span className="keyword-status-icon"><i className="ms ms-notifications" aria-hidden="true" /></span><strong>{ko ? `키워드 알림 ${notificationEnabled ? "켜짐" : "꺼짐"}` : `Keyword alerts ${notificationEnabled ? "on" : "off"}`}</strong><label className="keyword-alert-switch"><input className="notification-settings-input" type="checkbox" checked={notificationEnabled} onChange={(event) => void updateNotification(event.target.checked)} disabled={!notificationSettingsAvailable || savingNotification} aria-label={ko ? "키워드 알림" : "Keyword alerts"} /><span className="notification-settings-track" /></label></div>
-          <p>{ko ? "저장한 키워드와 카테고리에 맞는 새 상품을 알려드려요." : "Get notified when a new listing matches your keyword and category."}</p>
-          {!notificationSettingsAvailable ? <p className="keyword-status-error" role="status">{ko ? "현재 알림 설정을 불러올 수 없어요." : "Notification settings are currently unavailable."}</p> : null}
-          {notificationError ? <p className="keyword-status-error" role="alert">{notificationError}</p> : null}
-          <Link className="keyword-settings-link" href="/market/dashboard/notifications">{ko ? "알림 설정" : "Notification settings"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
+        <section className={`ui-panel keyword-status-panel${mobileSettingsOpen ? " is-open" : ""}`}>
+          <Button variant="ghost" className="keyword-status-trigger" aria-expanded={mobileSettingsOpen} aria-controls="keyword-status-details" onClick={() => setMobileSettingsOpen((open) => !open)}>
+            <span className="keyword-status-icon"><i className="ms ms-notifications" aria-hidden="true" /></span>
+            <strong>{ko ? "키워드 알림" : "Keyword alerts"}</strong>
+            <span className={`keyword-status-value${!notificationSettingsAvailable ? " is-unavailable" : notificationEnabled ? " is-on" : ""}`}>{!notificationSettingsAvailable ? ko ? "확인 불가" : "Unavailable" : notificationEnabled ? ko ? "켜짐" : "On" : ko ? "꺼짐" : "Off"}</span>
+            <i className={`ms ${mobileSettingsOpen ? "ms-expand-less" : "ms-expand-more"}`} aria-hidden="true" />
+          </Button>
+          <div className="keyword-status-details" id="keyword-status-details">
+            <div className="keyword-status-heading"><span className="keyword-status-icon"><i className="ms ms-notifications" aria-hidden="true" /></span><strong><span className="keyword-desktop-label">{ko ? `키워드 알림 ${notificationEnabled ? "켜짐" : "꺼짐"}` : `Keyword alerts ${notificationEnabled ? "on" : "off"}`}</span><span className="keyword-mobile-label">{ko ? "새 상품 알림 받기" : "Notify me of new listings"}</span></strong><label className="keyword-alert-switch"><input className="notification-settings-input" type="checkbox" checked={notificationEnabled} onChange={(event) => void updateNotification(event.target.checked)} disabled={!notificationSettingsAvailable || savingNotification} aria-label={ko ? "키워드 알림" : "Keyword alerts"} /><span className="notification-settings-track" /></label></div>
+            <p>{ko ? "저장한 키워드와 카테고리에 맞는 새 상품을 알려드려요." : "Get notified when a new listing matches your keyword and category."}</p>
+            {!notificationSettingsAvailable ? <p className="keyword-status-error" role="status">{ko ? "현재 알림 설정을 불러올 수 없어요." : "Notification settings are currently unavailable."}</p> : null}
+            {notificationError ? <p className="keyword-status-error" role="alert">{notificationError}</p> : null}
+            <Link className="keyword-settings-link" href="/market/dashboard/notifications">{ko ? "전체 알림 설정" : "All notification settings"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
+          </div>
         </section>
         <section className="ui-panel keyword-how-panel"><h2><i className="ms ms-lightbulb" aria-hidden="true" />{ko ? "이렇게 작동해요" : "How it works"}</h2><ol><li><span>1</span><div><strong>{ko ? "키워드 저장" : "Save a keyword"}</strong><p>{ko ? "찾고 싶은 상품 키워드를 저장해요." : "Save the item you want to find."}</p></div></li><li><span>2</span><div><strong>{ko ? "새 상품 등록" : "New listing"}</strong><p>{ko ? "마켓에 새로운 상품이 올라와요." : "A new listing appears in Market."}</p></div></li><li><span>3</span><div><strong>{ko ? "알림 도착" : "Get notified"}</strong><p>{ko ? "키워드와 카테고리가 맞으면 알려드려요." : "We notify you when both match."}</p></div></li></ol></section>
         <DashboardAdBanner kind="keywords" />
