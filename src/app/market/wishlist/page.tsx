@@ -24,7 +24,7 @@ function categoryLabel(slug: string | null) {
   return slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" & ");
 }
 
-export default async function MarketWishlistPage({ searchParams }: { searchParams?: Promise<{ filter?: string }> } = {}) {
+export default async function MarketWishlistPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
   const params = await searchParams;
   const initialFilter = params?.filter === "service" ? "service" : "all";
   const user = await getServerUser();
@@ -57,7 +57,7 @@ export default async function MarketWishlistPage({ searchParams }: { searchParam
   const toItem = (listingId: string): WishlistItem | null => {
     const listing = byId.get(listingId);
     if (!listing) return null;
-    return { id: listing.id, space: "market", title: listing.title, price: formatMarketPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? MARKET_LISTING_PLACEHOLDER_IMAGE };
+    return { id: listing.id, space: "market", title: listing.title, price: formatMarketPrice(listing.price_cents), category: categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" ? "Sold" : listing.status === "archived" ? "Archived" : listing.status === "pending" ? "Pending" : "Active", imageUrl: signedByPath.get(primaryPhotos.get(listing.id) ?? "") ?? MARKET_LISTING_PLACEHOLDER_IMAGE };
   };
   const bargainIds = bargainSaved.map((row) => row.listing_id);
   const { data: bargainListingRows } = bargainIds.length
@@ -74,7 +74,7 @@ export default async function MarketWishlistPage({ searchParams }: { searchParam
   const toBargainItem = (listingId: string): WishlistItem | null => {
     const listing = bargainById.get(listingId);
     if (!listing) return null;
-    return { id: listing.id, space: "bargain", title: listing.title, price: formatMarketPrice(listing.price_cents), category: listing.bargain_type === "garage-sale" ? "Garage Sale" : listing.bargain_type === "moving-sale" ? "Moving Sale" : categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" || listing.status === "archived" ? "Sold" : listing.status === "pending" ? "Pending" : "Active", imageUrl: bargainSignedByPath.get(bargainPrimaryPhotos.get(listing.id) ?? "") ?? "/images/logo.png" };
+    return { id: listing.id, space: "bargain", title: listing.title, price: formatMarketPrice(listing.price_cents), category: listing.bargain_type === "garage-sale" ? "Garage Sale" : listing.bargain_type === "moving-sale" ? "Moving Sale" : categoryLabel(listing.category_slug), categorySlug: listing.category_slug, status: listing.status === "sold" ? "Sold" : listing.status === "archived" ? "Archived" : listing.status === "pending" ? "Pending" : "Active", imageUrl: bargainSignedByPath.get(bargainPrimaryPhotos.get(listing.id) ?? "") ?? "/images/logo.png" };
   };
   const serviceIds = serviceSaved.map((row) => row.service_id);
   const { data: serviceListingRows } = serviceIds.length
@@ -89,17 +89,23 @@ export default async function MarketWishlistPage({ searchParams }: { searchParam
     if (!service) return null;
     const photo = [...service.service_listing_photos].sort((left, right) => left.display_order - right.display_order).find((candidate) => candidate.photo_kind !== "logo") ?? service.service_listing_photos[0];
     const price = service.price_from === null ? "Contact for pricing" : `${formatMarketPrice(Math.round(Number(service.price_from) * 100))}${service.price_unit ? ` / ${service.price_unit}` : ""}`;
-    return { id: service.id, space: "service", title: service.business_name || service.provider_name, price, category: `Services · ${categoryLabel(service.category_slug)}`, categorySlug: service.category_slug, status: "Active", imageUrl: photo ? serviceSignedByPath.get(photo.storage_path) ?? "/images/home/journey-services.png" : "/images/home/journey-services.png" };
+    return { id: service.id, space: "service", title: service.business_name || service.provider_name, price, category: `Services · ${categoryLabel(service.category_slug)}`, categorySlug: service.category_slug, status: "Active", imageUrl: photo ? serviceSignedByPath.get(photo.storage_path) ?? null : null };
   };
   const communityPostIds = communitySaved.map((row) => row.post_id);
   const { data: communityPostRows } = communityPostIds.length
     ? await supabase.from("community_posts").select("id,title,category_slug").in("id", communityPostIds).eq("status", "published")
     : { data: [] };
+  const { data: communityImageRows } = communityPostIds.length
+    ? await supabase.from("community_post_images").select("post_id,storage_path,display_order").in("post_id", communityPostIds).order("display_order", { ascending: true })
+    : { data: [] };
+  const communityImagePaths = new Map<string, string>();
+  for (const image of communityImageRows ?? []) if (!communityImagePaths.has(image.post_id)) communityImagePaths.set(image.post_id, image.storage_path);
+  const communitySignedByPath = await getSignedStorageImages("community-post-images", [...communityImagePaths.values()], "card");
   const communityPostsById = new Map(((communityPostRows ?? []) as CommunityPostRow[]).map((post) => [post.id, post]));
   const toCommunityItem = (postId: string): WishlistItem | null => {
     const post = communityPostsById.get(postId);
     if (!post) return null;
-    return { id: post.id, space: "community", title: post.title, price: "Community post", category: categoryLabel(post.category_slug), categorySlug: post.category_slug, status: "Active", imageUrl: "/images/logo.png" };
+    return { id: post.id, space: "community", title: post.title, price: "Community post", category: categoryLabel(post.category_slug), categorySlug: post.category_slug, status: "Active", imageUrl: communitySignedByPath.get(communityImagePaths.get(post.id) ?? "") ?? null };
   };
   const orderedWishlist = [
     ...saved.map((row) => ({ row, space: "market" as const })),
@@ -107,8 +113,11 @@ export default async function MarketWishlistPage({ searchParams }: { searchParam
     ...serviceSaved.map((row) => ({ row: { listing_id: row.service_id, created_at: row.created_at }, space: "service" as const })),
     ...communitySaved.map((row) => ({ row: { listing_id: row.post_id, created_at: row.created_at }, space: "community" as const })),
   ].sort((left, right) => right.row.created_at.localeCompare(left.row.created_at));
-  const wishlist = orderedWishlist.map(({ row, space }) => space === "market" ? toItem(row.listing_id) : space === "bargain" ? toBargainItem(row.listing_id) : space === "service" ? toServiceItem(row.listing_id) : toCommunityItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
-  const recent = viewed.filter((row) => !saved.some((savedRow) => savedRow.listing_id === row.listing_id)).map((row) => toItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
+  const wishlist = orderedWishlist.map(({ row, space }) => {
+    const item = space === "market" ? toItem(row.listing_id) : space === "bargain" ? toBargainItem(row.listing_id) : space === "service" ? toServiceItem(row.listing_id) : toCommunityItem(row.listing_id);
+    return item ? { ...item, savedAt: row.created_at } : null;
+  }).filter((item) => item !== null);
+  const recent = viewed.map((row) => toItem(row.listing_id)).filter((item): item is WishlistItem => Boolean(item));
 
   return <main className="marketplace-page dashboard-page dashboard-layout wishlist-page"><DashboardSidebar context="market" /><WishlistClient initialItems={wishlist} recentlyViewed={recent} initialFilter={initialFilter} /></main>;
 }
