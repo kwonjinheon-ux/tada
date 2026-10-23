@@ -61,9 +61,9 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
     setError(null);
     try {
       const response = await fetch("/api/market/keywords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword }) });
-      const payload = await response.json().catch(() => null) as { alert?: KeywordAlertResponse; error?: string } | null;
+      const payload = await response.json().catch(() => null) as { alert?: KeywordAlertResponse; error?: string; code?: string } | null;
       if (!response.ok || !payload?.alert) {
-        setError(payload?.error ?? "Unable to add this keyword right now.");
+        setError(payload?.code === "MULTIPLE_KEYWORDS" && ko ? "키워드를 쉼표로 묶지 말고 하나씩 저장해 주세요. 그래야 각 카테고리의 새 상품을 찾을 수 있어요." : payload?.error ?? "Unable to add this keyword right now.");
         return;
       }
       const savedAlert = payload.alert;
@@ -111,7 +111,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
         <form className="ui-panel keyword-create-panel" onSubmit={addKeyword}>
           <label htmlFor="new-keyword">{ko ? "새 키워드 추가" : "Add a keyword"}</label>
           <div className="keyword-create-controls"><div className="keywords-input-wrap"><i className="ms ms-search" aria-hidden="true" /><input id="new-keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={ko ? "예: 식탁, 노트북, 자전거" : "e.g. dining table, laptop, bicycle"} minLength={2} maxLength={80} disabled={alerts.length >= 20} /></div><Button type="submit" disabled={keyword.trim().length < 2 || isSaving || alerts.length >= 20}>{isSaving ? t("saving") : ko ? "키워드 저장" : "Save keyword"}</Button></div>
-          <p>{ko ? "2~80자 · 최대 20개까지 저장할 수 있어요." : "2–80 characters · Save up to 20 keywords."}</p>
+          <p>{ko ? "키워드 하나씩 · 2~80자 · 최대 20개까지 저장할 수 있어요." : "One keyword at a time · 2–80 characters · Save up to 20."}</p>
           {alerts.length >= 20 ? <p role="status">{ko ? "저장 한도에 도달했어요. 새 키워드를 추가하려면 하나를 삭제해 주세요." : "Your keyword list is full. Remove one to add another."}</p> : null}
           {error ? <p className="keywords-error" role="alert">{error}</p> : null}
         </form>
@@ -121,7 +121,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
             const category = getAlertCategory(alert);
             return <div className={`keyword-saved-row${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id}>
               <i className="ms ms-search keyword-saved-icon" aria-hidden="true" />
-              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
+              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{/[,，、]/.test(alert.keyword) ? ko ? "각각 다시 저장해야 알림을 받을 수 있어요" : "Save these separately to receive alerts" : category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
               <Link className="ui-button ui-button--secondary ui-button--sm keyword-search-link" href={`/market?q=${encodeURIComponent(alert.keyword)}`} aria-label={ko ? `${alert.keyword} 지금 검색` : `Search ${alert.keyword} now`}><i className="ms ms-search" aria-hidden="true" />{ko ? "검색" : "Search"}</Link>
               <Button variant="ghost" size="sm" className="keyword-remove-button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={ko ? `${alert.keyword} 삭제` : `Remove ${alert.keyword}`}><i className="ms ms-delete" aria-hidden="true" /><span>{ko ? "삭제" : "Remove"}</span></Button>
             </div>;

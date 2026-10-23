@@ -32,6 +32,7 @@ export async function POST(request: Request) {
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim().replace(/\s+/g, " ") : "";
   if (keyword.length < 2 || keyword.length > 80) return NextResponse.json({ error: "Use a keyword between 2 and 80 characters." }, { status: 400 });
   if (violatesMarketplaceProhibitedItemsPolicy(keyword)) return NextResponse.json({ error: prohibitedMarketplaceItemsMessage }, { status: 400 });
+  if (/[,，、]/.test(keyword)) return NextResponse.json({ code: "MULTIPLE_KEYWORDS", error: "Save each keyword separately so its category and alerts can match correctly." }, { status: 400 });
   const categorySlug = suggestCategoryFromTitle(keyword)?.mainCategory ?? null;
   const { data, error } = await context.supabase.from("market_keyword_alerts").insert({ user_id: context.user.id, keyword, category_slug: categorySlug }).select("id,keyword,category_slug,created_at").single();
   if (error?.code === "23505") return NextResponse.json({ error: "That keyword is already being tracked." }, { status: 409 });

@@ -51,8 +51,8 @@ const category = (label: string, value: string, keywords: string[], subcategorie
 
 // English labels and stable slugs are canonical. Keywords intentionally include common Korean terms for matching bilingual titles.
 export const marketplaceCategories: MarketplaceCategory[] = [
-  category("Mobile Phones & Tablets", "mobile-phones-tablets", ["phone", "iphone", "samsung", "tablet", "휴대폰", "핸드폰", "태블릿"], [
-    ["Mobile Phones", "mobile-phones", ["phone", "iphone", "galaxy", "pixel", "oppo", "xiaomi", "휴대폰", "핸드폰"]],
+  category("Mobile Phones & Tablets", "mobile-phones-tablets", ["phone", "iphone", "samsung", "tablet", "휴대폰", "핸드폰", "스마트폰", "아이폰", "태블릿"], [
+    ["Mobile Phones", "mobile-phones", ["phone", "iphone", "galaxy", "pixel", "oppo", "xiaomi", "휴대폰", "핸드폰", "스마트폰", "아이폰"]],
     ["Tablets", "tablets", ["tablet", "ipad", "galaxy tab", "태블릿", "아이패드"]],
     ["Smartwatches", "smartwatches", ["apple watch", "galaxy watch", "fitbit", "garmin", "smartwatch", "스마트워치"]],
     ["Phone Cases", "phone-cases", ["phone case", "iphone case", "magsafe case", "폰케이스", "케이스"]],
@@ -84,11 +84,11 @@ export const marketplaceCategories: MarketplaceCategory[] = [
     ["Coffee Machines", "coffee-machines", ["coffee machine", "espresso", "grinder", "커피머신", "에스프레소"]],
     ["Heating & Cooling", "heating-cooling", ["heater", "fan", "air conditioner", "dehumidifier", "히터", "선풍기", "에어컨"]],
   ]),
-  category("Furniture & Home Decor", "furniture-home-decor", ["sofa", "bed", "table", "chair", "furniture", "가구", "소파", "침대"], [
+  category("Furniture & Home Decor", "furniture-home-decor", ["sofa", "bed", "table", "chair", "furniture", "가구", "소파", "침대", "테이블"], [
     ["Sofas & Lounge Suites", "sofas-lounge-suites", ["sofa", "couch", "recliner", "소파", "리클라이너"]],
     ["Beds & Bed Frames", "beds-bed-frames", ["bed frame", "bunk bed", "침대", "침대 프레임"]],
     ["Mattresses", "mattresses", ["mattress", "queen mattress", "매트리스"]],
-    ["Dining Tables & Chairs", "dining-tables-chairs", ["dining table", "dining chair", "식탁", "의자"]],
+    ["Dining Tables & Chairs", "dining-tables-chairs", ["dining table", "dining chair", "식탁", "의자", "테이블"]],
     ["Desks & Office Furniture", "desks-office-furniture", ["desk", "office chair", "filing cabinet", "책상", "사무용 의자"]],
     ["Wardrobes & Drawers", "wardrobes-drawers", ["wardrobe", "dresser", "drawers", "옷장", "서랍장"]],
     ["Lighting", "lighting", ["lamp", "light", "ceiling light", "조명", "스탠드"]],
@@ -213,14 +213,18 @@ export function getSubcategories(mainCategory: string) {
 
 export function suggestCategoryFromTitle(title: string) {
   const normalized = title.trim().toLocaleLowerCase();
-  if (normalized.length < 3) return null;
+  if (normalized.length < 2) return null;
+
+  // Two-character searches such as "TV" and "소파" are valid saved keywords.
+  // Match those exactly so a short fragment cannot classify an unrelated title.
+  const matchesKeyword = (keyword: string) => normalized.length === 2 ? normalized === keyword : normalized.includes(keyword);
 
   let bestMatch: { mainCategory: string; subCategory: string; score: number } | null = null;
 
   for (const category of marketplaceCategories) {
-    const categoryScore = category.keywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 2 : 0), 0);
+    const categoryScore = category.keywords.reduce((score, keyword) => score + (matchesKeyword(keyword) ? 2 : 0), 0);
     for (const subcategory of category.subcategories) {
-      const subcategoryScore = subcategory.keywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 4 : 0), 0);
+      const subcategoryScore = subcategory.keywords.reduce((score, keyword) => score + (matchesKeyword(keyword) ? 4 : 0), 0);
       const score = categoryScore + subcategoryScore;
       if (score > (bestMatch?.score ?? 0)) bestMatch = { mainCategory: category.value, subCategory: subcategory.value, score };
     }
