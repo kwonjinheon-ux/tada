@@ -12,9 +12,12 @@ export default async function KeywordAlertsPage() {
   const { data: alertRows } = supabase
     ? await supabase.from("market_keyword_alerts").select("id,keyword,category_slug").eq("user_id", user.id).order("created_at", { ascending: false })
     : { data: [] };
+  const preferenceResult = supabase
+    ? await supabase.from("notification_preferences").select("keyword_enabled").eq("user_id", user.id).maybeSingle()
+    : { data: null, error: { message: "Unavailable" } };
   const initialAlerts: KeywordAlert[] = (alertRows ?? []).map((alert) => ({ id: alert.id, keyword: alert.keyword, categorySlug: alert.category_slug }));
 
   return (
-      <KeywordAlertsClient initialAlerts={initialAlerts} />
+      <KeywordAlertsClient initialAlerts={initialAlerts} initialNotificationEnabled={preferenceResult.data?.keyword_enabled ?? true} notificationSettingsAvailable={!preferenceResult.error} />
   );
 }

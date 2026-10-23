@@ -60,7 +60,7 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
 
   return <aside className="ui-panel account-ad-banner" aria-label={ko ? "광고" : "Advertisement"}>
     <div className="account-ad-copy"><span>{ko ? "광고 · 타다 추천" : "Ad · From Tada"}</span><strong>{content.title}</strong><p>{content.description}</p><Link className="ui-button ui-button--secondary ui-button--sm" href={content.href}>{content.action}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
-    <img src="/images/brand/tada-wordmark.png" alt="" width={1965} height={800} loading="lazy" />
+    <img src={kind === "keywords" ? "/images/home/journey-market.png" : "/images/brand/tada-wordmark.png"} alt="" width={kind === "keywords" ? 1536 : 1965} height={kind === "keywords" ? 1024 : 800} loading="lazy" />
   </aside>;
 }
 
