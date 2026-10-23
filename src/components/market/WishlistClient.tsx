@@ -51,14 +51,17 @@ function WishlistSavedCard({ item, ko, editing, selected, busy, messaging, onSel
   const domain = item.space === "service" ? "service" : item.space === "community" ? "community" : "market";
   const domainLabel = domain === "service" ? ko ? "서비스" : "Services" : domain === "community" ? ko ? "커뮤니티" : "Community" : ko ? "마켓" : "Market";
   const statusLabel = item.status === "Sold" ? ko ? "거래 완료" : "Sold" : item.status === "Archived" ? ko ? "판매 종료" : "Archived" : item.status === "Pending" ? ko ? "대기 중" : "Pending" : ko ? "판매 중" : "Available";
-  return <article className={`listing-row wishlist-item is-${domain}${editing ? " is-editing" : ""}`}>
+  const canMessage = item.space === "market" && item.status === "Active";
+  return <article className={`listing-row wishlist-item is-${domain}${editing ? " is-editing" : ""}${!editing && canMessage ? " has-contact" : ""}`}>
     {editing ? <label className="wishlist-select"><input type="checkbox" checked={selected} onChange={onSelect} aria-label={ko ? `${item.title} 선택` : `Select ${item.title}`} /><i className={`ms ${selected ? "ms-check-box" : "ms-check-box-outline-blank"}`} aria-hidden="true" /></label> : null}
     <Link className="wishlist-item-link" href={itemHref(item)} onClick={editing ? (event) => { event.preventDefault(); onSelect(); } : undefined} aria-label={editing ? ko ? `${item.title} 선택 전환` : `Toggle selection for ${item.title}` : ko ? `${item.title} 상세 보기` : `View ${item.title}`}>
       <span className="listing-row-media">{item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span className="wishlist-text-only-icon"><i className={`ms ${domain === "community" ? "ms-description" : "ms-build"}`} aria-hidden="true" /></span>}</span>
       <span className="listing-row-body"><span className="wishlist-card-labels"><span className={`wishlist-domain-label is-${domain}`}><i className={`ms ${filterIcons[domain]}`} aria-hidden="true" />{domainLabel}</span>{domain === "market" ? <span className={`wishlist-card-status is-${item.status.toLowerCase()}`}>{statusLabel}</span> : null}</span><strong className="wishlist-card-title">{item.title}</strong>{item.price && item.price !== "Contact for pricing" && domain !== "community" ? <strong className="listing-row-price">{item.price}</strong> : null}<small className="listing-row-meta">{item.category}</small></span>
     </Link>
-    {!editing ? <Button variant="ghost" size="sm" className="wishlist-save-heart" disabled={busy} onClick={onRemove} aria-label={ko ? `${item.title} 찜 해제` : `Remove ${item.title} from saved items`}><i className="ms ms-favorite ms--outline" aria-hidden="true" /><span>{ko ? "찜 해제" : "Remove"}</span></Button> : null}
-    {!editing && item.space === "market" && item.status === "Active" ? <Button variant="secondary" size="sm" className="wishlist-contact" disabled={messaging} onClick={onMessage}>{messaging ? ko ? "여는 중…" : "Opening…" : ko ? "문의하기" : "Message"}</Button> : null}
+    {!editing ? <div className="listing-row-actions wishlist-card-actions">
+      <Button variant="ghost" size="sm" className="wishlist-save-heart" disabled={busy} onClick={onRemove} aria-label={ko ? `${item.title} 찜 해제` : `Remove ${item.title} from saved items`}><i className="ms ms-favorite ms--outline" aria-hidden="true" /><span>{ko ? "찜 해제" : "Remove"}</span></Button>
+      {canMessage ? <Button variant="secondary" size="sm" className="wishlist-contact" disabled={messaging} onClick={onMessage}>{messaging ? ko ? "여는 중…" : "Opening…" : ko ? "문의하기" : "Message"}</Button> : null}
+    </div> : null}
   </article>;
 }
 
