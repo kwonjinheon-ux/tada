@@ -54,7 +54,7 @@ export function OwnedListingActions({ id, title, kind, status, canEdit, canDelet
 
   return <>
     <div className="owned-listing-actions listing-row-actions">
-      <Link className="ui-button ui-button--primary ui-button--sm owned-listing-primary" href={primaryIsEdit ? editHref : href}>
+      <Link className="ui-button ui-button--secondary ui-button--sm owned-listing-primary" href={primaryIsEdit ? editHref : href}>
         {primaryIsEdit ? ko ? "서비스 수정" : "Edit service" : kind === "services" ? ko ? "서비스 보기" : "View service" : status === "sold" ? ko ? "등록 내용 보기" : "View listing" : ko ? "상품 보기" : "View item"}
       </Link>
       <div className="owned-listing-more" ref={menuRef}>

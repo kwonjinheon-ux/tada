@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ManageListingsCategoryTabs, type ManageListingsCategory } from "@/components/dashboard/ManageListingsCategoryTabs";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
-import { AccountLocaleText, AccountPageIntro } from "@/components/dashboard/AccountPagePatterns";
+import { AccountLocaleText, AccountPageIntro, AccountWorkspaceAside } from "@/components/dashboard/AccountPagePatterns";
 import { NewListingMenu } from "@/components/dashboard/NewListingMenu";
 import { OwnedListingRow, type OwnedListingItem } from "@/components/dashboard/OwnedListingRow";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
@@ -201,17 +201,21 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   </section>;
 
   return <section className="dashboard-content manage-listings-content account-modern account-workspace owned-listings-page">
-    <div className="owned-listings-inner"><div className="owned-listings-header">
+    <div className="owned-listings-header">
       <AccountPageIntro title={<AccountLocaleText en="My items & services" ko="내 상품·서비스" />} description={<AccountLocaleText en="See the status of your listings and manage them here." ko="등록한 상품과 서비스의 상태를 확인하고 관리하세요." />} backToMyPage />
       <NewListingMenu />
     </div>
-    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
-    <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><span className="owned-listings-sort"><i className="ms ms-schedule" aria-hidden="true" /><AccountLocaleText en="Newest first" ko="최신순" /></span></div>
-    {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
-      : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
-      : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={activeCategory === "all" ? "/market/dashboard/listings" : `/market/dashboard/listings?category=${activeCategory}`}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>
-      : <div className="manage-listings-empty"><i className="ms ms-list-alt" aria-hidden="true" /><h2><AccountLocaleText en={activeCategory === "services" ? "You haven't listed a service yet." : "You haven't listed anything yet."} ko={activeCategory === "services" ? "등록한 서비스가 없어요" : "아직 등록한 상품이나 서비스가 없어요"} /></h2><Link href={activeCategory === "services" ? "/services/create" : "/market/create"}><AccountLocaleText en={activeCategory === "services" ? "List a service" : "Create a listing"} ko={activeCategory === "services" ? "서비스 등록" : "새로 등록"} /></Link></div>}
-    <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
+    <div className="account-content-rail-layout owned-listings-layout">
+      <div className="owned-listings-main">
+        <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
+        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><span className="owned-listings-sort"><i className="ms ms-schedule" aria-hidden="true" /><AccountLocaleText en="Newest first" ko="최신순" /></span></div>
+        {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
+          : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
+          : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={activeCategory === "all" ? "/market/dashboard/listings" : `/market/dashboard/listings?category=${activeCategory}`}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>
+          : <div className="manage-listings-empty"><i className="ms ms-list-alt" aria-hidden="true" /><h2><AccountLocaleText en={activeCategory === "services" ? "You haven't listed a service yet." : "You haven't listed anything yet."} ko={activeCategory === "services" ? "등록한 서비스가 없어요" : "아직 등록한 상품이나 서비스가 없어요"} /></h2><Link href={activeCategory === "services" ? "/services/create" : "/market/create"}><AccountLocaleText en={activeCategory === "services" ? "List a service" : "Create a listing"} ko={activeCategory === "services" ? "서비스 등록" : "새로 등록"} /></Link></div>}
+        <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
+      </div>
+      <AccountWorkspaceAside />
     </div>
   </section>;
 }

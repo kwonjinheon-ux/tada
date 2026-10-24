@@ -47,7 +47,7 @@ export function AccountPageIntro({ title, description, detail, backToMyPage = fa
   </header>;
 }
 
-type DashboardAdBannerProps = { kind: "notifications" | "wishlist" | "keywords" };
+type DashboardAdBannerProps = { kind: "notifications" | "wishlist" | "keywords" | "listings" };
 
 /** Clearly labelled house promotion, kept away from account actions and private content. */
 export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
@@ -57,11 +57,27 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
     notifications: { title: ko ? "우리 동네에서 필요한 도움을 찾아보세요" : "Find a helping hand nearby", description: ko ? "가까운 곳의 서비스를 타다에서 만나보세요." : "Explore useful local services on Tada.", action: ko ? "서비스 둘러보기" : "Explore services", href: "/services" },
     wishlist: { title: ko ? "다음 마음에 드는 것을 찾아보세요" : "Find your next local favourite", description: ko ? "우리 동네에 새로 올라온 상품을 둘러보세요." : "See what's new in your neighbourhood.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
     keywords: { title: ko ? "찾는 상품이 아직 없나요?" : "Still looking for something?", description: ko ? "키워드를 저장하고 우리 동네 마켓도 둘러보세요." : "Save a keyword and browse your local market.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
+    listings: { title: ko ? "내 서비스를 이웃에게 소개해 보세요" : "Share your service with neighbours", description: ko ? "도움이 필요한 이웃이 서비스를 발견할 수 있어요." : "Help neighbours discover what you can offer.", action: ko ? "서비스 등록" : "List a service", href: "/services/create" },
   }[kind];
+  const image = kind === "keywords" ? "/images/home/journey-market.png" : kind === "listings" ? "/images/home/journey-services.png" : "/images/brand/tada-wordmark.png";
+  const illustrated = kind === "keywords" || kind === "listings";
 
   return <aside className="ui-panel account-ad-banner" aria-label={ko ? "광고" : "Advertisement"}>
     <div className="account-ad-copy"><span>{ko ? "광고 · 타다 추천" : "Ad · From Tada"}</span><strong>{content.title}</strong><p>{content.description}</p><Link className="ui-button ui-button--secondary ui-button--sm" href={content.href}>{content.action}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
-    <img src={kind === "keywords" ? "/images/home/journey-market.png" : "/images/brand/tada-wordmark.png"} alt="" width={kind === "keywords" ? 1536 : 1965} height={kind === "keywords" ? 1024 : 800} loading="lazy" />
+    <img src={image} alt="" width={illustrated ? 1536 : 1965} height={illustrated ? 1024 : 800} loading="lazy" />
+  </aside>;
+}
+
+/** The optional account rail keeps follow-up actions separate from the owned listings. */
+export function AccountWorkspaceAside() {
+  const { locale } = useLanguage();
+  const ko = locale === "ko";
+  return <aside className="account-side-rail owned-listings-aside" aria-label={ko ? "등록 관리 안내" : "Listing help"}>
+    <DashboardAdBanner kind="listings" />
+    <section className="ui-panel account-rail-card account-workspace-help">
+      <span className="account-rail-icon"><i className="ms ms-chat" aria-hidden="true" /></span>
+      <div><h2>{ko ? "이웃과의 대화도 놓치지 마세요" : "Keep your conversations moving"}</h2><p>{ko ? "상품과 서비스에 관한 메시지를 한곳에서 확인하세요." : "Find messages about your items and services in one place."}</p><Link href="/market/dashboard/messages">{ko ? "메시지 확인" : "View messages"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
+    </section>
   </aside>;
 }
 

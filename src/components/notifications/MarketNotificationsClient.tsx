@@ -146,10 +146,10 @@ function NotificationsServicePromo({ ko, inline = false }: { ko: boolean; inline
 }
 
 function NotificationsAside({ ko }: { ko: boolean }) {
-  return <aside className="notifications-aside" aria-label={ko ? "타다 안내" : "Explore Tada"}>
+  return <aside className="notifications-aside account-side-rail" aria-label={ko ? "타다 안내" : "Explore Tada"}>
     <NotificationsServicePromo ko={ko} />
-    <section className="ui-panel notifications-rail-card is-charge"><span className="notifications-rail-icon"><i className="ms ms-bolt" aria-hidden="true" /></span><div><h2>{ko ? "타다와 함께하면 더 안심한 거래" : "Trade with more confidence"}</h2><p>{ko ? "이웃의 평가와 후기를 확인하고 안심하고 거래하세요." : "See how neighbourly feedback works on Tada."}</p><Link href="/market/dashboard/tada-charge">{ko ? "타다 충전이란?" : "About Tada Charge"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
-    <section className="ui-panel notifications-rail-card"><span className="notifications-rail-icon"><i className="ms ms-help" aria-hidden="true" /></span><div><h2>{ko ? "도움이 필요하신가요?" : "Need a hand?"}</h2><p>{ko ? "타다 이용 중 궁금한 점이 있으면 도움말에서 확인해보세요." : "Find answers to your questions about Tada."}</p><Link className="ui-button ui-button--secondary ui-button--sm" href="/help">{ko ? "도움말 보기" : "Help centre"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
+    <section className="ui-panel account-rail-card is-charge"><span className="account-rail-icon"><i className="ms ms-bolt" aria-hidden="true" /></span><div><h2>{ko ? "타다와 함께하면 더 안심한 거래" : "Trade with more confidence"}</h2><p>{ko ? "이웃의 평가와 후기를 확인하고 안심하고 거래하세요." : "See how neighbourly feedback works on Tada."}</p><Link href="/market/dashboard/tada-charge">{ko ? "타다 충전이란?" : "About Tada Charge"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
+    <section className="ui-panel account-rail-card"><span className="account-rail-icon"><i className="ms ms-help" aria-hidden="true" /></span><div><h2>{ko ? "도움이 필요하신가요?" : "Need a hand?"}</h2><p>{ko ? "타다 이용 중 궁금한 점이 있으면 도움말에서 확인해보세요." : "Find answers to your questions about Tada."}</p><Link className="ui-button ui-button--secondary ui-button--sm" href="/help">{ko ? "도움말 보기" : "Help centre"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
   </aside>;
 }
 
@@ -365,7 +365,7 @@ export function MarketNotificationsClient({
         />
       </header>
       {actionError ? <p className="notifications-action-error" role="alert">{actionError}<Button variant="ghost" size="sm" onClick={() => setActionError(null)}>{ko ? "닫기" : "Dismiss"}</Button></p> : null}
-      <div className="notifications-redesign-layout">
+      <div className="account-content-rail-layout">
         <div className="notifications-main-column">
           <div className="notifications-toolbar">
             <div className="notifications-filter-row" role="tablist" aria-label={ko ? "알림 필터" : "Notification filters"}>
