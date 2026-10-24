@@ -17,6 +17,7 @@ import { ServiceCallControl } from "@/components/services/ServiceCallControl";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { scrollToListTop } from "@/lib/scroll-to-list-top";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
+import { searchWithProfileArea } from "@/lib/market/starting-area";
 import { serviceFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { ServicesFeedQuery, ServicesFeedResult } from "@/lib/services/feed";
@@ -33,7 +34,7 @@ const buildFeedQuery = ({ category, mainLocation, subLocation }: ServicesFeedQue
   return params.toString();
 };
 
-export function ServicesPageClient({ initialFeed = null, initialQuery }: { initialFeed?: ServicesFeedResult | null; initialQuery?: ServicesFeedQuery } = {}) {
+export function ServicesPageClient({ initialFeed = null, initialQuery, profileLocationDefault }: { initialFeed?: ServicesFeedResult | null; initialQuery?: ServicesFeedQuery; profileLocationDefault?: MainLocation | "" } = {}) {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -58,7 +59,12 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
-  const activeSearch = pushedSearch ?? searchParams.toString();
+  // A visit with no area on the address starts on the profile's area. The server has
+  // already drawn the list for it, so the screen says so from the first render and the
+  // address bar catches up below; a later real navigation brings its own address.
+  const urlSearch = searchParams.toString();
+  const defaultedSearch = searchWithProfileArea(urlSearch, profileLocationDefault);
+  const activeSearch = pushedSearch ?? defaultedSearch ?? urlSearch;
   const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
   const requestedCategory = activeParams.get("category");
   const activeCategory: ServiceCategoryId | "all" = serviceCategories.some(({ id }) => id === requestedCategory) ? requestedCategory as ServiceCategoryId : "all";
@@ -159,10 +165,21 @@ export function ServicesPageClient({ initialFeed = null, initialQuery }: { initi
   // The reader's own area to begin with, the way Market and Community open.
   // It is not a choice they made, so it does not earn a history entry.
   useProfileMainLocation({
+    // The server has already answered, with an area or with none. Asking again from the
+    // browser is the second load this page used to make.
+    enabled: profileLocationDefault === undefined,
     hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
     mainLocation,
     onResolve: (profileMainLocation) => chooseLocation(profileMainLocation, "", { replace: true }),
   });
+  // The address still reads /services while the screen is on the profile's area, and every
+  // filter built from the address bar would drop it. Writing it back changes no list: its
+  // key is the one the server's list is cached under.
+  useEffect(() => {
+    if (!defaultedSearch || !profileLocationDefault) return;
+    chooseLocation(profileLocationDefault, "", { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <main className="marketplace-page services-page">

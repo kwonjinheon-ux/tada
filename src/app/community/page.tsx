@@ -4,9 +4,9 @@ import { CommunityPageClient } from "@/components/community/CommunityPageClient"
 // holds the same slugs as plain data.
 import { communityPostCategorySchema } from "@/contracts/api";
 import type { CommunityCategory } from "@/components/community/CommunityFilterSidebar";
-import { NZ_MAIN_LOCATIONS, type MainLocation } from "@/data/nzLocations";
+import { NZ_MAIN_LOCATIONS } from "@/data/nzLocations";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
-import { loadProfileLocation } from "@/lib/market/profile-main-location";
+import { resolveProfileAreaDefault } from "@/lib/market/starting-area";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -54,17 +54,8 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <CommunityPageClient initialCategory={category} />;
 
-  // An address that names an area, even the empty one that means "All New Zealand",
-  // is the reader's choice and is left alone. Only an address with no area at all is a
-  // fresh visit, which is when the profile's area fills in.
-  const hasAreaOnUrl = "mainLocation" in rawParams || "subLocation" in rawParams;
-  let viewerId: string | null | undefined;
-  let profileLocationDefault: MainLocation | "" | undefined;
-  if (!hasAreaOnUrl) {
-    const { data: { user } } = await supabase.auth.getUser();
-    viewerId = user?.id ?? null;
-    profileLocationDefault = (user ? (await loadProfileLocation(supabase, user.id))?.mainLocation : undefined) ?? "";
-  }
+  // An address with no area is a fresh visit, which starts on the profile's area.
+  const { viewerId, profileLocationDefault } = await resolveProfileAreaDefault(supabase, rawParams);
   const mainLocation = requestedMainLocation || profileLocationDefault || "";
 
   const feedQuery = {

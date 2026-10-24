@@ -21,6 +21,7 @@ import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
 import type { CommunityFeedResult } from "@/lib/community/post-feed";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
+import { searchWithProfileArea } from "@/lib/market/starting-area";
 import { scrollToListTop } from "@/lib/scroll-to-list-top";
 
 const POST_FEED_CACHE_TTL_MS = 30_000;
@@ -71,13 +72,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   // than after an effect; the address bar catches up below. A later real navigation
   // brings its own address, and one that names an area is the reader's own choice.
   const urlSearch = searchParams.toString();
-  const startsOnProfileArea = Boolean(profileLocationDefault) && !searchParams.has("mainLocation") && !searchParams.has("subLocation");
-  const defaultedSearch = (() => {
-    if (!startsOnProfileArea || !profileLocationDefault) return null;
-    const params = new URLSearchParams(urlSearch);
-    params.set("mainLocation", profileLocationDefault);
-    return params.toString();
-  })();
+  const defaultedSearch = searchWithProfileArea(urlSearch, profileLocationDefault);
   const activeSearch = pushedSearch ?? defaultedSearch ?? urlSearch;
   const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
   const searchQuery = activeParams.get("q")?.trim().slice(0, 60) ?? "";
@@ -190,7 +185,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   // every filter built from the address bar would drop it. Writing it back changes no
   // feed: the key is the one the server's feed was cached under.
   useEffect(() => {
-    if (!startsOnProfileArea || !profileLocationDefault) return;
+    if (!defaultedSearch || !profileLocationDefault) return;
     chooseLocation(profileLocationDefault, "", true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

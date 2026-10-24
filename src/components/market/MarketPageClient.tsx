@@ -18,6 +18,7 @@ import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
+import { searchWithProfileArea } from "@/lib/market/starting-area";
 import { useLanguage } from "@/components/LanguageProvider";
 import { readListingViewPreference, saveListingViewPreference, type ListingViewMode } from "@/lib/market/listing-view-preference";
 
@@ -44,7 +45,7 @@ function buildFeedQuery(search: string, shopType: ShopType) {
   return params.toString();
 }
 
-export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1 }: { page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[] }) {
+export function MarketPageClient({ shopType = "secondhand", basePath = "/market", postedListings = [], savedListingIds = [], page = 1, totalPages = 1, profileLocationDefault }: { profileLocationDefault?: MainLocation | ""; page?: number; totalPages?: number; shopType?: Extract<ShopType, "all" | "secondhand">; basePath?: string; postedListings?: Listing[]; savedListingIds?: string[] }) {
   const { locale, t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -61,7 +62,12 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
-  const activeSearch = pushedSearch ?? searchParams.toString();
+  // A visit with no area on the address starts on the profile's area. The server has
+  // already drawn the page for it, so the screen says so from the first render and the
+  // address bar catches up below; a later real navigation brings its own address.
+  const urlSearch = searchParams.toString();
+  const defaultedSearch = searchWithProfileArea(urlSearch, profileLocationDefault);
+  const activeSearch = pushedSearch ?? defaultedSearch ?? urlSearch;
   const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
   const urlSearchQuery = activeParams.get("q") ?? "";
   const selectedCategory = activeParams.get("category") ?? "all";
@@ -81,7 +87,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   const feedCache = useRef(new Map<string, { feed: MarketFeedState; cachedAt: number }>());
   const savedListingIdSet = useMemo(() => new Set(feed.savedListingIds), [feed.savedListingIds]);
   const feedQuery = buildFeedQuery(activeSearch, shopType);
-  const serverFeedQuery = buildFeedQuery(searchParams.toString(), shopType);
+  const serverFeedQuery = buildFeedQuery(defaultedSearch ?? urlSearch, shopType);
 
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
@@ -269,12 +275,23 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
     applyBrowseParams(params, { replace });
   };
   useProfileMainLocation({
+    // The server has already answered, with an area or with none. Asking again from the
+    // browser is the second load this page used to make.
+    enabled: profileLocationDefault === undefined,
     hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
     mainLocation,
     // The profile default is not a choice the reader made, so it does not earn
     // its own history entry.
     onResolve: (profileMainLocation) => applyLocationFilter(profileMainLocation, subLocation, { replace: true }),
   });
+  // The address still reads /market while the screen is on the profile's area, and every
+  // filter built from the address bar would drop it. Writing it back changes no list: its
+  // key is the one the server's list is cached under.
+  useEffect(() => {
+    if (!defaultedSearch || !profileLocationDefault) return;
+    applyLocationFilter(profileLocationDefault, "", { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const changeSort = (nextSort: string) => {
     const params = nextBrowseParams();
     if (nextSort === "newest") params.delete("sort"); else params.set("sort", nextSort);
