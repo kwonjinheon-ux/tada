@@ -31,7 +31,7 @@ export function CommunityCommentAuthorMenu({ authorId, name, avatarUrl, avatarCl
     <button type="button" className="community-comment-author-trigger" aria-label={ko ? `${name} 프로필 메뉴 열기` : `Open ${name}'s profile menu`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
       <Avatar src={avatarUrl} name={name} className={avatarClassName} initials="double" />
     </button>
-    {open ? <div className="community-comment-author-popover" role="menu">
+    {open ? <div className="community-comment-author-popover menu-motion" role="menu">
       <Link href={profileHref} role="menuitem" onClick={() => setOpen(false)}><i className="ms ms-person" aria-hidden="true" />{ko ? "프로필 보기" : "View profile"}</Link>
       <Link href={postsHref} role="menuitem" onClick={() => setOpen(false)}><i className="ms ms-forum" aria-hidden="true" />{ko ? "다른 글 보기" : "View other posts"}</Link>
     </div> : null}

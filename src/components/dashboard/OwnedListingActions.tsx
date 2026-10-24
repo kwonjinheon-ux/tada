@@ -61,7 +61,7 @@ export function OwnedListingActions({ id, title, kind, status, canEdit, canDelet
         <IconButton aria-label={ko ? `${title} 더보기` : `More actions for ${title}`} aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
           <i className="ms ms-more-vert" aria-hidden="true" />
         </IconButton>
-        {menuOpen ? <div className="owned-listing-menu ui-panel">
+        {menuOpen ? <div className="owned-listing-menu ui-panel menu-motion">
           <Link href={href} onClick={() => setMenuOpen(false)}>{ko ? "상세 보기" : "View details"}</Link>
           {canEdit ? <Link href={editHref} onClick={() => setMenuOpen(false)}>{ko ? "수정" : "Edit"}</Link> : null}
           {canRelist ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => void runAction("POST")}>{ko ? "다시 올리기" : "Relist"}</Button> : null}

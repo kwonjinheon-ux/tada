@@ -390,6 +390,14 @@
   --font-app: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --transition-fast: 160ms ease;
   --transition-slow: 220ms ease;
+
+  /* One motion for every menu that opens from a button: the panel drops in
+     and its rows follow it one after another. Read by the header menus and by
+     every other popover, so changing it here changes all of them together. */
+  --menu-motion-panel: 220ms;
+  --menu-motion-item: 180ms;
+  --menu-motion-step: 25ms;
+  --menu-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================================
