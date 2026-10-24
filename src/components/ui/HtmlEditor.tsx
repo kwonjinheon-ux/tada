@@ -1,6 +1,7 @@
 "use client";
 
 import { type ClipboardEvent, useEffect, useRef, useState } from "react";
+import { pastedHtmlToPostHtml } from "@/lib/community/paste-html";
 
 export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -12,7 +13,11 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
     if (sourceMode) return;
     const html = event.clipboardData.getData("text/html");
     const plainText = event.clipboardData.getData("text/plain") || (html ? new DOMParser().parseFromString(html, "text/html").body.textContent ?? "" : "");
-    if (!plainText) return;
+    // Copied from a page, Word or a spreadsheet, the clipboard carries the structure as
+    // HTML: tables, lists, headings, links. That is rebuilt from the few tags a post can
+    // hold. What has no HTML, or nothing in it, still pastes as the plain text it is.
+    const richHtml = html ? pastedHtmlToPostHtml(html) : "";
+    if (!richHtml && !plainText) return;
     event.preventDefault();
     const editor = editorRef.current;
     const selection = window.getSelection();
@@ -22,10 +27,18 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
     if (!selection.rangeCount) range.selectNodeContents(editor);
     range.deleteContents();
     const fragment = document.createDocumentFragment();
-    plainText.replace(/\r\n?/g, "\n").split("\n").forEach((line, index) => {
-      if (index) fragment.appendChild(document.createElement("br"));
-      fragment.appendChild(document.createTextNode(line));
-    });
+    if (richHtml) {
+      // Built above from a short list of tags and checked attributes, so it is markup the
+      // editor can hold as it is.
+      const holder = document.createElement("div");
+      holder.innerHTML = richHtml;
+      while (holder.firstChild) fragment.appendChild(holder.firstChild);
+    } else {
+      plainText.replace(/\r\n?/g, "\n").split("\n").forEach((line, index) => {
+        if (index) fragment.appendChild(document.createElement("br"));
+        fragment.appendChild(document.createTextNode(line));
+      });
+    }
     range.insertNode(fragment);
     range.collapse(false);
     selection.removeAllRanges();

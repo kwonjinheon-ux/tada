@@ -1,4 +1,4 @@
-import { allowsAnonymousCommunityPost, communityPostBodyTextLength, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostBodyMaxLength, communityPostBodyTextLength, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
@@ -52,10 +52,13 @@ export async function POST(request: Request) {
     const field = firstIssue?.path[0];
     // One line per field, rather than a ternary that grows a level each time
     // the form gains a box.
+    // The body rule that fails most is the upper one, on a long paste, and it used to be
+    // reported as "too short": the writer was told to add words to a post that had too many.
+    const tooLongMessage = `Your post is too long. It can hold ${communityPostBodyMaxLength.toLocaleString("en-NZ")} characters, and pasted tables and formatting count towards that.`;
     const messages: Record<string, string> = {
       categorySlug: "Choose a category before publishing.",
       title: "Add a title with at least 4 characters.",
-      body: "Add at least 20 characters of detail to your post.",
+      body: firstIssue?.code === "too_big" ? tooLongMessage : "Add at least 20 characters of detail to your post.",
       mainLocation: "Choose a main location before publishing.",
       sourceUrl: "Check the source link: it should start with http:// or https://.",
       videoUrl: "Check the video link: paste a YouTube address.",

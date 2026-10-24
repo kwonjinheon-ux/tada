@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { communityPostUpdateRequestSchema } from "@/contracts/api";
+import { communityPostBodyMaxLength, communityPostUpdateRequestSchema } from "@/contracts/api";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ postId: string }> }) {
   const payload = communityPostUpdateRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!payload.success || payload.data.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().length < 20) return NextResponse.json({ error: "Please complete each required field." }, { status: 400 });
+  if (!payload.success) {
+    const bodyIssue = payload.error.issues.find((issue) => issue.path[0] === "body");
+    if (bodyIssue?.code === "too_big") return NextResponse.json({ error: `Your post is too long. It can hold ${communityPostBodyMaxLength.toLocaleString("en-NZ")} characters, and pasted tables and formatting count towards that.` }, { status: 400 });
+    return NextResponse.json({ error: "Please complete each required field." }, { status: 400 });
+  }
+  if (payload.data.body.replace(/<[^>]*>/g, " ").replace(/s+/g, " ").trim().length < 20) return NextResponse.json({ error: "Add at least 20 characters of detail to your post." }, { status: 400 });
   if (containsProhibitedPublicContent(payload.data.title, payload.data.body)) return NextResponse.json({ error: prohibitedPublicContentMessage }, { status: 400 });
   const { postId } = await params;
   const supabase = await createServerSupabaseClient();

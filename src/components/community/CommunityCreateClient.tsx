@@ -9,7 +9,7 @@ import { HtmlEditor } from "@/components/ui/HtmlEditor";
 import { CommunityImageAttachments } from "@/components/community/CommunityImageAttachments";
 import { CommunityDesktopLayout } from "@/components/community/CommunityDesktopLayout";
 import { PostSubmitButton } from "@/components/post-ad/PostSubmitButton";
-import { allowsAnonymousCommunityPost, communityPostBodyTextLength, communityPostCreateResponseSchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostBodyMaxLength, communityPostBodyTextLength, communityPostCreateResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { MainLocation } from "@/data/nzLocations";
 import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
@@ -104,6 +104,10 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
       setError(t("communityCreateBodyRequired"));
       return;
     }
+    if (body.length > communityPostBodyMaxLength) {
+      setError(t("communityCreateBodyTooLong").replace("{length}", body.length.toLocaleString()).replace("{max}", communityPostBodyMaxLength.toLocaleString()));
+      return;
+    }
     if (!isSourceValid) {
       setError(t("communitySourceLinkInvalid"));
       return;
@@ -163,6 +167,9 @@ export function CommunityCreateClient({ initialCategory = "" }: { initialCategor
                 <div className="post-field"><label htmlFor="community-event-end">{t("communityEventEndLabel")}</label><input id="community-event-end" type="datetime-local" min={eventStartAt || minimumEventDateTime} value={eventEndAt} onChange={(event) => setEventEndAt(event.target.value)} required /></div>
               </div> : null}
               <div className="post-field"><label htmlFor="community-body">{t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")}</label><HtmlEditor id="community-body" label={t(isEventCategory ? "communityEventDetailsLabel" : "communityDetailsLabel")} value={body} onChange={setBody} placeholder={t(isEventCategory ? "communityEventDetailsPlaceholder" : "communityDetailsPlaceholder")} /></div>
+              {/* The limit counts the stored markup, so a pasted table uses more of it than its
+                  words suggest. Said as it nears, rather than only when sending fails. */}
+              {body.length > communityPostBodyMaxLength * 0.8 ? <p className={`post-field-hint community-body-count${body.length > communityPostBodyMaxLength ? " is-invalid" : ""}`} aria-live="polite">{body.length.toLocaleString()} / {communityPostBodyMaxLength.toLocaleString()}</p> : null}
               <div className="community-link-fields">
                 <div className="post-field">
                   <label htmlFor="community-source-url"><i className="ms ms-newspaper" aria-hidden="true" />{t("communitySourceLinkLabel")}</label>
