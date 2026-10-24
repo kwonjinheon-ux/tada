@@ -224,8 +224,8 @@ export function allowsAnonymousCommunityPost(categorySlug: string) {
   return categorySlug === "free-board" || categorySlug === "qna";
 }
 
-/** The most a post body may hold. It counts the stored HTML, not just the words, so a pasted table costs more than its text. */
-export const communityPostBodyMaxLength = 5_000;
+/** The most a post body may hold. It counts the stored HTML, not just the words, so a pasted table costs more than its text. The database checks the same number (20261024000300), so the two move together. */
+export const communityPostBodyMaxLength = 10_000;
 
 export function communityPostBodyTextLength(value: string) {
   return value

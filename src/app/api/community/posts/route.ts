@@ -103,6 +103,9 @@ export async function POST(request: Request) {
 
   if (error && payload.data.categorySlug === "events" && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Event posting is temporarily unavailable. Please try again later.", 503);
   if (error && (payload.data.sourceUrl || payload.data.videoUrl) && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Source and video links are temporarily unavailable. Please publish without them.", 503);
+  // The database has its own check on the body. If it is stricter than the application's, a long post gets
+  // past the checks above and is refused here; that is a length problem, not a failure to try again.
+  if (error?.code === "23514" && error.message.includes("community_posts_body_check")) return apiFailure("BAD_REQUEST", "Your post is too long to be saved. Please shorten it and try again.", 400, { field: "body" });
   if (error || !data) return apiFailure("INTERNAL", "We couldn't publish your post. Please try again.", 500);
   if (payload.data.imagePaths.length) {
     const { error: imageError } = await supabase.from("community_post_images").insert(payload.data.imagePaths.map((storage_path, display_order) => ({ post_id: data.id, owner_id: user.id, storage_path, display_order })));

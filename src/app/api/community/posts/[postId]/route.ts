@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Please log in to edit this post." }, { status: 401 });
   const { data, error } = await supabase.from("community_posts").update({ title: payload.data.title, body: payload.data.body }).eq("id", postId).eq("author_id", user.id).select("id").maybeSingle();
+  if (error?.code === "23514" && error.message.includes("community_posts_body_check")) return NextResponse.json({ error: "Your post is too long to be saved. Please shorten it and try again." }, { status: 400 });
   if (error) return NextResponse.json({ error: "Unable to update this post." }, { status: 400 });
   if (!data) return NextResponse.json({ error: "You can only edit your own post." }, { status: 403 });
   return NextResponse.json({ ok: true });
