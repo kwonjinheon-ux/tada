@@ -11,16 +11,38 @@
 -- table does, and it is already made in the form, the API contract and the
 -- renderer, which all read it from one module.
 alter table public.community_posts
-  add column source_url text,
-  add column video_url text;
+  add column if not exists source_url text,
+  add column if not exists video_url text;
 
-alter table public.community_posts
-  add constraint community_posts_source_url_valid
-  check (source_url is null or source_url ~ '^https?://[^[:space:]]{3,500}$');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.community_posts'::regclass
+      and conname = 'community_posts_source_url_valid'
+  ) then
+    alter table public.community_posts
+      add constraint community_posts_source_url_valid
+      check (source_url is null or (source_url ~ '^https?://[^[:space:]]+$' and char_length(source_url) <= 500));
+  end if;
+end;
+$$;
 
-alter table public.community_posts
-  add constraint community_posts_video_url_valid
-  check (video_url is null or video_url ~ '^https?://[^[:space:]]{3,500}$');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.community_posts'::regclass
+      and conname = 'community_posts_video_url_valid'
+  ) then
+    alter table public.community_posts
+      add constraint community_posts_video_url_valid
+      check (video_url is null or (video_url ~ '^https?://[^[:space:]]+$' and char_length(video_url) <= 500));
+  end if;
+end;
+$$;
 
 comment on column public.community_posts.source_url is 'Optional link to the article or page a post is based on.';
 comment on column public.community_posts.video_url is 'Optional YouTube link; the player is embedded under the post body.';

@@ -76,7 +76,7 @@ export default async function ProfileSettingsPage() {
             latitude: profile?.latitude ? Number(profile.latitude) : null,
             longitude: profile?.longitude ? Number(profile.longitude) : null,
             preferred_locale: ["en", "ko", "zh", "ja", "es", "hi", "ar"].includes(profile?.preferred_locale ?? "") ? profile?.preferred_locale as "en" | "ko" | "zh" | "ja" | "es" | "hi" | "ar" : "en",
-            profile_visibility: visibilityResult.data?.profile_visibility === "members" || visibilityResult.data?.profile_visibility === "trade_partners" ? visibilityResult.data.profile_visibility : "public",
+            profile_visibility: ["members", "interested_users", "trade_partners", "private"].includes(visibilityResult.data?.profile_visibility ?? "") ? visibilityResult.data?.profile_visibility as "members" | "interested_users" | "trade_partners" | "private" : "public",
           }}
         />
       </div>

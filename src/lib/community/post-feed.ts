@@ -31,6 +31,7 @@ const POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, regio
 const LEGACY_POST_COLUMNS = "id, author_id, is_anonymous, post_type, title, body, region_city, region_suburb, created_at, view_count, score, share_count";
 
 export type CommunityFeedQuery = {
+  authorId?: string | null;
   category?: string | null;
   mainLocation?: string | null;
   subLocation?: string | null;
@@ -58,11 +59,12 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   // The SQL ranking function treats NULL as "all"; empty URL filters must
   // match the count query's unfiltered semantics as well.
   const category = query.category || null;
+  const authorId = query.authorId || null;
   const mainLocation = query.mainLocation || null;
   const subLocation = query.subLocation || null;
   const search = (query.search ?? "").replace(/[,%()]/g, " ").trim().slice(0, 60);
   const isRecentFeed = sort === "recent" && query.page === undefined;
-  const isDirectQuery = Boolean(search) || Boolean(sort);
+  const isDirectQuery = Boolean(search) || Boolean(sort) || Boolean(authorId);
   const isPaged = query.page !== undefined;
   let authorIdsForSearch: string[] | null = null;
   if (search && searchBy === "id") {
@@ -76,6 +78,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
   const countRequest = isPaged ? (() => {
     let countRequest = supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("status", "published");
     if (category) countRequest = countRequest.eq("category_slug", category);
+    if (authorId) countRequest = countRequest.eq("author_id", authorId);
     if (mainLocation) countRequest = countRequest.eq("region_city", mainLocation);
     if (subLocation) countRequest = countRequest.eq("region_suburb", subLocation);
     if (search) {
@@ -141,6 +144,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
 
     let request = supabase.from("community_posts").select(columns as typeof POST_COLUMNS).eq("status", "published");
     if (category) request = request.eq("category_slug", category);
+    if (authorId) request = request.eq("author_id", authorId);
     if (mainLocation) request = request.eq("region_city", mainLocation);
     if (subLocation) request = request.eq("region_suburb", subLocation);
     if (search) {

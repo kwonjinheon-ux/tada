@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ListingComments } from "@/components/market/ListingComments";
 import { CommunityPostActions } from "@/components/community/CommunityPostActions";
 import { CommunityPostAuthor } from "@/components/community/CommunityPostAuthor";
+import { CommunityCommentAuthorMenu } from "@/components/community/CommunityCommentAuthorMenu";
 import { CommunityPostLinks } from "@/components/community/CommunityPostLinks";
 import { CommunityPostOwnerMenu } from "@/components/community/CommunityPostOwnerMenu";
 import { CommunityCategoryPosts } from "@/components/community/CommunityCategoryPosts";
@@ -22,7 +23,7 @@ import { CommunityEventSchedule } from "@/components/community/CommunityEventSch
 
 const HtmlEditor = dynamic(() => import("@/components/ui/HtmlEditor").then((module) => module.HtmlEditor));
 
-export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; eventDate?: string; eventStartAt?: string | null; eventEndAt?: string | null; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[]; sourceUrl?: string | null; videoUrl?: string | null };
+export type CommunityPostDetail = { id: string; type: CommunityPostType; title: string; body: string; location: string; createdAt: string; eventDate?: string; eventStartAt?: string | null; eventEndAt?: string | null; authorId?: string | null; authorName: string | null; authorAvatarUrl: string | null; isAnonymous?: boolean; viewCount: number; score: number; myVote: -1 | 0 | 1; shareCount: number; responseCount: number; isOwner: boolean; isSaved: boolean; images: { src: string; alt: string }[]; sourceUrl?: string | null; videoUrl?: string | null };
 
 export function CommunityPostDetailClient({ post, relatedCategory, initialAction }: { post: CommunityPostDetail; relatedCategory?: Exclude<CommunityCategory, "all">; initialAction?: "edit" | "delete" }) {
   const { t, locale } = useLanguage();
@@ -58,7 +59,7 @@ export function CommunityPostDetailClient({ post, relatedCategory, initialAction
       <article className="ui-card community-detail-post">
         <header className="community-detail-post-header">
           <div className="community-detail-post-heading"><div className="community-detail-title-row"><h1>{post.title}</h1></div><div className="community-detail-post-meta"><span>조회수 {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><span><i className="ms ms-location-on" aria-hidden="true" /> {post.location}</span><span><i className="ms ms-schedule" aria-hidden="true" /> {post.createdAt}</span></div></div>
-          <div className="community-detail-author"><CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" /></div>
+          <div className="community-detail-author">{post.authorId && !post.isAnonymous ? <div className="community-detail-author-identity"><CommunityCommentAuthorMenu authorId={post.authorId} name={post.authorName ?? "Tada member"} avatarUrl={post.authorAvatarUrl} avatarClassName="community-detail-author-avatar" menuClassName="community-detail-author-menu" /><strong className="community-post-author-name">{post.authorName ?? "Tada member"}</strong></div> : <CommunityPostAuthor name={post.authorName} avatarUrl={post.authorAvatarUrl} isAnonymous={post.isAnonymous} className="community-detail-author-identity" avatarClassName="community-detail-author-avatar" />}</div>
         </header>
         <CommunityEventSchedule id={post.id} title={post.title} location={post.location} eventDate={post.eventDate} eventStartAt={post.eventStartAt} eventEndAt={post.eventEndAt} />
         <ImageGallery images={post.images} className="community-detail-gallery" priority />

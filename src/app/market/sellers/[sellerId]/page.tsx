@@ -16,7 +16,7 @@ type SellerRow = {
   avatar_path: string | null;
   rating_average?: number | string;
   rating_count?: number;
-  profile_visibility?: "public" | "members" | "trade_partners";
+    profile_visibility?: "public" | "members" | "interested_users" | "trade_partners" | "private";
 };
 type ReviewRow = { id: string; score: number | string; comment: string | null; created_at: string; rater_id: string };
 type ReviewerRow = { id: string; display_name: string; avatar_path: string | null };
@@ -57,8 +57,22 @@ export default async function SellerProfilePage({ params, searchParams }: {
 
   const visibility = seller.profile_visibility ?? "public";
   const viewer = visibility === "public" ? null : await getServerUser();
-  let restrictedTo: "members" | "trade_partners" | undefined;
+  let restrictedTo: "members" | "interested_users" | "trade_partners" | "private" | undefined;
   if (visibility === "members" && !viewer) restrictedTo = "members";
+  if (visibility === "private" && viewer?.id !== seller.id) restrictedTo = "private";
+  if (visibility === "interested_users" && viewer?.id !== seller.id) {
+    if (!viewer) restrictedTo = "interested_users";
+    else {
+      const relationships = await Promise.all([
+        supabase.from("market_wishlist").select("listing_id").eq("user_id", viewer.id).limit(1),
+        supabase.from("market_conversations").select("id").eq("buyer_id", viewer.id).eq("seller_id", seller.id).limit(1),
+        supabase.from("market_conversations").select("id").eq("buyer_id", seller.id).eq("seller_id", viewer.id).limit(1),
+      ]);
+      const wishedListingIds = relationships[0].data?.map((row) => row.listing_id) ?? [];
+      const wishedSeller = wishedListingIds.length ? await supabase.from("market_listings").select("id").in("id", wishedListingIds).eq("owner_id", seller.id).limit(1) : null;
+      if (!relationships.slice(1).some((result) => !result.error && (result.data?.length ?? 0) > 0) && !(wishedSeller && !wishedSeller.error && (wishedSeller.data?.length ?? 0) > 0)) restrictedTo = "interested_users";
+    }
+  }
   if (visibility === "trade_partners" && viewer?.id !== seller.id) {
     if (!viewer) restrictedTo = "trade_partners";
     else {
