@@ -9722,7 +9722,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Saved items: neutral cards and filter controls, with domain colour confined to labels and icons. */
 .account-wishlist { min-width: 0; }
 .account-wishlist .wishlist-page-intro { margin-bottom: var(--space-3); }
-.account-wishlist .wishlist-page-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-3xl); line-height: 1.2; }
+.account-wishlist .wishlist-page-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-3xl); font-weight: var(--weight-extrabold); line-height: 1.2; }
 .account-wishlist .wishlist-page-intro p { display: none; margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
 .account-wishlist .wishlist-redesign-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: start; }
 .account-wishlist .wishlist-main-column, .account-wishlist .wishlist-aside { min-width: 0; }
@@ -14753,7 +14753,12 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-toolbar .list-search-field { flex: 1 1 auto; min-width: 0; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
 .owned-listings-toolbar .list-search-field input { min-height: var(--control-h-xl); }
 .owned-listings-toolbar .list-search button[type="submit"] { min-height: var(--control-h-xl); }
-.owned-listings-sort { display: inline-flex; align-items: center; gap: var(--space-1); flex: none; min-height: var(--control-h-xl); color: var(--color-muted); font-size: var(--text-sm); }
+.owned-listings-view-controls { display: flex; align-items: center; gap: var(--space-2); flex: none; min-width: 0; }
+.owned-listings-sort { flex: none; width: calc(var(--space-12) * 3); }
+.owned-listings-sort .post-select-trigger { min-height: var(--control-h-xl); border-color: var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.owned-listings-sort .post-select-menu { min-width: 100%; }
+.owned-listings-exclude.ui-button { width: auto; flex: none; min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; }
+.owned-listings-exclude.ui-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
 .owned-listings-page .account-workspace-list { padding: 0; border-radius: var(--radius-lg); }
 .owned-listings-page .manage-listings-grid { border-top: 0; }
 .owned-listing-row { min-height: 0; grid-template-columns: 88px minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
@@ -14812,24 +14817,34 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .account-workspace-list-heading { align-items: flex-start; flex-wrap: wrap; padding-block: var(--space-3); }
   .account-workspace-list .listing-row { padding-block: var(--space-3); }
   .owned-listings-page { padding-inline: var(--space-4); }
-  .owned-listings-header { display: grid; gap: var(--space-3); }
+  .owned-listings-header { align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+  .owned-listings-header .account-page-intro { flex: 1 1 auto; min-width: 0; }
+  .owned-listings-header .account-page-intro-title { min-width: 0; }
+  .owned-listings-header .account-page-intro h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .owned-listings-header .account-page-intro p { display: none; }
-  .owned-listings-create, .owned-listings-create > .ui-button { width: 100%; }
-  .owned-listings-create > .ui-button { justify-content: center; }
-  .owned-listings-create-menu { left: 0; right: 0; }
+  .owned-listings-create { flex: 0 0 auto; }
+  .owned-listings-create > .ui-button { min-height: var(--control-h-xl); gap: var(--space-1); padding-inline: var(--space-2); font-size: var(--text-sm); }
+  .owned-listings-create > .ui-button .ms-expand-more { display: none; }
+  .owned-listings-create-menu { right: 0; }
   .owned-listings-aside .account-ad-banner { flex-direction: row; align-items: center; }
   .owned-listings-aside .account-ad-banner > img { width: calc(var(--space-12) * 2); flex: 0 0 calc(var(--space-12) * 2); aspect-ratio: 1; }
   .owned-listings-aside .account-ad-copy strong { font-size: var(--text-md); }
   .owned-listings-aside .account-ad-copy p { display: none; }
-  .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); }
+  .owned-listings-page .manage-listings-category-tabs { gap: var(--space-2); margin-bottom: var(--space-3); }
+  .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
   .owned-listings-page .account-workspace-list { padding: 0; }
-  .owned-listing-row { grid-template-columns: 80px minmax(0, 1fr); gap: var(--space-3); }
-  .owned-listing-row .listing-row-media { width: 80px; height: 80px; }
+  .owned-listing-row { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); gap: var(--space-3); }
+  .owned-listing-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
   .owned-listing-row .listing-row-body h2 { font-size: var(--text-md); }
   .owned-listing-actions { grid-column: 2; justify-content: flex-end; margin-top: 0; }
-  .owned-listings-toolbar .list-search { flex-wrap: nowrap; }
-  .owned-listings-toolbar .list-search button[type="submit"] { width: auto; flex: none; }
+  .owned-listings-toolbar { flex-wrap: wrap; margin-bottom: var(--space-3); }
+  .owned-listings-toolbar .list-search { width: 100%; flex-wrap: nowrap; }
+  .owned-listings-toolbar .list-search button[type="submit"] { width: auto; min-height: var(--control-h-xl); flex: none; }
   .owned-listings-toolbar .list-search-field input { font-size: var(--font-size-mobile-control); }
-  .owned-listings-sort { font-size: var(--text-xs); }
+  .owned-listings-view-controls { width: 100%; justify-content: flex-end; }
   .messages-list-description { display: none; }
+}
+@media (max-width: 359.98px) {
+  .owned-listings-header .account-page-intro h1 { font-size: var(--text-xl); }
+  .owned-listings-create > .ui-button .ms-add { display: none; }
 }

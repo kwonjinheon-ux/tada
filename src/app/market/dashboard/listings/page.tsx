@@ -5,6 +5,7 @@ import { ManageListingActions } from "@/components/dashboard/ManageListingAction
 import { AccountLocaleText, AccountPageIntro, AccountWorkspaceAside } from "@/components/dashboard/AccountPagePatterns";
 import { NewListingMenu } from "@/components/dashboard/NewListingMenu";
 import { OwnedListingRow, type OwnedListingItem } from "@/components/dashboard/OwnedListingRow";
+import { OwnedListingsViewControls } from "@/components/dashboard/OwnedListingsViewControls";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
@@ -44,15 +45,17 @@ const dateLabel = (value: string) => new Intl.DateTimeFormat("en-NZ", { day: "nu
 
 /** One page of rows plus the full match count, resolved in the database rather
  *  than by pulling every row and slicing in memory. */
-async function fetchRows(supabase: SupabaseClient, kind: Kind, ownerId: string, term: string, limit: number) {
+async function fetchRows(supabase: SupabaseClient, kind: Kind, ownerId: string, term: string, limit: number, sort: "newest" | "oldest", excludeCompleted: boolean) {
   const source = SOURCES[kind];
   let query = supabase
     .from(source.table)
     .select(source.columns, { count: "exact" })
     .eq("owner_id", ownerId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: sort === "oldest" })
+    .order("id", { ascending: sort === "oldest" });
 
   if (term) query = query.ilike(source.searchColumn, `%${escapeLikePattern(term)}%`);
+  if (excludeCompleted && kind !== "services") query = query.neq("status", "sold");
 
   const { data, count, error } = await query.range(0, Math.max(limit - 1, 0));
   if (error) throw error;
@@ -82,12 +85,23 @@ async function signThumbnails(supabase: SupabaseClient, kind: Kind, ids: string[
   return new Map([...primaryByListing].map(([listingId, path]) => [listingId, signed.get(path) ?? "/images/logo.png"]));
 }
 
-export default async function ManageListingsPage({ searchParams }: { searchParams: Promise<{ category?: string; q?: string; page?: string; version?: string }> }) {
+export default async function ManageListingsPage({ searchParams }: { searchParams: Promise<{ category?: string; q?: string; page?: string; version?: string; sort?: string; excludeCompleted?: string }> }) {
   const params = await searchParams;
   const isV0 = params.version === "v0";
   const requested = params.category;
   const activeCategory: ManageListingsCategory = requested === "market" || requested === "bargain" || requested === "services" ? requested : "all";
   const term = normaliseSearchTerm(params.q);
+  const sort = !isV0 && params.sort === "oldest" ? "oldest" : "newest";
+  const excludeCompleted = !isV0 && params.excludeCompleted === "1";
+  const currentQuery = new URLSearchParams();
+  if (activeCategory !== "all") currentQuery.set("category", activeCategory);
+  if (sort === "oldest") currentQuery.set("sort", "oldest");
+  if (excludeCompleted) currentQuery.set("excludeCompleted", "1");
+  const hrefWithout = (key: "q" | "excludeCompleted") => {
+    const query = new URLSearchParams(currentQuery);
+    query.delete(key);
+    return query.size ? `/market/dashboard/listings?${query}` : "/market/dashboard/listings";
+  };
 
   const user = await getServerUser();
   if (!user) redirect("/login?redirectTo=%2Fmarket%2Fdashboard%2Flistings");
@@ -102,7 +116,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   let loadError = !supabase;
   const results = supabase
     ? await Promise.all(kinds.map(async (kind) => {
-      try { return await fetchRows(supabase, kind, user.id, term, reach); }
+      try { return await fetchRows(supabase, kind, user.id, term, reach, sort, excludeCompleted); }
       catch { loadError = true; return { rows: [], count: 0 }; }
     }))
     : kinds.map(() => ({ rows: [], count: 0 }));
@@ -110,7 +124,13 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   const countByKind = new Map<Kind, number>(kinds.map((kind, index) => [kind, results[index].count]));
   const merged = kinds
     .flatMap((kind, index) => results[index].rows.map((row) => ({ kind, row: row as ListingRow & BargainListingRow & ServiceListingRow })))
-    .sort((a, b) => b.row.created_at.localeCompare(a.row.created_at));
+    .sort((a, b) => {
+      const byDate = a.row.created_at.localeCompare(b.row.created_at);
+      const byKind = a.kind.localeCompare(b.kind);
+      const byId = a.row.id.localeCompare(b.row.id);
+      const order = byDate || byKind || byId;
+      return sort === "oldest" ? order : -order;
+    });
 
   const visibleTotal = [...countByKind.values()].reduce((sum, count) => sum + count, 0);
   const totalPages = totalPageCount(visibleTotal);
@@ -132,8 +152,8 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   const tabCounts = supabase
     ? await (async () => {
       const all = await Promise.all((["market", "bargain", "services"] as Kind[]).map(async (kind) => {
-        if (countByKind.has(kind) && !term) return countByKind.get(kind) ?? 0;
-        try { const { count } = await fetchRows(supabase, kind, user.id, term, 1); return count; }
+        if (countByKind.has(kind)) return countByKind.get(kind) ?? 0;
+        try { const { count } = await fetchRows(supabase, kind, user.id, term, 1, sort, excludeCompleted); return count; }
         catch { loadError = true; return 0; }
       }));
       return { market: all[0], bargain: all[1], services: all[2], all: all[0] + all[1] + all[2] };
@@ -208,10 +228,11 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     <div className="account-content-rail-layout owned-listings-layout">
       <div className="owned-listings-main">
         <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
-        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><span className="owned-listings-sort"><i className="ms ms-schedule" aria-hidden="true" /><AccountLocaleText en="Newest first" ko="최신순" /></span></div>
+        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><OwnedListingsViewControls sort={sort} excludeCompleted={excludeCompleted} /></div>
         {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
           : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
-          : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={activeCategory === "all" ? "/market/dashboard/listings" : `/market/dashboard/listings?category=${activeCategory}`}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>
+          : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={hrefWithout("q")}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>
+          : excludeCompleted && activeCategory !== "services" ? <div className="manage-listings-empty"><i className="ms ms-inventory-2" aria-hidden="true" /><h2><AccountLocaleText en="No current listings to show." ko="진행 중인 등록 항목이 없어요" /></h2><Link href={hrefWithout("excludeCompleted")}><AccountLocaleText en="Show completed listings" ko="완료 항목 보기" /></Link></div>
           : <div className="manage-listings-empty"><i className="ms ms-list-alt" aria-hidden="true" /><h2><AccountLocaleText en={activeCategory === "services" ? "You haven't listed a service yet." : "You haven't listed anything yet."} ko={activeCategory === "services" ? "등록한 서비스가 없어요" : "아직 등록한 상품이나 서비스가 없어요"} /></h2><Link href={activeCategory === "services" ? "/services/create" : "/market/create"}><AccountLocaleText en={activeCategory === "services" ? "List a service" : "Create a listing"} ko={activeCategory === "services" ? "서비스 등록" : "새로 등록"} /></Link></div>}
         <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
       </div>
