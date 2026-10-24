@@ -10,11 +10,13 @@ type ManageListingsCategoryTabsProps = {
   activeCategory: ManageListingsCategory;
   counts: Record<ManageListingsCategory, number>;
   baseHref?: string;
+  showDomainIcons?: boolean;
 };
 
 const categories: ManageListingsCategory[] = ["all", "market", "bargain", "services"];
+const categoryIcons: Partial<Record<ManageListingsCategory, string>> = { market: "ms-shopping-bag", bargain: "ms-sell", services: "ms-build" };
 
-export function ManageListingsCategoryTabs({ activeCategory, counts, baseHref = "/market/dashboard/listings" }: ManageListingsCategoryTabsProps) {
+export function ManageListingsCategoryTabs({ activeCategory, counts, baseHref = "/market/dashboard/listings", showDomainIcons = false }: ManageListingsCategoryTabsProps) {
   const { locale, t } = useLanguage();
   const searchParams = useSearchParams();
   const labels: Record<ManageListingsCategory, string> = {
@@ -34,6 +36,7 @@ export function ManageListingsCategoryTabs({ activeCategory, counts, baseHref = 
       else query.set("category", category);
       const href = query.toString() ? `${baseHref}?${query}` : baseHref;
       return <Link className={`manage-listings-category-tab${isActive ? " is-active" : ""}`} href={href} aria-current={isActive ? "page" : undefined} key={category}>
+        {showDomainIcons && categoryIcons[category] ? <i className={`ms ${categoryIcons[category]} is-${category}`} aria-hidden="true" /> : null}
         <span>{labels[category]}</span><b>{counts[category]}</b>
       </Link>;
     })}

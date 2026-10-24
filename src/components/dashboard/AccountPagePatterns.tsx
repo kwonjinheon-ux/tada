@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { servicesCategoryLabels, type ServiceCategoryId } from "@/data/services";
 import { useLanguage } from "@/components/LanguageProvider";
 import { BackToMyPage } from "@/components/layout/NavigationHistory";
@@ -17,10 +18,10 @@ export function AccountWorkspaceHeader({ kind, count, primaryHref, searching = f
   const { locale } = useLanguage();
   const ko = locale === "ko";
   const copy = kind === "listings"
-    ? { icon: "ms-list-alt", title: ko ? "내 상품·서비스" : "My items & services", description: ko ? "등록한 상품과 서비스를 확인하고, 필요한 내용을 바로 관리하세요." : "Keep your items and services up to date in one place.", detail: searching ? ko ? `검색 결과 ${count}개` : `${count} search results` : ko ? `등록한 항목 ${count}개` : `${count} listings`, action: ko ? "새로 등록하기" : "Create a listing" }
-    : { icon: "ms-event-available", title: ko ? "예약 및 수령" : "Reservations & pickups", description: ko ? "구매와 판매 약속을 확인하고 다음 단계를 놓치지 마세요." : "Stay on top of purchases, sales and handovers.", detail: ko ? `예약 ${count}건` : `${count} reservations`, action: ko ? "동네 상품 둘러보기" : "Explore Market" };
+    ? { title: ko ? "내 상품·서비스" : "My items & services", description: ko ? "등록한 상품과 서비스를 확인하고, 필요한 내용을 바로 관리하세요." : "Keep your items and services up to date in one place.", detail: searching ? ko ? `검색 결과 ${count}개` : `${count} search results` : ko ? `등록한 항목 ${count}개` : `${count} listings`, action: ko ? "새로 등록하기" : "Create a listing" }
+    : { title: ko ? "예약 및 수령" : "Reservations & pickups", description: ko ? "구매와 판매 약속을 확인하고 다음 단계를 놓치지 마세요." : "Stay on top of purchases, sales and handovers.", detail: ko ? `예약 ${count}건` : `${count} reservations`, action: ko ? "동네 상품 둘러보기" : "Explore Market" };
   return <div className="account-workspace-header">
-    <AccountPageIntro icon={copy.icon} title={copy.title} description={copy.description} detail={copy.detail} />
+    <AccountPageIntro title={copy.title} description={copy.description} detail={copy.detail} />
     <Link className="ui-button ui-button--primary" href={primaryHref}><i className={`ms ${kind === "listings" ? "ms-add" : "ms-search"}`} aria-hidden="true" />{copy.action}</Link>
   </div>;
 }
@@ -33,17 +34,15 @@ export function AccountWorkspaceSummary({ items }: { items: { icon: string; labe
 }
 
 type AccountPageIntroProps = {
-  icon: string;
-  title: string;
-  description: string;
+  title: ReactNode;
+  description: ReactNode;
   detail?: string;
   backToMyPage?: boolean;
 };
 
 /** The small, consistent introduction shared by My Page's destination screens. */
-export function AccountPageIntro({ icon, title, description, detail, backToMyPage = false }: AccountPageIntroProps) {
+export function AccountPageIntro({ title, description, detail, backToMyPage = false }: AccountPageIntroProps) {
   return <header className={`account-page-intro${backToMyPage ? " has-back" : ""}`}>
-    <span className="account-page-intro-icon"><i className={`ms ${icon}`} aria-hidden="true" /></span>
     <div><div className="account-page-intro-title">{backToMyPage ? <BackToMyPage /> : null}<h1>{title}</h1></div><p>{description}</p>{detail ? <span className="account-page-intro-detail">{detail}</span> : null}</div>
   </header>;
 }

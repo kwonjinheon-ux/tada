@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ManageListingsCategoryTabs, type ManageListingsCategory } from "@/components/dashboard/ManageListingsCategoryTabs";
 import { ManageListingActions } from "@/components/dashboard/ManageListingActions";
-import { AccountLocaleText, AccountWorkspaceHeader, AccountWorkspaceSummary } from "@/components/dashboard/AccountPagePatterns";
+import { AccountLocaleText, AccountPageIntro } from "@/components/dashboard/AccountPagePatterns";
+import { NewListingMenu } from "@/components/dashboard/NewListingMenu";
+import { OwnedListingRow, type OwnedListingItem } from "@/components/dashboard/OwnedListingRow";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
@@ -21,7 +23,7 @@ export const metadata = { title: "My items & services" };
 type ListingRow = { id: string; title: string; price_cents: number; status: "published" | "pending" | "sold" | "archived"; created_at: string };
 type PhotoRow = { listing_id: string; storage_path: string; display_order: number };
 type BargainListingRow = ListingRow & { bargain_type: BargainListingType };
-type ServiceListingRow = { id: string; provider_name: string; category_slug: string; status: "pending" | "published" | "hidden" | "archived"; created_at: string };
+type ServiceListingRow = { id: string; provider_name: string; category_slug: string; service_areas: string[] | null; suburbs: string[] | null; review_count: number | null; status: "pending" | "published" | "hidden" | "archived"; created_at: string };
 type ServicePhotoRow = { listing_id: string; storage_path: string; display_order: number; photo_kind: string };
 
 type SupabaseClient = NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>;
@@ -30,7 +32,7 @@ type Kind = "market" | "bargain" | "services";
 const SOURCES = {
   market: { table: "market_listings", columns: "id,title,price_cents,status,created_at", searchColumn: "title", bucket: "market-listing-images", photoTable: "market_listing_photos" },
   bargain: { table: "bargain_listings", columns: "id,title,price_cents,status,created_at,bargain_type", searchColumn: "title", bucket: "bargain-listing-images", photoTable: "bargain_listing_photos" },
-  services: { table: "service_listings", columns: "id,provider_name,category_slug,status,created_at", searchColumn: "provider_name", bucket: "service-listing-images", photoTable: "service_listing_photos" },
+  services: { table: "service_listings", columns: "id,provider_name,category_slug,service_areas,suburbs,review_count,status,created_at", searchColumn: "provider_name", bucket: "service-listing-images", photoTable: "service_listing_photos" },
 } as const;
 
 function statusLabel(status: string) {
@@ -52,7 +54,8 @@ async function fetchRows(supabase: SupabaseClient, kind: Kind, ownerId: string, 
 
   if (term) query = query.ilike(source.searchColumn, `%${escapeLikePattern(term)}%`);
 
-  const { data, count } = await query.range(0, Math.max(limit - 1, 0));
+  const { data, count, error } = await query.range(0, Math.max(limit - 1, 0));
+  if (error) throw error;
   return { rows: (data ?? []) as unknown[], count: count ?? 0 };
 }
 
@@ -65,10 +68,15 @@ async function signThumbnails(supabase: SupabaseClient, kind: Kind, ids: string[
   const { data } = await supabase.from(source.photoTable).select(columns).in("listing_id", ids).order("display_order", { ascending: true });
 
   const primaryByListing = new Map<string, string>();
+  const logos = new Map<string, string>();
   for (const photo of (data ?? []) as unknown as (PhotoRow & Partial<ServicePhotoRow>)[]) {
-    if (kind === "services" && photo.photo_kind === "logo") continue;
+    if (kind === "services" && photo.photo_kind === "logo") {
+      if (!logos.has(photo.listing_id)) logos.set(photo.listing_id, photo.storage_path);
+      continue;
+    }
     if (!primaryByListing.has(photo.listing_id)) primaryByListing.set(photo.listing_id, photo.storage_path);
   }
+  if (kind === "services") for (const [id, path] of logos) if (!primaryByListing.has(id)) primaryByListing.set(id, path);
 
   const signed = await getSignedStorageImages(source.bucket, [...new Set(primaryByListing.values())], "thumbnail");
   return new Map([...primaryByListing].map(([listingId, path]) => [listingId, signed.get(path) ?? "/images/logo.png"]));
@@ -91,8 +99,12 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
   const reach = requestedPage * LIST_PAGE_SIZE;
   const kinds: Kind[] = activeCategory === "all" ? ["market", "bargain", "services"] : [activeCategory];
 
+  let loadError = !supabase;
   const results = supabase
-    ? await Promise.all(kinds.map((kind) => fetchRows(supabase, kind, user.id, term, reach)))
+    ? await Promise.all(kinds.map(async (kind) => {
+      try { return await fetchRows(supabase, kind, user.id, term, reach); }
+      catch { loadError = true; return { rows: [], count: 0 }; }
+    }))
     : kinds.map(() => ({ rows: [], count: 0 }));
 
   const countByKind = new Map<Kind, number>(kinds.map((kind, index) => [kind, results[index].count]));
@@ -121,8 +133,8 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     ? await (async () => {
       const all = await Promise.all((["market", "bargain", "services"] as Kind[]).map(async (kind) => {
         if (countByKind.has(kind) && !term) return countByKind.get(kind) ?? 0;
-        const { count } = await fetchRows(supabase, kind, user.id, term, 1);
-        return count;
+        try { const { count } = await fetchRows(supabase, kind, user.id, term, 1); return count; }
+        catch { loadError = true; return 0; }
       }));
       return { market: all[0], bargain: all[1], services: all[2], all: all[0] + all[1] + all[2] };
     })()
@@ -164,6 +176,19 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
         <ManageListingActions id={row.id} title={row.title} status={row.status} variant={isV0 ? "v0" : "current"} />
       </article>;
   });
+  const ownedRows: OwnedListingItem[] = pageRows.map(({ kind, row }) => {
+    if (kind === "services") {
+      const service = row as ServiceListingRow;
+      return { id: service.id, kind, title: service.provider_name, status: service.status, image: imageFor(kind, service.id), createdAt: service.created_at, categorySlug: service.category_slug, location: service.suburbs?.[0] ?? service.service_areas?.[0] ?? "", reviewCount: service.review_count ?? 0, canEdit: true, canDelete: true };
+    }
+    if (kind === "bargain") {
+      const bargain = row as BargainListingRow;
+      const standard = !isMultiItemBargain(bargain.bargain_type);
+      return { id: bargain.id, kind, title: bargain.title, status: bargain.status, image: imageFor(kind, bargain.id), createdAt: bargain.created_at, priceCents: bargain.price_cents, canEdit: standard && bargain.status !== "sold", canDelete: standard, canMarkSold: standard && bargain.status !== "sold" };
+    }
+    const market = row as ListingRow;
+    return { id: market.id, kind, title: market.title, status: market.status, image: imageFor(kind, market.id), createdAt: market.created_at, priceCents: market.price_cents, canEdit: market.status === "published" || market.status === "archived", canDelete: market.status === "published" || market.status === "archived", canRelist: market.status === "published" };
+  });
   const emptyState = term ? <div className="manage-listings-empty"><i className="ms ms-search" /><h2>{isV0 ? `No matches for “${term}”` : <AccountLocaleText en={`No matches for “${term}”`} ko={`“${term}” 검색 결과가 없어요`} />}</h2><p>{isV0 ? "Try a shorter word, or clear the search to see everything again." : <AccountLocaleText en="Try a shorter word, or clear the search to see everything again." ko="검색어를 줄이거나 검색을 지우고 다시 확인해 보세요." />}</p></div>
     : <div className="manage-listings-empty"><i className="ms ms-list-alt" /><h2><TranslatedText translationKey="noListingsYet" /></h2><p><TranslatedText translationKey="firstListingHint" /></p><Link href={isV0 ? "/market/create" : createHref}><TranslatedText translationKey="createListing" /></Link></div>;
 
@@ -175,16 +200,18 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     <ListSearchField placeholder="Search your listings" label="Search your listings" />
   </section>;
 
-  return <section className="dashboard-content manage-listings-content account-modern account-workspace">
-    <AccountWorkspaceHeader kind="listings" count={tabCounts.all} primaryHref={createHref} searching={Boolean(term)} />
-    <AccountWorkspaceSummary items={[
-      { icon: "ms-shopping-bag", label: "Market items", labelKo: "마켓 상품", value: tabCounts.market, tone: "market" },
-      { icon: "ms-sell", label: "Bargain items", labelKo: "알뜰거래", value: tabCounts.bargain, tone: "market" },
-      { icon: "ms-build", label: "Services", labelKo: "서비스", value: tabCounts.services, tone: "services" },
-    ]} />
-    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} />
-    {pageRows.length ? <div className="ui-panel account-workspace-list"><div className="account-workspace-list-heading"><div><h2><AccountLocaleText en="My items & services" ko="내 상품·서비스" /></h2><p>{visibleTotal} <TranslatedText translationKey="totalListings" /></p></div><Link href="/market/dashboard/messages"><i className="ms ms-chat" aria-hidden="true" /> <TranslatedText translationKey="messages" /></Link></div><div className="manage-listings-grid">{listingRows}</div></div> : emptyState}
+  return <section className="dashboard-content manage-listings-content account-modern account-workspace owned-listings-page">
+    <div className="owned-listings-inner"><div className="owned-listings-header">
+      <AccountPageIntro title={<AccountLocaleText en="My items & services" ko="내 상품·서비스" />} description={<AccountLocaleText en="See the status of your listings and manage them here." ko="등록한 상품과 서비스의 상태를 확인하고 관리하세요." />} backToMyPage />
+      <NewListingMenu />
+    </div>
+    <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
+    <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><span className="owned-listings-sort"><i className="ms ms-schedule" aria-hidden="true" /><AccountLocaleText en="Newest first" ko="최신순" /></span></div>
+    {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
+      : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
+      : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={activeCategory === "all" ? "/market/dashboard/listings" : `/market/dashboard/listings?category=${activeCategory}`}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>
+      : <div className="manage-listings-empty"><i className="ms ms-list-alt" aria-hidden="true" /><h2><AccountLocaleText en={activeCategory === "services" ? "You haven't listed a service yet." : "You haven't listed anything yet."} ko={activeCategory === "services" ? "등록한 서비스가 없어요" : "아직 등록한 상품이나 서비스가 없어요"} /></h2><Link href={activeCategory === "services" ? "/services/create" : "/market/create"}><AccountLocaleText en={activeCategory === "services" ? "List a service" : "Create a listing"} ko={activeCategory === "services" ? "서비스 등록" : "새로 등록"} /></Link></div>}
     <ListPagination page={page} totalPages={totalPages} label="Listing pages" />
-    <ListSearchField placeholder="Search your listings" label="Search your listings" />
+    </div>
   </section>;
 }

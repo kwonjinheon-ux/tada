@@ -3,17 +3,24 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SelectMenu } from "@/components/ui/SelectMenu";
+import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 
 /** The search box that sits under the page index, in the board layout these
  *  lists follow. Submitting sets `?q=` and returns to page one, because the
  *  page number from the previous result set means nothing in the new one. */
-export function ListSearchField({ placeholder, label = "Search this list", scopes, scopeParam = "searchBy", submitLabel = "Search" }: {
+export function ListSearchField({ placeholder, label = "Search this list", scopes, scopeParam = "searchBy", submitLabel = "Search", copyKey, actionKey }: {
   placeholder: string;
   label?: string;
+  copyKey?: TranslationKey;
+  actionKey?: TranslationKey;
   scopes?: ReadonlyArray<{ value: string; label: string }>;
   scopeParam?: string;
   submitLabel?: string;
 }) {
+  const { t } = useLanguage();
+  const visiblePlaceholder = copyKey ? t(copyKey) : placeholder;
+  const visibleLabel = copyKey ? t(copyKey) : label;
+  const visibleAction = actionKey ? t(actionKey) : submitLabel;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,17 +71,17 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
           type="search"
           name="q"
           value={term}
-          placeholder={placeholder}
-          aria-label={label}
+          placeholder={visiblePlaceholder}
+          aria-label={visibleLabel}
           onChange={(event) => setTerm(event.target.value)}
         />
         {activeTerm ? (
-          <button type="button" className="list-search-clear" onClick={() => { setTerm(""); submit(""); }} aria-label="Clear search">
+          <button type="button" className="list-search-clear" onClick={() => { setTerm(""); submit(""); }} aria-label={copyKey ? t("ownedListingClearSearch") : "Clear search"}>
             <i className="ms ms-close" aria-hidden="true" />
           </button>
         ) : null}
       </label>
-      <button className="ui-button ui-button--primary ui-button--sm" type="submit">{submitLabel}</button>
+      <button className="ui-button ui-button--primary ui-button--sm" type="submit">{visibleAction}</button>
     </form>
   );
 }

@@ -105,7 +105,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
   };
 
   if (!legacy) return <div className="dashboard-content keywords-content account-modern account-keywords">
-    <AccountPageIntro icon="ms-key" title={ko ? "관심 키워드" : "Saved keywords"} description={ko ? "찾는 상품이 올라오면 알려드려요." : "Get notified when something you're looking for is listed."} backToMyPage />
+    <AccountPageIntro title={ko ? "관심 키워드" : "Saved keywords"} description={ko ? "찾는 상품이 올라오면 알려드려요." : "Get notified when something you're looking for is listed."} backToMyPage />
     <div className="keyword-redesign-layout">
       <div className="keyword-main-column">
         <form className="ui-panel keyword-create-panel" onSubmit={addKeyword}>
@@ -152,7 +152,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
   </div>;
 
   return <div className="dashboard-content keywords-content">
-    <header className="keywords-heading"><div className="keywords-heading-icon"><i className="ms ms-notifications" aria-hidden="true" /></div><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
+    <header className="keywords-heading"><div><h1>{t("keywordAlerts")}</h1><p>{t("keywordAlertsHint")}</p></div></header>
     <form className="keywords-add-panel" onSubmit={addKeyword}>
       <div className="keywords-input-wrap"><i className="ms ms-search" aria-hidden="true" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} type="text" placeholder={t("keywordPlaceholder")} aria-label={t("keywordInputLabel")} maxLength={80} /></div>
       <button type="submit" disabled={!keyword.trim() || isSaving}><i className="ms ms-add" aria-hidden="true" /> {isSaving ? t("saving") : t("addKeyword")}</button>
