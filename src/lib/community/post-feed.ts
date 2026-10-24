@@ -39,6 +39,10 @@ export type CommunityFeedQuery = {
   sort?: "recent" | "trending";
   page?: number;
   searchBy?: "all" | "id" | "title" | "content";
+  /** Who is asking, when the caller already knows. Without it the loader asks the
+   *  auth service itself; with it (a member's id, or null for a visitor) it does not,
+   *  which saves a round trip the page has already made. */
+  viewerId?: string | null;
 };
 
 export type CommunityFeedResult = { posts: CommunityPost[]; totalCount: number; page: number; totalPages: number };
@@ -102,7 +106,7 @@ export async function loadCommunityPostFeed(supabase: SupabaseServerClient, quer
     p_offset: offset,
   });
   const rankedPostsRequest = isDirectQuery ? null : supabase.rpc("get_ranked_community_posts", rankedArgs(isPaged ? pageRange(requestedPage).from : 0));
-  const userRequest = isRecentFeed ? Promise.resolve({ data: { user: null } }) : supabase.auth.getUser();
+  const userRequest = isRecentFeed ? Promise.resolve({ data: { user: null } }) : query.viewerId !== undefined ? Promise.resolve({ data: { user: query.viewerId ? { id: query.viewerId } : null } }) : supabase.auth.getUser();
   const [{ count, error: countError }, { data: rankedPosts, error: rankedPostsError }, { data: { user } }] = await Promise.all([
     countRequest,
     rankedPostsRequest ?? Promise.resolve({ data: [], error: null }),

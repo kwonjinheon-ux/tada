@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { MainLocation } from "@/data/nzLocations";
-import { findMainLocation, findSubLocation } from "@/lib/market/nz-location";
+import { loadProfileLocation } from "@/lib/market/profile-main-location";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type UseProfileMainLocationOptions = {
@@ -31,17 +31,10 @@ export function useProfileMainLocation({ hasMainLocationInUrl, mainLocation, onR
       const supabase = createBrowserSupabaseClient();
       const { data: { user } } = await supabase?.auth.getUser() ?? { data: { user: null } };
       if (!supabase || !user) return;
-      let { data: profile, error } = await supabase.from("profiles").select("main_location,region_city,sub_location,region_suburb").eq("id", user.id).maybeSingle();
-      if (error && ["42703", "PGRST204"].includes(error.code)) {
-        const legacy = await supabase.from("profiles").select("region_city,region_suburb").eq("id", user.id).maybeSingle();
-        profile = legacy.data ? { main_location: null, sub_location: null, region_city: legacy.data.region_city, region_suburb: legacy.data.region_suburb } : null;
-        error = legacy.error;
-      }
-      const profileMainLocation = findMainLocation(profile?.main_location) ?? findMainLocation(profile?.region_city);
-      if (!cancelled && !error && profileMainLocation) {
-        const suburb = findSubLocation(profileMainLocation, profile?.sub_location) ?? findSubLocation(profileMainLocation, profile?.region_suburb) ?? "";
+      const location = await loadProfileLocation(supabase, user.id);
+      if (!cancelled && location) {
         hasAppliedDefault.current = true;
-        onResolveRef.current(profileMainLocation, suburb);
+        onResolveRef.current(location.mainLocation, location.subLocation);
       }
     })().catch(() => undefined);
     return () => { cancelled = true; };

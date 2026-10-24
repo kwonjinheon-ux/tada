@@ -45,7 +45,7 @@ const buildFeedCacheKey = ({ category, search, searchBy, mainLocation, subLocati
   return params.toString();
 };
 
-export function CommunityPageClient({ initialCategory = "all", initialFeed = null, initialFeedQuery }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null; initialFeedQuery?: Parameters<typeof buildFeedCacheKey>[0] }) {
+export function CommunityPageClient({ initialCategory = "all", initialFeed = null, initialFeedQuery, profileLocationDefault }: { initialCategory?: CommunityCategory; initialFeed?: CommunityFeedResult | null; initialFeedQuery?: Parameters<typeof buildFeedCacheKey>[0]; profileLocationDefault?: MainLocation | "" }) {
   const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -66,7 +66,19 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
-  const activeSearch = pushedSearch ?? searchParams.toString();
+  // A visit with no area on the address starts on the profile's area. The server has
+  // already drawn the page for it, so the screen says so from the first render rather
+  // than after an effect; the address bar catches up below. A later real navigation
+  // brings its own address, and one that names an area is the reader's own choice.
+  const urlSearch = searchParams.toString();
+  const startsOnProfileArea = Boolean(profileLocationDefault) && !searchParams.has("mainLocation") && !searchParams.has("subLocation");
+  const defaultedSearch = (() => {
+    if (!startsOnProfileArea || !profileLocationDefault) return null;
+    const params = new URLSearchParams(urlSearch);
+    params.set("mainLocation", profileLocationDefault);
+    return params.toString();
+  })();
+  const activeSearch = pushedSearch ?? defaultedSearch ?? urlSearch;
   const activeParams = useMemo(() => new URLSearchParams(activeSearch), [activeSearch]);
   const searchQuery = activeParams.get("q")?.trim().slice(0, 60) ?? "";
   const searchBy = activeParams.get("searchBy") ?? "all";
@@ -144,6 +156,9 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
     applyBrowseParams(params, { replace: isProfileDefault });
   };
   useProfileMainLocation({
+    // The server has already answered, either with an area or with none. Asking again
+    // from the browser is the second round trip this page used to make.
+    enabled: profileLocationDefault === undefined,
     hasMainLocationInUrl: activeParams.has("mainLocation") || activeParams.has("subLocation"),
     mainLocation,
     onResolve: (location) => chooseLocation(location, "", true),
@@ -169,6 +184,15 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
   useEffect(() => {
     const stored = readListingViewPreference("community");
     if (stored) setViewMode(stored);
+  }, []);
+
+  // The address still reads /community while the screen is on the profile's area, and
+  // every filter built from the address bar would drop it. Writing it back changes no
+  // feed: the key is the one the server's feed was cached under.
+  useEffect(() => {
+    if (!startsOnProfileArea || !profileLocationDefault) return;
+    chooseLocation(profileLocationDefault, "", true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Soft navigations deliver a new server feed. Seed its own query key before
@@ -274,7 +298,7 @@ export function CommunityPageClient({ initialCategory = "all", initialFeed = nul
         </div>
       </section>
 
-      <CommunityRecentPostsPanel category={activeCategory} mainLocation={searchParams.has("mainLocation") ? mainLocation : undefined} subLocation={searchParams.has("subLocation") ? subLocation : undefined} />
+      <CommunityRecentPostsPanel category={activeCategory} mainLocation={activeParams.has("mainLocation") ? mainLocation : undefined} subLocation={activeParams.has("subLocation") ? subLocation : undefined} />
     </main>
   );
 }
