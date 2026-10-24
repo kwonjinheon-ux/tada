@@ -120,6 +120,23 @@ function convertElement(element: HTMLElement, insidePre: boolean): string {
   return content;
 }
 
+/** Tags that, in a pasted piece of text, say it is HTML written out rather than prose. */
+const SOURCE_TAG = /<\/?(?:table|thead|tbody|tfoot|tr|td|th|ul|ol|li|p|div|h[1-6]|br|blockquote|pre|a|b|strong|em|i|u|s|span)\b[^>]*>/i;
+
+/**
+ * Whether pasted text is HTML source: markup copied as words, from an editor, the
+ * developer tools, a chat answer or a code block, where the clipboard holds the tags
+ * themselves and nothing else.
+ *
+ * It must open with a tag and close with one, and contain a tag a post can use. A
+ * sentence that only mentions a tag ("use the <b> tag to bold") is prose and stays so.
+ */
+export function looksLikeHtmlSource(text: string) {
+  const trimmed = text.trim();
+  if (trimmed.length < 7 || !trimmed.endsWith(">")) return false;
+  return /^(?:<!doctype[^>]*>\s*)?<[a-z!]/i.test(trimmed) && SOURCE_TAG.test(trimmed);
+}
+
 /** The clean markup for clipboard HTML, or "" when there is no text in it. */
 export function pastedHtmlToPostHtml(html: string): string {
   if (!html.trim() || typeof DOMParser === "undefined") return "";
@@ -131,4 +148,53 @@ export function pastedHtmlToPostHtml(html: string): string {
     .trim();
   // Anything that is only markup — an image-only copy — has nothing to paste.
   return markup.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim() ? markup : "";
+}
+
+const BLOCK_OPEN = /<(?:table|ul|ol|h[1-6]|p|div|blockquote|pre)\b[^>]*>/i;
+const BLOCK_CLOSE = /<\/(?:table|ul|ol|h[1-6]|p|div|blockquote|pre)\s*>/gi;
+
+/**
+ * Markup written out in the middle of ordinary text: a line of explanation, then a
+ * table, then a sign-off. Found by its first opening block tag and its last closing one,
+ * so the words around it can be kept as words and the part between read as HTML.
+ *
+ * A mention is not markup. "Use <table> for grids" has an opening tag and nothing that
+ * closes it, so it stays text.
+ */
+function splitEmbeddedMarkup(text: string) {
+  const open = text.search(BLOCK_OPEN);
+  if (open < 0) return null;
+  let closeEnd = -1;
+  for (const match of text.matchAll(BLOCK_CLOSE)) closeEnd = (match.index ?? 0) + match[0].length;
+  if (closeEnd <= open) return null;
+  return { head: text.slice(0, open), markup: text.slice(open, closeEnd), tail: text.slice(closeEnd) };
+}
+
+/** Plain words around markup, kept as a paragraph with their line breaks. */
+function wordsToPostHtml(text: string) {
+  const trimmed = text.trim();
+  return trimmed ? `<p>${trimmed.split(/\r?\n/).map((line) => escapeText(line.trim())).join("<br>")}</p>` : "";
+}
+
+/**
+ * The post markup for whatever is on the clipboard, or "" when it should paste as plain text.
+ *
+ * Written-out HTML comes first, whether it is the whole text or sits among other words. A
+ * code block copied from a page carries its source as text and also as HTML that shows the
+ * source in a box, and it is the source that was meant. Otherwise the clipboard's own HTML
+ * is used, which is what copying a rendered table or article produces.
+ */
+export function clipboardToPostHtml(html: string, plainText: string): string {
+  if (looksLikeHtmlSource(plainText)) {
+    const fromSource = pastedHtmlToPostHtml(plainText);
+    if (fromSource) return fromSource;
+  }
+  // Only when nothing was copied as rendered HTML. A page about HTML that quotes a tag
+  // has the real article in its clipboard HTML, and that is the better thing to keep.
+  const embedded = html ? null : splitEmbeddedMarkup(plainText);
+  if (embedded) {
+    const middle = pastedHtmlToPostHtml(embedded.markup);
+    if (middle) return `${wordsToPostHtml(embedded.head)}${middle}${wordsToPostHtml(embedded.tail)}`;
+  }
+  return html ? pastedHtmlToPostHtml(html) : "";
 }

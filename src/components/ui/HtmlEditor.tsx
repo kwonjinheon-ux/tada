@@ -1,7 +1,7 @@
 "use client";
 
 import { type ClipboardEvent, useEffect, useRef, useState } from "react";
-import { pastedHtmlToPostHtml } from "@/lib/community/paste-html";
+import { clipboardToPostHtml } from "@/lib/community/paste-html";
 
 export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -14,9 +14,11 @@ export function HtmlEditor({ id, label, value, onChange, placeholder }: { id: st
     const html = event.clipboardData.getData("text/html");
     const plainText = event.clipboardData.getData("text/plain") || (html ? new DOMParser().parseFromString(html, "text/html").body.textContent ?? "" : "");
     // Copied from a page, Word or a spreadsheet, the clipboard carries the structure as
-    // HTML: tables, lists, headings, links. That is rebuilt from the few tags a post can
-    // hold. What has no HTML, or nothing in it, still pastes as the plain text it is.
-    const richHtml = html ? pastedHtmlToPostHtml(html) : "";
+    // HTML: tables, lists, headings, links. HTML copied as source - from an editor, a chat
+    // answer or a code block - arrives as words, and is read as HTML all the same, since a
+    // post is HTML. Either is rebuilt from the few tags a post can hold. What has neither
+    // still pastes as the plain text it is.
+    const richHtml = clipboardToPostHtml(html, event.clipboardData.getData("text/plain"));
     if (!richHtml && !plainText) return;
     event.preventDefault();
     const editor = editorRef.current;
