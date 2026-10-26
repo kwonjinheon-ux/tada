@@ -224,6 +224,9 @@ export function allowsAnonymousCommunityPost(categorySlug: string) {
   return categorySlug === "free-board" || categorySlug === "qna";
 }
 
+/** The most a post body may hold. It counts the stored HTML, not just the words, so a pasted table costs more than its text. The database checks the same number (20261024000300), so the two move together. */
+export const communityPostBodyMaxLength = 10_000;
+
 export function communityPostBodyTextLength(value: string) {
   return value
     .replace(/<[^>]*>/g, " ")
@@ -237,7 +240,7 @@ export const communityPostCreateRequestSchema = z.object({
   categorySlug: communityPostCategorySchema,
   isAnonymous: z.boolean().default(false),
   title: z.string().trim().min(4).max(120),
-  body: z.string().max(5_000).refine((value) => communityPostBodyTextLength(value) >= 20, "Post details must contain at least 20 characters."),
+  body: z.string().max(communityPostBodyMaxLength).refine((value) => communityPostBodyTextLength(value) >= 20, "Post details must contain at least 20 characters."),
   mainLocation: z.string().trim().min(2).max(80),
   subLocation: z.string().trim().max(80).optional(),
   imagePaths: z.array(z.string().regex(/^[0-9a-f-]{36}\/attachments\/[0-9a-f-]{36}\.webp$/i)).max(10).default([]),
@@ -276,7 +279,7 @@ export const communityPostCreateResponseSchema = z.object({ id: uuidSchema });
 
 export const communityPostUpdateRequestSchema = z.object({
   title: z.string().trim().min(4).max(120),
-  body: z.string().trim().min(20).max(5_000),
+  body: z.string().trim().min(20).max(communityPostBodyMaxLength),
 });
 
 export const communityPostFeedItemSchema = z.object({

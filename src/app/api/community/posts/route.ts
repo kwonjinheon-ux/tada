@@ -1,4 +1,4 @@
-import { allowsAnonymousCommunityPost, communityPostBodyTextLength, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
+import { allowsAnonymousCommunityPost, communityPostBodyMaxLength, communityPostBodyTextLength, communityPostCreateRequestSchema, communityPostCategorySchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { loadCommunityPostFeed } from "@/lib/community/post-feed";
@@ -52,10 +52,13 @@ export async function POST(request: Request) {
     const field = firstIssue?.path[0];
     // One line per field, rather than a ternary that grows a level each time
     // the form gains a box.
+    // The body rule that fails most is the upper one, on a long paste, and it used to be
+    // reported as "too short": the writer was told to add words to a post that had too many.
+    const tooLongMessage = `Your post is too long. It can hold ${communityPostBodyMaxLength.toLocaleString("en-NZ")} characters, and pasted tables and formatting count towards that.`;
     const messages: Record<string, string> = {
       categorySlug: "Choose a category before publishing.",
       title: "Add a title with at least 4 characters.",
-      body: "Add at least 20 characters of detail to your post.",
+      body: firstIssue?.code === "too_big" ? tooLongMessage : "Add at least 20 characters of detail to your post.",
       mainLocation: "Choose a main location before publishing.",
       sourceUrl: "Check the source link: it should start with http:// or https://.",
       videoUrl: "Check the video link: paste a YouTube address.",
@@ -100,6 +103,9 @@ export async function POST(request: Request) {
 
   if (error && payload.data.categorySlug === "events" && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Event posting is temporarily unavailable. Please try again later.", 503);
   if (error && (payload.data.sourceUrl || payload.data.videoUrl) && (error.code === "42703" || error.code === "PGRST204")) return apiFailure("UNAVAILABLE", "Source and video links are temporarily unavailable. Please publish without them.", 503);
+  // The database has its own check on the body. If it is stricter than the application's, a long post gets
+  // past the checks above and is refused here; that is a length problem, not a failure to try again.
+  if (error?.code === "23514" && error.message.includes("community_posts_body_check")) return apiFailure("BAD_REQUEST", "Your post is too long to be saved. Please shorten it and try again.", 400, { field: "body" });
   if (error || !data) return apiFailure("INTERNAL", "We couldn't publish your post. Please try again.", 500);
   if (payload.data.imagePaths.length) {
     const { error: imageError } = await supabase.from("community_post_images").insert(payload.data.imagePaths.map((storage_path, display_order) => ({ post_id: data.id, owner_id: user.id, storage_path, display_order })));

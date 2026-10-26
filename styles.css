@@ -3315,7 +3315,7 @@ body.listing-gallery-open { overflow: hidden; }
 .language-settings-card > header,
 .language-settings-options > button,
 .language-settings-status {
-  animation: menu-popover-item-in 180ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: menu-popover-item-in var(--menu-motion-item) var(--menu-motion-ease) both;
 }
 
 .language-settings-options > button:nth-child(1) { animation-delay: 30ms; }
@@ -3455,11 +3455,11 @@ img.listing-gallery-lightbox-photo {
 
 .mobile-profile-popover {
   transform-origin: top right;
-  animation: mobile-header-popover-in 220ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: mobile-header-popover-in var(--menu-motion-panel) var(--menu-motion-ease) both;
 }
 
 .mobile-profile-popover > * {
-  animation: menu-popover-item-in 180ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: menu-popover-item-in var(--menu-motion-item) var(--menu-motion-ease) both;
 }
 
 .mobile-profile-popover > :nth-child(1) { animation-delay: 30ms; }
@@ -4788,9 +4788,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0);
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-8px) scale(0.98);
+  transform: translateY(-8px) scale(0.97);
   transform-origin: top;
-  transition: max-height 220ms ease, padding 220ms ease, opacity 150ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.25, 1), box-shadow 220ms ease, border-color 220ms ease;
+  transition: max-height var(--menu-motion-panel) var(--menu-motion-ease), padding var(--menu-motion-panel) var(--menu-motion-ease), opacity var(--menu-motion-item) var(--menu-motion-ease), transform var(--menu-motion-panel) var(--menu-motion-ease), box-shadow var(--menu-motion-panel) var(--menu-motion-ease), border-color var(--menu-motion-panel) var(--menu-motion-ease);
 }
 
 .post-select-wrap.is-open .post-select-menu {
@@ -6192,7 +6192,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-nav-menu.is-open,
   .mobile-auth-menu.is-open,
   .language-settings-card {
-    animation: mobile-header-popover-in 220ms cubic-bezier(.16, 1, .3, 1) both;
+    animation: mobile-header-popover-in var(--menu-motion-panel) var(--menu-motion-ease) both;
   }
 
   .mobile-profile-popover { display: grid; gap: 1px; padding: 8px; }
@@ -6205,7 +6205,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-nav-menu.is-open a,
   .mobile-auth-menu.is-open > * {
-    animation: menu-popover-item-in 180ms cubic-bezier(.16, 1, .3, 1) both;
+    animation: menu-popover-item-in var(--menu-motion-item) var(--menu-motion-ease) both;
   }
 
   .mobile-nav-menu.is-open a:nth-child(1),
@@ -6508,13 +6508,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-dashboard-menu.is-open > .mobile-drawer-stagger-item:nth-child(8) { animation-delay: 140ms; }
   .mobile-dashboard-menu.is-open > .mobile-drawer-stagger-item:nth-child(9) { animation-delay: 160ms; }
   .mobile-dashboard-menu.is-open > .mobile-drawer-stagger-item:nth-child(10) { animation-delay: 180ms; }
-
-  .mobile-auth-menu.is-open > * {
-    animation: mobile-dashboard-item-in 280ms cubic-bezier(.16, 1, .3, 1) both;
-  }
-
-  .mobile-auth-menu.is-open > :nth-child(2) { animation-delay: 35ms; }
-  .mobile-auth-menu.is-open > :nth-child(3) { animation-delay: 70ms; }
 
   :root {
     --mobile-drawer-width: min(78vw, 320px);
@@ -9017,6 +9010,33 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 /* Grid item stacking only, but it must still outrank the connector line
    drawn by any *sibling* comment's own .listing-comment-children below it. */
 .listing-comment-avatar { z-index: 1; }
+.listing-comment-author-link { display: block; color: inherit; text-decoration: none; }
+.listing-comment-author-link:focus-visible, .listing-comment-author-name:focus-visible { outline: 2px solid var(--green-550); outline-offset: 3px; border-radius: var(--radius-sm); }
+.listing-comment-author-name { color: var(--blue-900); font-size: var(--text-md); font-weight: var(--weight-extrabold); text-decoration: none; }
+.listing-comment-author-name:hover { text-decoration: underline; }
+.community-comment-author-menu { position: relative; z-index: 2; align-self: start; height: fit-content; }
+.community-comment-author-trigger { display: block; padding: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: inherit; cursor: pointer; }
+.community-comment-author-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 3px; }
+.community-comment-author-popover { position: absolute; top: calc(100% - 1px); left: 0; z-index: 8; display: grid; min-width: max-content; gap: 1px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }
+.community-comment-author-popover a { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border-radius: var(--radius-sm); color: var(--color-ink); font-size: var(--text-sm); text-decoration: none; white-space: nowrap; }
+/* The menu hangs from the avatar: its top edge starts where the round photo ends, one
+   pixel over it so the two lines meet rather than leaving a gap between them. A menu
+   from the left edge (comments) grows out of its left corner, one from the right
+   (the post author) out of its right. */
+.community-comment-author-menu .community-comment-author-popover { transform-origin: top left; }
+.community-detail-author-menu .community-comment-author-popover { right: 0; left: auto; }
+.community-comment-author-popover a:hover, .community-comment-author-popover a:focus-visible { background: var(--color-surface-soft); outline: none; }
+.community-comment-author-popover a i { width: 18px; color: var(--color-ink-soft); text-align: center; }
+.community-member-posts { display: grid; gap: var(--space-5); padding-block: var(--space-6); }
+.community-member-posts-header { display: grid; gap: var(--space-3); }
+.community-member-posts-back { display: inline-flex; align-items: center; gap: var(--space-2); width: fit-content; color: var(--blue-700); font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: none; }
+.community-member-posts-author { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--blue-900); font-weight: var(--weight-bold); }
+.community-member-posts-avatar { width: var(--control-h-lg); height: var(--control-h-lg); }
+.community-member-posts h1 { margin: 0; color: var(--blue-950); font-size: var(--text-2xl); }
+.community-member-posts-empty { display: grid; justify-items: start; gap: var(--space-2); padding: var(--space-6); border: 1px solid var(--neutral-250); border-radius: var(--radius-lg); background: var(--neutral-50); color: var(--blue-soft-650); }
+.community-member-posts-empty i { color: var(--blue-600); font-size: var(--text-2xl); }
+.community-member-posts-empty strong { color: var(--blue-900); }
+.community-member-posts-empty span { font-size: var(--text-sm); }
 .listing-comments-composer > div:last-child, .listing-comment-content { min-width: 0; }
 .listing-comments-composer textarea, .listing-comment-edit textarea, .listing-comment-reply-form textarea { width: 100%; min-height: 80px; display: block; padding: 12px 13px; border: 1px solid var(--neutral-300); border-radius: var(--radius-md); outline: 0; background: var(--neutral-150); color: var(--blue-850); font: inherit; font-size: var(--text-md); line-height: 1.5; resize: vertical; }
 .listing-comments-composer textarea:focus, .listing-comment-edit textarea:focus, .listing-comment-reply-form textarea:focus { border-color: var(--green-550); box-shadow: 0 0 0 3px rgb(0 113 227 / 14%); }
@@ -10382,20 +10402,35 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .community-detail-event-schedule span { color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .community-detail-event-schedule strong { color: var(--color-ink); font-size: var(--text-xl); line-height: 1.35; overflow-wrap: anywhere; }
 .community-detail-event-schedule > .ui-button { grid-column: 1 / -1; width: 100%; min-height: var(--control-h-xl); margin: 0; white-space: normal; }
-.community-detail-author { display: grid; justify-items: center; gap: var(--space-2); min-width: 90px; color: var(--color-ink-soft); font-size: var(--text-sm); text-align: center; }.community-detail-author-identity { display: grid; justify-items: center; gap: var(--space-2); }.community-detail-author-avatar { width: var(--control-h-xl); height: var(--control-h-xl); display: grid; place-items: center; overflow: hidden; border: 3px solid var(--color-surface-soft); border-radius: var(--radius-circle); object-fit: cover; clip-path: circle(50%); box-shadow: var(--shadow-xs); }.community-post-owner-menu { position: relative; }.community-post-owner-menu-trigger { width: var(--control-h-xs); min-height: var(--control-h-xs); padding: 0; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-950); }.community-post-owner-menu-trigger:hover { background: var(--neutral-250); color: var(--blue-950); }.community-post-owner-menu-popover { position: absolute; top: calc(100% + var(--space-2)); right: 0; z-index: 5; display: grid; min-width: 136px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }.community-post-owner-menu-popover button { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font: inherit; font-size: var(--text-sm); text-align: left; cursor: pointer; }.community-post-owner-menu-popover button:hover { background: var(--color-surface-soft); }.community-post-owner-menu-popover button.is-danger { color: var(--color-danger); }.community-post-owner-menu-popover button:focus-visible, .community-post-owner-menu-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }
+.community-detail-author { display: grid; justify-items: center; gap: var(--space-2); min-width: 90px; color: var(--color-ink-soft); font-size: var(--text-sm); text-align: center; }.community-detail-author-identity { display: grid; justify-items: center; gap: var(--space-2); }.community-detail-author-menu { position: relative; z-index: 2; height: fit-content; }.community-detail-author-avatar { width: var(--control-h-xl); height: var(--control-h-xl); display: grid; place-items: center; overflow: hidden; border: 3px solid var(--color-surface-soft); border-radius: var(--radius-circle); object-fit: cover; clip-path: circle(50%); box-shadow: var(--shadow-xs); }.community-post-owner-menu { position: relative; }.community-post-owner-menu-trigger { width: var(--control-h-xs); min-height: var(--control-h-xs); padding: 0; border: 0; border-radius: var(--radius-circle); background: var(--neutral-200); color: var(--blue-950); }.community-post-owner-menu-trigger:hover { background: var(--neutral-250); color: var(--blue-950); }.community-post-owner-menu-popover { position: absolute; top: calc(100% + var(--space-2)); right: 0; z-index: 5; display: grid; min-width: 136px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }.community-post-owner-menu-popover button { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font: inherit; font-size: var(--text-sm); text-align: left; cursor: pointer; }.community-post-owner-menu-popover button:hover { background: var(--color-surface-soft); }.community-post-owner-menu-popover button.is-danger { color: var(--color-danger); }.community-post-owner-menu-popover button:focus-visible, .community-post-owner-menu-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 2px; }
 
-/* The post options menu opens from the button it belongs to, growing out of
-   its top-right corner — the same keyframe the header's own popovers use,
-   so a menu on this site has one way of opening rather than one per menu.
+/* Menu motion. Every menu that opens from a button moves the same way: the
+   panel drops in and grows out of the corner nearest its button, then its
+   rows follow one after another. The header menus (profile, mobile, language)
+   set the standard; a panel takes part by carrying `menu-motion`, and the
+   numbers come from the --menu-motion-* tokens so there is one place to change
+   them.
 
-   The animation is deliberately not filled: a panel that is only visible
-   once an animation has run is a panel that is missing wherever animation
-   is throttled or switched off. The menu stands on its own and the motion
-   is only what plays over it. */
-.community-post-owner-menu-popover { transform-origin: top right; animation: mobile-header-popover-in 200ms cubic-bezier(.16, 1, .3, 1); }
+   The panel is not filled backwards, so a menu is never left invisible where
+   animation is throttled or switched off. Rows are held back until their turn,
+   which needs the fill. A panel anchored on its left corner sets its own
+   transform-origin beside the rule that positions it. */
+.menu-motion {
+  transform-origin: top right;
+  animation: mobile-header-popover-in var(--menu-motion-panel) var(--menu-motion-ease);
+}
+.menu-motion > * { animation: menu-popover-item-in var(--menu-motion-item) var(--menu-motion-ease) both; }
+.menu-motion > :nth-child(1) { animation-delay: calc(30ms + var(--menu-motion-step) * 0); }
+.menu-motion > :nth-child(2) { animation-delay: calc(30ms + var(--menu-motion-step) * 1); }
+.menu-motion > :nth-child(3) { animation-delay: calc(30ms + var(--menu-motion-step) * 2); }
+.menu-motion > :nth-child(4) { animation-delay: calc(30ms + var(--menu-motion-step) * 3); }
+.menu-motion > :nth-child(5) { animation-delay: calc(30ms + var(--menu-motion-step) * 4); }
+.menu-motion > :nth-child(6) { animation-delay: calc(30ms + var(--menu-motion-step) * 5); }
+.menu-motion > :nth-child(7) { animation-delay: calc(30ms + var(--menu-motion-step) * 6); }
 
 @media (prefers-reduced-motion: reduce) {
-  .community-post-owner-menu-popover { animation: none; }
+  .menu-motion,
+  .menu-motion > * { animation: none; }
 }
 .community-post-edit-dialog { width: min(100%, 640px); display: grid; gap: var(--space-5); padding: var(--space-6); border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-lg); }.community-post-edit-dialog header { display: grid; gap: var(--space-1); }.community-post-edit-dialog h2, .community-post-edit-dialog p { margin: 0; }.community-post-edit-dialog header p { color: var(--color-ink-soft); font-size: var(--text-sm); }.community-post-edit-dialog form { display: grid; gap: var(--space-4); }.community-post-edit-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .community-detail-post .community-detail-gallery { width: 100%; }.community-detail-post .listing-detail-main-image { min-height: 360px; border-radius: var(--radius-lg); }.community-detail-post .listing-detail-thumbnails { margin-top: var(--space-3); }
@@ -10418,6 +10453,19 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .post-rich-text code, .post-editor-content code { padding: 0 var(--space-1); border-radius: var(--radius-xs); background: var(--color-surface-soft); font-size: var(--text-md); }
 .post-rich-text pre, .post-editor-content pre { margin: 0 0 var(--space-3); padding: var(--space-3); overflow-x: auto; border-radius: var(--radius-sm); background: var(--color-surface-soft); }
 .post-rich-text pre code, .post-editor-content pre code { padding: 0; background: none; }
+
+/* The post body sits in a grid, and a grid item will not shrink below its content unless it
+   is told it may. Without this a wide table stretched the body, and with it the page, past
+   the edge of a phone. */
+.post-rich-text { min-width: 0; }
+
+/* A pasted table. It is a block of its own that scrolls sideways when it is wider than
+   the column, so a wide spreadsheet moves inside the post instead of pushing the page
+   past the edge of a phone. Borders are drawn on the cells, one line between them. */
+.post-rich-text table, .post-editor-content table { display: block; width: max-content; max-width: 100%; margin: 0 0 var(--space-3); overflow-x: auto; border-collapse: collapse; }
+.post-rich-text th, .post-rich-text td, .post-editor-content th, .post-editor-content td { min-width: var(--space-12); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-line); font-size: var(--text-md); line-height: 1.5; text-align: left; vertical-align: top; }
+.post-rich-text th, .post-editor-content th { background: var(--color-surface-soft); font-weight: var(--weight-bold); }
+.post-rich-text td > p, .post-rich-text th > p, .post-editor-content td > p, .post-editor-content th > p { margin: 0; }
 
 .community-detail-post-footer { display: flex; align-items: center; gap: var(--space-4); padding-top: var(--space-5); }.community-detail-post-footer > div { display: inline-flex; align-items: center; gap: var(--space-4); }.community-detail-post-footer .community-detail-post-actions { gap: var(--space-2); }.community-detail-post-footer .community-post-actions { margin-top: 0; }.community-detail-post .community-post-actions > button, .community-detail-post .community-post-actions > a, .community-detail-post .community-vote-control, .community-detail-post .community-post-share-count, .community-detail-post .community-post-owner-menu-trigger { min-height: var(--control-h-compact); font-size: var(--text-sm); }.community-detail-post .community-post-actions > .community-post-save, .community-detail-post .community-post-owner-menu-trigger { width: var(--control-h-compact); min-width: var(--control-h-compact); height: var(--control-h-compact); }.community-detail-post .community-vote-control button { min-width: var(--control-h-compact); min-height: var(--control-h-compact); }
 .community-detail-container > .listing-comments { width: 100%; min-width: 0; margin-top: 0; padding-top: 0; border-top: 0; }
@@ -10444,7 +10492,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .community-link-fields label { display: inline-flex; align-items: center; gap: var(--space-2); }
 .community-link-fields label i { color: var(--color-ink-soft); font-size: var(--text-xl); }
 .community-link-fields input[aria-invalid="true"] { border-color: var(--color-danger); }
-.community-link-fields .post-field-hint.is-invalid { color: var(--color-danger); }
+.post-field-hint.is-invalid { color: var(--color-danger); }
 .community-video-preview { display: flex; align-items: center; gap: var(--space-3); margin: 0; padding: var(--space-2); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-md); }
 .community-video-preview img { width: calc(var(--space-12) * 2); aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-xs); }
 

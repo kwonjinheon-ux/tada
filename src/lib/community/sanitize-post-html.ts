@@ -9,11 +9,16 @@
  * against the markup `document.execCommand` actually produces — `<strike>`
  * rather than `<s>`, `<font color>` rather than a styled span, `<b>` and `<i>`
  * rather than their semantic twins.
+ *
+ * A table has no toolbar button, but it arrives by paste, from a page, a
+ * spreadsheet or another post. Its cells keep a span when they have one, and
+ * nothing else about how it looked.
  */
 const ALLOWED_TAGS = new Set([
   "p", "br", "h2", "h3", "blockquote",
   "strong", "b", "em", "i", "u", "s", "a", "span",
   "ul", "ol", "li", "code", "pre",
+  "table", "thead", "tbody", "tfoot", "tr", "th", "td",
 ]);
 
 /**
@@ -36,10 +41,13 @@ const TAG_ALIASES = new Map([
 ]);
 
 /** Markup that already carries its own line structure. */
-const BLOCK_MARKUP = /<(?:p|br|ul|ol|li|blockquote|pre|h2|h3)\b/i;
+const BLOCK_MARKUP = /<(?:p|br|ul|ol|li|blockquote|pre|h2|h3|table)\b/i;
 
 /** Links a post may point at. Anything else keeps its text and loses the link. */
 const SAFE_HREF = /^(?:https?:\/\/|mailto:)[^\s"'<>]+$/i;
+
+/** How many columns or rows a cell covers. Anything that is not a small count is ignored. */
+const MAX_CELL_SPAN = 20;
 
 /** Colours the swatches produce, and nothing that could close the attribute. */
 const SAFE_COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i;
@@ -47,6 +55,11 @@ const SAFE_COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i;
 function attributeValue(attributes: string, name: string) {
   const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'>]+))`, "i").exec(attributes);
   return (match?.[1] ?? match?.[2] ?? match?.[3] ?? "").trim();
+}
+
+function cellSpan(attributes: string, name: "colspan" | "rowspan") {
+  const value = Number(attributeValue(attributes, name));
+  return Number.isInteger(value) && value > 1 && value <= MAX_CELL_SPAN ? ` ${name}="${value}"` : "";
 }
 
 /** The colour of a `font color` or of a span's inline `color:`, if it is one. */
@@ -78,6 +91,7 @@ export function sanitizePostHtml(value: string) {
         // goes and its text stays.
         return SAFE_HREF.test(href) ? `<a href="${href}" target="_blank" rel="nofollow noopener noreferrer">` : "";
       }
+      if (normalized === "td" || normalized === "th") return `<${normalized}${cellSpan(attributes, "colspan")}${cellSpan(attributes, "rowspan")}>`;
       if (normalized === "span") {
         const colour = textColour(attributes);
         return colour ? `<span style="color: ${colour}">` : "<span>";

@@ -193,7 +193,7 @@ function NotificationHeaderActions({
     <div className="notifications-desktop-actions">{renderActions()}</div>
     <details className="notifications-mobile-actions notifications-more" ref={mobileMenu}>
       <summary className="icon-button" aria-label={ko ? "알림 작업 더보기" : "More notification actions"}><i className="ms ms-more-vert" aria-hidden="true" /></summary>
-      <div className="ui-panel notifications-more-menu">{renderActions()}</div>
+      <div className="ui-panel notifications-more-menu menu-motion">{renderActions()}</div>
     </details>
   </div>;
 }

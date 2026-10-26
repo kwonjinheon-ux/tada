@@ -26,7 +26,9 @@ export function CommunityRecentPostsPanel({ category = "all", mainLocation, subL
     return () => media.removeEventListener("change", update);
   }, []);
   useProfileMainLocation({
-    enabled: desktopVisible,
+    // A page that already knows its area passes it down, an empty one meaning
+    // everywhere. Only a page that does not asks the profile, and it does so once.
+    enabled: desktopVisible && mainLocation === undefined,
     hasMainLocationInUrl: false,
     mainLocation: "",
     onResolve: (main, sub) => setProfileLocation({ main, sub }),

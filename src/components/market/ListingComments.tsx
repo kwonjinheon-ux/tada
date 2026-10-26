@@ -2,6 +2,7 @@
 
 import { type CSSProperties, FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CommunityVoteArrow } from "@/components/community/CommunityVoteArrow";
+import { CommunityCommentAuthorMenu } from "@/components/community/CommunityCommentAuthorMenu";
 import { Avatar } from "@/components/ui/Avatar";
 import { descriptionTextScale } from "@/components/ui/TextSizeSection";
 import { invalidateComments, loadComments as fetchComments, readCachedComments, type CommentRecord, type CommentSpace } from "@/lib/comment-cache";
@@ -296,7 +297,7 @@ export function ListingComments({ listingId, textSizeStep = 0, space = "market" 
     const isThreadOpen = expandedThreads.has(comment.id);
 
     return <article id={`comment-${comment.id}`} className={`listing-comment depth-${comment.depth}`} key={comment.id}>
-      <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />
+      {space === "community" && comment.authorId !== "pending-user" && !comment.deletedAt ? <CommunityCommentAuthorMenu authorId={comment.authorId} name={comment.authorName} avatarUrl={comment.authorAvatarUrl} /> : <Avatar src={comment.authorAvatarUrl} name={comment.authorName} className="listing-comment-avatar" initials="double" />}
       <div className="listing-comment-content">
         <div className="listing-comment-author-row"><strong>{comment.authorName}</strong><time dateTime={comment.createdAt}>{relativeTime(comment.createdAt, t("listingCommentJustNow"))}</time>{comment.updatedAt !== comment.createdAt && !comment.deletedAt ? <span className="listing-comment-edited">{t("listingCommentEdited")}</span> : null}</div>
         {isEditing ? <div className="listing-comment-edit"><textarea value={editDraft} maxLength={2000} onChange={(event) => setEditDraft(event.target.value)} aria-label={t("listingCommentEdit")} /><div><button className="listing-comment-text-button" type="button" onClick={() => void saveEdit(comment)} disabled={busyCommentId === comment.id}>{t("save")}</button><button className="listing-comment-text-button is-muted" type="button" onClick={() => setEditingId(null)}>{t("cancel")}</button></div></div> : <p className={comment.deletedAt ? "is-deleted" : ""}>{comment.deletedAt ? t("listingCommentDeleted") : comment.body}</p>}

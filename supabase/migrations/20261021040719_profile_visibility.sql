@@ -2,11 +2,11 @@
 -- basic name and avatar on a published listing or an existing review.
 alter table public.profiles
   add column if not exists profile_visibility text not null default 'public'
-    check (profile_visibility in ('public', 'members', 'trade_partners'));
+    check (profile_visibility in ('public', 'members', 'interested_users', 'trade_partners', 'private'));
 
 alter table public.market_seller_profiles
   add column if not exists profile_visibility text not null default 'public'
-    check (profile_visibility in ('public', 'members', 'trade_partners'));
+    check (profile_visibility in ('public', 'members', 'interested_users', 'trade_partners', 'private'));
 
 -- Public surfaces need a deliberately small identity projection. The profiles
 -- table also holds phone and precise location, so it must not stay public.
@@ -17,7 +17,7 @@ create table if not exists public.public_member_profiles (
   region_city text,
   region_suburb text,
   profile_visibility text not null default 'public'
-    check (profile_visibility in ('public', 'members', 'trade_partners')),
+    check (profile_visibility in ('public', 'members', 'interested_users', 'trade_partners', 'private')),
   updated_at timestamptz not null default now()
 );
 

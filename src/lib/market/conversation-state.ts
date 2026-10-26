@@ -38,7 +38,15 @@ export async function resolveConversationTargets(
     : owned.filter((id) => !states.get(id)?.archived_at);
 }
 
-/** Upserts the user's own state row for each conversation. */
+/**
+ * Writes only the state columns the authenticated role is allowed to change.
+ *
+ * This deliberately avoids PostgREST upsert here: an upsert's conflict update
+ * includes the primary-key columns in its UPDATE shape, while this table grants
+ * UPDATE only to the mutable state fields. Splitting inserts from updates
+ * keeps the RLS/column-grant boundary tight and makes archive/restore work for
+ * both first-time and previously touched conversations.
+ */
 export async function writeConversationStates(
   supabase: SupabaseClient,
   userId: string,
@@ -46,15 +54,31 @@ export async function writeConversationStates(
   patch: { archived_at?: string | null; deleted_at?: string | null },
 ) {
   if (!conversationIds.length) return { error: null, conversationIds: [] as string[] };
-  const rows = conversationIds.map((conversationId) => ({
-    conversation_id: conversationId,
-    user_id: userId,
-    ...patch,
-  }));
-  const { error } = await supabase
+  const { data: existingRows, error: existingError } = await supabase
     .from("market_conversation_states")
-    .upsert(rows, { onConflict: "conversation_id,user_id" });
-  if (error) return { error, conversationIds: [] as string[] };
+    .select("conversation_id")
+    .eq("user_id", userId)
+    .in("conversation_id", conversationIds);
+  if (existingError) return { error: existingError, conversationIds: [] as string[] };
+
+  const existingIds = new Set((existingRows ?? []).map((row) => row.conversation_id as string));
+  const newIds = conversationIds.filter((conversationId) => !existingIds.has(conversationId));
+  if (newIds.length) {
+    const { error: insertError } = await supabase
+      .from("market_conversation_states")
+      .insert(newIds.map((conversationId) => ({ conversation_id: conversationId, user_id: userId, ...patch })));
+    if (insertError) return { error: insertError, conversationIds: [] as string[] };
+  }
+
+  const updateIds = [...existingIds];
+  if (updateIds.length) {
+    const { error: updateError } = await supabase
+      .from("market_conversation_states")
+      .update(patch)
+      .eq("user_id", userId)
+      .in("conversation_id", updateIds);
+    if (updateError) return { error: updateError, conversationIds: [] as string[] };
+  }
 
   // PostgREST may use a minimal representation for an upsert even when the
   // mutation succeeds. Verify with the user's readable state rows instead of

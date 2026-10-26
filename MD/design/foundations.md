@@ -192,6 +192,28 @@ Inputs must be at least `16px` on mobile so Safari does not zoom on focus —
 
 Page outer spacing and content width rules live in `MD/design/layout-system.md`.
 
+## Menu motion
+
+Every menu that opens from a button moves the same way: the panel drops in
+and grows out of the corner nearest its button, then its rows follow it one
+after another. The header's profile, mobile and language menus set the
+standard; every other popover follows it.
+
+- A panel takes part by carrying the `menu-motion` class. Do not write a new
+  `@keyframes` or a new `animation:` for a menu.
+- The numbers are tokens in `src/app/globals.css`: `--menu-motion-panel`,
+  `--menu-motion-item`, `--menu-motion-step` and `--menu-motion-ease`. Change
+  them there and every menu changes together.
+- The origin is the corner nearest the button. The default is top right; a panel
+  anchored on its left corner sets `transform-origin: top left` next to the rule
+  that positions it.
+- Rows are the panel's direct children, up to seven. They are held back until
+  their turn, so a row that is not a direct child will not stagger.
+- Reduced motion switches all of it off.
+- A menu that is always in the DOM and opens by size (the `SelectMenu` listbox)
+  keeps its own mechanics but reads the same tokens.
+- Drawers and sheets are not menus. `mobile-drawer-pattern.md` governs them.
+
 ## Known exceptions
 
 Four places hold raw colour on purpose and are allowlisted in
