@@ -41,11 +41,10 @@ export function OwnedListingRow({ item }: { item: OwnedListingItem }) {
     <Link className="listing-row-media" href={href} aria-label={ko ? `${item.title} 상세 보기` : `View ${item.title}`}><img src={item.image} alt="" loading="lazy" /></Link>
     <div className="listing-row-body">
       <div className="owned-listing-badges"><span className="owned-listing-kind"><i className={`ms ${isService ? "ms-build" : item.kind === "bargain" ? "ms-sell" : "ms-shopping-bag"}`} aria-hidden="true" />{kindLabel}</span><span className={`owned-listing-status is-${item.status}`}>{statusLabel}</span></div>
-      <h2><Link href={href}>{item.title}{!item.canEdit ? <i className="ms ms-chevron-right owned-listing-detail-cue" aria-hidden="true" /> : null}</Link></h2>
+      <div className="owned-listing-title-row"><h2><Link href={href}>{item.title}</Link></h2><OwnedListingActions id={item.id} title={item.title} kind={item.kind} canEdit={item.canEdit} canDelete={item.canDelete} canRelist={item.canRelist} canMarkSold={item.canMarkSold} /></div>
       {isService ? <p className="owned-listing-detail">{[category, item.location].filter(Boolean).join(" · ")}</p> : <strong className="listing-row-price">{formatMarketPrice(item.priceCents ?? 0)}</strong>}
       <small className="listing-row-meta">{ko ? "등록일" : "Listed"} {date}</small>
       {isService && (item.reviewCount ?? 0) > 0 ? <Link className="owned-listing-reviews" href={`${href}#reviews`}>{ko ? `후기 ${item.reviewCount}개 보기` : `View ${item.reviewCount} reviews`}</Link> : null}
     </div>
-    <OwnedListingActions id={item.id} title={item.title} kind={item.kind} canEdit={item.canEdit} canDelete={item.canDelete} canRelist={item.canRelist} canMarkSold={item.canMarkSold} />
   </article>;
 }

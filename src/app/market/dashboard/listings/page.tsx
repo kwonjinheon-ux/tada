@@ -5,7 +5,7 @@ import { ManageListingActions } from "@/components/dashboard/ManageListingAction
 import { AccountLocaleText, AccountPageIntro, AccountWorkspaceAside } from "@/components/dashboard/AccountPagePatterns";
 import { NewListingMenu } from "@/components/dashboard/NewListingMenu";
 import { OwnedListingRow, type OwnedListingItem } from "@/components/dashboard/OwnedListingRow";
-import { OwnedListingsViewControls } from "@/components/dashboard/OwnedListingsViewControls";
+import { OwnedListingsCompletedFilter, OwnedListingsViewControls } from "@/components/dashboard/OwnedListingsViewControls";
 import { ServiceOwnerActions } from "@/components/services/ServiceOwnerActions";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ListSearchField } from "@/components/ui/ListSearchField";
@@ -227,8 +227,8 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     </div>
     <div className="account-content-rail-layout owned-listings-layout">
       <div className="owned-listings-main">
-        <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
-        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" submitInField /><OwnedListingsViewControls sort={sort} excludeCompleted={excludeCompleted} allowCompletedFilter={activeCategory !== "services"} /></div>
+        <div className="owned-listings-filter-row"><ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />{activeCategory !== "services" ? <OwnedListingsCompletedFilter excludeCompleted={excludeCompleted} /> : null}</div>
+        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" submitInField /><OwnedListingsViewControls sort={sort} /></div>
         {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
           : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
           : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={hrefWithout("q")}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>

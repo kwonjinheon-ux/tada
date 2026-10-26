@@ -24,7 +24,7 @@ export function OwnedListingActions({ id, title, kind, canEdit, canDelete, canRe
   const href = kind === "services" ? `/services/${id}` : `/market/${id}`;
   const editHref = `${href}/edit`;
   const apiHref = kind === "services" ? `/api/services/${id}` : kind === "bargain" ? `/api/bargain/listings/${id}` : `/api/market/listings/${id}`;
-  const hasMoreActions = canRelist || canMarkSold || canDelete;
+  const hasMoreActions = canEdit || canRelist || canMarkSold || canDelete;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -53,18 +53,16 @@ export function OwnedListingActions({ id, title, kind, canEdit, canDelete, canRe
   };
 
   return <>
-    {canEdit || hasMoreActions ? <div className={`owned-listing-actions listing-row-actions${hasMoreActions ? " has-more" : ""}`} ref={menuRef}>
-      {canEdit ? <Link className="ui-button ui-button--secondary ui-button--sm owned-listing-primary" href={editHref}>{ko ? "수정" : "Edit"}</Link> : null}
-      {hasMoreActions ? <>
+    {hasMoreActions ? <div className="owned-listing-actions" ref={menuRef}>
         <IconButton className="owned-listing-more" aria-label={ko ? `${title} 더보기` : `More actions for ${title}`} aria-expanded={menuOpen} aria-controls={menuOpen ? `owned-listing-menu-${id}` : undefined} onClick={() => setMenuOpen((value) => !value)}>
           <i className="ms ms-more-vert" aria-hidden="true" />
         </IconButton>
         {menuOpen ? <div className="owned-listing-menu ui-panel menu-motion" id={`owned-listing-menu-${id}`}>
+          {canEdit ? <Link href={editHref} onClick={() => setMenuOpen(false)}>{ko ? "수정" : "Edit"}</Link> : null}
           {canRelist ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => void runAction("POST")}>{ko ? "끌어올리기" : "Bump listing"}</Button> : null}
           {canMarkSold ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => { setMenuOpen(false); setConfirmAction("sold"); setError(null); }}>{ko ? "판매 완료로 변경" : "Mark as sold"}</Button> : null}
           {canDelete ? <Button variant="ghost" size="sm" className="is-danger" disabled={busy} onClick={() => { setMenuOpen(false); setConfirmAction("delete"); setError(null); }}>{ko ? "삭제" : "Delete"}</Button> : null}
         </div> : null}
-      </> : null}
       {error && !confirmAction ? <p role="alert" className="owned-listing-error">{error}</p> : null}
     </div> : null}
     {confirmAction ? <DialogOverlay className="owned-listing-dialog" aria-labelledby={`owned-listing-confirm-${id}`} onClose={() => setConfirmAction(null)} isDismissible={!busy}>
