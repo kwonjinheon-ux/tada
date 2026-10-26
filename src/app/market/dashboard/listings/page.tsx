@@ -228,7 +228,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
     <div className="account-content-rail-layout owned-listings-layout">
       <div className="owned-listings-main">
         <ManageListingsCategoryTabs activeCategory={activeCategory} counts={tabCounts} showDomainIcons />
-        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" /><OwnedListingsViewControls sort={sort} excludeCompleted={excludeCompleted} /></div>
+        <div className="owned-listings-toolbar"><ListSearchField placeholder="Search your listings" copyKey="ownedListingSearch" actionKey="ownedListingSearchAction" submitInField /><OwnedListingsViewControls sort={sort} excludeCompleted={excludeCompleted} allowCompletedFilter={activeCategory !== "services"} /></div>
         {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2><AccountLocaleText en="We couldn't load your listings." ko="등록 항목을 불러오지 못했어요" /></h2><p><AccountLocaleText en="Please try again." ko="잠시 후 다시 시도해 주세요." /></p><Link href="/market/dashboard/listings"><AccountLocaleText en="Try again" ko="다시 시도" /></Link></div>
           : ownedRows.length ? <div className="ui-panel account-workspace-list"><div className="manage-listings-grid">{ownedRows.map((item) => <OwnedListingRow key={`${item.kind}-${item.id}`} item={item} />)}</div></div>
           : term ? <div className="manage-listings-empty"><i className="ms ms-search" aria-hidden="true" /><h2><AccountLocaleText en="No listings match your search." ko="일치하는 등록 항목이 없어요" /></h2><Link href={hrefWithout("q")}><AccountLocaleText en="Clear search" ko="검색 지우기" /></Link></div>

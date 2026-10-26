@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SelectMenu } from "@/components/ui/SelectMenu";
+import { IconButton } from "@/components/ui/IconButton";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
 
 /** The search box that sits under the page index, in the board layout these
  *  lists follow. Submitting sets `?q=` and returns to page one, because the
  *  page number from the previous result set means nothing in the new one. */
-export function ListSearchField({ placeholder, label = "Search this list", scopes, scopeParam = "searchBy", submitLabel = "Search", copyKey, actionKey }: {
+export function ListSearchField({ placeholder, label = "Search this list", scopes, scopeParam = "searchBy", submitLabel = "Search", copyKey, actionKey, submitInField = false }: {
   placeholder: string;
   label?: string;
   copyKey?: TranslationKey;
@@ -16,6 +17,7 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
   scopes?: ReadonlyArray<{ value: string; label: string }>;
   scopeParam?: string;
   submitLabel?: string;
+  submitInField?: boolean;
 }) {
   const { t } = useLanguage();
   const visiblePlaceholder = copyKey ? t(copyKey) : placeholder;
@@ -49,7 +51,7 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
 
   return (
     <form
-      className="list-search"
+      className={`list-search${submitInField ? " is-inline-submit" : ""}`}
       role="search"
       onSubmit={(event) => { event.preventDefault(); submit(term); }}
     >
@@ -65,8 +67,8 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
         hideLabel
         includeEmptyOption={false}
       /> : null}
-      <label className="list-search-field">
-        <i className="ms ms-search" aria-hidden="true" />
+      <div className="list-search-field">
+        {submitInField ? <IconButton className="list-search-submit" type="submit" aria-label={visibleAction}><i className="ms ms-search" aria-hidden="true" /></IconButton> : <i className="ms ms-search" aria-hidden="true" />}
         <input
           type="search"
           name="q"
@@ -80,8 +82,8 @@ export function ListSearchField({ placeholder, label = "Search this list", scope
             <i className="ms ms-close" aria-hidden="true" />
           </button>
         ) : null}
-      </label>
-      <button className="ui-button ui-button--primary ui-button--sm" type="submit">{visibleAction}</button>
+      </div>
+      {submitInField ? null : <button className="ui-button ui-button--primary ui-button--sm" type="submit">{visibleAction}</button>}
     </form>
   );
 }

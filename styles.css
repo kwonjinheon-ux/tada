@@ -12798,6 +12798,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 }
 
 .list-search-clear:hover { color: var(--color-ink); }
+.list-search.is-inline-submit .list-search-field { width: 100%; gap: 0; padding: 0 var(--space-1) 0 0; }
+.list-search-submit.icon-button { display: grid; width: var(--control-h-xl); height: var(--control-h-xl); flex: none; place-items: center; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); }
+.list-search-submit.icon-button:hover { color: var(--color-primary); }
+.list-search.is-inline-submit .list-search-clear { width: var(--control-h-xl); height: var(--control-h-xl); background: transparent; }
 
 .list-search-scope {
   min-width: 0;
@@ -14735,8 +14739,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-aside .account-ad-copy > a { margin-top: var(--space-2); }
 .owned-listings-create { position: relative; flex: none; }
 .owned-listings-create > .ui-button { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-xl); white-space: nowrap; }
-.owned-listings-create-menu, .owned-listing-menu { position: absolute; z-index: 12; right: 0; min-width: 180px; padding: var(--space-2); background: var(--color-surface); box-shadow: var(--shadow-lg); }
-.owned-listings-create-menu { top: calc(100% + var(--space-2)); }
+.owned-listings-create-menu { position: absolute; z-index: 12; top: calc(100% + var(--space-2)); right: 0; min-width: 180px; padding: var(--space-2); background: var(--color-surface); box-shadow: var(--shadow-lg); }
 .owned-listings-create-menu a, .owned-listing-menu a, .owned-listing-menu button { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); text-align: left; text-decoration: none; white-space: nowrap; }
 .owned-listings-create-menu a:hover, .owned-listing-menu :is(a, button):hover { background: var(--color-primary-soft); }
 .owned-listings-create-menu a:first-child .ms { color: var(--color-market-icon); }
@@ -14748,12 +14751,14 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-market, .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-bargain { color: var(--color-market-icon); }
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-services { color: var(--color-services-icon); }
 .owned-listings-page .manage-listings-category-tab b { min-width: 0; min-height: 0; background: transparent; color: inherit; font-size: var(--text-xs); }
-.owned-listings-toolbar { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
-.owned-listings-toolbar .list-search { flex: 1 1 auto; min-width: 0; margin-top: 0; }
+.owned-listings-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); margin-bottom: var(--space-4); }
+.owned-listings-toolbar .list-search { min-width: 0; margin-top: 0; }
 .owned-listings-toolbar .list-search-field { flex: 1 1 auto; min-width: 0; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
 .owned-listings-toolbar .list-search-field input { min-height: var(--control-h-xl); }
-.owned-listings-toolbar .list-search button[type="submit"] { min-height: var(--control-h-xl); }
-.owned-listings-view-controls { display: flex; align-items: center; gap: var(--space-2); flex: none; min-width: 0; }
+.owned-listings-filter-trigger.ui-button { display: inline-flex; align-items: center; gap: var(--space-1); width: auto; min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-sm); white-space: nowrap; }
+.owned-listings-filter-trigger.ui-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.owned-listings-filter-trigger > span { display: grid; min-width: var(--space-4); height: var(--space-4); place-items: center; border-radius: var(--radius-circle); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-2xs); }
+.owned-listings-filter-panel { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface-soft); box-shadow: none; }
 .owned-listings-sort { flex: none; width: calc(var(--space-12) * 3); }
 .owned-listings-sort .post-select-trigger { min-height: var(--control-h-xl); border-color: var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .owned-listings-sort .post-select-menu { min-width: 100%; }
@@ -14766,14 +14771,19 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listing-row .listing-row-body { min-width: 0; }
 .owned-listing-row .listing-row-body h2 { margin: 0; overflow-wrap: anywhere; }
 .owned-listing-row .listing-row-body h2 a { color: inherit; text-decoration: none; }
+.owned-listing-row .listing-row-body h2 a:hover { text-decoration: underline; }
+.owned-listing-row .listing-row-body h2 a:focus-visible { border-radius: var(--radius-xs); box-shadow: var(--ring-focus); }
+.owned-listing-detail-cue { margin-inline-start: var(--space-1); color: var(--color-muted); font-size: var(--text-md); vertical-align: middle; }
 .owned-listing-kind, .owned-listing-status { white-space: nowrap; }
 .owned-listing-detail { overflow: hidden; margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
 .owned-listing-reviews { display: inline-block; margin-top: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-xs); text-decoration: none; }
-.owned-listing-actions { display: flex; align-items: center; flex-wrap: nowrap; gap: var(--space-2); }
+.owned-listing-actions { display: grid; grid-template-columns: minmax(0, 1fr) var(--control-h-xl); align-items: center; justify-items: end; gap: var(--space-2); }
 .owned-listing-primary { min-height: var(--control-h-xl); padding-inline: var(--space-3); background: var(--color-primary-soft); color: var(--color-primary-dark); white-space: nowrap; text-decoration: none; }
-.owned-listing-more { position: relative; }
-.owned-listing-more > .icon-button { display: grid; width: var(--control-h-xl); height: var(--control-h-xl); place-items: center; border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); color: var(--color-ink); }
-.owned-listing-menu { top: calc(100% + var(--space-1)); }
+.owned-listing-actions:not(.has-more) .owned-listing-primary { grid-column: 1 / -1; }
+.owned-listing-more.icon-button { display: grid; width: var(--control-h-xl); height: var(--control-h-xl); flex: none; place-items: center; border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); color: var(--color-ink); }
+.owned-listing-more.icon-button[aria-expanded="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.owned-listing-more.icon-button { grid-column: 2; }
+.owned-listing-menu { grid-column: 1 / -1; width: 100%; min-width: calc(var(--space-12) * 4); padding: var(--space-1); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface-soft); box-shadow: none; }
 .owned-listing-menu .is-danger { color: var(--color-danger); }
 .owned-listing-error { flex-basis: 100%; margin: 0; color: var(--color-danger); font-size: var(--text-sm); }
 .owned-listing-dialog-panel { position: relative; width: min(100% - var(--space-8), 420px); padding: var(--space-5); background: var(--color-surface); }
@@ -14833,15 +14843,21 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-page .manage-listings-category-tabs { gap: var(--space-2); margin-bottom: var(--space-3); }
   .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
   .owned-listings-page .account-workspace-list { padding: 0; }
-  .owned-listing-row { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); gap: var(--space-3); }
+  .owned-listing-row { min-height: 0; grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-2) var(--space-3); padding-block: var(--space-3); }
   .owned-listing-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
   .owned-listing-row .listing-row-body h2 { font-size: var(--text-md); }
-  .owned-listing-actions { grid-column: 2; justify-content: flex-end; margin-top: 0; }
-  .owned-listings-toolbar { flex-wrap: wrap; margin-bottom: var(--space-3); }
+  .owned-listings-page .owned-listing-badges :is(.owned-listing-kind, .owned-listing-status) { font-size: var(--text-sm); }
+  .owned-listing-actions { grid-column: 2; width: 100%; margin-top: 0; }
+  .owned-listing-menu { min-width: 0; }
+  .owned-listing-menu :is(a, button) { min-height: var(--control-h-xl); }
+  .owned-listing-error { grid-column: 1 / -1; }
+  .owned-listings-toolbar { margin-bottom: var(--space-3); }
   .owned-listings-toolbar .list-search { width: 100%; flex-wrap: nowrap; }
-  .owned-listings-toolbar .list-search button[type="submit"] { width: auto; min-height: var(--control-h-xl); flex: none; }
+  .owned-listings-toolbar .list-search-submit.icon-button { width: var(--control-h-xl); }
   .owned-listings-toolbar .list-search-field input { font-size: var(--font-size-mobile-control); }
-  .owned-listings-view-controls { width: 100%; justify-content: flex-end; }
+  .owned-listings-filter-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .owned-listings-filter-panel.is-sort-only { grid-template-columns: minmax(0, 1fr); }
+  .owned-listings-sort, .owned-listings-exclude.ui-button { width: 100%; }
   .messages-list-description { display: none; }
 }
 @media (max-width: 359.98px) {

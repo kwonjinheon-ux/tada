@@ -32,6 +32,7 @@ export function ManageListingsCategoryTabs({ activeCategory, counts, baseHref = 
       // Switching tab keeps the search but starts its result set at page one.
       const query = new URLSearchParams(searchParams.toString());
       query.delete("page");
+      if (category === "services") query.delete("excludeCompleted");
       if (category === "all") query.delete("category");
       else query.set("category", category);
       const href = query.toString() ? `${baseHref}?${query}` : baseHref;
