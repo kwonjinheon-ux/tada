@@ -21,7 +21,7 @@ export const languageOptions: Array<{ code: SupportedLocale; flag: string; label
 const copy = {
   en: {
     myPage: "My page", myPageV2: "My page V2", tadaChargeGuide: "What is Tada Charge?",
-    ownedListingSearch: "Search your listings", ownedListingSearchAction: "Search", ownedListingClearSearch: "Clear search", ownedListingFilterLabel: "Sort & filter", ownedListingSortLabel: "Sort my listings", ownedListingSortNewest: "Newest first", ownedListingSortOldest: "Oldest first", ownedListingExcludeCompleted: "Hide completed",
+    ownedListingSearch: "Search your listings", ownedListingSearchAction: "Search", ownedListingClearSearch: "Clear search", ownedListingFilterLabel: "Sort & filter", ownedListingSortLabel: "Sort my listings", ownedListingSortNewest: "Newest first", ownedListingSortOldest: "Oldest first", ownedListingExcludeCompleted: "Hide completed", reservationSearch: "Search reserved items",
     search: "Search for items...", searchCommunity: "Search community posts...", searchServices: "Search local services...", market: "Market", jobs: "Jobs", services: "Services", community: "Community", create: "Create", home: "Home", messages: "Messages", categories: "Categories", more: "More",
     dashboard: "Dashboard", profileSettings: "Profile Settings", notifications: "Notifications", wishlist: "Wishlist", keywords: "Keywords", manageListings: "Manage Listings", nearbyMap: "Nearby Map", logOut: "Log out", adminCentre: "Admin centre", accountMenu: "Account", logIn: "Log in", signUp: "Sign up",
     languageSettings: "Language Settings", displayLanguage: "Display language", supportedNow: "English and Korean are available now. Other languages are saved for upcoming translations.", languageSaved: "Language preference saved.",
@@ -91,7 +91,7 @@ const copy = {
   },
   ko: {
     myPage: "마이페이지", myPageV2: "마이페이지 V2", tadaChargeGuide: "타다 충전이란?",
-    ownedListingSearch: "내 등록 검색", ownedListingSearchAction: "검색", ownedListingClearSearch: "검색 지우기", ownedListingFilterLabel: "정렬·필터", ownedListingSortLabel: "내 등록 정렬", ownedListingSortNewest: "최신순", ownedListingSortOldest: "오래된순", ownedListingExcludeCompleted: "거래 완료 제외",
+    ownedListingSearch: "내 등록 검색", ownedListingSearchAction: "검색", ownedListingClearSearch: "검색 지우기", ownedListingFilterLabel: "정렬·필터", ownedListingSortLabel: "내 등록 정렬", ownedListingSortNewest: "최신순", ownedListingSortOldest: "오래된순", ownedListingExcludeCompleted: "거래 완료 제외", reservationSearch: "예약 상품 검색",
     search: "물품 검색", searchCommunity: "커뮤니티 전체 검색", searchServices: "서비스 검색", market: "마켓", jobs: "일자리", services: "서비스", community: "커뮤니티", create: "등록", home: "홈", messages: "메시지", categories: "카테고리", more: "더보기",
     dashboard: "대시보드", profileSettings: "프로필 설정", notifications: "알림", wishlist: "찜 목록", keywords: "키워드", manageListings: "판매 관리", nearbyMap: "내 주변 지도", logOut: "로그아웃", adminCentre: "관리자 센터", accountMenu: "계정", logIn: "로그인", signUp: "회원가입",
     languageSettings: "언어 설정", displayLanguage: "표시 언어", supportedNow: "영어와 한국어는 지금 바로 지원됩니다. 다른 언어는 향후 번역을 위해 설정값만 저장됩니다.", languageSaved: "언어 설정이 저장되었습니다.",

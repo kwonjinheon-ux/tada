@@ -6,31 +6,9 @@ import { servicesCategoryLabels, type ServiceCategoryId } from "@/data/services"
 import { useLanguage } from "@/components/LanguageProvider";
 import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
-type AccountWorkspaceKind = "listings" | "reservations";
-
 export function AccountLocaleText({ en, ko }: { en: string; ko: string }) {
   const { locale } = useLanguage();
   return <>{locale === "ko" ? ko : en}</>;
-}
-
-/** Shared destination header for account tasks, with one clear next action. */
-export function AccountWorkspaceHeader({ kind, count, primaryHref, searching = false }: { kind: AccountWorkspaceKind; count: number; primaryHref: string; searching?: boolean }) {
-  const { locale } = useLanguage();
-  const ko = locale === "ko";
-  const copy = kind === "listings"
-    ? { title: ko ? "내 상품·서비스" : "My items & services", description: ko ? "등록한 상품과 서비스를 확인하고, 필요한 내용을 바로 관리하세요." : "Keep your items and services up to date in one place.", detail: searching ? ko ? `검색 결과 ${count}개` : `${count} search results` : ko ? `등록한 항목 ${count}개` : `${count} listings`, action: ko ? "새로 등록하기" : "Create a listing" }
-    : { title: ko ? "예약 및 수령" : "Reservations & pickups", description: ko ? "구매와 판매 약속을 확인하고 다음 단계를 놓치지 마세요." : "Stay on top of purchases, sales and handovers.", detail: ko ? `예약 ${count}건` : `${count} reservations`, action: ko ? "동네 상품 둘러보기" : "Explore Market" };
-  return <div className="account-workspace-header">
-    <AccountPageIntro title={copy.title} description={copy.description} detail={copy.detail} />
-    <Link className="ui-button ui-button--primary" href={primaryHref}><i className={`ms ${kind === "listings" ? "ms-add" : "ms-search"}`} aria-hidden="true" />{copy.action}</Link>
-  </div>;
-}
-
-export function AccountWorkspaceSummary({ items }: { items: { icon: string; label: string; labelKo: string; value: number; tone?: "market" | "services" }[] }) {
-  const { locale } = useLanguage();
-  return <div className="account-workspace-summary" aria-label={locale === "ko" ? "현황" : "Overview"}>{items.map((item) => <div className={`ui-panel ${item.tone ? `is-${item.tone}` : ""}`} key={item.label}>
-    <i className={`ms ${item.icon}`} aria-hidden="true" /><span>{locale === "ko" ? item.labelKo : item.label}</span><strong>{item.value}</strong>
-  </div>)}</div>;
 }
 
 type AccountPageIntroProps = {
@@ -47,7 +25,7 @@ export function AccountPageIntro({ title, description, detail, backToMyPage = fa
   </header>;
 }
 
-type DashboardAdBannerProps = { kind: "notifications" | "wishlist" | "keywords" | "listings" };
+type DashboardAdBannerProps = { kind: "notifications" | "wishlist" | "keywords" | "listings" | "reservations" };
 
 /** Clearly labelled house promotion, kept away from account actions and private content. */
 export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
@@ -58,9 +36,10 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
     wishlist: { title: ko ? "다음 마음에 드는 것을 찾아보세요" : "Find your next local favourite", description: ko ? "우리 동네에 새로 올라온 상품을 둘러보세요." : "See what's new in your neighbourhood.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
     keywords: { title: ko ? "찾는 상품이 아직 없나요?" : "Still looking for something?", description: ko ? "키워드를 저장하고 우리 동네 마켓도 둘러보세요." : "Save a keyword and browse your local market.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
     listings: { title: ko ? "내 서비스를 이웃에게 소개해 보세요" : "Share your service with neighbours", description: ko ? "도움이 필요한 이웃이 서비스를 발견할 수 있어요." : "Help neighbours discover what you can offer.", action: ko ? "서비스 등록" : "List a service", href: "/services/create" },
+    reservations: { title: ko ? "다음 동네 거래를 찾아보세요" : "Find your next local deal", description: ko ? "가까운 이웃이 새로 올린 상품을 둘러보세요." : "See what neighbours have listed nearby.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
   }[kind];
-  const image = kind === "keywords" ? "/images/home/journey-market.png" : kind === "listings" ? "/images/home/journey-services.png" : "/images/brand/tada-wordmark.png";
-  const illustrated = kind === "keywords" || kind === "listings";
+  const image = kind === "keywords" || kind === "reservations" ? "/images/home/journey-market.png" : kind === "listings" ? "/images/home/journey-services.png" : "/images/brand/tada-wordmark.png";
+  const illustrated = kind === "keywords" || kind === "listings" || kind === "reservations";
 
   return <aside className="ui-panel account-ad-banner" aria-label={ko ? "광고" : "Advertisement"}>
     <div className="account-ad-copy"><span>{ko ? "광고 · 타다 추천" : "Ad · From Tada"}</span><strong>{content.title}</strong><p>{content.description}</p><Link className="ui-button ui-button--secondary ui-button--sm" href={content.href}>{content.action}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
@@ -69,15 +48,16 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
 }
 
 /** The optional account rail keeps follow-up actions separate from the owned listings. */
-export function AccountWorkspaceAside() {
+export function AccountWorkspaceAside({ kind = "listings" }: { kind?: "listings" | "reservations" }) {
   const { locale } = useLanguage();
   const ko = locale === "ko";
-  return <aside className="account-side-rail owned-listings-aside" aria-label={ko ? "등록 관리 안내" : "Listing help"}>
-    <DashboardAdBanner kind="listings" />
-    <section className="ui-panel account-rail-card account-workspace-help">
-      <span className="account-rail-icon"><i className="ms ms-chat" aria-hidden="true" /></span>
-      <div><h2>{ko ? "이웃과의 대화도 놓치지 마세요" : "Keep your conversations moving"}</h2><p>{ko ? "상품과 서비스에 관한 메시지를 한곳에서 확인하세요." : "Find messages about your items and services in one place."}</p><Link href="/market/dashboard/messages">{ko ? "메시지 확인" : "View messages"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
-    </section>
+  const help = <section className="ui-panel account-rail-card account-workspace-help">
+    <span className="account-rail-icon"><i className="ms ms-chat" aria-hidden="true" /></span>
+    <div><h2>{kind === "reservations" ? ko ? "약속은 메시지에서 조율하세요" : "Plan the handover in messages" : ko ? "이웃과의 대화도 놓치지 마세요" : "Keep your conversations moving"}</h2><p>{kind === "reservations" ? ko ? "수령 시간이나 장소를 확인하고 이웃과 대화하세요." : "Confirm pickup time and place with your neighbour." : ko ? "상품과 서비스에 관한 메시지를 한곳에서 확인하세요." : "Find messages about your items and services in one place."}</p><Link href="/market/dashboard/messages">{ko ? "메시지 확인" : "View messages"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div>
+  </section>;
+  return <aside className="account-side-rail account-workspace-aside" aria-label={kind === "reservations" ? ko ? "예약 도움말" : "Reservation help" : ko ? "등록 관리 안내" : "Listing help"}>
+    {kind === "reservations" ? help : <DashboardAdBanner kind="listings" />}
+    {kind === "reservations" ? <DashboardAdBanner kind="reservations" /> : help}
   </aside>;
 }
 

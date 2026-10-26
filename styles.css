@@ -14744,23 +14744,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 
 /* My Page task destinations: one shared hierarchy for listings and reservations. */
 .account-workspace { padding: var(--space-6) var(--space-8) var(--space-12); }
-.account-workspace-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
-.account-workspace-header .account-page-intro { min-width: 0; margin-bottom: 0; }
-.account-workspace-header > .ui-button { flex: 0 0 auto; gap: var(--space-2); text-decoration: none; }
-.account-workspace-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-5); }
-.account-workspace-summary > .ui-panel { display: grid; grid-template-columns: var(--control-h-lg) minmax(0, 1fr); align-items: center; gap: var(--space-1) var(--space-3); min-width: 0; padding: var(--space-3); border-color: var(--color-line-soft); background: var(--color-surface); }
-.account-workspace-summary i { grid-row: span 2; display: grid; width: var(--control-h-lg); height: var(--control-h-lg); place-items: center; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xl); }
-.account-workspace-summary .is-market i { background: var(--color-market-soft); color: var(--color-market-icon); }
-.account-workspace-summary .is-services i { background: var(--color-services-soft); color: var(--color-services-icon); }
-.account-workspace-summary span { overflow: hidden; color: var(--color-muted); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
-.account-workspace-summary strong { font-size: var(--text-2xl); line-height: 1; }
-.account-workspace-sections { display: grid; gap: var(--space-4); }
 .account-workspace-list { min-width: 0; padding: 0 var(--space-4); border-color: var(--color-line-soft); background: var(--color-surface); }
-.account-workspace-list-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) 0; }
-.account-workspace-list-heading h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); }
-.account-workspace-list-heading h2 span { color: var(--color-primary); }
-.account-workspace-list-heading p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
-.account-workspace-list-heading > a { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
 .account-workspace-list .manage-listings-grid { border-top-color: var(--color-line-soft); }
 .account-workspace-list .listing-row { background: var(--color-surface); }
 .account-workspace-list .listing-row:last-child { border-bottom: 0; }
@@ -14768,23 +14752,54 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .account-workspace .manage-listings-category-tabs { margin-bottom: var(--space-4); }
 .account-workspace .manage-listings-category-tab { background: var(--color-surface); }
 .account-workspace .manage-listings-category-tab.is-active { background: var(--color-primary); }
-.account-reservation-hint { margin: var(--space-2) 0 0; color: var(--color-ink-soft); font-size: var(--text-sm); }
-.account-workspace-quiet { margin: 0; padding: var(--space-6) 0; color: var(--color-muted); font-size: var(--text-sm); }
 .account-workspace .manage-listings-empty { background: var(--color-surface); }
 .account-workspace .manage-listings-empty > a { background: var(--color-primary); color: var(--color-on-primary); }
 .account-workspace .manage-listing-actions a:first-child { border-color: var(--color-primary); color: var(--color-primary-dark); }
 .account-workspace .manage-listing-actions a:first-child:hover { background: var(--color-primary-soft); }
+/* Reservations use the same account title, filter chips, rows and right rail as other My Page tasks. */
+.account-reservations { background: var(--color-surface); }
+.account-reservations .account-page-intro { margin-bottom: var(--space-4); }
+.reservation-main { min-width: 0; }
+.account-reservations .reservation-filter-tabs { margin-bottom: var(--space-3); }
+.reservation-search { margin-bottom: var(--space-4); }
+.reservation-search .list-search { margin: 0; }
+.reservation-search .list-search-field { flex: 1 1 auto; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
+.reservation-search .list-search-field input { min-height: var(--control-h-xl); }
+.reservation-list { padding: 0; border-radius: var(--radius-lg); }
+.reservation-list .manage-listings-grid { border-top: 0; }
+.reservation-row { min-height: 0; grid-template-columns: calc(var(--space-12) + var(--space-10)) minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
+.reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-10)); height: calc(var(--space-12) + var(--space-10)); border-radius: var(--radius-sm); }
+.reservation-row .listing-row-body { min-width: 0; }
+.reservation-row-labels { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-1); }
+.reservation-role, .reservation-status { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); border-radius: var(--radius-xs); font-size: var(--text-xs); font-weight: var(--weight-bold); line-height: 1; white-space: nowrap; }
+.reservation-role { background: var(--color-market-soft); color: var(--color-market-text); }
+.reservation-role .ms { color: var(--color-market-icon); }
+.reservation-status { background: var(--color-surface-soft); color: var(--color-ink-soft); }
+.reservation-status.is-requested { background: var(--color-warning-soft); color: var(--color-warning); }
+.reservation-status:is(.is-confirmed, .is-on_the_way) { background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.reservation-status.is-picked_up { background: var(--color-success-soft); color: var(--color-success); }
+.reservation-row .listing-row-body h2 { margin: 0; color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); line-height: 1.35; overflow-wrap: anywhere; }
+.reservation-row .listing-row-body h2 a { color: inherit; text-decoration: none; }
+.reservation-row .listing-row-body h2 a:hover { text-decoration: underline; }
+.reservation-row .listing-row-price { margin-top: var(--space-1); color: var(--color-ink); font-size: var(--text-md); }
+.reservation-pickup-time { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.reservation-row .listing-row-meta { overflow: hidden; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }
+.reservation-row-hint { margin: var(--space-1) 0 0; color: var(--color-ink-soft); font-size: var(--text-sm); line-height: 1.4; }
+.reservation-row-action.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 1px solid var(--color-primary); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; white-space: nowrap; }
+.reservation-row-action.ui-button.is-urgent { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
+.reservation-row-action.ui-button:hover { background: var(--color-primary-soft); }
+.reservation-row-action.ui-button.is-urgent:hover { background: var(--color-primary-hover); }
 /* Owned listings: a compact task list inside the existing dashboard shell.
    V0 keeps the historical row presentation; these rules do not affect it. */
 .owned-listings-page { background: var(--color-surface); }
 .owned-listings-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
 .owned-listings-header .account-page-intro { min-width: 0; margin: 0; }
 .owned-listings-main { min-width: 0; }
-.owned-listings-aside .account-ad-banner { display: flex; flex-direction: column-reverse; align-items: stretch; gap: var(--space-3); min-width: 0; padding: var(--space-3); background: var(--color-primary-soft); }
-.owned-listings-aside .account-ad-banner > img { width: 100%; max-height: none; aspect-ratio: 3 / 2; border-radius: var(--radius-sm); object-fit: cover; }
-.owned-listings-aside .account-ad-copy strong { color: var(--color-ink); font-size: var(--text-lg); line-height: 1.35; }
-.owned-listings-aside .account-ad-copy p { display: block; }
-.owned-listings-aside .account-ad-copy > a { margin-top: var(--space-2); }
+.account-workspace-aside .account-ad-banner { display: flex; flex-direction: column-reverse; align-items: stretch; gap: var(--space-3); min-width: 0; padding: var(--space-3); background: var(--color-primary-soft); }
+.account-workspace-aside .account-ad-banner > img { width: 100%; max-height: none; aspect-ratio: 3 / 2; border-radius: var(--radius-sm); object-fit: cover; }
+.account-workspace-aside .account-ad-copy strong { color: var(--color-ink); font-size: var(--text-lg); line-height: 1.35; }
+.account-workspace-aside .account-ad-copy p { display: block; }
+.account-workspace-aside .account-ad-copy > a { margin-top: var(--space-2); }
 .owned-listings-create { position: relative; flex: none; }
 .owned-listings-create > .ui-button { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-xl); white-space: nowrap; }
 .owned-listings-create-menu { position: absolute; z-index: 12; top: calc(100% + var(--space-2)); right: 0; min-width: 180px; padding: var(--space-2); background: var(--color-surface); box-shadow: var(--shadow-lg); }
@@ -14795,12 +14810,12 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-filter-row { display: flex; align-items: center; gap: var(--space-3); min-width: 0; overflow-x: auto; margin-bottom: var(--space-4); scrollbar-width: none; }
 .owned-listings-filter-row::-webkit-scrollbar { display: none; }
 .owned-listings-page .manage-listings-category-tabs { flex: 0 0 auto; overflow: visible; margin: 0; }
-.owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-sm); gap: var(--space-1); border: 0; background: var(--color-surface-soft); color: var(--color-ink-soft); box-shadow: none; }
-.owned-listings-page .manage-listings-category-tab:hover { transform: none; border-color: transparent; background: var(--color-surface-soft); }
-.owned-listings-page .manage-listings-category-tab.is-active, .owned-listings-page .manage-listings-category-tab.is-active:hover { background: var(--color-primary); color: var(--color-on-primary); }
+.account-workspace .manage-listings-category-tab { min-height: var(--control-h-sm); gap: var(--space-1); border: 0; background: var(--color-surface-soft); color: var(--color-ink-soft); box-shadow: none; }
+.account-workspace .manage-listings-category-tab:hover { transform: none; border-color: transparent; background: var(--color-surface-soft); }
+.account-workspace .manage-listings-category-tab.is-active, .account-workspace .manage-listings-category-tab.is-active:hover { background: var(--color-primary); color: var(--color-on-primary); }
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-market, .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-bargain { color: var(--color-market-icon); }
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-services { color: var(--color-services-icon); }
-.owned-listings-page .manage-listings-category-tab b { min-width: 0; min-height: 0; background: transparent; color: inherit; font-size: var(--text-xs); }
+.account-workspace .manage-listings-category-tab b { min-width: 0; min-height: 0; background: transparent; color: inherit; font-size: var(--text-xs); }
 .owned-listings-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); margin-bottom: var(--space-4); }
 .owned-listings-toolbar .list-search { min-width: 0; margin-top: 0; }
 .owned-listings-toolbar .list-search-field { flex: 1 1 auto; min-width: 0; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
@@ -14840,7 +14855,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listing-dialog-actions { display: flex; gap: var(--space-3); }
 .owned-listing-dialog-actions > button { flex: 1; }
 .owned-listing-dialog-actions .is-danger { border: 1px solid var(--color-danger); color: var(--color-danger); }
-@media (min-width: 768px) and (max-width: 1199.98px) { .owned-listings-aside { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) and (max-width: 1199.98px) { .account-workspace-aside { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .messages-list-description { display: block; margin-top: var(--space-2); color: var(--color-muted); font-size: var(--text-xs); line-height: 1.4; }
 .messages-empty-list .ui-button, .messages-select-empty .ui-button { margin-top: var(--space-2); text-decoration: none; }
 .messages-page:not(.is-v0) { background: var(--color-surface); color: var(--color-ink); }
@@ -14854,23 +14869,29 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .messages-page:not(.is-v0) .messages-conversation.is-active { border-right-color: var(--color-primary); background: var(--color-primary-soft); }
 .messages-page:not(.is-v0) .messages-empty-list i, .messages-page:not(.is-v0) .messages-select-empty > i { color: var(--color-primary); }
 @media (max-width: 767.98px) {
+  .account-reservations { padding-inline: var(--space-4); }
+  .account-reservations .account-page-intro { margin-bottom: var(--space-3); }
+  .account-reservations .account-page-intro h1 { font-size: var(--text-3xl); }
+  .account-reservations .account-page-intro p { display: none; }
+  .account-reservations .reservation-filter-tabs { gap: var(--space-2); margin-bottom: var(--space-3); }
+  .account-reservations .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
+  .reservation-search { margin-bottom: var(--space-3); }
+  .reservation-search .list-search { width: 100%; flex-wrap: nowrap; }
+  .reservation-search .list-search-submit.icon-button { width: var(--control-h-xl); }
+  .reservation-search .list-search-field input { font-size: var(--font-size-mobile-control); }
+  .account-reservations .account-workspace-list { padding: 0; }
+  .reservation-row { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-2) var(--space-3); padding-block: var(--space-3); }
+  .reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
+  .reservation-row .listing-row-body h2 { font-size: var(--text-md); }
+  .reservation-row-action.ui-button { grid-column: 2; justify-self: end; min-width: 0; }
   .account-workspace { padding: var(--space-4) var(--space-4) var(--space-8); }
-  .account-workspace-header { align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
-  .account-workspace-header .account-page-intro { flex: 1 1 100%; }
-  .account-workspace-header > .ui-button { min-height: var(--control-h-xl); }
   .account-workspace .manage-listings-category-tab,
   .account-workspace .manage-listing-actions :is(a, button),
   .account-workspace .service-owner-actions.is-compact :is(a, button),
   .messages-page:not(.is-v0) .messages-filter-row button { min-height: var(--control-h-xl); }
   .account-workspace :is(.manage-listing-actions, .service-owner-actions.is-compact) :is(a, button) { font-size: var(--text-md); }
   .messages-page:not(.is-v0) .messages-list-header h1 { font-size: var(--text-3xl); }
-  .account-workspace-summary { gap: var(--space-2); margin-bottom: var(--space-4); }
-  .account-workspace-summary > .ui-panel { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); padding: var(--space-2); }
-  .account-workspace-summary i { width: var(--control-h-sm); height: var(--control-h-sm); font-size: var(--text-lg); }
-  .account-workspace-summary span { width: 100%; font-size: var(--text-xs); }
-  .account-workspace-summary strong { font-size: var(--text-xl); }
   .account-workspace-list { padding-inline: var(--space-3); }
-  .account-workspace-list-heading { align-items: flex-start; flex-wrap: wrap; padding-block: var(--space-3); }
   .account-workspace-list .listing-row { padding-block: var(--space-3); }
   .owned-listings-page { padding-inline: var(--space-4); }
   .owned-listings-header { align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
@@ -14882,10 +14903,10 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-create > .ui-button { min-height: var(--control-h-xl); gap: var(--space-1); padding-inline: var(--space-2); font-size: var(--text-sm); }
   .owned-listings-create > .ui-button .ms-expand-more { display: none; }
   .owned-listings-create-menu { right: 0; }
-  .owned-listings-aside .account-ad-banner { flex-direction: row; align-items: center; }
-  .owned-listings-aside .account-ad-banner > img { width: calc(var(--space-12) * 2); flex: 0 0 calc(var(--space-12) * 2); aspect-ratio: 1; }
-  .owned-listings-aside .account-ad-copy strong { font-size: var(--text-md); }
-  .owned-listings-aside .account-ad-copy p { display: none; }
+  .account-workspace-aside .account-ad-banner { flex-direction: row; align-items: center; }
+  .account-workspace-aside .account-ad-banner > img { width: calc(var(--space-12) * 2); flex: 0 0 calc(var(--space-12) * 2); aspect-ratio: 1; }
+  .account-workspace-aside .account-ad-copy strong { font-size: var(--text-md); }
+  .account-workspace-aside .account-ad-copy p { display: none; }
   .owned-listings-filter-row { margin-bottom: var(--space-3); }
   .owned-listings-page .manage-listings-category-tabs { gap: var(--space-2); }
   .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
