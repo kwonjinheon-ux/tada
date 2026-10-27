@@ -19,10 +19,12 @@ type PhotoRow = { id: string; storage_path: string };
 
 function createdLabel(value: string) { return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value)); }
 
-export default async function BargainReservationsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; version?: string; view?: string }> }) {
+export default async function BargainReservationsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; version?: string; view?: string; excludeCancelled?: string; excludeCompleted?: string }> }) {
   const params = await searchParams;
   const isV0 = params.version === "v0";
   const view: ReservationView = !isV0 && (params.view === "attention" || params.view === "buying" || params.view === "selling") ? params.view : "all";
+  const excludeCancelled = !isV0 && params.excludeCancelled === "1";
+  const excludeCompleted = !isV0 && params.excludeCompleted === "1";
   const term = normaliseSearchTerm(params.q);
   const user = await getServerUser();
   if (!user) redirect("/login?redirectTo=%2Fmarket%2Fdashboard%2Freservations");
@@ -42,6 +44,8 @@ export default async function BargainReservationsPage({ searchParams }: { search
     else if (selectedView === "buying") query = query.eq("buyer_id", user.id);
     else query = query.eq("seller_id", user.id);
     if (selectedView === "attention") query = query.eq("status", "requested");
+    if (excludeCancelled) query = query.neq("status", "cancelled");
+    if (excludeCompleted) query = query.neq("status", "picked_up");
     if (matchingItemIds) query = query.in("item_id", matchingItemIds);
     return query;
   };
@@ -113,5 +117,5 @@ export default async function BargainReservationsPage({ searchParams }: { search
       pickupStartAt: reservation.pickup_start_at,
     };
   });
-  return <ReservationsWorkspace items={itemsForWorkspace} counts={counts} view={view} page={page} totalPages={totalPages} term={term} loadError={loadError} />;
+  return <ReservationsWorkspace items={itemsForWorkspace} counts={counts} view={view} page={page} totalPages={totalPages} term={term} loadError={loadError} excludeCancelled={excludeCancelled} excludeCompleted={excludeCompleted} />;
 }

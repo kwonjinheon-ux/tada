@@ -14761,13 +14761,24 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .account-reservations .account-page-intro { margin-bottom: var(--space-4); }
 .reservation-main { min-width: 0; }
 .account-reservations .reservation-filter-tabs { margin-bottom: var(--space-3); }
-.reservation-search { margin-bottom: var(--space-4); }
+.reservation-toolbar { display: flex; align-items: stretch; gap: var(--space-2); margin-bottom: var(--space-4); }
+.reservation-search { flex: 1 1 auto; min-width: 0; }
 .reservation-search .list-search { margin: 0; }
 .reservation-search .list-search-field { flex: 1 1 auto; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
 .reservation-search .list-search-field input { min-height: var(--control-h-xl); }
+.reservation-filter-toggle.icon-button { position: relative; width: var(--control-h-xl); height: var(--control-h-xl); flex: none; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); }
+.reservation-filter-toggle.icon-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.reservation-filter-count { position: absolute; top: 0; right: 0; display: grid; min-width: var(--space-4); height: var(--space-4); place-items: center; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--text-2xs); line-height: 1; transform: translate(25%, -25%); }
+.reservation-status-filters { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: calc(-1 * var(--space-2)) 0 var(--space-4); padding: var(--space-3); border-color: var(--color-line-soft); }
+.reservation-status-filters > span { margin-right: var(--space-1); color: var(--color-muted); font-size: var(--text-sm); }
+.reservation-status-filters .ui-button { border-color: var(--color-line); background: var(--color-surface); color: var(--color-ink-soft); }
+.reservation-status-filters .ui-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
 .reservation-list { padding: 0; border-radius: var(--radius-lg); }
 .reservation-list .manage-listings-grid { border-top: 0; }
-.reservation-row { min-height: 0; grid-template-columns: calc(var(--space-12) + var(--space-10)) minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
+.reservation-row { min-height: 0; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
+.reservation-row-main { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-10)) minmax(0, 1fr); align-items: center; gap: var(--space-3); min-width: 0; color: inherit; text-decoration: none; }
+.reservation-row-main:hover h2 { text-decoration: underline; }
+.reservation-row-main:focus-visible { outline: 0; border-radius: var(--radius-sm); box-shadow: var(--ring-focus-strong); }
 .reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-10)); height: calc(var(--space-12) + var(--space-10)); border-radius: var(--radius-sm); }
 .reservation-row .listing-row-body { min-width: 0; }
 .reservation-row-labels { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-1); }
@@ -14779,8 +14790,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .reservation-status:is(.is-confirmed, .is-on_the_way) { background: var(--color-primary-soft); color: var(--color-primary-dark); }
 .reservation-status.is-picked_up { background: var(--color-success-soft); color: var(--color-success); }
 .reservation-row .listing-row-body h2 { margin: 0; color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); line-height: 1.35; overflow-wrap: anywhere; }
-.reservation-row .listing-row-body h2 a { color: inherit; text-decoration: none; }
-.reservation-row .listing-row-body h2 a:hover { text-decoration: underline; }
 .reservation-row .listing-row-price { margin-top: var(--space-1); color: var(--color-ink); font-size: var(--text-md); }
 .reservation-pickup-time { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .reservation-row .listing-row-meta { overflow: hidden; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }
@@ -14875,15 +14884,20 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .account-reservations .account-page-intro p { display: none; }
   .account-reservations .reservation-filter-tabs { gap: var(--space-2); margin-bottom: var(--space-3); }
   .account-reservations .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
-  .reservation-search { margin-bottom: var(--space-3); }
+  .reservation-toolbar { margin-bottom: var(--space-3); }
   .reservation-search .list-search { width: 100%; flex-wrap: nowrap; }
   .reservation-search .list-search-submit.icon-button { width: var(--control-h-xl); }
   .reservation-search .list-search-field input { font-size: var(--font-size-mobile-control); }
+  .reservation-status-filters { margin-bottom: var(--space-3); }
+  .reservation-status-filters > span { flex: 1 1 100%; }
+  .reservation-status-filters .ui-button { min-height: var(--control-h-xl); }
   .account-reservations .account-workspace-list { padding: 0; }
-  .reservation-row { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-2) var(--space-3); padding-block: var(--space-3); }
+  .reservation-row { position: relative; grid-template-columns: minmax(0, 1fr); padding-block: var(--space-3); }
+  .reservation-row-main { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-3); }
+  .reservation-row-main::after { position: absolute; inset: 0; content: ""; }
   .reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
   .reservation-row .listing-row-body h2 { font-size: var(--text-md); }
-  .reservation-row-action.ui-button { grid-column: 2; justify-self: end; min-width: 0; }
+  .reservation-row-action.ui-button { display: none; }
   .account-workspace { padding: var(--space-4) var(--space-4) var(--space-8); }
   .account-workspace .manage-listings-category-tab,
   .account-workspace .manage-listing-actions :is(a, button),
