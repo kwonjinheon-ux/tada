@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
-import { Button } from "@/components/ui/Button";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 
 function useUpdateOwnedListingsQuery() {
@@ -20,36 +19,37 @@ function useUpdateOwnedListingsQuery() {
   };
 }
 
-export function OwnedListingsViewControls({ sort }: { sort: "newest" | "oldest" }) {
+export function OwnedListingsViewControls({ sort, excludeCompleted, isServices }: { sort: "newest" | "oldest"; excludeCompleted: boolean; isServices: boolean }) {
   const { t } = useLanguage();
   const update = useUpdateOwnedListingsQuery();
 
-  return <SelectMenu
-    id="owned-listings-sort"
-    name="sort"
-    className="owned-listings-sort"
-    label={t("ownedListingSortLabel")}
-    placeholder={t("ownedListingSortNewest")}
-    options={[{ value: "newest", label: t("ownedListingSortNewest") }, { value: "oldest", label: t("ownedListingSortOldest") }]}
-    value={sort}
-    onChange={(value) => update("sort", value === "oldest" ? value : null)}
-    hideLabel
-    includeEmptyOption={false}
-  />;
-}
-
-export function OwnedListingsCompletedFilter({ excludeCompleted }: { excludeCompleted: boolean }) {
-  const { t } = useLanguage();
-  const update = useUpdateOwnedListingsQuery();
-
-  return <div className="owned-listings-status-filter">
-    <Button
-      variant="secondary"
-      size="sm"
-      pill
-      className={`owned-listings-exclude${excludeCompleted ? " is-active" : ""}`}
-      aria-pressed={excludeCompleted}
-      onClick={() => update("excludeCompleted", excludeCompleted ? null : "1")}
-    >{t("ownedListingExcludeCompleted")}</Button>
+  return <div className="owned-listings-view-controls">
+    <SelectMenu
+      id="owned-listings-sort"
+      name="sort"
+      className="owned-listings-icon-select owned-listings-sort"
+      icon={sort === "oldest" ? "ms-arrow-upward" : "ms-arrow-downward"}
+      label={`${t("ownedListingSortLabel")}: ${t(sort === "oldest" ? "ownedListingSortOldest" : "ownedListingSortNewest")}`}
+      placeholder={t("ownedListingSortNewest")}
+      options={[{ value: "newest", label: t("ownedListingSortNewest") }, { value: "oldest", label: t("ownedListingSortOldest") }]}
+      value={sort}
+      onChange={(value) => update("sort", value === "oldest" ? value : null)}
+      hideLabel
+      includeEmptyOption={false}
+    />
+    <SelectMenu
+      id="owned-listings-status-filter"
+      name="excludeCompleted"
+      className={`owned-listings-icon-select owned-listings-status-filter${excludeCompleted && !isServices ? " is-active" : ""}`}
+      icon="ms-tune"
+      label={`${t("ownedListingStatusFilterLabel")}: ${t(excludeCompleted ? "ownedListingExcludeCompleted" : "ownedListingShowAllStatuses")}`}
+      placeholder={t("ownedListingShowAllStatuses")}
+      options={[{ value: "all", label: t("ownedListingShowAllStatuses") }, { value: "excluded", label: t("ownedListingExcludeCompleted") }]}
+      value={excludeCompleted ? "excluded" : "all"}
+      onChange={(value) => update("excludeCompleted", value === "excluded" ? "1" : null)}
+      disabled={isServices}
+      hideLabel
+      includeEmptyOption={false}
+    />
   </div>;
 }

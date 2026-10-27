@@ -59,7 +59,7 @@ export function OwnedListingActions({ id, title, kind, canEdit, canDelete, canRe
         </IconButton>
         {menuOpen ? <div className="owned-listing-menu ui-panel menu-motion" id={`owned-listing-menu-${id}`}>
           {canEdit ? <Link href={editHref} onClick={() => setMenuOpen(false)}>{ko ? "수정" : "Edit"}</Link> : null}
-          {canRelist ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => void runAction("POST")}>{ko ? "끌어올리기" : "Bump listing"}</Button> : null}
+          {canRelist ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => void runAction("POST")}>{ko ? "다시 올리기" : "Relist"}</Button> : null}
           {canMarkSold ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => { setMenuOpen(false); setConfirmAction("sold"); setError(null); }}>{ko ? "판매 완료로 변경" : "Mark as sold"}</Button> : null}
           {canDelete ? <Button variant="ghost" size="sm" className="is-danger" disabled={busy} onClick={() => { setMenuOpen(false); setConfirmAction("delete"); setError(null); }}>{ko ? "삭제" : "Delete"}</Button> : null}
         </div> : null}

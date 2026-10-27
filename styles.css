@@ -14825,16 +14825,19 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-market, .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-bargain { color: var(--color-market-icon); }
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-services { color: var(--color-services-icon); }
 .account-workspace .manage-listings-category-tab b { min-width: 0; min-height: 0; background: transparent; color: inherit; font-size: var(--text-xs); }
-.owned-listings-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); margin-bottom: var(--space-4); }
+.owned-listings-toolbar { position: relative; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); margin-bottom: var(--space-4); }
 .owned-listings-toolbar .list-search { min-width: 0; margin-top: 0; }
 .owned-listings-toolbar .list-search-field { flex: 1 1 auto; min-width: 0; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
 .owned-listings-toolbar .list-search-field input { min-height: var(--control-h-xl); }
-.owned-listings-sort { flex: none; width: calc(var(--space-12) * 3); }
-.owned-listings-sort .post-select-trigger { min-height: var(--control-h-xl); border-color: var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.owned-listings-sort .post-select-menu { min-width: 100%; }
-.owned-listings-status-filter { flex: 0 0 auto; padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
-.owned-listings-exclude.ui-button { width: auto; min-height: var(--control-h-sm); padding-inline: var(--space-3); border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; }
-.owned-listings-exclude.ui-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.owned-listings-view-controls { display: flex; align-items: flex-start; gap: var(--space-2); }
+.owned-listings-icon-select { width: var(--control-h-xl); flex: none; }
+.owned-listings-icon-select .post-select-trigger, .owned-listings-icon-select .post-select-wrap.is-enhanced.has-leading-icon .post-select-trigger { min-height: var(--control-h-xl); padding: 0; border-color: var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface); }
+.owned-listings-icon-select .post-select-trigger > span, .owned-listings-icon-select .post-select-trigger::after { display: none; }
+.owned-listings-icon-select .post-select-wrap.is-enhanced.has-leading-icon > i { left: 50%; color: var(--color-ink); font-size: var(--text-xl); transform: translateX(-50%); }
+.owned-listings-icon-select .post-select-menu { right: 0; left: auto; width: max-content; min-width: calc(var(--space-12) * 4); max-width: calc(100vw - var(--space-8)); transform-origin: top right; }
+.owned-listings-icon-select .post-select-option { min-height: var(--control-h-xl); }
+.owned-listings-status-filter.is-active .post-select-trigger { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.owned-listings-status-filter.is-active .post-select-wrap.is-enhanced.has-leading-icon > i { color: var(--color-primary-dark); }
 .owned-listings-page .account-workspace-list { padding: 0; border-radius: var(--radius-lg); }
 .owned-listings-page .manage-listings-grid { border-top: 0; }
 .owned-listing-row { position: relative; min-height: 0; grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
@@ -14854,6 +14857,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listing-more.icon-button { display: grid; width: var(--control-h-xl); height: var(--control-h-xl); flex: none; place-items: center; border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); color: var(--color-ink); }
 .owned-listing-more.icon-button[aria-expanded="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .owned-listing-menu { position: absolute; z-index: 3; top: calc(100% + var(--space-1)); right: 0; min-width: calc(var(--space-12) * 4); padding: var(--space-1); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }
+.owned-listing-menu .ui-button { justify-content: flex-start; text-align: left; }
 .owned-listing-menu .is-danger { color: var(--color-danger); }
 .owned-listing-error { position: absolute; z-index: 3; top: calc(100% + var(--space-1)); right: 0; width: max-content; max-width: calc(var(--space-12) * 5); margin: 0; padding: var(--space-2); border: 1px solid var(--color-danger); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-danger); font-size: var(--text-sm); }
 .owned-listing-dialog-panel { position: relative; width: min(100% - var(--space-8), 420px); padding: var(--space-5); background: var(--color-surface); }
@@ -14924,7 +14928,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-filter-row { margin-bottom: var(--space-3); }
   .owned-listings-page .manage-listings-category-tabs { gap: var(--space-2); }
   .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
-  .owned-listings-exclude.ui-button { min-height: var(--control-h-xl); }
   .owned-listings-page .account-workspace-list { padding: 0; }
   .owned-listing-row { min-height: 0; grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-2) var(--space-3); padding-block: var(--space-3); }
   .owned-listing-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
@@ -14935,7 +14938,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-toolbar .list-search { width: 100%; flex-wrap: nowrap; }
   .owned-listings-toolbar .list-search-submit.icon-button { width: var(--control-h-xl); }
   .owned-listings-toolbar .list-search-field input { font-size: var(--font-size-mobile-control); }
-  .owned-listings-sort { width: calc(var(--space-12) * 3); }
   .messages-list-description { display: none; }
 }
 @media (max-width: 359.98px) {
