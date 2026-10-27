@@ -31,7 +31,7 @@ export function DashboardNav({
         const href = dashboardNavHref(item, context);
         // The index route would otherwise match every child path.
         const isActive = item.suffix === "" ? pathname === base : pathname === href || pathname.startsWith(`${href}/`);
-        const unreadCount = item.label === "Messages" ? unreadMessageCount : item.label === "Notifications" ? unreadNotificationCount : 0;
+        const unreadCount = item.suffix === "/messages" ? unreadMessageCount : item.suffix === "/notifications" ? unreadNotificationCount : 0;
 
         return (
           <Link className={isActive ? "is-active" : ""} href={href} key={item.label}>

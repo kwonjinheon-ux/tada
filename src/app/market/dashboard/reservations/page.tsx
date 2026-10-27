@@ -10,7 +10,7 @@ import { ReservationsWorkspace, type ReservationListItem, type ReservationView }
 import { LIST_PAGE_SIZE, escapeLikePattern, normaliseSearchTerm, pageRange, parsePageParam, totalPageCount } from "@/lib/list-pagination";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Bargain Reservations" };
+export const metadata = { title: "Reservations & pickups" };
 
 type ReservationRow = { id: string; listing_id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: "requested" | "confirmed" | "on_the_way" | "picked_up" | "declined" | "cancelled" | "expired" | "no_show"; created_at: string; pickup_start_at: string | null };
 type ItemRow = { id: string; listing_id: string; title: string; photo_id: string };

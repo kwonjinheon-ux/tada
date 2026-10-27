@@ -44,7 +44,7 @@ export function NavigationHistoryTracker() {
 }
 
 /** Desktop has a stable My Page link; mobile returns to the real previous route. */
-export function BackToMyPage() {
+export function BackToMyPage({ onBeforeNavigate }: { onBeforeNavigate?: (target: "previous" | "my-page") => boolean } = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const { locale } = useLanguage();
@@ -55,12 +55,14 @@ export function BackToMyPage() {
     try {
       sameOriginReferrer = Boolean(document.referrer && new URL(document.referrer).origin === window.location.origin && new URL(document.referrer).pathname !== pathname);
     } catch { /* An invalid or absent referrer is a direct visit. */ }
-    if (currentIndex > 0 || (window.history.length > 1 && sameOriginReferrer)) router.back();
+    const target = currentIndex > 0 || (window.history.length > 1 && sameOriginReferrer) ? "previous" : "my-page";
+    if (onBeforeNavigate?.(target) === false) return;
+    if (target === "previous") router.back();
     else router.push(myPageHref);
   };
 
   return <>
-    <Link className="account-return-link account-return-link-desktop" href={myPageHref}><i className="ms ms-arrow-back" aria-hidden="true" />{label}</Link>
+    <Link className="account-return-link account-return-link-desktop" href={myPageHref} onClick={(event) => { if (onBeforeNavigate?.("my-page") === false) event.preventDefault(); }}><i className="ms ms-arrow-back" aria-hidden="true" />{label}</Link>
     <button className="account-return-link account-return-link-mobile" type="button" onClick={goBack} aria-label={locale === "ko" ? "이전 화면으로 돌아가기" : "Go back to the previous page"}><i className="ms ms-arrow-back" aria-hidden="true" /></button>
   </>;
 }

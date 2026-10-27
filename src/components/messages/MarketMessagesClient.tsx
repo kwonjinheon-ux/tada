@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { TradeReviewDialog } from "@/components/market/TradeReviewDialog";
 import { useLanguage } from "@/components/LanguageProvider";
+import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
 export type ConversationSummary = {
   id: string;
@@ -534,7 +535,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     <main className={`messages-page ${isV0 ? "is-v0" : ""} ${selectedConversation ? "has-selected-conversation" : ""}`}>
       <section className="messages-list-panel" aria-label="Conversations">
         <header className="messages-list-header">
-          <div><p>{isV0 ? t("marketplace") : ko ? "나의 타다" : "My Tada"}</p><div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div>{!isV0 ? <small className="messages-list-description">{ko ? "거래 대화를 확인하고 다음 약속을 이어가세요." : "Keep local conversations and next steps moving."}</small> : null}</div>
+          <div>{isV0 ? <p>{t("marketplace")}</p> : <BackToMyPage />}<div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div>{!isV0 ? <small className="messages-list-description">{ko ? "거래 대화를 확인하고 다음 약속을 이어가세요." : "Keep local conversations and next steps moving."}</small> : null}</div>
           <button className="bulk-action-button is-compact" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
             <i className="ms ms-drafts" aria-hidden="true" />
             {t("markAllRead")}

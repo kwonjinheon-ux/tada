@@ -83,7 +83,7 @@ export function ReservationsWorkspace({ items, counts, view, page, totalPages, t
   excludeCancelled: boolean;
   excludeCompleted: boolean;
 }) {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const ko = locale === "ko";
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -112,7 +112,7 @@ export function ReservationsWorkspace({ items, counts, view, page, totalPages, t
     : view === "selling" ? ["No sale reservations", "판매 예약이 없어요"] : ["No reservations yet", "아직 예약이 없어요"];
 
   return <section className="dashboard-content manage-listings-content account-modern account-workspace account-reservations">
-    <AccountPageIntro title={ko ? "예약 및 수령" : "Reservations & pickups"} description={ko ? "예약 상태를 확인하고 다음 행동으로 바로 이동하세요." : "Check each reservation and take the next step."} backToMyPage />
+    <AccountPageIntro title={t("reservationsAndPickups")} description={ko ? "예약 상태를 확인하고 다음 행동으로 바로 이동하세요." : "Check each reservation and take the next step."} backToMyPage />
     <div className="account-content-rail-layout reservation-layout">
       <div className="reservation-main">
         <nav className="manage-listings-category-tabs reservation-filter-tabs" aria-label={ko ? "예약 필터" : "Reservation filters"}>{views.map((target) => <Link key={target} className={`manage-listings-category-tab${view === target ? " is-active" : ""}`} href={hrefFor(target)} aria-current={view === target ? "page" : undefined}>{labels[target][ko ? 1 : 0]} <b>{counts[target]}</b></Link>)}</nav>

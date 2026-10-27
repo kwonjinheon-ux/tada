@@ -8,7 +8,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Wishlist" };
+export const metadata = { title: "Saved items" };
 
 type SavedRow = { listing_id: string; created_at: string };
 type SavedServiceRow = { service_id: string; created_at: string };

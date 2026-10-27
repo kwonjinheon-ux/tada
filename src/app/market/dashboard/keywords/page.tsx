@@ -3,7 +3,7 @@ import { KeywordAlertsClient, type KeywordAlert } from "@/components/market/Keyw
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Keyword Alerts" };
+export const metadata = { title: "Saved keywords" };
 
 export default async function KeywordAlertsPage() {
   const user = await getServerUser();

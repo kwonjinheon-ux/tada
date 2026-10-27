@@ -38,7 +38,7 @@ export function DashboardMenuItems({
       {dashboardNavItemsFor(context).map((item) => {
         const { icon, translationKey, label } = item;
         const href = dashboardNavHref(item, context);
-        const unreadCount = label === "Messages" ? unreadMessageCount : label === "Notifications" ? unreadNotificationCount : 0;
+        const unreadCount = item.suffix === "/messages" ? unreadMessageCount : item.suffix === "/notifications" ? unreadNotificationCount : 0;
 
         return (
           <Link

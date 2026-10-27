@@ -3,7 +3,7 @@ import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm"
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Profile Settings" };
+export const metadata = { title: "Profile settings" };
 
 export default async function ProfileSettingsPage() {
   const user = await getServerUser();

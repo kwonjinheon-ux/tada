@@ -222,7 +222,7 @@ export default async function ManageListingsPage({ searchParams }: { searchParam
 
   return <section className="dashboard-content manage-listings-content account-modern account-workspace owned-listings-page">
     <div className="owned-listings-header">
-      <AccountPageIntro title={<AccountLocaleText en="My items & services" ko="내 상품·서비스" />} description={<AccountLocaleText en="See the status of your listings and manage them here." ko="등록한 상품과 서비스의 상태를 확인하고 관리하세요." />} backToMyPage />
+      <AccountPageIntro title={<TranslatedText translationKey="myItemsAndServices" />} description={<AccountLocaleText en="See the status of your listings and manage them here." ko="등록한 상품과 서비스의 상태를 확인하고 관리하세요." />} backToMyPage />
       <NewListingMenu />
     </div>
     <div className="account-content-rail-layout owned-listings-layout">

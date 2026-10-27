@@ -8840,14 +8840,25 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .messages-loading section:last-child span:first-child { height: 76px; }.messages-loading section:last-child span:nth-child(2) { width: 58%; height: 74px; margin-top: 72px; }.messages-loading section:last-child span:last-child { width: 42%; height: 54px; margin-left: auto; }
 
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .dashboard-layout:has(> .messages-page) { grid-template-columns: minmax(0, 1fr); }
-  .dashboard-layout:has(> .messages-page) > .market-filter-panel.dashboard-sidebar { display: none; }
-  .messages-page { grid-template-columns: 290px minmax(0, 1fr); }
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-page),
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-loading) { grid-template-columns: minmax(0, 1fr); }
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-page) > .market-filter-panel.dashboard-sidebar,
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-loading) > .market-filter-panel.dashboard-sidebar { display: none; }
+  .messages-page, .messages-loading { grid-template-columns: 290px minmax(0, 1fr); }
   .messages-thread-header { padding-inline: 14px; }
   .messages-listing-context { max-width: none; }
   .messages-thread-counterpart { flex-basis: 145px; }
   .messages-thread-body { padding-inline: 24px; }
   .messages-composer { padding-inline: 24px; }
+}
+@media (min-width: 1024px) and (max-width: 1199.98px) {
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-page:not(.is-v0)),
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-loading) { grid-template-columns: minmax(0, 1fr); }
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-page:not(.is-v0)) > .market-filter-panel.dashboard-sidebar,
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-loading) > .market-filter-panel.dashboard-sidebar { display: none; }
+  .messages-page:not(.is-v0), .messages-loading { grid-template-columns: 290px minmax(0, 1fr); }
+  .messages-page:not(.is-v0) .messages-thread-header { padding-inline: var(--space-4); }
+  .messages-page:not(.is-v0) .messages-thread-counterpart { flex-basis: 145px; }
 }
 
 @keyframes seller-online-ring-pulse {
@@ -8918,12 +8929,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .dashboard-layout:has(> .messages-page) .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }
   .messages-list-panel, .messages-thread-panel { height: 100%; min-height: 100%; }
-  .messages-list-header { padding: 18px 18px 12px; }
+  .messages-list-header { padding: var(--space-4) var(--space-4) var(--space-3); }
   .messages-list-header h1 { font-size: var(--text-2xl); }
-  .messages-filter-row { padding: 0 14px 11px; }
+  .messages-filter-row { padding: 0 var(--space-4) var(--space-3); }
   .messages-conversation { grid-template-columns: 56px minmax(0, 1fr); gap: 11px; padding: 12px 16px; }
   .messages-conversation.is-selectable { grid-template-columns: 22px 56px minmax(0, 1fr); gap: 10px; }
-  .messages-selection-bar { padding: 9px 14px; }
+  .messages-selection-bar { padding: var(--space-2) var(--space-4); }
   .messages-listing-thumbnail { width: 56px; height: 56px; }
   .messages-conversation-copy strong { font-size: var(--text-md); }
   .messages-conversation-copy em { font-size: var(--text-xs); }
@@ -9191,7 +9202,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .profile-settings-page:has(.profile-v0-note) .profile-form-status { color: var(--color-ink); }
 .profile-settings-page:has(.profile-v0-note) :is(#profile-account, #profile-security, #profile-location, #profile-display) { scroll-margin-top: var(--space-8); }
 @media (max-width: 767.98px) {
-  .dashboard-layout > .profile-settings-content.profile-settings-page { padding: var(--space-3) var(--global-shell-mobile-gutter) calc(var(--space-12) + var(--mobile-dock-content-clearance, var(--space-12))); }
+  .dashboard-layout > .profile-settings-content.profile-settings-page { padding: var(--space-4) var(--global-shell-mobile-gutter) calc(var(--space-12) + var(--mobile-dock-content-clearance, var(--space-12))); }
   .profile-settings-page:has(.profile-v0-note) .profile-settings-intro { margin-bottom: var(--space-3); }
   .profile-settings-page:has(.profile-v0-note) .profile-settings-intro h1 { font-size: var(--text-2xl); }
   .profile-settings-page:has(.profile-v0-note) .profile-settings-jump { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); }
@@ -9238,8 +9249,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .dashboard-layout > .profile-settings-page:has(.profile-settings-current) { background: var(--color-primary-soft); }
 .profile-settings-current { display: grid; gap: var(--space-5); min-width: 0; color: var(--color-ink); }
 .profile-editor-intro { display: grid; justify-items: start; gap: var(--space-2); }
-.profile-editor-intro .my-page-link { min-height: var(--control-h-sm); }
-.profile-editor-intro h1 { margin: 0; font-size: var(--text-4xl); font-weight: var(--weight-bold); line-height: 1.25; }
+.profile-editor-intro h1 { margin: 0; font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1.2; }
 .profile-editor-intro > p { margin: 0; color: var(--color-muted); font-size: var(--text-md); }
 .profile-editor-layout, .profile-editor-main, .profile-editor-rail { display: grid; align-content: start; gap: var(--space-3); min-width: 0; }
 .profile-editor-main { margin: 0; padding: 0; border: 0; }
@@ -9494,7 +9504,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .dashboard-layout:has(> .account-modern), .wishlist-page:has(.account-modern) { background: var(--color-surface); }
 .dashboard-layout .dashboard-content.account-modern, .wishlist-page .account-modern { width: 100%; max-width: none; background: transparent; color: var(--color-ink); }
 .account-page-intro { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
-.account-page-intro h1 { margin: 0; font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1.2; }
+.account-page-intro h1 { min-width: 0; margin: 0; font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1.2; }
 .account-page-intro p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-md); }
 .account-page-intro-detail { display: block; margin-top: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .account-page-intro-title { min-width: 0; }
@@ -9584,8 +9594,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-rail-card a:not(.ui-button) { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: none; }
 @media (max-width: 1199.98px) { .account-content-rail-layout { grid-template-columns: minmax(0, 1fr); } .notifications-aside { grid-template-columns: repeat(3, minmax(0, 1fr)); } .notifications-service-promo { min-height: calc(var(--space-12) * 4); } }
 @media (max-width: 767.98px) {
-  .notifications-redesign .notifications-redesign-intro { align-items: center; gap: var(--space-2); }
+  .notifications-redesign .notifications-redesign-intro { align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
   .notifications-redesign-intro h1 { font-size: var(--text-3xl); }
+  .notifications-redesign-intro p { display: none; }
   .notifications-redesign-intro .notifications-heading-actions { flex: 0 0 auto; }
   .notifications-desktop-actions { display: none; }
   .notifications-mobile-actions { display: block; }
@@ -9821,6 +9832,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist .wishlist-aside .account-ad-banner { min-height: 0; overflow: hidden; padding: var(--space-3); }
 .account-wishlist .wishlist-aside .account-ad-banner > img { width: 20%; }
 @media (min-width: 768px) {
+  .account-wishlist .wishlist-page-intro { margin-bottom: var(--space-5); }
   .account-wishlist .wishlist-page-intro h1 { font-size: var(--text-4xl); }
   .account-wishlist .wishlist-page-intro p { display: block; font-size: var(--text-md); }
   .account-wishlist .wishlist-search { max-width: calc(var(--space-12) * 10); }
@@ -9856,10 +9868,9 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .account-return-link-mobile { display: inline-flex; flex: 0 0 var(--control-h-xl); width: var(--control-h-xl); height: var(--control-h-xl); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); cursor: pointer; }
   .account-return-link-mobile .ms { font-size: var(--text-2xl); }
   .account-page-intro-title { display: flex; align-items: center; gap: var(--space-1); }
-  .account-page-intro.has-back p { margin-left: calc(var(--control-h-xl) + var(--space-1)); }
   .account-page-intro { align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-3); }
   .account-page-intro h1 { font-size: var(--text-3xl); }
-  .account-page-intro p { font-size: var(--text-base); }
+  .account-page-intro p { display: none; }
   .account-priority { padding: var(--space-3); }
   .account-notifications .notifications-heading { align-items: flex-start; flex-direction: column; gap: var(--space-2); padding: var(--space-3); }
   .account-notifications .notifications-filter-row { padding-inline: var(--space-3); }
@@ -9891,8 +9902,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
 /* My page composes the existing dashboard shell; all rules stay within this feature. */
 .my-page-content { color: var(--color-ink); }
-.my-page-title { margin-bottom: var(--space-4); }
-.my-page-title h1 { margin: 0; font-size: var(--text-3xl); font-weight: var(--weight-bold); }
+.my-page-title { margin-bottom: var(--space-5); }
+.my-page-title h1 { margin: 0; font-size: var(--text-3xl); font-weight: var(--weight-extrabold); }
 .my-page-title p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-md); }
 .my-page-layout, .my-page-main, .my-page-rail { display: grid; min-width: 0; gap: var(--space-4); align-content: start; }
 .my-page-layout { grid-template-columns: minmax(0, 1fr); }
@@ -10081,7 +10092,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .my-page-reference.my-page-domain-preview .my-page-mobile-ad-copy p { margin: 0; color: var(--color-muted); font-size: var(--text-xs); line-height: 1.35; }
   .my-page-reference.my-page-domain-preview .my-page-mobile-ad img { position: absolute; top: 50%; right: var(--space-3); width: 25%; height: auto; object-fit: contain; transform: translateY(-50%); }
   .my-page-reference.my-page-domain-preview .my-page-desktop-ad { display: none; }
-  .my-page-reference.my-page-domain-preview .my-page-title { margin-bottom: var(--space-2); }
+  .my-page-reference.my-page-domain-preview .my-page-title { margin-bottom: var(--space-3); }
   .my-page-reference.my-page-domain-preview .my-page-title h1 { font-size: var(--text-3xl); }
   .my-page-reference.my-page-domain-preview :is(.my-page-task, .my-page-work) .my-page-link,
   .my-page-reference.my-page-domain-preview .my-page-create-actions .ui-button { font-size: var(--text-md); }
@@ -14500,21 +14511,22 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
    Page-width policy
 
    Browse, account, detail, authoring, and reading surfaces use the shared
-   1800px Global Shell. Messages remains an app-wide workspace. Keeping the
-   decisions here prevents individual routes from quietly reintroducing widths.
+   1800px Global Shell. The current Messages screen shares that frame while its
+   panes remain fixed-height; the historical V0 keeps its viewport workspace.
    --------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
   /* Browse and account shells share the same outer frame as PageContainer. */
   .marketplace-page.market-page-with-bottom-dock,
   .marketplace-page.community-page,
   .marketplace-page.services-page:not(.service-profile-page),
-  .marketplace-page.dashboard-page.dashboard-layout:not(:has(> .messages-page)):not(:has(> .messages-unavailable)) {
+  .marketplace-page.dashboard-page.dashboard-layout:not(:has(> .messages-page)),
+  .marketplace-page.dashboard-page.dashboard-layout:has(> .messages-page:not(.is-v0)) {
     width: min(var(--global-shell-desktop-width), var(--global-shell-max-width));
     margin-inline: auto;
   }
 
   /* Dashboard pages use the full shared shell after their standing rail. */
-  .dashboard-layout:not(:has(> .messages-page)):not(:has(> .messages-unavailable)) .dashboard-content {
+  .dashboard-layout:not(:has(> .messages-page)) .dashboard-content {
     max-width: none;
     margin-inline: 0;
   }
@@ -14525,9 +14537,8 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     max-width: none;
   }
 
-  /* Messaging is a viewport workspace, never a centred document. */
-  .dashboard-layout:has(> .messages-page),
-  .dashboard-layout:has(> .messages-unavailable) {
+  /* The historical message view keeps its original viewport workspace. */
+  .dashboard-layout:has(> .messages-page.is-v0) {
     width: 100%;
     max-width: none;
     margin-inline: 0;
@@ -14811,6 +14822,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .account-workspace-aside .account-ad-copy > a { margin-top: var(--space-2); }
 .owned-listings-create { position: relative; flex: none; }
 .owned-listings-create > .ui-button { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-xl); white-space: nowrap; }
+.owned-listings-create-label-short { display: none; }
 .owned-listings-create-menu { position: absolute; z-index: 12; top: calc(100% + var(--space-2)); right: 0; min-width: 180px; padding: var(--space-2); background: var(--color-surface); box-shadow: var(--shadow-lg); }
 .owned-listings-create-menu a, .owned-listing-menu a, .owned-listing-menu button { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-semibold); text-align: left; text-decoration: none; white-space: nowrap; }
 .owned-listings-create-menu a:hover, .owned-listing-menu :is(a, button):hover { background: var(--color-primary-soft); }
@@ -14878,9 +14890,15 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .messages-page:not(.is-v0) .messages-conversation { border-bottom-color: var(--color-line-soft); background: var(--color-surface); }
 .messages-page:not(.is-v0) .messages-conversation:hover { background: var(--color-surface-soft); }
 .messages-page:not(.is-v0) .messages-list-header p { color: var(--color-primary); }
+.messages-page:not(.is-v0) .messages-list-header h1 { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); }
 .messages-page:not(.is-v0) .messages-filter-row button.is-active { background: var(--color-primary-soft); color: var(--color-primary-dark); }
 .messages-page:not(.is-v0) .messages-conversation.is-active { border-right-color: var(--color-primary); background: var(--color-primary-soft); }
 .messages-page:not(.is-v0) .messages-empty-list i, .messages-page:not(.is-v0) .messages-select-empty > i { color: var(--color-primary); }
+@media (min-width: 768px) {
+  .messages-page:not(.is-v0), .messages-loading { padding-inline: var(--page-padding-inline); }
+  .messages-page:not(.is-v0) .messages-list-header,
+  .messages-page:not(.is-v0) .messages-filter-row { padding-left: 0; padding-right: var(--space-3); }
+}
 @media (max-width: 767.98px) {
   .account-reservations { padding-inline: var(--space-4); }
   .account-reservations .account-page-intro { margin-bottom: var(--space-3); }
@@ -14908,6 +14926,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .account-workspace .service-owner-actions.is-compact :is(a, button),
   .messages-page:not(.is-v0) .messages-filter-row button { min-height: var(--control-h-xl); }
   .account-workspace :is(.manage-listing-actions, .service-owner-actions.is-compact) :is(a, button) { font-size: var(--text-md); }
+  .messages-page:not(.is-v0) .messages-list-header > div:first-child { min-width: 0; display: flex; align-items: center; gap: var(--space-1); }
   .messages-page:not(.is-v0) .messages-list-header h1 { font-size: var(--text-3xl); }
   .account-workspace-list { padding-inline: var(--space-3); }
   .account-workspace-list .listing-row { padding-block: var(--space-3); }
@@ -14915,7 +14934,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-header { align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
   .owned-listings-header .account-page-intro { flex: 1 1 auto; min-width: 0; }
   .owned-listings-header .account-page-intro-title { min-width: 0; }
-  .owned-listings-header .account-page-intro h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .owned-listings-header .account-page-intro h1 { overflow-wrap: break-word; }
   .owned-listings-header .account-page-intro p { display: none; }
   .owned-listings-create { flex: 0 0 auto; }
   .owned-listings-create > .ui-button { min-height: var(--control-h-xl); gap: var(--space-1); padding-inline: var(--space-2); font-size: var(--text-sm); }
@@ -14940,7 +14959,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-toolbar .list-search-field input { font-size: var(--font-size-mobile-control); }
   .messages-list-description { display: none; }
 }
-@media (max-width: 359.98px) {
-  .owned-listings-header .account-page-intro h1 { font-size: var(--text-xl); }
-  .owned-listings-create > .ui-button .ms-add { display: none; }
+@media (max-width: 430px) {
+  .owned-listings-create-label-full { display: none; }
+  .owned-listings-create-label-short { display: inline; }
 }

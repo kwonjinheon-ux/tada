@@ -9,6 +9,7 @@ import { TextSizePreferencePreview, MAX_DESCRIPTION_TEXT_SIZE_STEP, descriptionT
 import { ListingLocationSelector } from "@/components/market/ListingLocationSelector";
 import { ProfileIdentitySummary } from "@/components/dashboard/ProfileIdentitySummary";
 import { ProfilePhotoUploader, persistProfilePhoto, type ProfilePhotoDraft } from "@/components/dashboard/ProfilePhotoUploader";
+import { BackToMyPage } from "@/components/layout/NavigationHistory";
 import type { ProfileSettingsProps, ProfileVisibility } from "@/components/dashboard/ProfileSettingsForm";
 import { useLanguage, languageOptions, type SupportedLocale } from "@/components/LanguageProvider";
 import { createBrowserSupabaseClient, createTransientAuthClient } from "@/lib/supabase/client";
@@ -68,6 +69,7 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const [confirmation, setConfirmation] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
   const [exitAction, setExitAction] = useState<"logout" | "back" | null>(null);
+  const [exitTarget, setExitTarget] = useState<"previous" | "my-page">("my-page");
   const [loggingOut, setLoggingOut] = useState(false);
   const [deletionStep, setDeletionStep] = useState<0 | 1 | 2>(0);
   const [deletionPhrase, setDeletionPhrase] = useState("");
@@ -255,7 +257,7 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
     finally { setSecurityBusy(false); }
   };
   const leave = async (action: "logout" | "back") => {
-    if (action === "back") { setExitAction(null); router.push("/market/dashboard/my-page"); return; }
+    if (action === "back") { setExitAction(null); if (exitTarget === "previous") router.back(); else router.push("/market/dashboard/my-page"); return; }
     setLoggingOut(true);
     try { const client = requireClient(); const { error } = await client.auth.signOut({ scope: "local" }); if (error) throw error; setExitAction(null); router.replace("/login"); router.refresh(); }
     catch (error) { setExitAction(null); message("management", error instanceof Error ? error.message : say("Unable to log out. Please try again.", "로그아웃하지 못했습니다. 다시 시도해 주세요."), true); }
@@ -279,7 +281,7 @@ export function ProfileSettingsEditor({ email, emailVerified, initialVerifiedPho
   const chip = (verified: boolean) => <span className={`ui-pill${verified ? " ui-pill--success" : ""}`}>{verified ? say("Verified", "인증됨") : say("Not verified", "미인증")}</span>;
 
   return <div className="profile-settings-current" data-dirty={dirty} style={{ "--profile-keyboard-inset": `${keyboardInset}px` } as CSSProperties}>
-    <header className="profile-editor-intro"><Link className="my-page-link" href="/market/dashboard/my-page" onClick={(event) => { if (dirty) { event.preventDefault(); setExitAction("back"); } }}><i className="ms ms-arrow-back" aria-hidden="true" />{t("myPage")}</Link><h1>{t("profileSettings")}</h1><p>{say("Manage your profile and account in one place.", "내 정보와 계정 설정을 한곳에서 관리하세요.")}</p></header>
+    <header className="profile-editor-intro"><div className="account-page-intro-title"><BackToMyPage onBeforeNavigate={(target) => { if (!dirty) return true; setExitTarget(target); setExitAction("back"); return false; }} /><h1>{t("profileSettings")}</h1></div><p>{say("Manage your profile and account in one place.", "내 정보와 계정 설정을 한곳에서 관리하세요.")}</p></header>
     <div className="profile-editor-layout">
       <fieldset className="profile-editor-main" disabled={saving} aria-busy={saving}><legend className="sr-only">{t("profileSettings")}</legend>
         <SettingsSection id="identity" title={say("Basic details", "기본 정보")} icon="ms-person" summary={snapshot.name} open={isOpen("identity")} pinned={desktop} onToggle={() => toggle("identity")}>

@@ -29,8 +29,8 @@ export function NewListingMenu() {
   }, [open]);
 
   return <div className="owned-listings-create" ref={root}>
-    <Button aria-expanded={open} aria-controls="owned-listings-create-menu" onClick={() => setOpen((value) => !value)}>
-      <i className="ms ms-add" aria-hidden="true" />{ko ? "새로 등록" : "Create new"}<i className="ms ms-expand-more" aria-hidden="true" />
+    <Button aria-label={ko ? "새로 등록" : "Create new"} aria-expanded={open} aria-controls="owned-listings-create-menu" onClick={() => setOpen((value) => !value)}>
+      <i className="ms ms-add" aria-hidden="true" /><span className="owned-listings-create-label-full">{ko ? "새로 등록" : "Create new"}</span><span className="owned-listings-create-label-short">{ko ? "등록" : "Create"}</span><i className="ms ms-expand-more" aria-hidden="true" />
     </Button>
     {open ? <div className="owned-listings-create-menu ui-panel menu-motion" id="owned-listings-create-menu">
       <Link href="/market/create" onClick={() => setOpen(false)}><i className="ms ms-shopping-bag" aria-hidden="true" />{ko ? "상품 등록" : "List an item"}</Link>

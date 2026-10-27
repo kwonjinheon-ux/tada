@@ -74,12 +74,12 @@ export function MyPageClient({ data }: { data: MyPageData | null }) {
   const featuredKeys = new Set(featured.map((item) => item.key));
   const preview = [...featured, ...progress.filter((item) => !featuredKeys.has(item.key))].slice(0, 4);
   const libraryShortcuts = [
-    { icon: "ms-favorite", title: say("All saved items", "전체 찜 목록"), value: data.savedCount, unit: say("saved", "개 저장"), href: "/market/wishlist", description: say("Saved listings, posts and services.", "저장한 상품·글·서비스 전체") },
-    { icon: "ms-search", title: say("Keyword alerts", "키워드 알림"), value: data.savedSearchCount, unit: say("alerts", "개 알림"), href: "/market/dashboard/keywords", description: say("Get notified when a local match appears.", "원하는 항목이 올라오면 알려드려요.") },
+    { icon: "ms-favorite", title: t("wishlist"), value: data.savedCount, unit: say("saved", "개 저장"), href: "/market/wishlist", description: say("Saved listings, posts and services.", "저장한 상품·글·서비스 전체") },
+    { icon: "ms-search", title: t("keywords"), value: data.savedSearchCount, unit: say("alerts", "개 알림"), href: "/market/dashboard/keywords", description: say("Get notified when a local match appears.", "원하는 항목이 올라오면 알려드려요.") },
   ];
   const manageShortcuts = [
-    { icon: "ms-list-alt", title: say("My items & services", "내 상품·서비스"), value: data.activeListingCount, unit: say("active", "개 진행 중"), href: "/market/dashboard/listings", description: say("Manage your market and service listings.", "등록한 상품과 서비스를 관리하세요.") },
-    { icon: "ms-event-available", title: say("Pickups & reservations", "예약 및 수령"), value: data.activeReservationCount, unit: say("active", "건 진행 중"), href: "/market/dashboard/reservations", description: say("Keep upcoming handovers on track.", "예정된 수령과 예약을 확인하세요.") },
+    { icon: "ms-list-alt", title: t("myItemsAndServices"), value: data.activeListingCount, unit: say("active", "개 진행 중"), href: "/market/dashboard/listings", description: say("Manage your market and service listings.", "등록한 상품과 서비스를 관리하세요.") },
+    { icon: "ms-event-available", title: t("reservationsAndPickups"), value: data.activeReservationCount, unit: say("active", "건 진행 중"), href: "/market/dashboard/reservations", description: say("Keep upcoming handovers on track.", "예정된 수령과 예약을 확인하세요.") },
   ];
   const savedForLaterPanel = <Panel title={say("Saved & alerts", "나의 찜 & 알림")}><div className="my-page-shortcuts">{libraryShortcuts.map((shortcut) => <Link className="my-page-shortcut" href={shortcut.href} key={shortcut.href}><i className={`ms ${shortcut.icon}`} aria-hidden="true" /><div><strong>{shortcut.title}</strong><span>{countLabel(shortcut.value, shortcut.unit)}</span><small>{shortcut.description}</small></div><i className="ms ms-arrow-forward" aria-hidden="true" /></Link>)}</div></Panel>;
   const manageActivityPanel = <Panel title={say("My listings & reservations", "내 등록·예약")}><div className="my-page-shortcuts">{manageShortcuts.map((shortcut) => <Link className="my-page-shortcut" href={shortcut.href} key={shortcut.href}><i className={`ms ${shortcut.icon}`} aria-hidden="true" /><div><strong>{shortcut.title}</strong><span>{countLabel(shortcut.value, shortcut.unit)}</span><small>{shortcut.description}</small></div><i className="ms ms-arrow-forward" aria-hidden="true" /></Link>)}</div></Panel>;
