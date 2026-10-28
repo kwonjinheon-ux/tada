@@ -4,6 +4,7 @@ import {
   tradeMeMappedKeywordCount,
   tradeMeSubcategoryMappings,
 } from "@/data/trademe-category-mapping";
+import { categoryKeywordAdditions, subcategoryKeywordAdditions } from "@/data/marketplace-keywords-ko";
 
 export type MarketplaceSubcategory = {
   label: string;
@@ -23,6 +24,8 @@ const titleFromSlug = (value: string) => value
   .map((part) => part === "diy" ? "DIY" : part === "gps" ? "GPS" : `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
   .join(" ");
 
+const additionsFor = (additions?: { ko: string[]; en?: string[] }) => [...(additions?.ko ?? []), ...(additions?.en ?? [])];
+
 const category = (label: string, value: string, keywords: string[], subcategories: Array<[string, string, string[]]>): MarketplaceCategory => {
   const importedSubcategories = tradeMeSubcategoryMappings
     .filter((mapping) => mapping.tadaCategory === value)
@@ -40,11 +43,11 @@ const category = (label: string, value: string, keywords: string[], subcategorie
   return {
     label,
     value,
-    keywords: [...new Set([...keywords, ...getTradeMeKeywordsForCategory(value)])],
+    keywords: [...new Set([...keywords, ...getTradeMeKeywordsForCategory(value), ...additionsFor(categoryKeywordAdditions[value])])],
     subcategories: allSubcategories.map(([subcategoryLabel, subcategoryValue, subcategoryKeywords]) => ({
       label: subcategoryLabel,
       value: subcategoryValue,
-      keywords: [...new Set([...subcategoryKeywords, ...getTradeMeKeywordsForSubcategory(value, subcategoryValue)])],
+      keywords: [...new Set([...subcategoryKeywords, ...getTradeMeKeywordsForSubcategory(value, subcategoryValue), ...additionsFor(subcategoryKeywordAdditions[subcategoryValue])])],
     })),
   };
 };
@@ -191,7 +194,7 @@ export const marketplaceCategories: MarketplaceCategory[] = [
     ["Haircare & Styling Tools", "haircare-styling-tools", ["hair dryer", "straightener", "curling iron", "헤어드라이어", "고데기"]],
     ["Perfume & Fragrance", "perfume-fragrance", ["perfume", "cologne", "body mist", "향수", "바디미스트"]],
     ["Personal Care Devices", "personal-care-devices", ["electric toothbrush", "shaver", "massage gun", "전동칫솔", "면도기", "마사지건"]],
-    ["Mobility & Daily Living Aids", "mobility-daily-living-aids", ["wheelchair", "walker", "crutches", "shower chair", "휠체어", "보행기"]],
+    ["Mobility & Daily Living Aids", "mobility-daily-living-aids", ["wheelchair", "walker", "crutches", "shower chair", "휠체어", "보행 보조기"]],
   ]),
 ];
 
@@ -211,24 +214,161 @@ export function getSubcategories(mainCategory: string) {
   return marketplaceCategories.find((category) => category.value === mainCategory)?.subcategories ?? [];
 }
 
+const HANGUL = /[가-힣]/;
+
+/** `key` tells a Korean word from an English one that spells the same, and is built once rather than on every title. */
+type IndexedKeyword = { text: string; isKorean: boolean; key: string };
+
+/** A keyword in the form it is compared in: lower case, and for Korean without spaces. */
+const indexKeyword = (keyword: string): IndexedKeyword => {
+  const lower = keyword.toLocaleLowerCase();
+  const isKorean = HANGUL.test(lower);
+  const text = isKorean ? lower.replace(/\s+/g, "") : lower;
+  return { text, isKorean, key: `${isKorean ? "ko" : "en"}:${text}` };
+};
+
+type KeywordIndex = {
+  categories: Array<{ value: string; keywords: IndexedKeyword[]; subcategories: Array<{ value: string; keywords: IndexedKeyword[] }> }>;
+  /** The categories that list each word, so a word can be told which categories a longer word speaks for. */
+  owners: Map<string, Set<string>>;
+};
+let keywordIndex: KeywordIndex | null = null;
+
+/** The dictionary runs to thousands of words and is asked about on every keystroke of a title, so it is normalised once. */
+const getKeywordIndex = (): KeywordIndex => {
+  if (keywordIndex) return keywordIndex;
+  const owners = new Map<string, Set<string>>();
+  const register = (keywords: IndexedKeyword[], categoryValue: string) => {
+    for (const keyword of keywords) {
+      if (!owners.has(keyword.key)) owners.set(keyword.key, new Set());
+      owners.get(keyword.key)?.add(categoryValue);
+    }
+  };
+  const categories = marketplaceCategories.map((category) => {
+    const keywords = category.keywords.map(indexKeyword);
+    register(keywords, category.value);
+    return {
+      value: category.value,
+      keywords,
+      subcategories: category.subcategories.map((subcategory) => {
+        const subcategoryKeywords = subcategory.keywords.map(indexKeyword);
+        register(subcategoryKeywords, category.value);
+        return { value: subcategory.value, keywords: subcategoryKeywords };
+      }),
+    };
+  });
+  return keywordIndex = { categories, owners };
+};
+
+/**
+ * Which category a title or a saved keyword belongs to, and which subcategory of it.
+ *
+ * Every dictionary word found in the title is a vote, a word in a subcategory counting for
+ * more than one in its category, and the category with the most votes wins. One rule keeps
+ * that honest: a word that sits inside a longer word found in the same place speaks only for
+ * the categories that longer word belongs to. A title that says 아기침대 also contains 침대,
+ * and "chromebook" also contains "book", but the longer word is what the title is about, so
+ * 침대 may still back the baby category and may not pull the title towards furniture. Without
+ * this a short common word won simply by being listed in more places.
+ *
+ * Words in different parts of a title still vote together and in full, so "baby cot with
+ * mattress" is about the cot and not the mattress. When the votes are level the longer word
+ * found decides, and then the order of the list.
+ *
+ * Korean is compared without spaces, because it is not spaced consistently: 에어 프라이어
+ * and 에어프라이어 are one word.
+ */
 export function suggestCategoryFromTitle(title: string) {
   const normalized = title.trim().toLocaleLowerCase();
   if (normalized.length < 2) return null;
+  const compact = normalized.replace(/\s+/g, "");
+  const subjectOf = ({ isKorean }: IndexedKeyword) => (isKorean ? compact : normalized);
+  const { categories, owners } = getKeywordIndex();
 
-  // Two-character searches such as "TV" and "소파" are valid saved keywords.
-  // Match those exactly so a short fragment cannot classify an unrelated title.
-  const matchesKeyword = (keyword: string) => normalized.length === 2 ? normalized === keyword : normalized.includes(keyword);
+  // Where each character of the spaceless text sits in the original, so Korean and English
+  // words can be set against each other in one coordinate system.
+  const originalIndexOf: number[] = [];
+  for (let at = 0; at < normalized.length; at += 1) if (normalized.charAt(at).trim()) originalIndexOf.push(at);
 
-  let bestMatch: { mainCategory: string; subCategory: string; score: number } | null = null;
+  // Every distinct word of the dictionary that the title contains. Two-character searches
+  // such as "TV" and "소파" are valid saved keywords, so those must match exactly: a short
+  // fragment cannot classify an unrelated title.
+  const found = new Map<string, IndexedKeyword>();
+  const consider = (keyword: IndexedKeyword) => {
+    const subject = subjectOf(keyword);
+    if (subject.length === 2 ? subject === keyword.text : subject.includes(keyword.text)) found.set(keyword.key, keyword);
+  };
+  for (const category of categories) {
+    category.keywords.forEach(consider);
+    for (const subcategory of category.subcategories) subcategory.keywords.forEach(consider);
+  }
+  if (!found.size) return null;
 
-  for (const category of marketplaceCategories) {
-    const categoryScore = category.keywords.reduce((score, keyword) => score + (matchesKeyword(keyword) ? 2 : 0), 0);
-    for (const subcategory of category.subcategories) {
-      const subcategoryScore = subcategory.keywords.reduce((score, keyword) => score + (matchesKeyword(keyword) ? 4 : 0), 0);
-      const score = categoryScore + subcategoryScore;
-      if (score > (bestMatch?.score ?? 0)) bestMatch = { mainCategory: category.value, subCategory: subcategory.value, score };
+  /** The stretches of the original title a word occupies. */
+  const rangesOf = (keyword: IndexedKeyword) => {
+    const subject = subjectOf(keyword);
+    const ranges: Array<[number, number]> = [];
+    for (let at = subject.indexOf(keyword.text); at !== -1; at = subject.indexOf(keyword.text, at + 1)) {
+      const end = at + keyword.text.length;
+      ranges.push(keyword.isKorean ? [originalIndexOf[at], originalIndexOf[end - 1] + 1] : [at, end]);
+    }
+    return ranges;
+  };
+
+  // Longest words first, each claiming the text it matched for its own categories. A word
+  // whose every occurrence is already inside the stretch of a clearly longer word is part of
+  // that word: it may only speak for the categories of the words that cover it.
+  //
+  // "Clearly longer" because a plural or an ending is the same word, not a bigger one: "toys"
+  // does not swallow "toy". Three more letters is where a longer word starts to mean something
+  // else (bookshelf and book). A Korean syllable carries about as much as three letters, so
+  // lengths are compared in that unit: 아기침대 swallows 침대, and "tv장" swallows "tv".
+  const weightOf = ({ isKorean }: IndexedKeyword) => (isKorean ? 3 : 1);
+  const sizeOf = (keyword: IndexedKeyword) => keyword.text.length * weightOf(keyword);
+  const claimedBy: Array<Set<string> | null> = new Array(normalized.length).fill(null);
+  const claimedSize: number[] = new Array(normalized.length).fill(0);
+  const live = new Map<string, number>();
+  const covered = new Map<string, Set<string>>();
+  for (const [key, keyword] of [...found].sort((a, b) => sizeOf(b[1]) - sizeOf(a[1]))) {
+    const ranges = rangesOf(keyword);
+    const needed = sizeOf(keyword) + 3;
+    const isInsideLongerWord = ranges.every(([from, to]) => claimedSize.slice(from, to).every((size) => size >= needed));
+    if (!isInsideLongerWord) {
+      live.set(key, sizeOf(keyword));
+      for (const [from, to] of ranges) {
+        for (let at = from; at < to; at += 1) {
+          claimedBy[at] = new Set([...(claimedBy[at] ?? []), ...(owners.get(key) ?? [])]);
+          claimedSize[at] = Math.max(claimedSize[at], sizeOf(keyword));
+        }
+      }
+    } else {
+      const speaksFor = new Set<string>();
+      for (const [from, to] of ranges) for (let at = from; at < to; at += 1) claimedBy[at]?.forEach((categoryValue) => speaksFor.add(categoryValue));
+      covered.set(key, speaksFor);
     }
   }
 
-  return bestMatch && bestMatch.score > 0 ? bestMatch : null;
+  const tally = (keywords: IndexedKeyword[], weight: number, categoryValue: string) => keywords.reduce(
+    (result, keyword) => {
+      const length = live.get(keyword.key);
+      if (length) return { score: result.score + weight, longest: Math.max(result.longest, length) };
+      return covered.get(keyword.key)?.has(categoryValue) ? { ...result, score: result.score + weight } : result;
+    },
+    { score: 0, longest: 0 },
+  );
+
+  let bestMatch: { mainCategory: string; subCategory: string; score: number; longest: number } | null = null;
+
+  for (const category of categories) {
+    const fromCategory = tally(category.keywords, 2, category.value);
+    for (const subcategory of category.subcategories) {
+      const fromSubcategory = tally(subcategory.keywords, 4, category.value);
+      const score = fromCategory.score + fromSubcategory.score;
+      const longest = Math.max(fromCategory.longest, fromSubcategory.longest);
+      const beatsBest = !bestMatch || score > bestMatch.score || (score === bestMatch.score && longest > bestMatch.longest);
+      if (score > 0 && beatsBest) bestMatch = { mainCategory: category.value, subCategory: subcategory.value, score, longest };
+    }
+  }
+
+  return bestMatch ? { mainCategory: bestMatch.mainCategory, subCategory: bestMatch.subCategory, score: bestMatch.score } : null;
 }

@@ -131,7 +131,7 @@ export const tradeMeSubcategoryMappings: readonly TradeMeSubcategoryMapping[] = 
   { tadaCategory: "baby-kids", tadaSubcategory: "baby-safety-monitors", matches: ["safety", "monitor", "gate"] },
   { tadaCategory: "baby-kids", tadaSubcategory: "educational-toys", matches: ["educational", "learning", "school"] },
   { tadaCategory: "baby-kids", tadaSubcategory: "kids-toys-play", matches: ["toy", "play", "doll"] },
-  { tadaCategory: "baby-kids", tadaSubcategory: "kids-bikes-scooters", matches: ["bike", "bicycle", "scooter", "tricycle", "ride on", "ride-on"] },
+  { tadaCategory: "baby-kids", tadaSubcategory: "kids-bikes-scooters", matches: ["scooter", "tricycle", "ride on", "ride-on"] },
 
   { tadaCategory: "books-music-media", tadaSubcategory: "childrens-books-textbooks", matches: ["children", "textbook", "education"] },
   { tadaCategory: "books-music-media", tadaSubcategory: "fiction-nonfiction-books", matches: ["fiction", "non fiction", "non-fiction", "literature", "novel", "book"] },

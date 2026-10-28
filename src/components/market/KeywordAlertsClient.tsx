@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { marketplaceCategories, suggestCategoryFromTitle } from "@/data/marketplace-categories";
 import { useLanguage } from "@/components/LanguageProvider";
+import type { SupportedLocale } from "@/lib/locales";
+import { getMarketCategoryLabel } from "@/lib/market/category-label";
 import { AccountPageIntro, DashboardAdBanner } from "@/components/dashboard/AccountPagePatterns";
 import { Button } from "@/components/ui/Button";
 
@@ -13,12 +15,19 @@ type KeywordAlertResponse = { id: string; keyword: string; category_slug: string
 
 const keywordRemovalDelayMs = 160;
 
-function getAlertCategory(alert: KeywordAlert) {
+/**
+ * The category a saved keyword is filed under, named in the reader's language.
+ *
+ * The slug is stored and stays language-neutral; only the name shown is translated, with the
+ * same labels the rest of the marketplace uses. It used to print the English name in every
+ * language, so a Korean reader saw "Mobile Phones & Tablets" beside 아이폰.
+ */
+function getAlertCategory(alert: KeywordAlert, locale: SupportedLocale) {
   const categorySlug = alert.categorySlug ?? suggestCategoryFromTitle(alert.keyword)?.mainCategory ?? null;
   const category = marketplaceCategories.find(({ value }) => value === categorySlug);
   return {
     slug: categorySlug,
-    label: category?.label ?? "General",
+    label: category ? getMarketCategoryLabel(category.label, locale) : locale === "ko" ? "전체 카테고리" : "General",
     tone: categorySlug ? `keyword-chip-${categorySlug}` : "keyword-chip-general",
   };
 }
@@ -118,7 +127,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
         <section className="ui-panel keyword-saved-panel" aria-labelledby="saved-keywords-title">
           <h2 id="saved-keywords-title">{ko ? "저장한 키워드" : "Saved keywords"} <small>{alerts.length}/20</small></h2>
           {alerts.length ? <div className="keyword-saved-list">{alerts.map((alert) => {
-            const category = getAlertCategory(alert);
+            const category = getAlertCategory(alert, locale);
             return <div className={`keyword-saved-row${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id}>
               <i className="ms ms-search keyword-saved-icon" aria-hidden="true" />
               <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{/[,，、]/.test(alert.keyword) ? ko ? "각각 다시 저장해야 알림을 받을 수 있어요" : "Save these separately to receive alerts" : category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
@@ -160,7 +169,7 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
     {error ? <p className="keywords-error" role="alert">{error}</p> : null}
     <section className="keywords-saved" aria-labelledby="saved-keywords-title"><div className="keywords-saved-heading"><h2 id="saved-keywords-title">{t("yourKeywords")} <small>{alerts.length}/20</small></h2></div>
       {alerts.length ? <div className="keywords-chip-list">{alerts.map((alert) => {
-        const category = getAlertCategory(alert);
+        const category = getAlertCategory(alert, locale);
         return <div className={`keyword-chip ${category.tone}${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id} title={category.label}>
           <span>{alert.keyword}</span>
           <small>{category.label}</small>
