@@ -72,14 +72,30 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
       const response = await fetch("/api/market/keywords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword }) });
       const payload = await response.json().catch(() => null) as { alert?: KeywordAlertResponse; error?: string; code?: string } | null;
       if (!response.ok || !payload?.alert) {
-        setError(payload?.code === "MULTIPLE_KEYWORDS" && ko ? "키워드를 쉼표로 묶지 말고 하나씩 저장해 주세요. 그래야 각 카테고리의 새 상품을 찾을 수 있어요." : payload?.error ?? "Unable to add this keyword right now.");
+        if (legacy || !ko) {
+          setError(payload?.code === "MULTIPLE_KEYWORDS" && ko ? "키워드를 쉼표로 묶지 말고 하나씩 저장해 주세요. 그래야 각 카테고리의 새 상품을 찾을 수 있어요." : payload?.error ?? "Unable to add this keyword right now.");
+        } else if (payload?.code === "MULTIPLE_KEYWORDS") {
+          setError("키워드는 쉼표로 묶지 말고 하나씩 저장해 주세요.");
+        } else if (response.status === 409) {
+          setError("이미 저장한 키워드예요.");
+        } else if (response.status === 401) {
+          setError("키워드를 저장하려면 다시 로그인해 주세요.");
+        } else if (response.status === 400 && payload?.error?.includes("prohibited item")) {
+          setError("타다에서 허용하지 않는 상품은 키워드로 저장할 수 없어요.");
+        } else if (response.status === 400 && payload?.error?.includes("20 keyword")) {
+          setError("키워드는 최대 20개까지 저장할 수 있어요.");
+        } else if (response.status === 400) {
+          setError("키워드를 2~80자로 입력해 주세요.");
+        } else {
+          setError("키워드를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+        }
         return;
       }
       const savedAlert = payload.alert;
       setAlerts((current) => [{ id: savedAlert.id, keyword: savedAlert.keyword, categorySlug: savedAlert.category_slug }, ...current]);
       setKeyword("");
     } catch {
-      setError("Unable to reach keyword alerts right now.");
+      setError(legacy || !ko ? "Unable to reach keyword alerts right now." : "연결할 수 없어 키워드를 저장하지 못했어요. 다시 시도해 주세요.");
     } finally {
       setIsSaving(false);
     }
@@ -130,12 +146,12 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
             const category = getAlertCategory(alert, locale);
             return <div className={`keyword-saved-row${leavingId === alert.id ? " is-removing" : ""}`} key={alert.id}>
               <i className="ms ms-search keyword-saved-icon" aria-hidden="true" />
-              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{/[,，、]/.test(alert.keyword) ? ko ? "각각 다시 저장해야 알림을 받을 수 있어요" : "Save these separately to receive alerts" : category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
+              <div className="keyword-saved-info"><strong>{alert.keyword}</strong><span>{/[,，、]/.test(alert.keyword) ? ko ? "각각 다시 저장해야 알림을 받을 수 있어요" : "Save these separately to receive alerts" : alert.categorySlug && category.slug ? category.label : ko ? "전체 카테고리" : "All categories"}</span></div>
               <Link className="ui-button ui-button--secondary ui-button--sm keyword-search-link" href={`/market?q=${encodeURIComponent(alert.keyword)}`} aria-label={ko ? `${alert.keyword} 지금 검색` : `Search ${alert.keyword} now`}><i className="ms ms-search" aria-hidden="true" />{ko ? "검색" : "Search"}</Link>
               <Button variant="ghost" size="sm" className="keyword-remove-button" disabled={removingId === alert.id} onClick={() => void removeKeyword(alert.id)} aria-label={ko ? `${alert.keyword} 삭제` : `Remove ${alert.keyword}`}><i className="ms ms-delete" aria-hidden="true" /><span>{ko ? "삭제" : "Remove"}</span></Button>
             </div>;
           })}</div> : <div className="keywords-empty"><i className="ms ms-search" aria-hidden="true" /><strong>{ko ? "아직 저장한 키워드가 없어요" : "No saved keywords yet"}</strong><span>{ko ? "찾고 싶은 상품을 위에 입력해 보세요." : "Add an item you're looking for above."}</span></div>}
-          <p className="keyword-match-note"><i className="ms ms-info" aria-hidden="true" />{ko ? "키워드와 카테고리가 모두 일치할 때 새 상품 알림이 와요." : "You'll be notified when both the keyword and category match."}</p>
+          <p className="keyword-match-note"><i className="ms ms-info" aria-hidden="true" />{ko ? "카테고리가 지정된 키워드는 해당 카테고리에서, 미지정 키워드는 전체 카테고리에서 새 상품을 찾아요." : "Keywords with a category match there; uncategorized keywords match across all categories."}</p>
         </section>
       </div>
       <aside className="keyword-side-column" aria-label={ko ? "키워드 알림 안내" : "Keyword alert information"}>
@@ -148,13 +164,13 @@ export function KeywordAlertsClient({ initialAlerts, initialNotificationEnabled 
           </Button>
           <div className="keyword-status-details" id="keyword-status-details">
             <div className="keyword-status-heading"><span className="keyword-status-icon"><i className="ms ms-notifications" aria-hidden="true" /></span><strong><span className="keyword-desktop-label">{ko ? `키워드 알림 ${notificationEnabled ? "켜짐" : "꺼짐"}` : `Keyword alerts ${notificationEnabled ? "on" : "off"}`}</span><span className="keyword-mobile-label">{ko ? "새 상품 알림 받기" : "Notify me of new listings"}</span></strong><label className="keyword-alert-switch"><input className="notification-settings-input" type="checkbox" checked={notificationEnabled} onChange={(event) => void updateNotification(event.target.checked)} disabled={!notificationSettingsAvailable || savingNotification} aria-label={ko ? "키워드 알림" : "Keyword alerts"} /><span className="notification-settings-track" /></label></div>
-            <p>{ko ? "저장한 키워드와 카테고리에 맞는 새 상품을 알려드려요." : "Get notified when a new listing matches your keyword and category."}</p>
+            <p>{ko ? "새 상품이 키워드와 일치하면 알려드려요. 카테고리가 지정됐다면 해당 카테고리에서만 찾아요." : "Get notified when a new listing matches your keyword. A selected category narrows the match."}</p>
             {!notificationSettingsAvailable ? <p className="keyword-status-error" role="status">{ko ? "현재 알림 설정을 불러올 수 없어요." : "Notification settings are currently unavailable."}</p> : null}
             {notificationError ? <p className="keyword-status-error" role="alert">{notificationError}</p> : null}
             <Link className="keyword-settings-link" href="/market/dashboard/notifications">{ko ? "전체 알림 설정" : "All notification settings"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
           </div>
         </section>
-        <section className="ui-panel keyword-how-panel"><h2><i className="ms ms-lightbulb" aria-hidden="true" />{ko ? "이렇게 작동해요" : "How it works"}</h2><ol><li><span>1</span><div><strong>{ko ? "키워드 저장" : "Save a keyword"}</strong><p>{ko ? "찾고 싶은 상품 키워드를 저장해요." : "Save the item you want to find."}</p></div></li><li><span>2</span><div><strong>{ko ? "새 상품 등록" : "New listing"}</strong><p>{ko ? "마켓에 새로운 상품이 올라와요." : "A new listing appears in Market."}</p></div></li><li><span>3</span><div><strong>{ko ? "알림 도착" : "Get notified"}</strong><p>{ko ? "키워드와 카테고리가 맞으면 알려드려요." : "We notify you when both match."}</p></div></li></ol></section>
+        <section className="ui-panel keyword-how-panel"><h2><i className="ms ms-lightbulb" aria-hidden="true" />{ko ? "이렇게 작동해요" : "How it works"}</h2><ol><li><span>1</span><div><strong>{ko ? "키워드 저장" : "Save a keyword"}</strong><p>{ko ? "찾고 싶은 상품 키워드를 저장해요." : "Save the item you want to find."}</p></div></li><li><span>2</span><div><strong>{ko ? "새 상품 등록" : "New listing"}</strong><p>{ko ? "마켓에 새로운 상품이 올라와요." : "A new listing appears in Market."}</p></div></li><li><span>3</span><div><strong>{ko ? "알림 도착" : "Get notified"}</strong><p>{ko ? "키워드가 일치하면 알려드려요. 카테고리 지정 시 해당 카테고리만 확인해요." : "A matching keyword triggers an alert, limited to its category when set."}</p></div></li></ol></section>
         <DashboardAdBanner kind="keywords" />
       </aside>
     </div>

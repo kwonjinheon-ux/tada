@@ -49,10 +49,6 @@ function ReservationRow({ item }: { item: ReservationListItem }) {
   const action = managePickup ? item.status === "requested" ? ["Review request", "요청 확인"] : ["Manage pickup", "수령 관리"]
     : !seller && active ? item.status === "requested" ? ["View reservation", "예약 보기"] : ["Check pickup", "수령 정보 확인"]
     : ["View item", "상품 보기"];
-  const hint = item.status === "requested" && seller ? ["A neighbour is waiting for your reply.", "이웃이 답변을 기다리고 있어요."]
-    : item.status === "requested" ? ["The seller has not confirmed yet.", "판매자의 확인을 기다리고 있어요."]
-    : item.status === "confirmed" ? ["Confirm the time and place before meeting.", "만나기 전 시간과 장소를 확인하세요."]
-    : item.status === "on_the_way" ? ["Check the handover details.", "수령 방법을 다시 확인하세요."] : null;
   const created = new Intl.DateTimeFormat(ko ? "ko-KR" : "en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.createdAt));
   const pickup = item.pickupStartAt && active ? new Intl.DateTimeFormat(ko ? "ko-KR" : "en-NZ", { month: "short", day: "numeric", weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(item.pickupStartAt)) : null;
 
@@ -65,10 +61,9 @@ function ReservationRow({ item }: { item: ReservationListItem }) {
       <strong className="listing-row-price">{formatMarketPrice(item.amountCents)}</strong>
       {pickup ? <time className="reservation-pickup-time" dateTime={item.pickupStartAt!}><i className="ms ms-event-available" aria-hidden="true" />{ko ? "수령 예정" : "Pickup"} · {pickup}</time> : null}
       <small className="listing-row-meta">{saleTitle} · {ko ? "예약" : "Reserved"} {created}</small>
-      {hint ? <p className="reservation-row-hint">{hint[ko ? 1 : 0]}</p> : null}
     </div>
+    <span className={`ui-button ui-button--sm reservation-row-action${seller && item.status === "requested" ? " is-urgent" : ""}`}>{action[ko ? 1 : 0]}<i className="ms ms-arrow-forward" aria-hidden="true" /></span>
     </Link>
-    <Link className={`ui-button ui-button--sm reservation-row-action${seller && item.status === "requested" ? " is-urgent" : ""}`} href={href}>{action[ko ? 1 : 0]}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link>
   </article>;
 }
 
@@ -95,7 +90,8 @@ export function ReservationsWorkspace({ items, counts, view, page, totalPages, t
     if (active) next.delete(key);
     else next.set(key, "1");
     next.delete("page");
-    router.push(`${pathname}?${next.toString()}`);
+    const query = next.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
   };
   const hrefFor = (target: ReservationView | "clear") => {
     const next = new URLSearchParams(searchParams.toString());
@@ -117,7 +113,8 @@ export function ReservationsWorkspace({ items, counts, view, page, totalPages, t
       <div className="reservation-main">
         <nav className="manage-listings-category-tabs reservation-filter-tabs" aria-label={ko ? "예약 필터" : "Reservation filters"}>{views.map((target) => <Link key={target} className={`manage-listings-category-tab${view === target ? " is-active" : ""}`} href={hrefFor(target)} aria-current={view === target ? "page" : undefined}>{labels[target][ko ? 1 : 0]} <b>{counts[target]}</b></Link>)}</nav>
         <div className="reservation-toolbar"><div className="reservation-search"><ListSearchField placeholder="Search reserved items" copyKey="reservationSearch" actionKey="ownedListingSearchAction" submitInField /></div><IconButton className={`reservation-filter-toggle${activeFilterCount ? " is-active" : ""}`} aria-label={ko ? "예약 상태 필터" : "Reservation status filters"} aria-expanded={filtersOpen} aria-controls={filtersOpen ? "reservation-status-filters" : undefined} onClick={() => setFiltersOpen(!filtersOpen)}><i className="ms ms-tune" aria-hidden="true" />{activeFilterCount ? <span className="reservation-filter-count">{activeFilterCount}</span> : null}</IconButton></div>
-        {filtersOpen ? <div className="ui-panel reservation-status-filters" id="reservation-status-filters" role="group" aria-label={ko ? "예약 상태 제외" : "Exclude reservation statuses"}><span>{ko ? "목록에서 제외" : "Hide from list"}</span><Button variant="secondary" size="sm" pill aria-pressed={excludeCancelled} className={excludeCancelled ? "is-active" : ""} onClick={() => toggleFilter("excludeCancelled", excludeCancelled)}>{excludeCancelled ? <i className="ms ms-check" aria-hidden="true" /> : null}{ko ? "취소 제외" : "Hide cancelled"}</Button><Button variant="secondary" size="sm" pill aria-pressed={excludeCompleted} className={excludeCompleted ? "is-active" : ""} onClick={() => toggleFilter("excludeCompleted", excludeCompleted)}>{excludeCompleted ? <i className="ms ms-check" aria-hidden="true" /> : null}{ko ? "판매 완료 제외" : "Hide completed sales"}</Button></div> : null}
+        {filtersOpen ? <div className="ui-panel reservation-status-filters" id="reservation-status-filters" role="group" aria-label={ko ? "예약 상태 제외" : "Exclude reservation statuses"}><span>{ko ? "목록에서 제외" : "Hide from list"}</span><Button variant="secondary" size="sm" pill aria-pressed={excludeCancelled} className={excludeCancelled ? "is-active" : ""} onClick={() => toggleFilter("excludeCancelled", excludeCancelled)}>{excludeCancelled ? <i className="ms ms-check" aria-hidden="true" /> : null}{ko ? "취소 제외" : "Hide cancelled"}</Button><Button variant="secondary" size="sm" pill aria-pressed={excludeCompleted} className={excludeCompleted ? "is-active" : ""} onClick={() => toggleFilter("excludeCompleted", excludeCompleted)}>{excludeCompleted ? <i className="ms ms-check" aria-hidden="true" /> : null}{ko ? "수령 완료 제외" : "Hide completed pickups"}</Button></div> : null}
+        {activeFilterCount ? <div className="reservation-applied-filters" aria-label={ko ? "적용된 예약 필터" : "Applied reservation filters"}>{excludeCancelled ? <Button variant="secondary" size="sm" pill className="account-applied-chip" aria-label={ko ? "취소 제외 해제" : "Show cancelled reservations"} onClick={() => toggleFilter("excludeCancelled", true)}>{ko ? "취소 제외" : "Hide cancelled"}<i className="ms ms-close" aria-hidden="true" /></Button> : null}{excludeCompleted ? <Button variant="secondary" size="sm" pill className="account-applied-chip" aria-label={ko ? "수령 완료 제외 해제" : "Show completed pickups"} onClick={() => toggleFilter("excludeCompleted", true)}>{ko ? "수령 완료 제외" : "Hide completed pickups"}<i className="ms ms-close" aria-hidden="true" /></Button> : null}</div> : null}
         {loadError ? <div className="manage-listings-empty" role="alert"><i className="ms ms-error" aria-hidden="true" /><h2>{ko ? "예약을 불러오지 못했어요" : "We couldn't load reservations"}</h2><Button onClick={() => router.refresh()}>{ko ? "다시 시도" : "Try again"}</Button></div>
           : items.length ? <div className="ui-panel account-workspace-list reservation-list"><div className="manage-listings-grid">{items.map((item) => <ReservationRow item={item} key={item.id} />)}</div></div>
           : <div className="manage-listings-empty"><i className="ms ms-event-available" aria-hidden="true" /><h2>{emptyTitle[ko ? 1 : 0]}</h2><p>{view === "all" && !term ? ko ? "상품을 예약하거나 내 상품에 예약이 들어오면 여기에 표시돼요." : "Your purchase and sale reservations will appear here." : ko ? "다른 필터를 선택하거나 검색어를 바꿔 보세요." : "Try another filter or search term."}</p><Link href={view === "all" && !term ? "/market" : hrefFor("clear")}>{view === "all" && !term ? ko ? "마켓 둘러보기" : "Explore Market" : ko ? "전체 예약 보기" : "Show all reservations"}</Link></div>}

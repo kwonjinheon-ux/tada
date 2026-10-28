@@ -9,6 +9,7 @@ import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
+import { Button } from "@/components/ui/Button";
 import { TradeReviewDialog } from "@/components/market/TradeReviewDialog";
 import { useLanguage } from "@/components/LanguageProvider";
 import { BackToMyPage } from "@/components/layout/NavigationHistory";
@@ -73,17 +74,18 @@ function matchesFilter(conversation: ConversationSummary, filter: ConversationFi
   return true;
 }
 
-function formatListTime(value: string | null) {
+function formatListTime(value: string | null, locale: string) {
   if (!value) return "";
   const date = new Date(value);
   const today = new Date();
   const dateKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Auckland", year: "numeric", month: "2-digit", day: "2-digit" });
-  if (dateKey.format(date) === dateKey.format(today)) return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(date);
-  return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", day: "numeric", month: "short" }).format(date);
+  const displayLocale = locale === "ko" ? "ko-KR" : "en-NZ";
+  if (dateKey.format(date) === dateKey.format(today)) return new Intl.DateTimeFormat(displayLocale, { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat(displayLocale, { timeZone: "Pacific/Auckland", day: "numeric", month: "short" }).format(date);
 }
 
-function formatMessageTime(value: string) {
-  return new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(new Date(value));
+function formatMessageTime(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale === "ko" ? "ko-KR" : "en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
 function formatOfferAmount(amountCents: number) {
@@ -108,6 +110,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const [isBulkPending, setIsBulkPending] = useState(false);
   const [pendingDeleteScope, setPendingDeleteScope] = useState<"selection" | "everything" | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
@@ -130,6 +133,28 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const visibleIds = useMemo(() => visibleConversations.map((conversation) => conversation.id), [visibleConversations]);
   const selectedVisibleIds = useMemo(() => visibleIds.filter((id) => selectedIds.includes(id)), [visibleIds, selectedIds]);
   const isViewingArchive = filter === "archived";
+  const currentKo = !isV0 && ko;
+  const emptyFilterCopy: Record<ConversationFilter, { title: string; hint: string }> = {
+    all: { title: currentKo ? "받은 대화가 없어요" : "No conversations in your inbox", hint: currentKo ? "보관한 대화는 보관함에서 확인할 수 있어요." : "Check Archived for conversations you've filed away." },
+    unread: { title: currentKo ? "읽지 않은 메시지가 없어요" : "No unread messages", hint: currentKo ? "모든 대화를 확인했어요." : "You're all caught up." },
+    buying: { title: currentKo ? "구매 대화가 없어요" : "Nothing you're buying", hint: currentKo ? "전체 탭에서 다른 대화를 확인해 보세요." : "Switch to All to see your other conversations." },
+    selling: { title: currentKo ? "판매 대화가 없어요" : "Nothing you're selling", hint: currentKo ? "전체 탭에서 다른 대화를 확인해 보세요." : "Switch to All to see your other conversations." },
+    archived: { title: currentKo ? "보관한 대화가 없어요" : "Nothing archived", hint: currentKo ? "보관한 대화는 60일 후 삭제돼요." : "Archived conversations are kept for 60 days, then deleted." },
+  };
+  const offerStatusCopy: Record<TradeOffer["status"], string> = {
+    pending: currentKo ? "응답 대기" : "Pending",
+    accepted: currentKo ? "수락됨" : "Accepted",
+    declined: currentKo ? "거절됨" : "Declined",
+    cancelled: currentKo ? "취소됨" : "Cancelled",
+    completed: currentKo ? "거래 완료" : "Completed",
+  };
+  const offerHintCopy: Record<TradeOffer["status"], string> = {
+    pending: currentKo ? "판매자의 응답을 기다리고 있어요." : "Waiting for seller response.",
+    accepted: currentKo ? "안전한 장소에서 만나고 구매자가 거래 완료를 확인해 주세요." : "Meet safely, then buyer confirms completion.",
+    declined: currentKo ? "이 가격 제안은 종료됐어요." : "This offer is closed.",
+    cancelled: currentKo ? "이 가격 제안은 종료됐어요." : "This offer is closed.",
+    completed: currentKo ? "거래가 완료됐어요." : "Trade complete. Both members received 1 trust point.",
+  };
 
   useEffect(() => {
     setConversations(initialConversations);
@@ -345,14 +370,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       });
       const payload = await response.json().catch(() => null) as { offer?: { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null }; error?: string } | null;
       if (!response.ok || !payload?.offer) {
-        setOfferError(payload?.error ?? "Unable to update this offer.");
+        setOfferError(currentKo ? "제안을 변경하지 못했어요. 다시 시도해 주세요." : payload?.error ?? "Unable to update this offer.");
         return;
       }
       const nextOffer: TradeOffer = { id: payload.offer.id, conversationId: payload.offer.conversation_id, listingId: payload.offer.listing_id, buyerId: payload.offer.buyer_id, sellerId: payload.offer.seller_id, amountCents: payload.offer.amount_cents, note: payload.offer.note, status: payload.offer.status, createdAt: payload.offer.created_at, respondedAt: payload.offer.responded_at, completedAt: payload.offer.completed_at, reviewedAt: offer.reviewedAt };
       setOffers((current) => current.map((item) => item.id === nextOffer.id ? nextOffer : item));
       if (action === "complete") setReviewOffer(nextOffer);
     } catch {
-      setOfferError("Unable to reach offers right now. Please try again.");
+      setOfferError(currentKo ? "제안 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach offers right now. Please try again.");
     } finally {
       setUpdatingOfferId(null);
     }
@@ -373,13 +398,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     } catch {
       setConversations(previousConversations);
       setMessages(previousMessages);
-      setBulkError("Unable to mark messages as read. Please try again.");
+      setBulkError(currentKo ? "메시지를 읽음 처리하지 못했어요. 다시 시도해 주세요." : "Unable to mark messages as read. Please try again.");
     } finally {
       setIsMarkingAllRead(false);
     }
   };
   const exitSelection = () => {
     setIsSelecting(false);
+    setIsManageOpen(false);
     setSelectedIds([]);
     setPendingDeleteScope(null);
   };
@@ -405,7 +431,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       const response = await fetch(`/api/market/messages/${endpoint}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const result = await readApiResponse(response, marketConversationBulkResponseSchema);
       if (!result.data) {
-        setBulkError(result.error?.message ?? failureMessage);
+        setBulkError(currentKo ? failureMessage : result.error?.message ?? failureMessage);
         return;
       }
       apply(result.data.conversationIds);
@@ -428,7 +454,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       const target = new Set(applied);
       setConversations((current) => current.map((conversation) => target.has(conversation.id) ? { ...conversation, archivedAt } : conversation));
     },
-    archived ? "Unable to archive these conversations." : "Unable to restore these conversations.",
+    archived ? currentKo ? "대화를 보관하지 못했어요." : "Unable to archive these conversations." : currentKo ? "대화를 복원하지 못했어요." : "Unable to restore these conversations.",
   );
 
   const deleteConversations = (body: Record<string, unknown>) => void runBulkAction(
@@ -438,7 +464,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       const target = new Set(applied);
       setConversations((current) => current.filter((conversation) => !target.has(conversation.id)));
     },
-    "Unable to delete these conversations.",
+    currentKo ? "대화를 삭제하지 못했어요." : "Unable to delete these conversations.",
   );
 
   // Purchase opens the same offer dialog as the listing page rather than drafting a
@@ -457,7 +483,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     const amount = Number(offerAmount);
     const amountCents = Math.round(amount * 100);
     if (!offerAmount.trim() || !Number.isFinite(amount) || amountCents < 0) {
-      setOfferDialogError("Enter a valid offer amount.");
+      setOfferDialogError(currentKo ? "올바른 제안 가격을 입력해 주세요." : "Enter a valid offer amount.");
       return;
     }
     setIsSubmittingOffer(true);
@@ -474,14 +500,14 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         return;
       }
       if (!response.ok || !payload?.conversationId) {
-        setOfferDialogError(payload?.error ?? "Unable to make an offer right now.");
+        setOfferDialogError(currentKo ? "가격을 제안하지 못했어요. 다시 시도해 주세요." : payload?.error ?? "Unable to make an offer right now.");
         return;
       }
       setIsOfferDialogOpen(false);
       setOfferNote("");
       router.refresh();
     } catch {
-      setOfferDialogError("Unable to reach the offers service. Please try again.");
+      setOfferDialogError(currentKo ? "제안 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach the offers service. Please try again.");
     } finally {
       setIsSubmittingOffer(false);
     }
@@ -510,7 +536,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: selectedConversationId, body }) });
       const result = await readApiResponse(response, marketMessageResponseSchema);
       if (!result.data) {
-        setSendError(result.error?.message ?? "Unable to send your message.");
+        setSendError(currentKo ? "메시지를 보내지 못했어요. 다시 시도해 주세요." : result.error?.message ?? "Unable to send your message.");
         setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
         setDraft(body);
         return;
@@ -524,7 +550,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     } catch {
       setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
       setDraft(body);
-      setSendError("Unable to reach the messaging service. Please try again.");
+      setSendError(currentKo ? "메시지 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach the messaging service. Please try again.");
     } finally {
       sendingRef.current = false;
       setIsSending(false);
@@ -533,16 +559,21 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
   return (
     <main className={`messages-page ${isV0 ? "is-v0" : ""} ${selectedConversation ? "has-selected-conversation" : ""}`}>
-      <section className="messages-list-panel" aria-label="Conversations">
+      <section className="messages-list-panel" aria-label={currentKo ? "대화 목록" : "Conversations"}>
         <header className="messages-list-header">
-          <div>{isV0 ? <p>{t("marketplace")}</p> : <BackToMyPage />}<div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div>{!isV0 ? <small className="messages-list-description">{ko ? "거래 대화를 확인하고 다음 약속을 이어가세요." : "Keep local conversations and next steps moving."}</small> : null}</div>
-          <button className="bulk-action-button is-compact" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()}>
-            <i className="ms ms-drafts" aria-hidden="true" />
-            {t("markAllRead")}
-          </button>
+          <div className="messages-heading-copy">{isV0 ? <p>{t("marketplace")}</p> : <BackToMyPage />}<div className="messages-list-title"><h1>{t("messages")}</h1><span>{totalUnreadCount || ""}</span></div>{!isV0 ? <small className="messages-list-description">{ko ? "거래 대화를 확인하고 다음 약속을 이어가세요." : "Keep local conversations and next steps moving."}</small> : null}</div>
+          <div className="messages-list-header-actions">
+            <button className="bulk-action-button is-compact" type="button" disabled={!totalUnreadCount || isMarkingAllRead} onClick={() => void markAllRead()} aria-label={t("markAllRead")}>
+              <i className="ms ms-drafts" aria-hidden="true" />
+              <span>{t("markAllRead")}</span>
+            </button>
+            {!isV0 ? <Button variant="ghost" size="sm" className="messages-manage-toggle" aria-expanded={isManageOpen} aria-label={ko ? "대화 관리" : "Manage conversations"} onClick={() => { setIsManageOpen((open) => !open); setPendingDeleteScope(null); }} disabled={!visibleConversations.length || isSelecting}>
+              <i className="ms ms-more-vert" aria-hidden="true" /><span>{ko ? "관리" : "Manage"}</span>
+            </Button> : null}
+          </div>
         </header>
-        <div className="messages-filter-row" role="tablist" aria-label="Filter conversations">
-          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => { setFilter(option); setPendingDeleteScope(null); }}>{t(option)}</button>)}
+        <div className="messages-filter-row" role="tablist" aria-label={ko && !isV0 ? "대화 필터" : "Filter conversations"}>
+          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => { setFilter(option); setPendingDeleteScope(null); setIsManageOpen(false); }}>{t(option)}</button>)}
         </div>
 
         {isSelecting ? (
@@ -573,9 +604,9 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
           </div>
         ) : null}
 
-        {!isSelecting && visibleConversations.length ? (
-          <div className="messages-selection-bar">
-            <button className="messages-selection-toggle" type="button" onClick={() => setIsSelecting(true)}>
+        {!isSelecting && visibleConversations.length && (isV0 || isManageOpen) ? (
+          <div className="messages-selection-bar messages-manage-bar" id="messages-management-actions">
+            <button className="messages-selection-toggle" type="button" onClick={() => { setIsSelecting(true); setIsManageOpen(false); }}>
               <i className="ms ms-check-box" aria-hidden="true" />
               {t("select")}
             </button>
@@ -607,23 +638,23 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
               : <span className="messages-listing-thumbnail"><i className="ms ms-image" aria-hidden="true" /></span>}
             <span className="messages-conversation-copy">
-              <span><strong>{conversation.listing.title}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt)}</time></span>
-              <em>{conversation.counterpart.name} · {conversation.role === "buying" ? "Seller" : "Buyer"}</em>
+              <span><strong>{isV0 ? conversation.listing.title : conversation.counterpart.name}</strong><time suppressHydrationWarning>{formatListTime(conversation.lastMessageAt, isV0 ? "en" : locale)}</time></span>
+              <em>{isV0 ? conversation.counterpart.name : conversation.listing.title} · {conversation.role === "buying" ? currentKo ? "판매자" : "Seller" : currentKo ? "구매자" : "Buyer"}</em>
               <span className="messages-conversation-preview">
-                <small>{conversation.lastMessagePreview || "Start the conversation"}</small>
-                {conversation.unreadCount ? <b aria-label={`${conversation.unreadCount} unread`}>{conversation.unreadCount}</b> : null}
+                <small>{conversation.lastMessagePreview || (currentKo ? "대화를 시작해 보세요" : "Start the conversation")}</small>
+                {conversation.unreadCount ? <b aria-label={currentKo ? `읽지 않은 메시지 ${conversation.unreadCount}개` : `${conversation.unreadCount} unread`}>{conversation.unreadCount}</b> : null}
               </span>
             </span>
           </button>) : conversations.length
-            ? <div className="messages-empty-list"><i className={`ms ${filter === "archived" ? "ms-archive" : "ms-sms"}`} aria-hidden="true" /><strong>{filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling"}</strong><span>{filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations."}</span></div>
+            ? <div className="messages-empty-list"><i className={`ms ${filter === "archived" ? "ms-archive" : "ms-sms"}`} aria-hidden="true" /><strong>{isV0 ? filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling" : emptyFilterCopy[filter].title}</strong><span>{isV0 ? filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations." : emptyFilterCopy[filter].hint}</span></div>
             : <div className="messages-empty-list"><i className="ms ms-sms" aria-hidden="true" /><strong>{isV0 ? "No messages yet" : ko ? "아직 메시지가 없어요" : "No messages yet"}</strong><span>{isV0 ? "Start a conversation from any listing." : ko ? "관심 있는 상품에서 판매자에게 먼저 물어보세요." : "Find a local item and ask the seller a question."}</span>{!isV0 ? <Link className="ui-button ui-button--primary ui-button--sm" href="/market">{ko ? "마켓 둘러보기" : "Explore Market"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link> : null}</div>}
         </div>
       </section>
 
-      <section className="messages-thread-panel" aria-label="Conversation">
+      <section className="messages-thread-panel" aria-label={currentKo ? "대화" : "Conversation"}>
         {selectedConversation ? <>
           <header className="messages-thread-header">
-            <Link className="messages-mobile-back" href={messagesHref} aria-label="Back to conversations"><i className="ms ms-arrow-back" aria-hidden="true" /></Link>
+            <Link className="messages-mobile-back" href={messagesHref} aria-label={currentKo ? "대화 목록으로 돌아가기" : "Back to conversations"}><i className="ms ms-arrow-back" aria-hidden="true" /></Link>
             <a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">
               {selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={48} height={48} /> : <i className="ms ms-image" aria-hidden="true" />}
               <span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span>
@@ -631,7 +662,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             </a>
             <div className="messages-thread-counterpart">
               <Avatar className="messages-avatar" name={selectedConversation.counterpart.name} src={selectedConversation.counterpart.avatarUrl} />
-              <span><strong>{selectedConversation.counterpart.name}</strong><small>{selectedConversation.role === "buying" ? "Seller" : "Buyer"}</small></span>
+              <span><strong>{selectedConversation.counterpart.name}</strong><small>{selectedConversation.role === "buying" ? currentKo ? "판매자" : "Seller" : currentKo ? "구매자" : "Buyer"}</small></span>
             </div>
           </header>
           <div className="messages-thread-body" ref={threadBodyRef}>
@@ -640,25 +671,25 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               const isBuyer = offer.buyerId === currentUserId;
               const isSeller = offer.sellerId === currentUserId;
               const isUpdating = updatingOfferId === offer.id;
-              return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{offer.status}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offer.status === "completed" ? "Trade complete. Both members received 1 trust point." : offer.status === "accepted" ? "Accepted. Meet safely, then buyer confirms completion." : offer.status === "pending" ? "Waiting for seller response." : "This offer is closed."}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>Accept</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>Decline</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>Cancel offer</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>Confirm trade complete</button> : null}{offer.status === "completed" && isBuyer && !offer.reviewedAt ? <button type="button" onClick={() => setReviewOffer(offer)}>Rate seller</button> : null}{offer.status === "completed" && isBuyer && offer.reviewedAt ? <span>Seller reviewed</span> : null}{offer.status === "accepted" && isSeller ? <span>Waiting for buyer confirmation</span> : null}</footer></article>;
+              return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{isV0 ? offer.status : offerStatusCopy[offer.status]}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offerHintCopy[offer.status]}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>{currentKo ? "수락" : "Accept"}</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>{currentKo ? "거절" : "Decline"}</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>{currentKo ? "제안 취소" : "Cancel offer"}</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>{currentKo ? "거래 완료 확인" : "Confirm trade complete"}</button> : null}{offer.status === "completed" && isBuyer && !offer.reviewedAt ? <button type="button" onClick={() => setReviewOffer(offer)}>{currentKo ? "판매자 평가" : "Rate seller"}</button> : null}{offer.status === "completed" && isBuyer && offer.reviewedAt ? <span>{currentKo ? "판매자 평가 완료" : "Seller reviewed"}</span> : null}{offer.status === "accepted" && isSeller ? <span>{currentKo ? "구매자의 거래 완료 확인을 기다리고 있어요" : "Waiting for buyer confirmation"}</span> : null}</footer></article>;
             }) : null}
-            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt)}</time>{message.senderId === currentUserId ? <i className={`ms ${message.readAt ? "ms-done-all" : "ms-check"}`} aria-label={message.readAt ? "Read" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="ms ms-handshake" aria-hidden="true" /><strong>Start the conversation</strong><span>Ask about the item, pickup, or delivery details.</span></div> : null}
+            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt, isV0 ? "en" : locale)}</time>{message.senderId === currentUserId ? <i className={`ms ${message.readAt ? "ms-done-all" : "ms-check"}`} aria-label={message.readAt ? currentKo ? "읽음" : "Read" : currentKo ? "보냄" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="ms ms-handshake" aria-hidden="true" /><strong>{currentKo ? "대화를 시작해 보세요" : "Start the conversation"}</strong><span>{currentKo ? "상품 상태나 수령 시간·장소를 물어보세요." : "Ask about the item, pickup, or delivery details."}</span></div> : null}
           </div>
-          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>Purchase</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label="Send message"><i className="ms ms-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
+          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>{isV0 ? "Purchase" : currentKo ? "가격 제안" : "Make offer"}</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={currentKo ? "메시지 입력" : "Write a message..."} aria-label={currentKo ? "메시지 입력" : "Write a message"} rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label={currentKo ? "메시지 보내기" : "Send message"}><i className="ms ms-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
         </> : <div className="messages-select-empty"><i className="ms ms-forum" aria-hidden="true" /><h2>{isV0 ? "Select a conversation" : ko ? "대화를 선택해 주세요" : "Select a conversation"}</h2><p>{isV0 ? "Your messages about marketplace listings will appear here." : ko ? "상품과 약속에 관한 대화를 한곳에서 확인할 수 있어요." : "Pick a conversation to see the item, next steps and messages together."}</p>{!isV0 && !conversations.length ? <Link className="ui-button ui-button--secondary ui-button--sm" href="/market">{ko ? "동네 상품 보기" : "Browse local items"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link> : null}</div>}
       </section>
 
       {isOfferDialogOpen && selectedConversation ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="messages-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}>
         <section className="listing-offer-dialog">
           <div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div>
-          <h2 id="messages-offer-title">Make an offer</h2>
-          <p>Send a clear price to {selectedConversation.counterpart.name}. If they accept, you can confirm the trade and both members receive trust points.</p>
-          <label><span>Offer amount</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label>
-          <label><span>Message</span><textarea value={offerNote} maxLength={500} rows={3} placeholder="Pickup time, delivery note, or anything useful..." onChange={(event) => setOfferNote(event.target.value)} /></label>
+          <h2 id="messages-offer-title">{currentKo ? "가격 제안하기" : "Make an offer"}</h2>
+          <p>{currentKo ? `${selectedConversation.counterpart.name}님에게 가격을 제안하세요. 상대가 수락하면 거래를 이어갈 수 있어요.` : isV0 ? `Send a clear price to ${selectedConversation.counterpart.name}. If they accept, you can confirm the trade and both members receive trust points.` : `Send a clear price to ${selectedConversation.counterpart.name}. If they accept, you can continue the trade.`}</p>
+          <label><span>{currentKo ? "제안 가격" : "Offer amount"}</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label>
+          <label><span>{currentKo ? "메시지" : "Message"}</span><textarea value={offerNote} maxLength={500} rows={3} placeholder={currentKo ? "수령 시간이나 장소 등 필요한 내용을 적어 주세요" : "Pickup time, delivery note, or anything useful..."} onChange={(event) => setOfferNote(event.target.value)} /></label>
           {offerDialogError ? <p className="listing-offer-error" role="alert">{offerDialogError}</p> : null}
           <div>
-            <button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>Cancel</button>
-            <button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? "Sending..." : "Send offer"}</button>
+            <button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>{currentKo ? "취소" : "Cancel"}</button>
+            <button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? currentKo ? "보내는 중..." : "Sending..." : currentKo ? "제안 보내기" : "Send offer"}</button>
           </div>
         </section>
       </DialogOverlay> : null}

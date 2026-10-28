@@ -8941,6 +8941,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .messages-conversation-copy small { font-size: var(--text-sm); }
   .messages-thread-panel { display: none; }
   .messages-page.has-selected-conversation .messages-list-panel { display: none; }
+  body:has(.messages-page:not(.is-v0).has-selected-conversation) .mobile-bottom-dock { display: none; }
   /* An open thread is pinned to the visual viewport rather than the document, so the header (back link,
      listing, counterpart) and the composer stay put no matter how the mobile browser pans the page.
      visualViewport height already excludes the on-screen keyboard, so the composer lands right above it.
@@ -9531,18 +9532,17 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-notifications .notification-row.is-unread { background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); }
 /* Notification destination: compact dated rows and a quiet contextual rail. V0 keeps the base rules above. */
 .notifications-redesign .notifications-redesign-intro { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
-.notifications-redesign-intro h1 { margin: 0; color: var(--color-ink); font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1.2; }
-.notifications-redesign-intro p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-md); }
+.notifications-redesign-intro .account-page-intro { flex: 1 1 auto; min-width: 0; margin: 0; }
 .notifications-redesign-intro .notifications-heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
 .notifications-desktop-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
-.notifications-desktop-actions .bulk-action-button { width: auto; min-height: var(--control-h-md); gap: var(--space-1); background: var(--color-surface); white-space: nowrap; }
+.notifications-desktop-actions .bulk-action-button { width: auto; min-height: var(--control-h-xl); gap: var(--space-1); background: var(--color-surface); white-space: nowrap; }
 .notifications-mobile-actions { display: none; }
 .notifications-action-error { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-danger); border-radius: var(--radius-sm); color: var(--color-danger); font-size: var(--text-sm); }
 .account-content-rail-layout { display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 5 + var(--space-5)); align-items: start; gap: var(--space-3); }
 .notifications-main-column { min-width: 0; }
 .notifications-redesign .notifications-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
 .notifications-redesign .notifications-filter-row { min-width: 0; gap: var(--space-2); padding: 0; }
-.notifications-redesign .notifications-filter-row button { min-height: var(--control-h-sm); gap: var(--space-2); padding-inline: var(--space-3); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.notifications-redesign .notifications-filter-row button { min-height: var(--control-h-xl); gap: var(--space-2); padding-inline: var(--space-3); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .notifications-redesign .notifications-filter-row button.is-active { background: var(--color-primary); color: var(--color-on-primary); }
 .notifications-redesign .notifications-filter-row b { width: auto; height: auto; min-width: 0; padding: 0; background: transparent; color: inherit; font-size: var(--text-xs); }
 .notifications-redesign .notifications-filter-row button:not(.is-active) b { color: var(--color-muted); }
@@ -9593,16 +9593,19 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-rail-card p { margin: var(--space-2) 0; color: var(--color-muted); font-size: var(--text-sm); }
 .account-rail-card a:not(.ui-button) { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: none; }
 @media (max-width: 1199.98px) { .account-content-rail-layout { grid-template-columns: minmax(0, 1fr); } .notifications-aside { grid-template-columns: repeat(3, minmax(0, 1fr)); } .notifications-service-promo { min-height: calc(var(--space-12) * 4); } }
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .notifications-redesign .notifications-redesign-intro { flex-wrap: wrap; }
+  .notifications-redesign-intro .account-page-intro { flex-basis: 100%; }
+  .notifications-redesign-intro .notifications-heading-actions { margin-left: auto; }
+}
 @media (max-width: 767.98px) {
-  .notifications-redesign .notifications-redesign-intro { align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
-  .notifications-redesign-intro h1 { font-size: var(--text-3xl); }
-  .notifications-redesign-intro p { display: none; }
-  .notifications-redesign-intro .notifications-heading-actions { flex: 0 0 auto; }
+  .notifications-redesign .notifications-redesign-intro { align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+  .notifications-redesign-intro .account-page-intro { flex: 1 0 auto; }
+  .notifications-redesign-intro .notifications-heading-actions { flex: 0 0 auto; margin-left: auto; }
   .notifications-desktop-actions { display: none; }
-  .notifications-mobile-actions { display: block; }
-  .notifications-redesign .notifications-toolbar { align-items: flex-start; flex-direction: column-reverse; }
+  .notifications-mobile-actions { display: flex; align-items: center; gap: var(--space-2); }
+  .notifications-settings-mobile.ui-button { min-height: var(--control-h-xl); gap: var(--space-1); padding-inline: var(--space-3); font-size: var(--text-sm); white-space: nowrap; }
   .notifications-redesign .notifications-filter-row { width: 100%; }
-  .notifications-redesign .notifications-filter-row button { min-height: var(--control-h-xl); }
   .notifications-mobile-actions :is(.icon-button, .bulk-action-button), .notifications-more > summary, .notifications-load-more .ui-button { min-width: var(--control-h-xl); min-height: var(--control-h-xl); }
   .notifications-redesign .notification-row { grid-template-columns: var(--control-h-lg) minmax(0, 1fr) var(--space-5); gap: var(--space-2); }
   .notifications-redesign .notification-row.has-thumbnail { grid-template-columns: var(--control-h-lg) minmax(0, 1fr) var(--control-h-lg) var(--space-5); }
@@ -9695,6 +9698,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-keywords .account-ad-banner > img { width: 36%; max-height: none; align-self: stretch; object-fit: cover; border-radius: var(--radius-sm); }
 .account-keywords .account-ad-copy { z-index: 1; }
 @media (max-width: 767.98px) {
+  .account-keywords .keywords-input-wrap input { font-size: var(--font-size-mobile-control); }
   .account-keywords .keyword-status-panel { padding: 0; overflow: hidden; }
   .account-keywords .keyword-status-trigger { display: flex; width: 100%; min-height: var(--control-h-xl); align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 0; border-radius: 0; background: var(--color-surface); color: var(--color-ink); text-align: left; }
   .account-keywords .keyword-status-trigger strong { min-width: 0; flex: 1; font-size: var(--text-md); }
@@ -9755,7 +9759,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist { min-width: 0; }
 .account-wishlist .wishlist-redesign-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: start; }
 .account-wishlist .wishlist-main-column, .account-wishlist .wishlist-aside { min-width: 0; }
-.account-wishlist .wishlist-search { position: relative; display: flex; align-items: center; margin-bottom: var(--space-3); }
+.account-wishlist .wishlist-search { position: relative; display: flex; flex: 1; align-items: center; min-width: 0; }
 .account-wishlist .wishlist-search > .ms { position: absolute; left: var(--space-3); color: var(--color-muted); font-size: var(--text-xl); pointer-events: none; }
 .account-wishlist .wishlist-search .ui-input { width: 100%; min-height: var(--control-h-xl); padding-left: var(--space-10); padding-right: var(--control-h-xl); border-radius: var(--radius-pill); font-size: var(--font-size-mobile-control); }
 .account-wishlist .wishlist-search .icon-button { position: absolute; right: 0; width: var(--control-h-xl); height: var(--control-h-xl); color: var(--color-muted); }
@@ -9766,11 +9770,18 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist .wishlist-tabs button:not(.is-active) .is-community { color: var(--color-community-icon); }
 .account-wishlist .wishlist-tabs button:not(.is-active) .is-service { color: var(--color-services-icon); }
 .account-wishlist .wishlist-tabs b { font-size: var(--text-xs); font-weight: var(--weight-bold); }
-.account-wishlist .wishlist-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
-.account-wishlist .wishlist-toolbar .ui-button { width: calc(var(--space-12) * 2); flex: 0 0 auto; min-height: var(--control-h-xl); gap: var(--space-1); }
-.account-wishlist .wishlist-sort { position: relative; display: inline-flex; align-items: center; width: calc(var(--space-12) * 2); flex: 0 0 auto; }
-.account-wishlist .wishlist-sort select { width: 100%; min-height: var(--control-h-xl); padding-right: var(--space-8); font-size: var(--text-sm); appearance: none; cursor: pointer; }
-.account-wishlist .wishlist-sort > i { position: absolute; right: var(--space-2); pointer-events: none; color: var(--color-ink-soft); }
+.account-wishlist .wishlist-toolbar { position: relative; z-index: 3; display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-bottom: var(--space-3); }
+.account-wishlist .wishlist-toolbar-actions { display: flex; flex: none; align-items: center; gap: var(--space-2); }
+.account-wishlist .wishlist-sort-select { width: calc(var(--space-12) * 3); flex: none; }
+.account-wishlist .wishlist-sort-select .post-select-trigger { min-height: var(--control-h-xl); border-color: var(--color-line); background: var(--color-surface); color: var(--color-ink); font-size: var(--text-sm); }
+.account-wishlist .wishlist-sort-select .post-select-wrap.is-enhanced.has-leading-icon > i { color: var(--color-ink-soft); font-size: var(--text-xl); }
+.account-wishlist .wishlist-sort-select .post-select-menu { right: 0; left: auto; width: max-content; min-width: calc(var(--space-12) * 3); max-width: calc(100vw - var(--space-8)); transform-origin: top right; }
+.account-wishlist .wishlist-sort-select .post-select-option { min-height: var(--control-h-xl); }
+.account-wishlist .wishlist-sort-select.is-active .post-select-trigger { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.account-wishlist .wishlist-sort-select.is-active .post-select-wrap.is-enhanced.has-leading-icon > i { color: var(--color-primary-dark); }
+.account-wishlist .wishlist-edit-toggle.ui-button { width: calc(var(--space-12) * 2); min-height: var(--control-h-xl); flex: none; gap: var(--space-1); }
+.account-wishlist .wishlist-edit-toggle[aria-expanded="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.account-wishlist .wishlist-applied-sort { display: flex; margin-bottom: var(--space-3); }
 .account-wishlist .wishlist-action-notice, .account-wishlist .wishlist-undo { margin: 0 0 var(--space-3); font-size: var(--text-sm); }
 .account-wishlist .wishlist-action-notice { color: var(--color-danger); }
 .account-wishlist .wishlist-undo { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-line-soft); border-radius: var(--radius-sm); background: var(--color-surface-soft); }
@@ -9831,7 +9842,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist .wishlist-aside .account-ad-banner > img { width: 20%; }
 @media (min-width: 768px) {
   .account-wishlist, .owned-listings-page { --account-list-media-size: calc(var(--space-12) + var(--space-8)); }
-  .account-wishlist .wishlist-search { max-width: calc(var(--space-12) * 10); }
   .account-wishlist .wishlist-overview { display: block; padding: var(--space-4); }
   .account-wishlist .wishlist-overview > div { display: flex; align-items: center; justify-content: space-between; padding-block: var(--space-2); border-top: 1px solid var(--color-line-soft); }
   .account-wishlist .wishlist-overview span { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-ink-soft); font-size: var(--text-sm); }
@@ -9858,6 +9868,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-ad-copy > a { display: inline-flex; gap: var(--space-1); margin-top: var(--space-1); text-decoration: none; }
 .account-ad-banner > img { display: block; width: 18%; max-height: var(--space-12); object-fit: contain; }
 @media (max-width: 767.98px) {
+  .account-wishlist .wishlist-sort-select { width: var(--control-h-xl); }
+  .account-wishlist .wishlist-sort-select .post-select-trigger, .account-wishlist .wishlist-sort-select .post-select-wrap.is-enhanced.has-leading-icon .post-select-trigger { padding: 0; }
+  .account-wishlist .wishlist-sort-select .post-select-trigger > span, .account-wishlist .wishlist-sort-select .post-select-trigger::after { display: none; }
+  .account-wishlist .wishlist-sort-select .post-select-wrap.is-enhanced.has-leading-icon > i { left: 50%; transform: translateX(-50%); }
+  .account-wishlist .wishlist-edit-toggle.ui-button { width: var(--control-h-xl); padding: 0; }
+  .account-wishlist .wishlist-edit-toggle span { display: none; }
+  .account-wishlist .wishlist-applied-sort .account-applied-chip { min-height: var(--control-h-xl); }
   .account-return-link-desktop { display: none; }
   .account-return-link-mobile { display: inline-flex; flex: 0 0 var(--control-h-xl); width: var(--control-h-xl); height: var(--control-h-xl); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); cursor: pointer; }
   .account-return-link-mobile .ms { font-size: var(--text-2xl); }
@@ -14778,10 +14795,11 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .reservation-status-filters > span { margin-right: var(--space-1); color: var(--color-muted); font-size: var(--text-sm); }
 .reservation-status-filters .ui-button { border-color: var(--color-line); background: var(--color-surface); color: var(--color-ink-soft); }
 .reservation-status-filters .ui-button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.reservation-applied-filters { margin: calc(-1 * var(--space-2)) 0 var(--space-3); }
 .reservation-list { padding: 0; border-radius: var(--radius-lg); }
 .reservation-list .manage-listings-grid { border-top: 0; }
-.reservation-row { min-height: 0; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
-.reservation-row-main { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-10)) minmax(0, 1fr); align-items: center; gap: var(--space-3); min-width: 0; color: inherit; text-decoration: none; }
+.reservation-row { min-height: 0; grid-template-columns: minmax(0, 1fr); padding: var(--space-3); border-bottom-color: var(--color-line-soft); }
+.reservation-row-main { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-10)) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-width: 0; color: inherit; text-decoration: none; }
 .reservation-row-main:hover h2 { text-decoration: underline; }
 .reservation-row-main:focus-visible { outline: 0; border-radius: var(--radius-sm); box-shadow: var(--ring-focus-strong); }
 .reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-10)); height: calc(var(--space-12) + var(--space-10)); border-radius: var(--radius-sm); }
@@ -14798,7 +14816,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .reservation-row .listing-row-price { margin-top: var(--space-1); color: var(--color-ink); font-size: var(--text-md); }
 .reservation-pickup-time { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .reservation-row .listing-row-meta { overflow: hidden; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-xs); text-overflow: ellipsis; white-space: nowrap; }
-.reservation-row-hint { margin: var(--space-1) 0 0; color: var(--color-ink-soft); font-size: var(--text-sm); line-height: 1.4; }
 .reservation-row-action.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: var(--control-h-xl); padding-inline: var(--space-3); border: 1px solid var(--color-primary); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; white-space: nowrap; }
 .reservation-row-action.ui-button.is-urgent { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
 .reservation-row-action.ui-button:hover { background: var(--color-primary-soft); }
@@ -14826,7 +14843,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-filter-row::-webkit-scrollbar { display: none; }
 .owned-listings-page .manage-listings-category-tabs { flex: 0 0 auto; overflow: visible; margin: 0; }
 .account-workspace .manage-listings-category-tab { min-height: var(--control-h-sm); gap: var(--space-1); border: 0; background: var(--color-surface-soft); color: var(--color-ink-soft); box-shadow: none; }
-.owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); }
+:is(.owned-listings-page, .account-reservations) .manage-listings-category-tab { min-height: var(--control-h-xl); }
 .account-workspace .manage-listings-category-tab:hover { transform: none; border-color: transparent; background: var(--color-surface-soft); }
 .account-workspace .manage-listings-category-tab.is-active, .account-workspace .manage-listings-category-tab.is-active:hover { background: var(--color-primary); color: var(--color-on-primary); }
 .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-market, .owned-listings-page .manage-listings-category-tab:not(.is-active) .is-bargain { color: var(--color-market-icon); }
@@ -14837,7 +14854,8 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .owned-listings-toolbar .list-search-field { flex: 1 1 auto; min-width: 0; min-height: var(--control-h-xl); border-radius: var(--radius-pill); }
 .owned-listings-toolbar .list-search-field input { min-height: var(--control-h-xl); }
 .owned-listings-view-controls { display: flex; align-items: flex-start; gap: var(--space-2); }
-.owned-listings-applied-filters { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.owned-listings-applied-filters, .reservation-applied-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.owned-listings-applied-filters { grid-column: 1 / -1; }
 .account-applied-chip.ui-button { display: inline-flex; width: auto; flex: 0 0 auto; align-items: center; gap: var(--space-1); min-height: var(--control-h-md); padding-inline: var(--space-3); border: 1px solid var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .account-applied-chip .ms { font-size: var(--text-lg); }
 .owned-listings-icon-select { width: var(--control-h-xl); flex: none; }
@@ -14888,13 +14906,27 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .messages-page:not(.is-v0) .messages-thread-header { border-bottom-color: var(--color-line-soft); background: var(--color-surface); }
 .messages-page:not(.is-v0) .messages-conversation { border-bottom-color: var(--color-line-soft); background: var(--color-surface); }
 .messages-page:not(.is-v0) .messages-conversation:hover { background: var(--color-surface-soft); }
-.messages-page:not(.is-v0) .messages-list-header p { color: var(--color-primary); }
+.messages-page:not(.is-v0) .messages-heading-copy { min-width: 0; }
+.messages-page:not(.is-v0) .messages-list-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-1); }
+.messages-page:not(.is-v0) .messages-list-header-actions .bulk-action-button,
+.messages-page:not(.is-v0) .messages-manage-toggle.ui-button { width: var(--control-h-xl); min-width: var(--control-h-xl); height: var(--control-h-xl); min-height: var(--control-h-xl); margin-top: 0; padding: 0; }
+.messages-page:not(.is-v0) .messages-list-header-actions :is(.bulk-action-button, .messages-manage-toggle) span { display: none; }
+.messages-page:not(.is-v0) .messages-list-header-actions :is(.bulk-action-button, .messages-manage-toggle) .ms { font-size: var(--text-xl); }
+.messages-page:not(.is-v0) .messages-manage-toggle.ui-button { border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink); }
+.messages-page:not(.is-v0) .messages-manage-toggle.ui-button[aria-expanded="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
 .messages-page:not(.is-v0) .messages-list-header h1 { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); }
-.messages-page:not(.is-v0) .messages-filter-row button.is-active { background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.messages-page:not(.is-v0) .messages-filter-row { gap: var(--space-2); }
+.messages-page:not(.is-v0) .messages-filter-row button { min-height: var(--control-h-xl); padding-inline: var(--space-3); background: var(--color-surface-soft); color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.messages-page:not(.is-v0) .messages-filter-row button.is-active { background: var(--color-primary); color: var(--color-on-primary); }
+.messages-page:not(.is-v0) .messages-selection-toggle,
+.messages-page:not(.is-v0) .messages-selection-bar .bulk-action-button { min-height: var(--control-h-xl); margin-top: 0; }
+.messages-page:not(.is-v0) .messages-selection-toggle { font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.messages-page:not(.is-v0) .messages-conversation-copy em { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .messages-page:not(.is-v0) .messages-conversation.is-active { border-right-color: var(--color-primary); background: var(--color-primary-soft); }
 .messages-page:not(.is-v0) .messages-empty-list i, .messages-page:not(.is-v0) .messages-select-empty > i { color: var(--color-primary); }
 @media (min-width: 768px) {
-  .messages-page:not(.is-v0), .messages-loading { padding-inline: var(--page-padding-inline); }
+  .dashboard-layout:has(> .messages-page:not(.is-v0)) > .messages-page:not(.is-v0),
+  .messages-loading { padding-inline: var(--page-padding-inline); }
   .messages-page:not(.is-v0) .messages-list-header,
   .messages-page:not(.is-v0) .messages-filter-row { padding-left: 0; padding-right: var(--space-3); }
 }
@@ -14904,7 +14936,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .account-reservations .account-page-intro h1 { font-size: var(--text-3xl); }
   .account-reservations .account-page-intro p { display: none; }
   .account-reservations .reservation-filter-tabs { gap: var(--space-2); margin-bottom: var(--space-3); }
-  .account-reservations .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
+  .account-reservations .manage-listings-category-tab { padding-inline: var(--space-3); font-size: var(--text-sm); }
   .reservation-toolbar { margin-bottom: var(--space-3); }
   .reservation-search .list-search { width: 100%; flex-wrap: nowrap; }
   .reservation-search .list-search-submit.icon-button { width: var(--control-h-xl); }
@@ -14913,19 +14945,21 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .reservation-status-filters > span { flex: 1 1 100%; }
   .reservation-status-filters .ui-button { min-height: var(--control-h-xl); }
   .account-reservations .account-workspace-list { padding: 0; }
-  .reservation-row { position: relative; grid-template-columns: minmax(0, 1fr); padding-block: var(--space-3); }
+  .reservation-row { padding-block: var(--space-3); }
   .reservation-row-main { grid-template-columns: calc(var(--space-12) + var(--space-6)) minmax(0, 1fr); align-items: start; gap: var(--space-3); }
-  .reservation-row-main::after { position: absolute; inset: 0; content: ""; }
   .reservation-row .listing-row-media { width: calc(var(--space-12) + var(--space-6)); height: calc(var(--space-12) + var(--space-6)); }
   .reservation-row .listing-row-body h2 { font-size: var(--text-md); }
   .reservation-row-action.ui-button { display: none; }
   .account-workspace { padding: var(--space-4) var(--space-4) var(--space-8); }
   .account-workspace .manage-listings-category-tab,
   .account-workspace .manage-listing-actions :is(a, button),
-  .account-workspace .service-owner-actions.is-compact :is(a, button),
-  .messages-page:not(.is-v0) .messages-filter-row button { min-height: var(--control-h-xl); }
+  .account-workspace .service-owner-actions.is-compact :is(a, button) { min-height: var(--control-h-xl); }
   .account-workspace :is(.manage-listing-actions, .service-owner-actions.is-compact) :is(a, button) { font-size: var(--text-md); }
-  .messages-page:not(.is-v0) .messages-list-header > div:first-child { min-width: 0; display: flex; align-items: center; gap: var(--space-1); }
+  .messages-page:not(.is-v0) .messages-heading-copy { display: grid; grid-template-columns: var(--control-h-xl) minmax(0, 1fr); align-items: center; gap: var(--space-1); }
+  .messages-page:not(.is-v0) .messages-heading-copy .account-return-link-mobile { grid-column: 1; grid-row: 1; }
+  .messages-page:not(.is-v0) .messages-list-title { grid-column: 2; grid-row: 1; }
+  .messages-page:not(.is-v0) .messages-list-description { display: none; }
+  .messages-page:not(.is-v0) .messages-mobile-back { width: var(--control-h-xl); height: var(--control-h-xl); flex-basis: var(--control-h-xl); }
   .messages-page:not(.is-v0) .messages-list-header h1 { font-size: var(--text-3xl); }
   .account-workspace-list { padding-inline: var(--space-3); }
   .account-workspace-list .listing-row { padding-block: var(--space-3); }
@@ -14948,7 +14982,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .owned-listings-page .manage-listings-category-tab { min-height: var(--control-h-xl); padding-inline: var(--space-3); font-size: var(--text-sm); }
   .owned-listings-page .account-workspace-list { padding: 0; }
   .owned-listing-row { min-height: 0; align-items: start; gap: var(--space-2) var(--space-3); padding-block: var(--space-3); }
-  .owned-listings-applied-filters .account-applied-chip { min-height: var(--control-h-xl); }
+  :is(.owned-listings-applied-filters, .reservation-applied-filters) .account-applied-chip { min-height: var(--control-h-xl); }
   .owned-listing-row .listing-row-body h2 { font-size: var(--text-md); }
   .owned-listings-page .owned-listing-badges :is(.owned-listing-kind, .owned-listing-status) { font-size: var(--text-sm); }
   .owned-listing-menu :is(a, button) { min-height: var(--control-h-xl); }

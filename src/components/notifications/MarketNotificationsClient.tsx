@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 import { NotificationSettingsDialog, type NotificationPreferenceKey, type NotificationPreferences } from "@/components/notifications/NotificationSettingsDialog";
-import { BackToMyPage } from "@/components/layout/NavigationHistory";
+import { AccountPageIntro } from "@/components/dashboard/AccountPagePatterns";
 
 export type MarketNotification = {
   id: string;
@@ -181,20 +181,23 @@ function NotificationHeaderActions({
     return () => { document.removeEventListener("pointerdown", closeOnOutside); document.removeEventListener("keydown", closeOnEscape); };
   }, []);
   const closeMenu = () => { if (mobileMenu.current) mobileMenu.current.open = false; };
-  const renderActions = () => <>
+  const renderActions = (includeSettings: boolean) => <>
     <Button variant="secondary" size="sm" className="bulk-action-button" disabled={!unreadCount || isMarkingAll} onClick={() => { closeMenu(); onMarkAllRead(); }}><i className="ms ms-done-all" aria-hidden="true" />{ko ? "모두 읽음 처리" : "Mark all read"}</Button>
     {isConfirmingDeleteAll ? <>
       <Button variant="secondary" size="sm" className="bulk-action-button is-danger" disabled={isDeletingAll} onClick={() => { closeMenu(); onDeleteAll(); }}><i className="ms ms-delete" aria-hidden="true" />{ko ? "모두 삭제할까요?" : "Delete all?"}</Button>
       <Button variant="secondary" size="sm" className="bulk-action-button" disabled={isDeletingAll} onClick={() => { closeMenu(); onConfirmDelete(false); }}><i className="ms ms-close" aria-hidden="true" />{ko ? "취소" : "Cancel"}</Button>
     </> : <Button variant="secondary" size="sm" className="bulk-action-button is-danger" disabled={!notificationCount} onClick={() => onConfirmDelete(true)}><i className="ms ms-delete" aria-hidden="true" />{ko ? "모두 삭제" : "Delete all"}</Button>}
-    <Button variant="secondary" size="sm" className="bulk-action-button" onClick={() => { closeMenu(); onOpenSettings(); }}><i className="ms ms-settings" aria-hidden="true" />{ko ? "알림 설정" : "Notification settings"}</Button>
+    {includeSettings ? <Button variant="secondary" size="sm" className="bulk-action-button" onClick={() => { closeMenu(); onOpenSettings(); }}><i className="ms ms-settings" aria-hidden="true" />{ko ? "알림 설정" : "Notification settings"}</Button> : null}
   </>;
   return <div className="notifications-heading-actions">
-    <div className="notifications-desktop-actions">{renderActions()}</div>
-    <details className="notifications-mobile-actions notifications-more" ref={mobileMenu}>
-      <summary className="icon-button" aria-label={ko ? "알림 작업 더보기" : "More notification actions"}><i className="ms ms-more-vert" aria-hidden="true" /></summary>
-      <div className="ui-panel notifications-more-menu menu-motion">{renderActions()}</div>
-    </details>
+    <div className="notifications-desktop-actions">{renderActions(true)}</div>
+    <div className="notifications-mobile-actions">
+      <Button variant="secondary" size="sm" className="notifications-settings-mobile" aria-label={ko ? "알림 설정" : "Notification settings"} onClick={() => { closeMenu(); onOpenSettings(); }}><i className="ms ms-settings" aria-hidden="true" />{ko ? "설정" : "Settings"}</Button>
+      <details className="notifications-more" ref={mobileMenu}>
+        <summary className="icon-button" aria-label={ko ? "알림 작업 더보기" : "More notification actions"}><i className="ms ms-more-vert" aria-hidden="true" /></summary>
+        <div className="ui-panel notifications-more-menu menu-motion">{renderActions(false)}</div>
+      </details>
+    </div>
   </div>;
 }
 
@@ -349,8 +352,8 @@ export function MarketNotificationsClient({
       { key: "earlier", title: ko ? "이전 알림" : "Earlier", items: earlierItems.slice(0, visibleEarlierCount) },
     ];
     return <div className="dashboard-content notifications-content account-modern account-notifications notifications-redesign">
-      <header className="notifications-redesign-intro">
-        <div><div className="account-page-intro-title"><BackToMyPage /><h1>{t("notifications")}</h1></div><p>{ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."}</p></div>
+      <div className="notifications-redesign-intro">
+        <AccountPageIntro title={t("notifications")} description={ko ? "새로운 소식과 중요한 알림을 확인하세요." : "Catch up on the latest news and important updates."} backToMyPage />
         <NotificationHeaderActions
           ko={ko}
           unreadCount={unreadCount}
@@ -363,7 +366,7 @@ export function MarketNotificationsClient({
           onConfirmDelete={setIsConfirmingDeleteAll}
           onOpenSettings={() => { setSettingsError(null); setSettingsOpen(true); }}
         />
-      </header>
+      </div>
       {actionError ? <p className="notifications-action-error" role="alert">{actionError}<Button variant="ghost" size="sm" onClick={() => setActionError(null)}>{ko ? "닫기" : "Dismiss"}</Button></p> : null}
       <div className="account-content-rail-layout">
         <div className="notifications-main-column">
