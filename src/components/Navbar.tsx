@@ -10,6 +10,7 @@ import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartPa
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
+import { MobileCreateMenu, type CreateMenuSection } from "@/components/layout/MobileCreateMenu";
 import { communityCreateHref } from "@/components/community/CommunityFilterSidebar";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { marketSearchTermsResponseSchema } from "@/contracts/api";
@@ -49,6 +50,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isDesktopDashboardOpen, setIsDesktopDashboardOpen] = useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [languageStatus, setLanguageStatus] = useState("");
@@ -367,20 +369,22 @@ export function Navbar() {
     setIsDashboardMenuOpen(false);
     setIsDesktopDashboardOpen(false);
     setIsLanguageMenuOpen(false);
+    setIsCreateMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!isDesktopDashboardOpen && !isLanguageMenuOpen) return;
+    if (!isDesktopDashboardOpen && !isLanguageMenuOpen && !isCreateMenuOpen) return;
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setIsDesktopDashboardOpen(false);
       setIsLanguageMenuOpen(false);
+      setIsCreateMenuOpen(false);
     };
 
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [isDesktopDashboardOpen, isLanguageMenuOpen]);
+  }, [isDesktopDashboardOpen, isLanguageMenuOpen, isCreateMenuOpen]);
 
   useEffect(() => {
     const syncListingDock = () => setListingDockConfig(window.__tadaListingDockConfig ?? null);
@@ -472,11 +476,14 @@ export function Navbar() {
   const isServices = pathname.startsWith("/services");
   const searchPlaceholder = isCommunity ? t("searchCommunity") : isServices ? t("searchServices") : t("search");
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
-  const dockSection: "community" | "bargain" | "market" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || pathname.startsWith("/services/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
-  const createPath = isCommunity ? communityCreateHref(communityCategory) : isServices ? "/services/create" : isBargainShopType ? "/market/create/bargain" : "/market/create";
-  // The create button names what it publishes on the surface you are browsing.
-  const createLabel = isCommunity ? t("createPostAction") : isServices ? t("createServiceAction") : t("createListing");
+  // The dock's create button opens a menu for all three; the row for the surface you are browsing is marked.
+  const createSection: CreateMenuSection = isCommunity ? "community" : isServices ? "services" : "market";
+  const createHrefs: Record<CreateMenuSection, string> = {
+    market: isBargainShopType ? "/market/create/bargain" : "/market/create",
+    community: communityCreateHref(isCommunity ? communityCategory : null),
+    services: "/services/create",
+  };
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
@@ -555,12 +562,15 @@ export function Navbar() {
     window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
   };
 
+  const unreadBadge = unreadMessageCount > 99 ? "99+" : unreadMessageCount > 0 ? String(unreadMessageCount) : undefined;
+  const isOnDashboard = pathname.startsWith(dashboardBase);
   const standardDockItems: MobileDockItem[] = [
-    { id: "home", label: isCommunity ? (locale === "ko" ? t("home") : "Community home") : t("home"), icon: "home", href: isCommunity ? "/community" : "/market", active: isCommunity ? pathname === "/community" : isMarket && !isPostAd && !pathname.startsWith("/market/dashboard") },
-    { id: "messages", label: t("messages"), icon: "message", href: `${dashboardBase}/messages`, active: isMessagesPage },
-    { id: "create", label: createLabel, icon: "create", href: createPath, active: isPostAd, variant: "create" },
-    { id: "categories", label: t("categories"), icon: "categories", onClick: openMobileCategories },
-    { id: "profile", label: locale === "ko" ? "마이 페이지" : "My page", icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen },
+    { id: "market", label: t("market"), icon: "market", href: "/market", active: isMarket && !isPostAd && !isOnDashboard },
+    { id: "community", label: t("community"), icon: "community", href: "/community", active: isCommunity && !isPostAd },
+    { id: "create", label: locale === "ko" ? "등록" : "Create", icon: isCreateMenuOpen ? "close" : "create", onClick: toggleCreateMenu, expanded: isCreateMenuOpen, controls: "mobile-create-menu", variant: "create" },
+    { id: "services", label: t("services"), icon: "services", href: "/services", active: isServices && !isPostAd },
+    // Messages now live under My page, so their unread count rides on its icon.
+    { id: "profile", label: t("myPage"), icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen || isOnDashboard, badge: unreadBadge },
   ];
 
   const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
@@ -574,6 +584,11 @@ export function Navbar() {
       ? { id: "delete", label: t("listingDelete"), icon: "delete", onClick: () => triggerListingDockAction("delete") }
       : { id: "save", label: listingDockConfig.isSaved ? t("listingUnsave") : t("listingSave"), icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
+
+  /* Phone category drawer — switched off for now, kept so it can come back.
+     It was opened from the dock's "categories" item and from the header
+     hamburger (hidden on phones in styles.css). Restoring it means putting the
+     dock item back, restoring `dockSection`, and re-enabling the hamburger:
 
   function openMobileCategories() {
     setIsOpen(false);
@@ -593,10 +608,19 @@ export function Navbar() {
     }
     window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockSection }));
   }
+  */
+
+  function toggleCreateMenu() {
+    setIsOpen(false);
+    setIsDashboardMenuOpen(false);
+    setIsLanguageMenuOpen(false);
+    setIsCreateMenuOpen((current) => !current);
+  }
 
   function openMobileDashboard() {
     setIsOpen(false);
     setIsLanguageMenuOpen(false);
+    setIsCreateMenuOpen(false);
     window.dispatchEvent(new Event("mobile-category-menu-close"));
     setIsDashboardMenuOpen(true);
   }
@@ -787,6 +811,7 @@ export function Navbar() {
           </nav>
         </DialogOverlay>
       ) : null}
+      {!isMessagesPage && isCreateMenuOpen && !listingDockItems ? <MobileCreateMenu id="mobile-create-menu" ko={locale === "ko"} current={createSection} hrefs={createHrefs} onClose={() => setIsCreateMenuOpen(false)} /> : null}
       {!isMessagesPage ? <MobileDock items={listingDockItems ?? standardDockItems} /> : null}
     </>
   );

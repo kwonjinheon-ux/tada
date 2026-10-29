@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
 
-export type AppIconName = "home" | "message" | "create" | "categories" | "profile" | "offer" | "share" | "check" | "heart" | "edit" | "delete";
+export type AppIconName = "home" | "market" | "community" | "services" | "message" | "create" | "close" | "categories" | "profile" | "offer" | "share" | "check" | "heart" | "edit" | "delete";
 
 const iconClasses: Record<AppIconName, string> = {
   home: "ms ms-home",
+  market: "ms ms-storefront",
+  community: "ms ms-forum",
+  services: "ms ms-build",
   message: "ms ms-chat-bubble",
   create: "ms ms-add",
+  close: "ms ms-close",
   categories: "ms ms-list-alt",
   profile: "ms ms-account-circle",
   offer: "ms ms-sell",

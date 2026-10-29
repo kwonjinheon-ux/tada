@@ -676,7 +676,8 @@ a {
   display: none;
 }
 
-.mobile-bottom-dock {
+.mobile-bottom-dock,
+.mobile-create-menu-dialog {
   display: none;
 }
 
@@ -6004,7 +6005,11 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     display: none;
   }
 
+  /* The header hamburger is switched off on phones: the bottom dock now carries
+     Market, Community and Services. To bring it back, delete the next line
+     (and the commented category drawer in Navbar.tsx). Tablets keep it. */
   .nav-menu-button {
+    display: none;
     grid-area: menu;
     justify-self: start;
     width: 38px;
@@ -6780,8 +6785,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     line-height: 1.1;
   }
 
-  .mobile-bottom-dock > a > span:not(.mobile-dock-action-label),
-  .mobile-bottom-dock > button > span:not(.mobile-dock-action-label) { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-bottom-dock > a > span:not(.mobile-dock-action-label):not(.mobile-dock-icon),
+  .mobile-bottom-dock > button > span:not(.mobile-dock-action-label):not(.mobile-dock-icon) { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .mobile-bottom-dock a:hover,
   .mobile-bottom-dock button:hover,
@@ -6792,10 +6797,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock a:hover:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a:hover:not(.mobile-dock-create) > i,
-  .mobile-bottom-dock button:hover > svg,
-  .mobile-bottom-dock button:hover > i,
-  .mobile-bottom-dock button:focus-visible > svg,
-  .mobile-bottom-dock button:focus-visible > i {
+  .mobile-bottom-dock button:hover:not(.mobile-dock-create) > svg,
+  .mobile-bottom-dock button:hover:not(.mobile-dock-create) > i,
+  .mobile-bottom-dock button:focus-visible:not(.mobile-dock-create) > svg,
+  .mobile-bottom-dock button:focus-visible:not(.mobile-dock-create) > i {
     box-sizing: content-box;
     padding: 0;
     border: 0;
@@ -6805,7 +6810,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a:active:not(.mobile-dock-create) > i,
-  .mobile-bottom-dock button:active > i {
+  .mobile-bottom-dock button:active:not(.mobile-dock-create) > i {
     box-sizing: content-box;
     padding: 0;
     border-radius: 0;
@@ -6845,13 +6850,15 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
   .mobile-bottom-dock a.is-active:not(.mobile-dock-create) > svg,
   .mobile-bottom-dock a.is-active:not(.mobile-dock-create) > i,
-  .mobile-bottom-dock button.is-active > i {
+  .mobile-bottom-dock button.is-active:not(.mobile-dock-create) > i {
     box-sizing: content-box;
     padding: 0;
     border-radius: 0;
     background: transparent;
   }
 
+  /* The create button has the same box, icon slot and label as the other four.
+     Only its colour sets it apart: a blue disc in the icon slot and a blue label. */
   .mobile-bottom-dock .mobile-dock-create {
     width: 100%;
     min-height: var(--mobile-dock-control-size);
@@ -6881,8 +6888,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     border-radius: var(--radius-circle);
     background: var(--blue-400);
     color: var(--neutral-50);
-    font-size: var(--text-3xl);
+    font-size: var(--text-xl);
     box-shadow: none;
+    transition: background-color 180ms ease, transform 180ms ease;
   }
 
   .mobile-bottom-dock .mobile-dock-offer i {
@@ -6896,12 +6904,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     box-shadow: none;
   }
 
-  .mobile-bottom-dock .mobile-dock-create i { background: var(--blue-400); }
-
-  /* Keep the primary action glyph on the same 24px scale as every other dock
-     icon. The filled circle remains the action affordance, not a larger icon. */
-  .mobile-bottom-dock .mobile-dock-create .ms { font-size: var(--text-3xl); }
-
   .mobile-bottom-dock .mobile-dock-action-label {
     width: auto;
     height: auto;
@@ -6912,10 +6914,6 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     font-size: var(--text-2xs);
     font-weight: var(--weight-extrabold);
     line-height: 1;
-    box-shadow: none;
-  }
-
-  .mobile-bottom-dock .mobile-dock-create i {
     box-shadow: none;
   }
 
@@ -6947,6 +6945,116 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .mobile-bottom-dock .mobile-dock-save.is-saved,
   .mobile-bottom-dock .mobile-dock-save.is-saved > i { color: var(--rose-600); }
   .mobile-bottom-dock .mobile-dock-save .save-heart-particle { z-index: 4; }
+
+  /* The place you are in is marked by a short bar on the top edge of the dock,
+     over its icon, as well as by colour. */
+  .mobile-bottom-dock a,
+  .mobile-bottom-dock button { position: relative; }
+
+  .mobile-bottom-dock a.is-active:not(.mobile-dock-create):not(.mobile-dock-save)::before,
+  .mobile-bottom-dock button.is-active:not(.mobile-dock-create):not(.mobile-dock-save)::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--space-1));
+    right: 0;
+    left: 0;
+    width: var(--space-8);
+    height: var(--space-1);
+    margin: 0 auto;
+    border-radius: 0 0 var(--radius-xs) var(--radius-xs);
+    background: var(--color-primary);
+  }
+
+  /* A count riding on an icon (unread messages on My page). */
+  .mobile-bottom-dock .mobile-dock-icon { position: relative; display: grid; place-items: center; }
+  .mobile-bottom-dock .mobile-dock-badge {
+    position: absolute;
+    top: calc(-1 * var(--space-1));
+    left: 55%;
+    min-width: var(--space-4);
+    height: var(--space-4);
+    display: grid;
+    place-items: center;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-pill);
+    background: var(--red-650);
+    color: var(--neutral-50);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-extrabold);
+    line-height: 1;
+  }
+
+  /* The create menu rises out of the dock's centre button. The dock sits just
+     above this backdrop, so the button that opened it is also its close control. */
+  .mobile-create-menu-dialog {
+    --popup-backdrop-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
+    --popup-backdrop-blur: 4px;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 var(--space-4) calc(64px + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px) + var(--space-5));
+  }
+
+  .mobile-create-menu.menu-motion {
+    width: min(100%, 420px);
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    border-radius: var(--radius-2xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    transform-origin: bottom center;
+    animation-name: mobile-create-menu-in;
+  }
+
+  @keyframes mobile-create-menu-in {
+    from { opacity: 0; transform: translateY(var(--space-3)) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .mobile-create-menu-item {
+    display: grid;
+    grid-template-columns: var(--control-h-2xl) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-xl);
+    color: var(--color-ink);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 180ms ease;
+  }
+
+  .mobile-create-menu-item:hover,
+  .mobile-create-menu-item.is-current { background: var(--blue-50); }
+  .mobile-create-menu-item:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
+
+  .mobile-create-menu-icon {
+    width: var(--control-h-2xl);
+    height: var(--control-h-2xl);
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-2xl);
+  }
+
+  /* The tile carries the colour, so the glyph takes it rather than its own hue. */
+  .mobile-create-menu-icon .ms { color: inherit; }
+  .mobile-create-menu-item.is-market .mobile-create-menu-icon { background: var(--violet-soft-100); color: var(--violet-700); }
+  .mobile-create-menu-item.is-community .mobile-create-menu-icon { background: var(--blue-50); color: var(--color-primary); }
+  .mobile-create-menu-item.is-services .mobile-create-menu-icon { background: var(--color-services-soft); color: var(--color-services-text); }
+  .mobile-create-menu-item.is-current .mobile-create-menu-icon { background: var(--color-surface); }
+
+  .mobile-create-menu-text { min-width: 0; display: grid; gap: var(--space-1); }
+  .mobile-create-menu-text strong { font-size: var(--text-xl); font-weight: var(--weight-bold); line-height: 1.2; }
+  .mobile-create-menu-text small { color: var(--color-muted); font-size: var(--text-sm); line-height: 1.3; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-create-menu.menu-motion { animation: none; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .mobile-bottom-dock,
