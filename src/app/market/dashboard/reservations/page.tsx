@@ -1,11 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { formatMarketPrice } from "@/lib/market/format-price";
 import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { ListSearchField } from "@/components/ui/ListSearchField";
 import { ReservationsWorkspace, type ReservationListItem, type ReservationView } from "@/components/dashboard/ReservationsWorkspace";
 import { LIST_PAGE_SIZE, escapeLikePattern, normaliseSearchTerm, pageRange, parsePageParam, totalPageCount } from "@/lib/list-pagination";
 
@@ -17,14 +13,11 @@ type ItemRow = { id: string; listing_id: string; title: string; photo_id: string
 type ListingRow = { id: string; title: string };
 type PhotoRow = { id: string; storage_path: string };
 
-function createdLabel(value: string) { return new Intl.DateTimeFormat("en-NZ", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value)); }
-
-export default async function BargainReservationsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; version?: string; view?: string; excludeCancelled?: string; excludeCompleted?: string }> }) {
+export default async function BargainReservationsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; view?: string; excludeCancelled?: string; excludeCompleted?: string }> }) {
   const params = await searchParams;
-  const isV0 = params.version === "v0";
-  const view: ReservationView = !isV0 && (params.view === "attention" || params.view === "buying" || params.view === "selling") ? params.view : "all";
-  const excludeCancelled = !isV0 && params.excludeCancelled === "1";
-  const excludeCompleted = !isV0 && params.excludeCompleted === "1";
+  const view: ReservationView = params.view === "attention" || params.view === "buying" || params.view === "selling" ? params.view : "all";
+  const excludeCancelled = params.excludeCancelled === "1";
+  const excludeCompleted = params.excludeCompleted === "1";
   const term = normaliseSearchTerm(params.q);
   const user = await getServerUser();
   if (!user) redirect("/login?redirectTo=%2Fmarket%2Fdashboard%2Freservations");
@@ -50,7 +43,7 @@ export default async function BargainReservationsPage({ searchParams }: { search
     return query;
   };
 
-  const views: ReservationView[] = isV0 ? ["all"] : ["all", "attention", "buying", "selling"];
+  const views: ReservationView[] = ["all", "attention", "buying", "selling"];
   const countResults = supabase && !loadError && (!matchingItemIds || matchingItemIds.length)
     ? await Promise.all(views.map((selectedView) => buildQuery(selectedView).range(0, 0)))
     : views.map(() => ({ count: 0, error: null }));
@@ -85,22 +78,6 @@ export default async function BargainReservationsPage({ searchParams }: { search
   loadError ||= Boolean(photoError);
   const photos = new Map(((photoData ?? []) as PhotoRow[]).map((photo) => [photo.id, photo.storage_path]));
   const imageUrls = await getSignedStorageImages("bargain-listing-images", [...new Set([...photos.values()])], "thumbnail");
-  const buying = reservations.filter((reservation) => reservation.buyer_id === user.id);
-  const selling = reservations.filter((reservation) => reservation.seller_id === user.id);
-  const renderV0Rows = (rows: ReservationRow[], role: "buying" | "selling") => rows.map((reservation) => {
-    const item = items.get(reservation.item_id);
-    const listing = listings.get(reservation.listing_id);
-    const imageUrl = item ? imageUrls.get(photos.get(item.photo_id) ?? "") ?? "/images/logo.png" : "/images/logo.png";
-    const href = role === "selling" && ["requested", "confirmed", "on_the_way"].includes(reservation.status) ? `/market/${reservation.listing_id}/items/${reservation.item_id}/edit` : `/market/${reservation.listing_id}`;
-    return <article className="listing-row" key={reservation.id}>
-      <div className="listing-row-media"><img src={imageUrl} alt="" /></div>
-      <div className="listing-row-body"><div className="listing-row-title"><h2>{item?.title ?? "Bargain item"}</h2><span className={`is-${reservation.status}`}>{reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}</span></div><strong className="listing-row-price">{formatMarketPrice(reservation.amount_cents)}</strong><small className="listing-row-meta">{listing?.title ?? "Bargain sale"} · {createdLabel(reservation.created_at)}</small></div>
-      <div className="listing-row-actions manage-listing-actions"><Link href={href}>{role === "selling" && ["requested", "confirmed", "on_the_way"].includes(reservation.status) ? "Manage pickup" : "View sale"}</Link></div>
-    </article>;
-  });
-
-  if (isV0) return <section className="dashboard-content manage-listings-content"><header className="manage-listings-heading"><div><p>Bargain</p><h1>Reservations</h1><span>{totalReservations ?? 0} purchase and sale {(totalReservations ?? 0) === 1 ? "reservation" : "reservations"}</span></div><Link href="/market"><i className="ms ms-search" /> Browse Bargain</Link></header>{reservations.length ? <><section className="manage-listings-grid" aria-labelledby="buying-reservations"><h2 id="buying-reservations">Purchases</h2>{buying.length ? renderV0Rows(buying, "buying") : <p>No purchase reservations yet.</p>}</section><section className="manage-listings-grid" aria-labelledby="selling-reservations"><h2 id="selling-reservations">Sales</h2>{selling.length ? renderV0Rows(selling, "selling") : <p>No sale reservations yet.</p>}</section></> : <div className="manage-listings-empty"><i className="ms ms-event-available" /><h2>No reservations yet</h2><p>Your Bargain purchase and sale reservations will appear here.</p><Link href="/market">Browse Bargain</Link></div>}<ListPagination page={page} totalPages={totalPages} label="Reservation pages" /><ListSearchField placeholder="Search reservations by item" label="Search reservations by item" /></section>;
-
   const itemsForWorkspace: ReservationListItem[] = reservations.map((reservation) => {
     const item = items.get(reservation.item_id);
     return {
