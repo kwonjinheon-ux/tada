@@ -9817,9 +9817,8 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .account-wishlist .wishlist-select:focus-within { box-shadow: var(--ring-focus); }
 .account-wishlist .wishlist-contact { width: 100%; min-height: var(--control-h-xl); font-size: var(--text-sm); }
 .account-wishlist .wishlist-edit-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); padding: var(--space-2); border: 1px solid var(--color-line-soft); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }
-.account-wishlist .wishlist-select-all { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-h-xl); font-size: var(--text-md); white-space: nowrap; }
+.account-wishlist .wishlist-select-all { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-h-xl); font-size: var(--text-base); font-weight: var(--weight-regular); white-space: nowrap; }
 .account-wishlist .wishlist-select-all input { width: var(--space-5); height: var(--space-5); accent-color: var(--color-primary); }
-.account-wishlist .wishlist-edit-bar strong { font-size: var(--text-xs); white-space: nowrap; }
 .account-wishlist .wishlist-edit-bar .ui-button { min-height: var(--control-h-xl); gap: var(--space-1); font-size: var(--text-md); }
 .account-wishlist .wishlist-discovery { margin: 0; padding: var(--space-6); border-color: var(--color-line-soft); background: var(--color-surface); }
 .account-wishlist .wishlist-discovery > i { color: var(--color-primary); font-size: var(--text-3xl); }
@@ -14906,8 +14905,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 .messages-page:not(.is-v0) .messages-filter-row button.is-active { background: var(--color-primary); color: var(--color-on-primary); }
 .messages-page:not(.is-v0) .messages-selection-toggle,
 .messages-page:not(.is-v0) .messages-selection-bar .bulk-action-button { min-height: var(--control-h-xl); margin-top: 0; }
-.messages-page:not(.is-v0) .messages-selection-toggle { font-size: var(--text-base); font-weight: var(--weight-semibold); }
-.messages-page:not(.is-v0) .messages-selection-bar .messages-delete-all-button { margin-left: auto; }
+.messages-page:not(.is-v0) .messages-selection-toggle { font-size: var(--text-base); }
 .messages-page:not(.is-v0) .messages-conversation-copy em { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .messages-page:not(.is-v0) .messages-conversation.is-active { border-right-color: var(--color-primary); background: var(--color-primary-soft); }
 .messages-page:not(.is-v0) .messages-empty-list i, .messages-page:not(.is-v0) .messages-select-empty > i { color: var(--color-primary); }

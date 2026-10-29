@@ -590,24 +590,11 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
                 {isV0 ? t("deleteConfirm") : currentKo ? "선택한 대화를 삭제할까요?" : "Delete selected?"}
               </button>
             ) : (
-              <button className="bulk-action-button is-compact is-danger" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => setPendingDeleteScope("selection")}>
+              <button className="bulk-action-button is-compact is-danger" type="button" disabled={!selectedVisibleIds.length || isBulkPending} aria-label={isV0 ? undefined : currentKo ? "선택한 대화 삭제" : "Delete selected conversations"} onClick={() => setPendingDeleteScope("selection")}>
                 <i className="ms ms-delete" aria-hidden="true" />
-                {isV0 ? t("delete") : currentKo ? "선택 삭제" : "Delete selected"}
+                {t("delete")}
               </button>
             )}
-            {!isV0 && (filter === "all" || isViewingArchive) ? pendingDeleteScope === "everything" ? <>
-              <button className="bulk-action-button is-compact is-danger messages-delete-all-button" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ scope: isViewingArchive ? "archived" : "inbox" })}>
-                <i className="ms ms-warning" aria-hidden="true" />
-                {`${t("deleteConfirm")} (${visibleConversations.length})`}
-              </button>
-              <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope(null)}>
-                <i className="ms ms-close" aria-hidden="true" />
-                {t("cancel")}
-              </button>
-            </> : <button className="bulk-action-button is-compact is-danger messages-delete-all-button" type="button" disabled={isBulkPending || !visibleConversations.length} onClick={() => setPendingDeleteScope("everything")}>
-              <i className="ms ms-delete" aria-hidden="true" />
-              {isViewingArchive ? t("deleteArchived") : t("deleteAll")}
-            </button> : null}
             {isV0 ? <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={exitSelection}>
               <i className="ms ms-close" aria-hidden="true" />
               {t("cancel")}

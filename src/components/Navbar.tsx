@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type CSSProperties, FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
-import { languageOptions, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
+import { languageOptions, translateForLocale, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
 import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
@@ -500,7 +500,7 @@ export function Navbar() {
     setLanguageStatus("");
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
-      setLanguageStatus("Saved on this device.");
+      setLanguageStatus(translateForLocale("languageSavedDevice", nextLocale));
       return;
     }
 
@@ -509,7 +509,7 @@ export function Navbar() {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       if (!user) {
-        setLanguageStatus("Saved on this device. Sign in to save it to your account.");
+        setLanguageStatus(translateForLocale("languageSavedDeviceSignIn", nextLocale));
         return;
       }
 
@@ -520,7 +520,7 @@ export function Navbar() {
         display_name: profile?.display_name ?? displayName ?? fallbackName,
         preferred_locale: nextLocale,
       });
-      setLanguageStatus(error ? "Language saved on this device. Account sync will retry next time." : "Language saved to your account.");
+      setLanguageStatus(translateForLocale(error ? "languageSavedAccountRetry" : "languageSavedAccount", nextLocale));
     } finally {
       setIsSavingLanguage(false);
     }
@@ -744,10 +744,10 @@ export function Navbar() {
       </header>
       {isLanguageMenuOpen ? (
         <DialogOverlay className="language-settings-dialog" style={desktopPopoverStyle} onClose={() => setIsLanguageMenuOpen(false)}>
-          <section className="language-settings-card profile-popup-surface" id="language-settings-dialog" aria-label="Language settings">
+          <section className="language-settings-card profile-popup-surface" id="language-settings-dialog" aria-label={t("languageSettings")}>
             <header>
               <div><i className="ms ms-language" aria-hidden="true" /><div><span className="language-settings-title">{t("languageSettings")}</span><span>{t("displayLanguage")}</span></div></div>
-              <button type="button" aria-label="Close language settings" onClick={() => setIsLanguageMenuOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
+              <button type="button" aria-label={t("closeLanguageSettings")} onClick={() => setIsLanguageMenuOpen(false)}><i className="ms ms-close" aria-hidden="true" /></button>
             </header>
             <div className="language-settings-options" role="radiogroup" aria-label={t("displayLanguage")}>
               {languageOptions.map((option) => (
