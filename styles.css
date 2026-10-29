@@ -12747,6 +12747,36 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     color: var(--color-ink);
     font-weight: var(--weight-bold);
   }
+
+  /* The phone drawer is read at arm's length, so every step of its type scale
+     sits one size above the desktop rail: section labels, rows, chips, and the
+     location pickers. One block, shared by the Market, Community and Services
+     drawers. */
+  .market-filter-panel.is-open.mobile-side-drawer .filter-block h2,
+  .market-filter-panel.is-open.mobile-side-drawer .category-filter h2 {
+    font-size: var(--text-sm);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-list a,
+  .market-filter-panel.is-open.mobile-side-drawer .filter-list button,
+  .market-filter-panel.is-open.mobile-side-drawer .category-filter .filter-list button {
+    font-size: var(--text-md);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-list .mobile-drawer-menu-item > i,
+  .market-filter-panel.is-open.mobile-side-drawer .community-category-illustration {
+    font-size: var(--text-xl);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .condition-chips button,
+  .market-filter-panel.is-open.mobile-side-drawer .services-filter-toggle {
+    font-size: var(--text-sm);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .market-location-select > label,
+  .market-filter-panel.is-open.mobile-side-drawer .market-location-select .post-select-trigger {
+    font-size: var(--text-lg);
+  }
 }
 
 /* Global footer: desktop/tablet use one calm multi-column surface; on mobile
