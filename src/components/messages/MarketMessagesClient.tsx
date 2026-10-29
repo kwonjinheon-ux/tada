@@ -110,7 +110,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isManageOpen, setIsManageOpen] = useState(false);
   const [isBulkPending, setIsBulkPending] = useState(false);
   const [pendingDeleteScope, setPendingDeleteScope] = useState<"selection" | "everything" | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
@@ -405,7 +404,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   };
   const exitSelection = () => {
     setIsSelecting(false);
-    setIsManageOpen(false);
     setSelectedIds([]);
     setPendingDeleteScope(null);
   };
@@ -567,17 +565,17 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
               <i className="ms ms-drafts" aria-hidden="true" />
               <span>{t("markAllRead")}</span>
             </button>
-            {!isV0 ? <Button variant="ghost" size="sm" className="messages-manage-toggle" aria-expanded={isManageOpen} aria-label={ko ? "대화 관리" : "Manage conversations"} onClick={() => { setIsManageOpen((open) => !open); setPendingDeleteScope(null); }} disabled={!visibleConversations.length || isSelecting}>
-              <i className="ms ms-more-vert" aria-hidden="true" /><span>{ko ? "관리" : "Manage"}</span>
+            {!isV0 ? <Button variant="secondary" size="sm" className="account-bulk-edit-toggle messages-edit-toggle" aria-expanded={isSelecting} aria-controls={isSelecting ? "messages-edit-bar" : undefined} aria-label={isSelecting ? ko ? "대화 편집 취소" : "Cancel conversation editing" : ko ? "대화 편집" : "Edit conversations"} onClick={() => isSelecting ? exitSelection() : (setIsSelecting(true), setPendingDeleteScope(null))} disabled={isBulkPending || (!visibleConversations.length && !isSelecting)}>
+              <i className={`ms ${isSelecting ? "ms-close" : "ms-edit"}`} aria-hidden="true" /><span>{isSelecting ? t("cancel") : ko ? "편집" : "Edit"}</span>
             </Button> : null}
           </div>
         </header>
         <div className="messages-filter-row" role="tablist" aria-label={ko && !isV0 ? "대화 필터" : "Filter conversations"}>
-          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => { setFilter(option); setPendingDeleteScope(null); setIsManageOpen(false); }}>{t(option)}</button>)}
+          {CONVERSATION_FILTERS.map((option) => <button className={filter === option ? "is-active" : ""} type="button" key={option} role="tab" aria-selected={filter === option} onClick={() => { setFilter(option); setPendingDeleteScope(null); }}>{t(option)}</button>)}
         </div>
 
         {isSelecting ? (
-          <div className="messages-selection-bar" role="group" aria-label="Bulk conversation actions">
+          <div className="messages-selection-bar" id={isV0 ? undefined : "messages-edit-bar"} role="group" aria-label={currentKo ? "대화 편집 작업" : "Bulk conversation actions"}>
             <button className="messages-selection-toggle" type="button" onClick={toggleSelectAllVisible} disabled={!visibleIds.length}>
               <i className={`ms ${selectedVisibleIds.length && selectedVisibleIds.length === visibleIds.length ? "ms-check-box" : "ms-check-box-outline-blank"}`} aria-hidden="true" />
               {selectedVisibleIds.length ? `${selectedVisibleIds.length} ${t("selected")}` : t("selectAll")}
@@ -589,24 +587,37 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             {pendingDeleteScope === "selection" ? (
               <button className="bulk-action-button is-compact is-danger" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ conversationIds: selectedVisibleIds })}>
                 <i className="ms ms-warning" aria-hidden="true" />
-                {t("deleteConfirm")}
+                {isV0 ? t("deleteConfirm") : currentKo ? "선택한 대화를 삭제할까요?" : "Delete selected?"}
               </button>
             ) : (
               <button className="bulk-action-button is-compact is-danger" type="button" disabled={!selectedVisibleIds.length || isBulkPending} onClick={() => setPendingDeleteScope("selection")}>
                 <i className="ms ms-delete" aria-hidden="true" />
-                {t("delete")}
+                {isV0 ? t("delete") : currentKo ? "선택 삭제" : "Delete selected"}
               </button>
             )}
-            <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={exitSelection}>
+            {!isV0 && (filter === "all" || isViewingArchive) ? pendingDeleteScope === "everything" ? <>
+              <button className="bulk-action-button is-compact is-danger messages-delete-all-button" type="button" disabled={isBulkPending} onClick={() => deleteConversations({ scope: isViewingArchive ? "archived" : "inbox" })}>
+                <i className="ms ms-warning" aria-hidden="true" />
+                {`${t("deleteConfirm")} (${visibleConversations.length})`}
+              </button>
+              <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={() => setPendingDeleteScope(null)}>
+                <i className="ms ms-close" aria-hidden="true" />
+                {t("cancel")}
+              </button>
+            </> : <button className="bulk-action-button is-compact is-danger messages-delete-all-button" type="button" disabled={isBulkPending || !visibleConversations.length} onClick={() => setPendingDeleteScope("everything")}>
+              <i className="ms ms-delete" aria-hidden="true" />
+              {isViewingArchive ? t("deleteArchived") : t("deleteAll")}
+            </button> : null}
+            {isV0 ? <button className="bulk-action-button is-compact" type="button" disabled={isBulkPending} onClick={exitSelection}>
               <i className="ms ms-close" aria-hidden="true" />
               {t("cancel")}
-            </button>
+            </button> : null}
           </div>
         ) : null}
 
-        {!isSelecting && visibleConversations.length && (isV0 || isManageOpen) ? (
+        {!isSelecting && visibleConversations.length && isV0 ? (
           <div className="messages-selection-bar messages-manage-bar" id="messages-management-actions">
-            <button className="messages-selection-toggle" type="button" onClick={() => { setIsSelecting(true); setIsManageOpen(false); }}>
+            <button className="messages-selection-toggle" type="button" onClick={() => setIsSelecting(true)}>
               <i className="ms ms-check-box" aria-hidden="true" />
               {t("select")}
             </button>

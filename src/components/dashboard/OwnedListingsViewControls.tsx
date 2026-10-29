@@ -29,7 +29,7 @@ export function OwnedListingsViewControls({ sort, excludeCompleted, isServices }
     <SelectMenu
       id="owned-listings-sort"
       name="sort"
-      className={`owned-listings-icon-select owned-listings-sort${sort === "oldest" ? " is-active" : ""}`}
+      className={`account-toolbar-icon-select owned-listings-sort${sort === "oldest" ? " is-active" : ""}`}
       icon={sort === "oldest" ? "ms-arrow-upward" : "ms-arrow-downward"}
       label={`${t("ownedListingSortLabel")}: ${t(sort === "oldest" ? "ownedListingSortOldest" : "ownedListingSortNewest")}`}
       placeholder={t("ownedListingSortNewest")}
@@ -42,7 +42,7 @@ export function OwnedListingsViewControls({ sort, excludeCompleted, isServices }
     <SelectMenu
       id="owned-listings-status-filter"
       name="excludeCompleted"
-      className={`owned-listings-icon-select owned-listings-status-filter${excludeCompleted && !isServices ? " is-active" : ""}`}
+      className={`account-toolbar-icon-select owned-listings-status-filter${excludeCompleted && !isServices ? " is-active" : ""}`}
       icon="ms-tune"
       label={`${t("ownedListingStatusFilterLabel")}: ${t(excludeCompleted ? "ownedListingExcludeCompleted" : "ownedListingShowAllStatuses")}`}
       placeholder={t("ownedListingShowAllStatuses")}
