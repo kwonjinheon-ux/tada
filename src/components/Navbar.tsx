@@ -476,6 +476,7 @@ export function Navbar() {
   const isServices = pathname.startsWith("/services");
   const searchPlaceholder = isCommunity ? t("searchCommunity") : isServices ? t("searchServices") : t("search");
   const isBargainShopType = pathname.startsWith("/market/garage-sales") || pathname.startsWith("/market/moving-sales") || pathname.startsWith("/market/2dollarshop");
+  const dockSection: "bargain" | "market" | "community" = isCommunity ? "community" : isBargainShopType ? "bargain" : "market";
   const isPostAd = pathname.startsWith("/market/create") || pathname.startsWith("/community/create") || pathname.startsWith("/services/create") || /^\/market\/[^/]+\/edit$/.test(pathname);
   // The dock's create button opens a menu for all three; the row for the surface you are browsing is marked.
   const createSection: CreateMenuSection = isCommunity ? "community" : isServices ? "services" : "market";
@@ -585,30 +586,30 @@ export function Navbar() {
       : { id: "save", label: listingDockConfig.isSaved ? t("listingUnsave") : t("listingSave"), icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
 
-  /* Phone category drawer — switched off for now, kept so it can come back.
-     It was opened from the dock's "categories" item and from the header
-     hamburger (hidden on phones in styles.css). Restoring it means putting the
-     dock item back, restoring `dockSection`, and re-enabling the hamburger:
-
+  /** The header's filter button opens the browse drawer of the section you are
+   *  in (areas, subcategories, filters). Only the browse pages have a drawer to
+   *  open; anywhere else the button takes you to one. */
   function openMobileCategories() {
     setIsOpen(false);
     setIsDashboardMenuOpen(false);
     setIsLanguageMenuOpen(false);
+    setIsCreateMenuOpen(false);
     if (isCommunity) {
-      window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "community" }));
+      if (pathname === "/community") window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "community" }));
+      else router.push("/community");
       return;
     }
     if (isServices) {
-      window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "services" }));
+      if (pathname === "/services") window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: "services" }));
+      else router.push("/services");
       return;
     }
-    if (!pathname.startsWith("/market")) {
-      router.push("/market?filters=open");
+    if (pathname === "/market" || /^\/market\/(secondhands|garage-sales|moving-sales|2dollarshop|groupbuy)$/.test(pathname)) {
+      window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockSection }));
       return;
     }
-    window.dispatchEvent(new CustomEvent("mobile-category-menu-request", { detail: dockSection }));
+    router.push("/market?filters=open");
   }
-  */
 
   function toggleCreateMenu() {
     setIsOpen(false);
@@ -645,6 +646,9 @@ export function Navbar() {
               <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
               <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
+          </button>
+          <button className="nav-search-filter" type="button" aria-label={locale === "ko" ? "지역, 카테고리, 필터" : "Areas, categories and filters"} onClick={openMobileCategories}>
+            <i className="ms ms-tune" aria-hidden="true" />
           </button>
           {isMarket && isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
             <div className="nav-search-suggestions" id="trending-searches" role="listbox" aria-label="Popular searches">

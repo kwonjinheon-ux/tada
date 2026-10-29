@@ -523,6 +523,11 @@ a {
   background: var(--neutral-150);
 }
 
+/* Phones only: opens the browse drawer (areas, categories, filters). */
+.nav-search-filter {
+  display: none;
+}
+
 .nav-search-submit:focus-visible {
   outline: 2px solid var(--blue-500);
   outline-offset: 2px;
@@ -5992,6 +5997,27 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     height: 21px;
   }
 
+  .nav-search:has(.nav-search-filter) { grid-template-columns: 30px minmax(0, 1fr) var(--control-h-lg); padding-right: var(--space-2); }
+
+  .nav-search-filter {
+    width: var(--control-h-lg);
+    height: var(--control-h-lg);
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-circle);
+    background: transparent;
+    color: var(--color-primary);
+    font-size: var(--text-3xl);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-search-filter .ms { color: inherit; }
+  .nav-search-filter:hover { background: var(--neutral-150); }
+  .nav-search-filter:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
+
   .nav-search input {
     font-size: var(--text-lg);
   }
@@ -6006,8 +6032,8 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   }
 
   /* The header hamburger is switched off on phones: the bottom dock now carries
-     Market, Community and Services. To bring it back, delete the next line
-     (and the commented category drawer in Navbar.tsx). Tablets keep it. */
+     Market, Community and Services. To bring it back, delete the next line.
+     Tablets keep it. */
   .nav-menu-button {
     display: none;
     grid-area: menu;
@@ -12437,6 +12463,14 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .market-create-main .post-ad-layout { width: 100%; margin-inline: 0; }
   .market-create-main .post-ad-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: var(--space-5); align-items: start; }
   .market-create-main .post-ad-sidebar { display: grid; }
+}
+
+/* On phones the composer sits flat on the page like Community's, so the form
+   lines up with the search field above it. The page shell already supplies the
+   side gutter; the page and the card add none of their own. */
+@media (max-width: 767.98px) {
+  .market-create-main .post-ad-page { padding-inline: 0; }
+  .market-create-main .post-ad-card { padding: 0; border: 0; border-radius: 0; background: transparent; }
 }
 
 @media (min-width: 1280px) {
