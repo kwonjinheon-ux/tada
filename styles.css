@@ -12772,6 +12772,13 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
     font-size: var(--text-sm);
   }
 
+  /* The apply button is a grid, so without centring its label sits at the top. */
+  .market-filter-panel.is-open.mobile-side-drawer .apply-filter-button {
+    place-items: center;
+    font-size: var(--text-md);
+    line-height: 1;
+  }
+
   .market-filter-panel.is-open.mobile-side-drawer .market-location-select > label,
   .market-filter-panel.is-open.mobile-side-drawer .market-location-select .post-select-trigger {
     font-size: var(--text-lg);
