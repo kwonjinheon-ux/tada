@@ -9261,17 +9261,33 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 
   .site-logo { justify-self: start; }
 
+  /* A compact search, centred in whatever room the logo and the links leave. */
   .nav-search {
     position: relative;
     left: auto;
-    width: 100%;
-    max-width: 580px;
-    justify-self: stretch;
+    width: min(100%, 360px);
+    justify-self: center;
     transform: none;
   }
 
   .primary-nav { grid-column: auto; }
 
+}
+
+/* Wide enough that the links cannot reach it: the search sits on the true
+   centre line of the bar instead. It leaves the grid, so every other item is
+   pinned to its own column to stop auto-placement from shifting them left. */
+@media (min-width: 1440px) {
+  .site-logo { grid-column: 1; }
+  .primary-nav { grid-column: 3; }
+  .nav-actions { grid-column: 4; }
+
+  .nav-search {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* Keep every touch-device form control at 16px or larger to prevent iOS focus zoom. */
