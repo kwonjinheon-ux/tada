@@ -1,7 +1,7 @@
 "use client";
 
-import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
+import { FilterMenuSection } from "@/components/layout/FilterMenuSection";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { type MainLocation } from "@/data/nzLocations";
 import { useLanguage, type TranslationKey } from "@/components/LanguageProvider";
@@ -57,16 +57,15 @@ export function CommunityFilterSidebar({ activeCategory, onCategorySelect, mainL
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="community" mainLocationLabel="Main Location" subLocationLabel="Sub Location" mainLocationPlaceholder="All New Zealand" subLocationPlaceholder="Any sub location" />
   }>
 
-    <section className="filter-block community-category-filter">
-      <h2>{t("categories")}</h2>
-      <div className="filter-list community-category-list">
-        {communityCategories.map(({ value, labelKey, icon }) => {
-          return <button key={value} type="button" className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} community-category-${value} ${activeCategory === value ? "is-selected" : ""}`} onClick={() => onCategorySelect(value)}>
-            <span className="community-category-illustration"><i className={`ms ${icon}`} aria-hidden="true" /></span>
-            <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
-          </button>;
-        })}
-      </div>
-    </section>
+    <FilterMenuSection
+      title={t("categories")}
+      className="community-category-filter"
+      listClassName="community-category-list"
+      itemClassPrefix="community-category"
+      iconFrameClassName="community-category-illustration"
+      activeValue={activeCategory}
+      onSelect={onCategorySelect}
+      items={communityCategories.map(({ value, labelKey, icon }) => ({ value, label: t(labelKey), icon }))}
+    />
   </BrowseFilterSidebar>;
 }

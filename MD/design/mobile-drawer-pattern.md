@@ -29,6 +29,7 @@ The profile dashboard and Market category menu are the reference implementations
 - Close control: every drawer uses the shared 36px `mobile-drawer-close` control at the bottom-right.
 - Header: do not add a redundant brand row or `Categories` title.
 - Menu rows: profile and category items both use the 16px `mobile-drawer-menu-item` and `mobile-drawer-menu-label` classes, 44px minimum height, zero row margin, and 3px vertical gap. Category selection uses a muted selected state.
+- Sub-category rows (Market type and category, Community category, Services type): render them with `src/components/layout/FilterMenuSection.tsx` only. Its phone geometry lives in one `.filter-menu-section` block in `styles.css`: 44px row, 4px row gap, 24px icon slot at 18px, 12px side padding and icon gap, 14px label (bold when selected), 12px bold section label. Change a measure there, not in a feature component or a per-section selector.
 - Dashboard logout: keep it as a smaller secondary action, but make it span the full drawer content width.
 - Supporting filters: hide price, price range, item condition, and the apply button on mobile category drawers. Keep them available in the desktop filter panel.
 - Bottom dock: hide it while a drawer is open so it cannot sit above the overlay.

@@ -1,8 +1,8 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
+import { FilterMenuSection } from "@/components/layout/FilterMenuSection";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { marketplaceCategories } from "@/data/marketplace-categories";
 import { type MainLocation } from "@/data/nzLocations";
@@ -84,29 +84,23 @@ export function MarketFilterSidebar({ activeShopType, activeCategory, onCategory
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="market" mainLocationLabel={t("mainLocationLabel")} subLocationLabel={t("subLocationLabel")} mainLocationPlaceholder={t("allNewZealand")} subLocationPlaceholder={t("anySubLocation")} />
   }>
 
-    <section className="filter-block shop-type-filter market-type-filter">
-      <h2>{t("marketType")}</h2>
-      <div className="filter-list">
-        {marketShopTypes.map(({ value, labelKey, href, icon }) => (
-          <a key={value} href={href} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} shop-type-${value} ${activeShopType === value ? "is-selected" : ""}`}>
-            <span className="shop-type-illustration"><i className={`ms ${icon}`} aria-hidden="true" /></span>
-            <span className={mobileDrawerClasses.menuLabel}>{t(labelKey)}</span>
-          </a>
-        ))}
-      </div>
-    </section>
+    <FilterMenuSection
+      title={t("marketType")}
+      className="shop-type-filter market-type-filter"
+      itemClassPrefix="shop-type"
+      iconFrameClassName="shop-type-illustration"
+      activeValue={activeShopType}
+      items={marketShopTypes.map(({ value, labelKey, href, icon }) => ({ value, label: t(labelKey), href, icon }))}
+    />
 
-    <section className="filter-block category-filter">
-      <h2>{t("category")}</h2>
-      <div className="filter-list category-filter-list">
-        {[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "ms-grid-view" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))].map(({ icon, label, value }) => (
-          <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
-            <i className={`ms ${icon}`} aria-hidden="true" />
-            <span className={mobileDrawerClasses.menuLabel}>{label}</span>
-          </button>
-        ))}
-      </div>
-    </section>
+    <FilterMenuSection
+      title={t("category")}
+      className="category-filter"
+      listClassName="category-filter-list"
+      activeValue={activeCategory}
+      onSelect={onCategorySelect}
+      items={[{ label: `${t("all")} ${t("category")}`, value: "all", icon: "ms-grid-view" }, ...marketplaceCategories.map(({ label, value }) => ({ label: marketCategoryLabelKeys[value] ? t(marketCategoryLabelKeys[value]) : label, value, icon: categoryIcons[value] }))]}
+    />
 
     {priceCondition ? <>
       <section className="filter-block price-filter">

@@ -12689,83 +12689,82 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .market-filter-panel .filter-list a { font-size: var(--text-md); }
 }
 
-/* Mobile keeps the desktop Market rail's hierarchy: Market type is the
-   primary browse mode, while Categories are a quieter secondary filter.
-   The drawer still uses compact touch rows and mobile type sizes. */
+/* Mobile filter drawers (Market, Community, Services) share one reference for
+   their sub-category rows: `FilterMenuSection`. Every measure below belongs to
+   `.filter-menu-section`, so a row looks the same whichever drawer it is in, and
+   one edit moves all three. The type scale sits one step above the desktop rail
+   because the drawer is read at arm's length. */
 @media (max-width: 767.98px) {
-  .market-filter-panel.is-open .market-type-filter {
-    gap: var(--space-2);
-  }
-
-  .market-filter-panel.is-open .market-type-filter .filter-list {
-    gap: var(--space-1);
-  }
-
-  .market-filter-panel.is-open .market-type-filter .filter-list a {
-    min-height: var(--control-h-md);
-    padding-inline: var(--space-3);
-    font-weight: var(--weight-semibold);
-  }
-
-  .market-filter-panel.is-open .category-filter {
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-line-soft);
-  }
-
-  .market-filter-panel.is-open .category-filter h2 {
+  .market-filter-panel.is-open.mobile-side-drawer .filter-block h2 {
     display: block;
     margin: 0;
     color: var(--color-muted);
-    font-size: var(--text-2xs);
+    font-size: var(--text-sm);
     font-weight: var(--weight-bold);
     letter-spacing: .08em;
     text-transform: uppercase;
   }
 
-  .market-filter-panel.is-open .category-filter .filter-list {
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-section {
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-section + .filter-menu-section {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-line-soft);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-list {
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);
   }
 
-  /* Same monotone treatment inside the drawer, so the list does not change
-     character between the rail and the mobile sheet. */
-  .market-filter-panel.is-open .category-filter .filter-list button:not(.is-selected) > i { color: var(--color-muted); }
-  .market-filter-panel.is-open .category-filter .filter-list button.is-selected > i { color: var(--color-ink); }
-
-  .market-filter-panel.is-open .category-filter .filter-list button {
-    min-height: var(--control-h-sm);
-    padding-left: calc(var(--space-3) + 3px);
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row {
+    min-height: var(--control-h-xl);
+    display: grid;
+    grid-template-columns: var(--space-6) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-3);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    color: var(--color-muted);
-    font-size: var(--text-sm);
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-ink);
+    font-size: var(--text-md);
+    font-weight: var(--weight-regular);
+    text-align: left;
   }
 
-  .market-filter-panel.is-open .category-filter .filter-list button.is-selected {
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row.is-selected {
     background: var(--color-primary-soft);
     box-shadow: inset 3px 0 0 var(--color-primary);
     color: var(--color-ink);
     font-weight: var(--weight-bold);
   }
 
-  /* The phone drawer is read at arm's length, so every step of its type scale
-     sits one size above the desktop rail: section labels, rows, chips, and the
-     location pickers. One block, shared by the Market, Community and Services
-     drawers. */
-  .market-filter-panel.is-open.mobile-side-drawer .filter-block h2,
-  .market-filter-panel.is-open.mobile-side-drawer .category-filter h2 {
-    font-size: var(--text-sm);
-  }
-
-  .market-filter-panel.is-open.mobile-side-drawer .filter-list a,
-  .market-filter-panel.is-open.mobile-side-drawer .filter-list button,
-  .market-filter-panel.is-open.mobile-side-drawer .category-filter .filter-list button {
-    font-size: var(--text-md);
-  }
-
-  .market-filter-panel.is-open.mobile-side-drawer .filter-list .mobile-drawer-menu-item > i,
-  .market-filter-panel.is-open.mobile-side-drawer .community-category-illustration {
+  /* The glyph slot is the same box whether or not a section frames its icon. */
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row > i,
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row > span:first-child {
+    width: var(--space-6);
+    height: var(--space-6);
+    display: grid;
+    place-items: center;
+    color: var(--color-muted);
     font-size: var(--text-xl);
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row > span:first-child > i {
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row.is-selected > i,
+  .market-filter-panel.is-open.mobile-side-drawer .filter-menu-row.is-selected > span:first-child {
+    color: var(--color-ink);
   }
 
   .market-filter-panel.is-open.mobile-side-drawer .condition-chips button,

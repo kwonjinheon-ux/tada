@@ -1,7 +1,7 @@
 "use client";
 
-import { mobileDrawerClasses } from "@/components/MobileDrawer";
 import { BrowseFilterSidebar } from "@/components/layout/BrowseFilterSidebar";
+import { FilterMenuSection } from "@/components/layout/FilterMenuSection";
 import { LocationFilterSection } from "@/components/ui/LocationFilterSection";
 import { useLanguage } from "@/components/LanguageProvider";
 import { type MainLocation } from "@/data/nzLocations";
@@ -47,17 +47,14 @@ export function ServicesFilterSidebar({ activeCategory, onCategorySelect, mainLo
     <LocationFilterSection title={t("location")} mainLocation={mainLocation} subLocation={subLocation} onLocationChange={onLocationChange} idPrefix="services" mainLocationLabel={t("mainLocationLabel")} subLocationLabel={t("subLocationLabel")} mainLocationPlaceholder={t("allNewZealand")} subLocationPlaceholder={t("anySubLocation")} />
   }>
 
-    <section className="filter-block services-type-filter">
-      <h2>{text.serviceType}</h2>
-      <div className="filter-list">
-        {[{ value: "all" as const, label: text.allCategories, icon: "ms-grid-view" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon }))].map(({ value, label, icon }) => (
-          <button key={value} className={`${mobileDrawerClasses.menuItem} ${mobileDrawerClasses.staggerItem} services-type-${value} ${activeCategory === value ? "is-selected" : ""}`} type="button" onClick={() => onCategorySelect(value)}>
-            <i className={`ms ${icon}`} aria-hidden="true" />
-            <span className={mobileDrawerClasses.menuLabel}>{label}</span>
-          </button>
-        ))}
-      </div>
-    </section>
+    <FilterMenuSection
+      title={text.serviceType}
+      className="services-type-filter"
+      itemClassPrefix="services-type"
+      activeValue={activeCategory}
+      onSelect={onCategorySelect}
+      items={[{ value: "all" as const, label: text.allCategories, icon: "ms-grid-view" }, ...serviceCategories.map(({ id, icon }) => ({ value: id, label: categoryLabels[id], icon }))]}
+    />
 
     {!compact ? <><section className="filter-block services-choice-filter"><h2>{text.providerType}</h2><div className="condition-chips">{providerTypes.map(({ value, label }) => <button key={value} className={filters.providerType === value ? "is-selected" : ""} type="button" aria-pressed={filters.providerType === value} onClick={() => onFilterChange("providerType", value)}>{label}</button>)}</div></section>
       <section className="filter-block services-choice-filter"><h2>{text.availability}</h2><div className="condition-chips">{availabilities.map(({ value, label }) => <button key={value} className={filters.availability === value ? "is-selected" : ""} type="button" aria-pressed={filters.availability === value} onClick={() => onFilterChange("availability", value)}>{label}</button>)}</div></section>
