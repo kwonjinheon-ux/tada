@@ -27,7 +27,7 @@ export function DashboardNav({
 
   return (
     <nav className="dashboard-nav">
-      {dashboardNavItemsFor(context, { railOnly: true }).map((item) => {
+      {dashboardNavItemsFor(context).map((item) => {
         const href = dashboardNavHref(item, context);
         // The index route would otherwise match every child path.
         const isActive = item.suffix === "" ? pathname === base : pathname === href || pathname.startsWith(`${href}/`);

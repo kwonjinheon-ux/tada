@@ -3,15 +3,14 @@ import { getServerUser } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getActiveJourneys, getListedJourneys } from "@/lib/market/active-journey";
 import { MyPageClient } from "@/components/dashboard/MyPageClient";
-import { MyPageV2Client } from "@/components/dashboard/MyPageV2Client";
 import { getSignedStorageImages } from "@/lib/supabase/storage-image";
 
 /** Personal overview: scoped reads through the same authenticated client as the dashboard. */
-export async function MyPage({ version = "current" }: { version?: "current" | "v2" }) {
+export async function MyPage() {
   const user = await getServerUser();
-  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(version === "v2" ? "/market/dashboard/my-page-v2" : "/market/dashboard/my-page")}`);
+  if (!user) redirect(`/login?redirectTo=${encodeURIComponent("/market/dashboard/my-page")}`);
   const db = await createServerSupabaseClient();
-  if (!db) return version === "v2" ? <MyPageV2Client data={null} /> : <MyPageClient data={null} />;
+  if (!db) return <MyPageClient data={null} />;
   const [profile, services, posts, activity, unread, sales, journeys, marketSaved, bargainSaved, communitySaved, serviceSaved, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations] = await Promise.all([
     db.from("profiles").select("display_name,avatar_path,region_city,region_suburb").eq("id", user.id).maybeSingle(),
     db.from("service_listings").select("id,provider_name,status,updated_at", { count: "exact" }).eq("owner_id", user.id).neq("status", "archived").order("updated_at", { ascending: false }).limit(6),
@@ -30,22 +29,22 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     db.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("seller_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
     db.from("bargain_item_reservations").select("id", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["requested", "confirmed", "on_the_way"]),
   ]);
-  const listed = version === "current" ? await getListedJourneys(db, user.id) : { items: [], unavailable: false };
-  const savedServiceIds = version === "current" ? (serviceSaved.data ?? []).map((row) => row.service_id) : [];
+  const listed = await getListedJourneys(db, user.id);
+  const savedServiceIds = (serviceSaved.data ?? []).map((row) => row.service_id);
   const savedServiceResult = savedServiceIds.length
     ? await db.from("service_listings").select("id,business_name,provider_name,category_slug,service_areas,suburbs,rating,review_count,service_listing_photos(storage_path,display_order,photo_kind)").in("id", savedServiceIds).eq("status", "published")
     : { data: [], error: null };
   const savedServiceById = new Map((savedServiceResult.data ?? []).map((service) => [service.id, service]));
   const savedServicePreview = savedServiceIds.map((id) => savedServiceById.get(id)).filter((service) => service !== undefined).slice(0, 3);
   const savedLogoPaths = savedServicePreview.map((service) => service.service_listing_photos.find((photo) => photo.photo_kind === "logo")?.storage_path).filter((path): path is string => Boolean(path));
-  const savedLogos = version === "current" ? await getSignedStorageImages("service-listing-images", [...new Set(savedLogoPaths)], "thumbnail") : new Map<string, string>();
+  const savedLogos = await getSignedStorageImages("service-listing-images", [...new Set(savedLogoPaths)], "thumbnail");
 
   const listedIds = new Set(listed.items.map((item) => item.id));
   const thumbnails = await Promise.all([
     { rows: services.data ?? [], table: "service_listing_photos", key: "listing_id", bucket: "service-listing-images" },
     { rows: posts.data ?? [], table: "community_post_images", key: "post_id", bucket: "community-post-images" },
   ].map(async ({ rows, table, key, bucket }) => {
-    if (version !== "current" || !rows.length) return new Map<string, string>();
+    if (!rows.length) return new Map<string, string>();
     const { data: photos } = await db.from(table).select(`${key},storage_path`).in(key, rows.map((row) => row.id)).order("display_order", { ascending: true });
     const paths = new Map<string, string>();
     for (const photo of (photos ?? []) as unknown as Record<string, string>[]) {
@@ -88,5 +87,5 @@ export async function MyPage({ version = "current" }: { version?: "current" | "v
     activeReservationCount: sellingReservations.error || buyingReservations.error ? null : (sellingReservations.count ?? 0) + (buyingReservations.count ?? 0),
     unavailable: listed.unavailable || [profile, services, posts, activity, unread, sales, marketSaved, bargainSaved, communitySaved, serviceSaved, savedServiceResult, savedSearches, marketListings, bargainListings, sellingReservations, buyingReservations].some((result) => Boolean(result.error)),
   };
-  return version === "v2" ? <MyPageV2Client data={data} /> : <MyPageClient data={data} />;
+  return <MyPageClient data={data} />;
 }
