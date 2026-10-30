@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { dashboardNavHref, dashboardNavItemsFor } from "@/components/dashboard/dashboard-nav-items";
+import { policyIds, policyLinks } from "@/lib/policies/navigation";
 
 const badgeLabel = (count: number) => (count > 99 ? "99+" : String(count));
 
@@ -47,6 +48,16 @@ export function DashboardNav({
           <span>Admin Centre</span>
         </Link>
       ) : null}
+      {context === "market" ? <div className="dashboard-policy-links">
+        <p>{locale === "ko" ? "정책 · 초안" : "Policies · drafts"}</p>
+        {policyIds.map((id) => {
+          const item = policyLinks[id];
+          return <Link href={item.href} key={id}>
+            <i className={`ms ${item.icon}`} aria-hidden="true" />
+            <span>{locale === "ko" ? item.navLabel.ko : item.navLabel.en}</span>
+          </Link>;
+        })}
+      </div> : null}
     </nav>
   );
 }
