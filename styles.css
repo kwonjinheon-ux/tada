@@ -15316,3 +15316,41 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-detail-m-bar-cta.is-buy,
   .listing-detail-m-bar-cta.is-buy:hover:not(:disabled) { background: var(--orange-600); box-shadow: none; color: var(--neutral-50); }
 }
+
+/* ---------------------------------------------------------------------------
+   Service profile type scale. The profile had drifted a size or two under the
+   other detail pages (Market, Community) — labels at 11px, values at 12px, tabs
+   at 11px. It now reads on the same scale: 20px title, 16px body and section
+   headings, 14px values and meta, 12px labels. One block, every breakpoint, so
+   the phone overrides above no longer pull it back down.
+   --------------------------------------------------------------------------- */
+.service-profile-page .service-profile-hero-copy h1 { font-size: var(--text-2xl); }
+.service-profile-page .service-profile-hero-copy > p:first-child,
+.service-profile-page .service-profile-back,
+.service-profile-page .service-profile-rating,
+.service-profile-page .service-profile-keyfacts,
+.service-profile-page .service-profile-tabs a { font-size: var(--text-md); }
+.service-profile-page .service-profile-service-title,
+.service-profile-page .service-profile-summary,
+.service-profile-page .service-profile-eyebrow,
+.service-profile-page .service-profile-section h2 { font-size: var(--text-lg); }
+.service-profile-page .service-profile-business-details dt,
+.service-profile-page .service-profile-area-details dt,
+.service-profile-page .service-profile-price-table thead th,
+.service-profile-page .service-profile-area-chips span,
+.service-profile-page .service-profile-review-overview small,
+.service-profile-page .service-profile-review-distribution small,
+.service-profile-page .service-profile-review-distribution > div > span:first-child i,
+.service-profile-page .service-profile-review-list article header time,
+.service-profile-page .service-profile-contact-header span:not(.service-profile-contact-logo) { font-size: var(--text-sm); }
+.service-profile-page .service-profile-business-details dd,
+.service-profile-page .service-profile-area-details dd,
+.service-profile-page .service-profile-price-table tbody th,
+.service-profile-page .service-profile-price-table tbody td,
+.service-profile-page .service-profile-price-table td,
+.service-profile-page .service-profile-review-list article header strong,
+.service-profile-page .service-profile-review-list article p,
+.service-profile-page .service-profile-review-empty,
+.service-profile-page .service-profile-review-stars,
+.service-profile-page .service-profile-map span,
+.service-profile-page .service-profile-contact p { font-size: var(--text-md); }
