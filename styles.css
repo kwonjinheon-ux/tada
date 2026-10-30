@@ -15308,8 +15308,11 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-detail-m-bar .listing-detail-save { background: transparent; box-shadow: none; }
   .listing-detail-m-bar-price { min-width: 0; flex: 1; display: grid; gap: 2px; }
   .listing-detail-save + .listing-detail-m-bar-price { padding-left: var(--space-3); border-left: 1px solid var(--color-line-soft); }
-  .listing-detail-m-bar-price strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-xl); font-weight: var(--weight-bold); text-overflow: ellipsis; white-space: nowrap; }
+  .listing-detail-m-bar-price strong { overflow: hidden; color: var(--color-ink); font-size: var(--text-2xl); font-weight: var(--weight-bold); text-overflow: ellipsis; white-space: nowrap; }
   .listing-detail-m-bar-link { justify-self: start; padding: 0; border: 0; background: transparent; color: var(--color-primary); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: underline; cursor: pointer; }
   .listing-detail-m-bar-link:disabled { cursor: default; opacity: .72; }
-  .listing-detail-m-bar-cta { min-height: var(--control-h-xl); flex: 0 0 auto; padding: 0 var(--space-5); border-radius: var(--radius-lg); font-size: var(--text-lg); font-weight: var(--weight-bold); white-space: nowrap; }
+  .listing-detail-m-bar-cta { min-height: var(--control-h-xl); flex: 0 0 auto; padding: 0 var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-md); font-weight: var(--weight-bold); white-space: nowrap; }
+  /* Buy is the loudest control in the bar, so it takes the one warm colour on it. */
+  .listing-detail-m-bar-cta.is-buy,
+  .listing-detail-m-bar-cta.is-buy:hover:not(:disabled) { background: var(--orange-600); box-shadow: none; color: var(--neutral-50); }
 }

@@ -536,13 +536,17 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           <strong>{listing.price}</strong>
           {isOwner
             ? <button type="button" className="listing-detail-m-bar-link" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}>{listingStatus === "sold" ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</button>
-            : !isBargainListing ? <button type="button" className="listing-detail-m-bar-link" onClick={openOfferDialog}>{t("listingOfferPrice")}</button> : null}
+            : null}
         </div>
         {isOwner
           ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={editListing} disabled={listingStatus === "sold"}>{t("listingEditShort")}</Button>
           : isBargainListing
             ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={openOfferDialog}>{t("listingRequestToBuy")}</Button>
-            : <Button size="lg" className="listing-detail-m-bar-cta" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}>{isOpeningMessage ? t("listingOpeningChat") : t("listingStartChat")}</Button>}
+            : <>
+              {/* Buying starts the same flow as an offer, with the asking price already filled in. */}
+              <Button size="lg" className="listing-detail-m-bar-cta is-buy" onClick={openOfferDialog}>{t("listingBuy")}</Button>
+              <Button size="lg" className="listing-detail-m-bar-cta" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}>{isOpeningMessage ? t("listingOpeningChat") : t("listingStartChat")}</Button>
+            </>}
       </div> : null}
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? t("listingRequestToBuy") : t("listingMakeOffer")}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>{t("listingOfferAmount")}</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder={t("listingPickupNote")} onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>{t("cancel")}</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? t("listingSending") : isBargainListing ? t("listingSendRequest") : t("listingSendOffer")}</button></div></section></DialogOverlay> : null}
