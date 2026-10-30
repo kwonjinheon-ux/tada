@@ -513,6 +513,26 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           </div>
           <ListingDescriptionTranslation variant="chip" description={listing.description} onChange={setTranslatedDescription} />
         </div>
+        {showMobileBar ? <div className="listing-detail-m-bar listing-detail-mobile-only" role="group" aria-label={t("listingActions")}>
+          {isOwner
+            ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label={t("listingDelete")} onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button>
+            : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? t("listingUnsave") : t("listingSave")} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
+          <div className="listing-detail-m-bar-price">
+            <strong>{listing.price}</strong>
+            {isOwner
+              ? <button type="button" className="listing-detail-m-bar-link" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}>{listingStatus === "sold" ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</button>
+              : null}
+          </div>
+          {isOwner
+            ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={editListing} disabled={listingStatus === "sold"}>{t("listingEditShort")}</Button>
+            : isBargainListing
+              ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={openOfferDialog}>{t("listingRequestToBuy")}</Button>
+              : <>
+                {/* Buying starts the same flow as an offer, with the asking price already filled in. */}
+                <Button size="lg" className="listing-detail-m-bar-cta is-buy" onClick={openOfferDialog}>{t("listingBuy")}</Button>
+                <Button size="lg" className="listing-detail-m-bar-cta" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}>{isOpeningMessage ? t("listingOpeningChat") : t("listingStartChat")}</Button>
+              </>}
+        </div> : null}
       </section>
 
       <TextSizeSection
@@ -528,26 +548,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
 
-      {showMobileBar ? <div className="listing-detail-m-bar listing-detail-mobile-only" role="group" aria-label={t("listingActions")}>
-        {isOwner
-          ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label={t("listingDelete")} onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button>
-          : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? t("listingUnsave") : t("listingSave")} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
-        <div className="listing-detail-m-bar-price">
-          <strong>{listing.price}</strong>
-          {isOwner
-            ? <button type="button" className="listing-detail-m-bar-link" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}>{listingStatus === "sold" ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</button>
-            : null}
-        </div>
-        {isOwner
-          ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={editListing} disabled={listingStatus === "sold"}>{t("listingEditShort")}</Button>
-          : isBargainListing
-            ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={openOfferDialog}>{t("listingRequestToBuy")}</Button>
-            : <>
-              {/* Buying starts the same flow as an offer, with the asking price already filled in. */}
-              <Button size="lg" className="listing-detail-m-bar-cta is-buy" onClick={openOfferDialog}>{t("listingBuy")}</Button>
-              <Button size="lg" className="listing-detail-m-bar-cta" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}>{isOpeningMessage ? t("listingOpeningChat") : t("listingStartChat")}</Button>
-            </>}
-      </div> : null}
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? t("listingRequestToBuy") : t("listingMakeOffer")}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>{t("listingOfferAmount")}</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder={t("listingPickupNote")} onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>{t("cancel")}</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? t("listingSending") : isBargainListing ? t("listingSendRequest") : t("listingSendOffer")}</button></div></section></DialogOverlay> : null}
       {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="ms ms-delete" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="ms ms-delete" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>{t("cancel")}</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? t("listingDeleting") : "Delete listing"}</button></div></section></DialogOverlay> : null}

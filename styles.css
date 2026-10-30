@@ -15225,10 +15225,10 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     --listing-m-dock-height: calc(64px + env(safe-area-inset-bottom));
   }
 
-  /* Clearance for the fixed bar and the dock under it sits on the shell, so it is
-     also the end of the page when related listings follow the detail. */
+  /* Clearance for the dock sits on the shell, so it is also the end of the page
+     when related listings follow the detail. */
   body:has(.listing-detail-m-bar) .market-detail-shell-content {
-    padding-bottom: calc(var(--listing-m-bar-height) + var(--listing-m-dock-height) + var(--mobile-viewport-bottom-inset, 0px));
+    padding-bottom: calc(var(--listing-m-dock-height) + var(--mobile-viewport-bottom-inset, 0px));
   }
   body.listing-detail-screen .listing-detail-page:has(.listing-detail-m-topbar) { padding-top: 0; }
   body.listing-detail-screen .listing-detail-page:has(.listing-detail-m-bar) { padding-bottom: var(--space-6); }
@@ -15290,11 +15290,11 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-description-translate-chip { min-height: var(--control-h-sm); padding: 0 var(--space-3); border: 1px solid var(--blue-soft-150); border-radius: var(--radius-pill); background: var(--color-primary-soft); color: var(--color-primary); font: inherit; font-size: var(--text-sm); cursor: pointer; }
   .listing-description-translate-chip:disabled { cursor: wait; opacity: .72; }
 
+  /* Sticky, not fixed: the bar floats above the dock while the text is read and
+     comes to rest at the end of the body, where the comments begin. */
   .listing-detail-m-bar {
-    position: fixed;
-    right: 0;
+    position: sticky;
     bottom: calc(var(--listing-m-dock-height) + var(--mobile-viewport-bottom-inset, 0px));
-    left: 0;
     z-index: 41;
     min-height: var(--listing-m-bar-height);
     align-items: center;
