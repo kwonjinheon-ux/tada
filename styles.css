@@ -15210,28 +15210,32 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 /* ---------------------------------------------------------------------------
    Phone listing detail. A seller row, the item, and one bottom bar carrying the
    save heart, the price and the main action; the photo runs edge to edge with
-   back and share floating on it. The site header and the bottom dock step aside
-   (both are matched by :has() so server-rendered markup never flashes them).
+   back and share floating on it. The site header steps aside (matched by :has()
+   so server-rendered markup never flashes it); the bar rides just above the
+   standard bottom dock, which stays.
 
    The previous phone layout is commented out in ListingDetailClient.tsx and its
    rules (.listing-detail-mobile-*) are still above. To go back: restore that
    JSX, then delete this block.
    --------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
-  :root { --listing-m-bar-height: calc(var(--control-h-2xl) + var(--space-3) * 2); }
+  :root {
+    --listing-m-bar-height: calc(var(--control-h-2xl) + var(--space-3) * 2);
+    /* The dock publishes its height on itself only, so its value is repeated here. */
+    --listing-m-dock-height: calc(64px + env(safe-area-inset-bottom));
+  }
 
   body:has(.listing-detail-m-topbar) .site-header { display: none; }
-  body:has(.listing-detail-m-bar:not(.is-above-dock)) .mobile-bottom-dock { display: none; }
 
-  /* Clearance for the fixed bar sits on the shell, so it is also the end of the
-     page when related listings follow the detail. */
-  body:has(.listing-detail-m-bar:not(.is-above-dock)) .market-detail-shell-content {
-    padding-bottom: calc(var(--listing-m-bar-height) + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+  /* Clearance for the fixed bar and the dock under it sits on the shell, so it is
+     also the end of the page when related listings follow the detail. */
+  body:has(.listing-detail-m-bar) .market-detail-shell-content {
+    padding-bottom: calc(var(--listing-m-bar-height) + var(--listing-m-dock-height) + var(--mobile-viewport-bottom-inset, 0px));
   }
   body.listing-detail-screen .listing-detail-page:has(.listing-detail-m-topbar) { padding-top: 0; }
-  body.listing-detail-screen .listing-detail-page:has(.listing-detail-m-bar:not(.is-above-dock)) { padding-bottom: var(--space-6); }
-  body:has(.listing-detail-m-bar:not(.is-above-dock)) .listing-detail-mobile-message-error {
-    bottom: calc(var(--listing-m-bar-height) + var(--space-3) + env(safe-area-inset-bottom) + var(--mobile-viewport-bottom-inset, 0px));
+  body.listing-detail-screen .listing-detail-page:has(.listing-detail-m-bar) { padding-bottom: var(--space-6); }
+  body:has(.listing-detail-m-bar) .listing-detail-mobile-message-error {
+    bottom: calc(var(--listing-m-bar-height) + var(--listing-m-dock-height) + var(--space-3) + var(--mobile-viewport-bottom-inset, 0px));
   }
 
   .listing-detail-back-row,
@@ -15291,17 +15295,16 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-detail-m-bar {
     position: fixed;
     right: 0;
-    bottom: var(--mobile-viewport-bottom-inset, 0px);
+    bottom: calc(var(--listing-m-dock-height) + var(--mobile-viewport-bottom-inset, 0px));
     left: 0;
     z-index: 41;
     min-height: var(--listing-m-bar-height);
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+    padding: var(--space-3) var(--space-4);
     border-top: 1px solid var(--color-line-soft);
     background: var(--color-surface);
   }
-  .listing-detail-m-bar.is-above-dock { bottom: var(--mobile-dock-height, calc(64px + env(safe-area-inset-bottom))); padding-bottom: var(--space-3); }
   .listing-detail-m-bar .listing-detail-save { background: transparent; box-shadow: none; }
   .listing-detail-m-bar-price { min-width: 0; flex: 1; display: grid; gap: 2px; }
   .listing-detail-save + .listing-detail-m-bar-price { padding-left: var(--space-3); border-left: 1px solid var(--color-line-soft); }

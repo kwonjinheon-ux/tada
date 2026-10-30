@@ -528,7 +528,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
 
-      {showMobileBar ? <div className={`listing-detail-m-bar listing-detail-mobile-only ${isBargainListing ? "is-above-dock" : ""}`} role="group" aria-label={t("listingActions")}>
+      {showMobileBar ? <div className="listing-detail-m-bar listing-detail-mobile-only" role="group" aria-label={t("listingActions")}>
         {isOwner
           ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label={t("listingDelete")} onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button>
           : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? t("listingUnsave") : t("listingSave")} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
