@@ -15210,9 +15210,9 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
 /* ---------------------------------------------------------------------------
    Phone listing detail. A seller row, the item, and one bottom bar carrying the
    save heart, the price and the main action; the photo runs edge to edge with
-   back and share floating on it. The site header steps aside (matched by :has()
-   so server-rendered markup never flashes it); the bar rides just above the
-   standard bottom dock, which stays.
+   back and share floating on it. The site header and the standard bottom dock
+   stay as on every other page; the bar rides just above the dock (the rules
+   below use :has() so server-rendered markup never flashes the wrong layout).
 
    The previous phone layout is commented out in ListingDetailClient.tsx and its
    rules (.listing-detail-mobile-*) are still above. To go back: restore that
@@ -15224,8 +15224,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     /* The dock publishes its height on itself only, so its value is repeated here. */
     --listing-m-dock-height: calc(64px + env(safe-area-inset-bottom));
   }
-
-  body:has(.listing-detail-m-topbar) .site-header { display: none; }
 
   /* Clearance for the fixed bar and the dock under it sits on the shell, so it is
      also the end of the page when related listings follow the detail. */
