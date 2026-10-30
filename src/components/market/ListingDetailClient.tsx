@@ -3,7 +3,7 @@
 import { ImageGallery } from "@/components/ui/ImageGallery";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
@@ -12,9 +12,10 @@ import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
-import { getMarketCategoryLabel } from "@/lib/market/category-label";
+import { getMarketCategoryLabel, getMarketOptionLabel } from "@/lib/market/category-label";
 import { UNCONFIRMED_DETAILS_HEADING, splitUnconfirmedDetails } from "@/lib/market/unconfirmed-details";
-import { TextSizeSection } from "@/components/ui/TextSizeSection";
+import { TextSizeSection, descriptionTextScale } from "@/components/ui/TextSizeSection";
+import { Button } from "@/components/ui/Button";
 import { AdSlot } from "@/components/advertising/AdSlot";
 import { readApiResponse } from "@/lib/api/client";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -70,7 +71,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const isBargainListing = space === "bargain";
   const supportsBargainOffer = isBargainListing && listing.bargainType === "2-dollar-deals";
   const listingHomePath = "/market";
-  const [viewCount, setViewCount] = useState(listing.viewCount);
+  // The count is still recorded; the phone layout no longer prints it (the legacy
+  // stats row that did is commented out below).
+  const [, setViewCount] = useState(listing.viewCount);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const { heartParticles, isPopping, play: playSaveFeedback, stopPopping } = useSaveHeartFeedback();
   const [isOpeningMessage, setIsOpeningMessage] = useState(false);
@@ -91,6 +94,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isMarkingSold, setIsMarkingSold] = useState(false);
   const [listingStatus, setListingStatus] = useState(listing.status);
   const [isSellerOnline, setIsSellerOnline] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
   const [isUnconfirmedOpen, setIsUnconfirmedOpen] = useState(false);
@@ -182,6 +186,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     try {
       await copyCurrentPageLink();
       window.dispatchEvent(new Event("listing-share-copied"));
+      setIsLinkCopied(true);
+      window.setTimeout(() => setIsLinkCopied(false), 1_800);
     } catch {
       setMessageError(t("listingCopyLinkFailed"));
     }
@@ -389,6 +395,43 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     };
   }, [isBargainListing, isOwner, isSaved]);
 
+  const goBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push(listingHomePath);
+  };
+
+  const descriptionBody = <>
+    {translatedDescription
+      ? descriptionParagraphs(translatedDescription).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
+      : prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
+    {unconfirmed.length ? (
+      <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label={t("listingUnconfirmed")}>
+        <button type="button" className="listing-unconfirmed-toggle" aria-expanded={isUnconfirmedOpen} onClick={() => setIsUnconfirmedOpen((current) => !current)}>
+          <span>{UNCONFIRMED_DETAILS_HEADING}</span>
+          <i className="ms ms-expand-more" aria-hidden="true" />
+        </button>
+        <div className="listing-unconfirmed-panel">
+          <div className="listing-unconfirmed-body">
+            <div className="listing-unconfirmed-body-inner">
+              <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
+              <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+    ) : null}
+  </>;
+
+  // The phone layout: seller, then the item, then one bottom bar for the actions.
+  const sellerRowBody = <>
+    <span className={`listing-detail-m-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-m-avatar" /></span>
+    <span className="listing-detail-m-seller-text"><strong>{listing.seller.name}</strong><small>{listing.location} · {t("listingLocalMember")}</small></span>
+  </>;
+  const categoryLabel = listing.category ? getMarketCategoryLabel(listing.category.label, locale) : null;
+  const metaLine = [categoryLabel, listing.createdAt, getMarketOptionLabel(listing.tradeMethod, locale)].filter(Boolean).join(" · ");
+  const detailLine = [getMarketOptionLabel(listing.condition, locale), listing.meetingPlace ? `${t("listingMeetAt")} ${listing.meetingPlace}` : null].filter(Boolean).join(" · ");
+  const showMobileBar = isOwner || !isBargainListing || supportsBargainOffer;
+
   return (
     <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
@@ -397,6 +440,10 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
       <div className="listing-detail-layout">
         <ImageGallery images={listing.images} priority watermarkLabel={listingStatus === "sold" ? t("soldOut") : undefined} disableEnlarge={listingStatus === "sold"} />
+        <div className="listing-detail-m-topbar listing-detail-mobile-only">
+          <button type="button" className="listing-detail-m-round" aria-label={t("listingBack")} onClick={goBack}><i className="ms ms-chevron-left" aria-hidden="true" /></button>
+          <button type="button" className="listing-detail-m-round" aria-label={isLinkCopied ? t("listingDockLinkCopied") : t("listingShare")} onClick={() => void shareListing()}><i className={`ms ${isLinkCopied ? "ms-check" : "ms-share"}`} aria-hidden="true" /></button>
+        </div>
 
         <aside className="listing-detail-summary">
           <div className="listing-detail-heading">
@@ -433,46 +480,70 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       </div>
 
 
+      {/* Previous phone layout, kept so it can be brought back: the title, price and
+          stats block, then the seller card under the description. To restore it,
+          uncomment these two blocks, delete the "listing-detail-m-*" section below,
+          and remove the "phone listing detail" rules in styles.css.
+
       <section className={`listing-detail-mobile-meta listing-detail-mobile-only ${listing.images.length > 1 ? "has-photo-stack" : ""}`}>
         <h1>{listing.title}</h1>
         <div className="listing-detail-mobile-price-row"><strong>{listing.price}</strong><span className={`listing-status status-${listingStatus}`}>{listingStatus === "sold" ? t("soldOut") : listingStatus === "pending" ? t("pending") : t("available")}</span></div>
         <div className="listing-detail-mobile-location-row"><span><i className="ms ms-location-on" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="ms ms-visibility" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
+      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+      </section> : null}
+      */}
+
+      <section className="listing-detail-m-card listing-detail-mobile-only">
+        <div className="listing-detail-m-seller">
+          {!isBargainListing && listing.seller.id
+            ? <Link className="listing-detail-m-seller-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile">{sellerRowBody}</Link>
+            : <div className="listing-detail-m-seller-link">{sellerRowBody}</div>}
+          {!isBargainListing && !isOwner ? <div className="listing-detail-m-seller-actions"><ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /></div> : null}
+        </div>
+        <div className="listing-detail-m-body">
+          {listingStatus !== "available" ? <span className={`listing-status status-${listingStatus}`}>{listingStatus === "sold" ? t("soldOut") : t("pending")}</span> : null}
+          <h1>{listing.title}</h1>
+          <p className="listing-detail-m-meta">{metaLine}</p>
+          {detailLine ? <p className="listing-detail-m-meta">{detailLine}</p> : null}
+          <div className="listing-detail-m-description" style={{ "--text-scale": descriptionTextScale(descriptionTextSizeStep) } as CSSProperties}>
+            {descriptionBody}
+          </div>
+          <ListingDescriptionTranslation variant="chip" description={listing.description} onChange={setTranslatedDescription} />
+        </div>
+      </section>
+
       <TextSizeSection
-        className="listing-detail-description"
+        className="listing-detail-description listing-detail-description-desktop"
         title={t("listingDescription")}
         sizeStep={descriptionTextSizeStep}
         headerAction={<ListingDescriptionTranslation description={listing.description} onChange={setTranslatedDescription} />}
       >
-        {translatedDescription
-          ? descriptionParagraphs(translatedDescription).map((paragraph) => <p key={paragraph}>{paragraph}</p>)
-          : prose.length ? prose.map((paragraph) => <p key={paragraph}>{paragraph}</p>) : <p>The seller has not added further details yet.</p>}
-        {unconfirmed.length ? (
-          <aside className={`listing-unconfirmed ${isUnconfirmedOpen ? "is-open" : ""}`} aria-label={t("listingUnconfirmed")}>
-            <button type="button" className="listing-unconfirmed-toggle" aria-expanded={isUnconfirmedOpen} onClick={() => setIsUnconfirmedOpen((current) => !current)}>
-              <span>{UNCONFIRMED_DETAILS_HEADING}</span>
-              <i className="ms ms-expand-more" aria-hidden="true" />
-            </button>
-            <div className="listing-unconfirmed-panel">
-              <div className="listing-unconfirmed-body">
-                <div className="listing-unconfirmed-body-inner">
-                  <ul>{unconfirmed.map((point) => <li key={point}>{point}</li>)}</ul>
-                  <small>These came from the photo-based draft and the seller has not answered them yet. Message them if any matter to you.</small>
-                </div>
-              </div>
-            </div>
-          </aside>
-        ) : null}
+        {descriptionBody}
       </TextSizeSection>
       <AdSlot placement="product_detail_middle" />
-      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
-      </section> : null}
 
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
 
+      {showMobileBar ? <div className={`listing-detail-m-bar listing-detail-mobile-only ${isBargainListing ? "is-above-dock" : ""}`} role="group" aria-label={t("listingActions")}>
+        {isOwner
+          ? <button className="listing-detail-save listing-detail-delete" type="button" aria-label={t("listingDelete")} onClick={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}><i className="ms ms-delete" aria-hidden="true" /></button>
+          : !isBargainListing ? <button className={`listing-detail-save save-button ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} type="button" aria-label={isSaved ? t("listingUnsave") : t("listingSave")} aria-pressed={isSaved} onClick={() => void saveListing()} onAnimationEnd={(event) => { if (event.currentTarget === event.target) stopPopping(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button> : null}
+        <div className="listing-detail-m-bar-price">
+          <strong>{listing.price}</strong>
+          {isOwner
+            ? <button type="button" className="listing-detail-m-bar-link" onClick={() => void markAsSold()} disabled={isMarkingSold || listingStatus === "sold"}>{listingStatus === "sold" ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</button>
+            : !isBargainListing ? <button type="button" className="listing-detail-m-bar-link" onClick={openOfferDialog}>{t("listingOfferPrice")}</button> : null}
+        </div>
+        {isOwner
+          ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={editListing} disabled={listingStatus === "sold"}>{t("listingEditShort")}</Button>
+          : isBargainListing
+            ? <Button size="lg" className="listing-detail-m-bar-cta" onClick={openOfferDialog}>{t("listingRequestToBuy")}</Button>
+            : <Button size="lg" className="listing-detail-m-bar-cta" onPointerEnter={prepareMessaging} onFocus={prepareMessaging} onClick={() => void openConversation()} disabled={isOpeningMessage}>{isOpeningMessage ? t("listingOpeningChat") : t("listingStartChat")}</Button>}
+      </div> : null}
       {messageError ? <p className="listing-detail-mobile-message-error listing-detail-mobile-only" role="alert">{messageError}</p> : null}
       {isOfferDialogOpen ? <DialogOverlay className="listing-offer-backdrop" aria-labelledby="listing-offer-title" onClose={() => setIsOfferDialogOpen(false)} isDismissible={!isSubmittingOffer}><section className="listing-offer-dialog"><div className="listing-offer-dialog-icon"><i className="ms ms-handshake" aria-hidden="true" /></div><h2 id="listing-offer-title">{isBargainListing ? t("listingRequestToBuy") : t("listingMakeOffer")}</h2><p>{isBargainListing ? `This item has a fixed price of ${listing.price}. Send your request to the seller, and they can accept or decline it from this listing.` : "Send a clear price to the seller. If they accept, you can confirm the trade and both members receive trust points."}</p>{!isBargainListing ? <label><span>{t("listingOfferAmount")}</span><input type="number" min="0" step="0.01" inputMode="decimal" value={offerAmount} onChange={(event) => setOfferAmount(event.target.value)} /></label> : null}<label><span>Message (optional)</span><textarea value={offerNote} maxLength={500} rows={3} placeholder={t("listingPickupNote")} onChange={(event) => setOfferNote(event.target.value)} /></label>{offerError ? <p className="listing-offer-error" role="alert">{offerError}</p> : null}<div><button type="button" onClick={() => setIsOfferDialogOpen(false)} disabled={isSubmittingOffer}>{t("cancel")}</button><button type="button" className="listing-offer-submit" onClick={() => void submitOffer()} disabled={isSubmittingOffer}>{isSubmittingOffer ? t("listingSending") : isBargainListing ? t("listingSendRequest") : t("listingSendOffer")}</button></div></section></DialogOverlay> : null}
       {isDeleteDialogOpen ? <DialogOverlay className="listing-delete-backdrop" aria-labelledby="listing-delete-title" onClose={() => setIsDeleteDialogOpen(false)} isDismissible={!isDeleting}><section className={`listing-delete-dialog ${isDeleteAnimating ? "is-deleting" : ""}`}><div className="listing-delete-dialog-icon"><i className="ms ms-delete" aria-hidden="true" /></div>{isDeleteAnimating ? <span className="listing-delete-particles" aria-hidden="true">{Array.from({ length: 10 }, (_, index) => <i className="ms ms-delete" key={index} />)}</span> : null}<h2 id="listing-delete-title">Delete this listing?</h2><p>This cannot be undone. The listing and its photos will be permanently removed.</p>{deleteError ? <p className="listing-delete-error" role="alert">{deleteError}</p> : null}<div><button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>{t("cancel")}</button><button type="button" className="listing-delete-confirm" onClick={() => void deleteListing()} disabled={isDeleting}>{isDeleting ? t("listingDeleting") : "Delete listing"}</button></div></section></DialogOverlay> : null}

@@ -161,6 +161,10 @@ const koreanOptionLabels: Record<string, string> = {
   "Pickup & delivery": "직거래 & 배송",
   "Pickup only": "직거래만",
   "Delivery only": "배송만",
+  // The detail page shows the stored trade method as written by the server.
+  "Pickup or delivery": "픽업/배달 가능",
+  Pickup: "픽업 가능",
+  Delivery: "배달 가능",
   "Public location": "공공장소",
   "Pickup from home": "집에서 수령",
   "No visible scratches": "눈에 띄는 흠집 없음",
