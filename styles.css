@@ -523,7 +523,7 @@ a {
   background: var(--neutral-150);
 }
 
-/* Phones only: opens the browse drawer (areas, categories, filters). */
+/* Phones only: the header button left of the logo that opens the browse drawer. */
 .nav-search-filter {
   display: none;
 }
@@ -3860,8 +3860,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .listing-detail-description .text-size-section-header { justify-content: flex-start; gap: 10px; }
 .listing-description-translation { display: grid; justify-items: start; gap: 6px; }
-.listing-description-translate-button { min-height: var(--control-h-xs); padding: 0 12px; border-radius: var(--radius-pill); background: var(--neutral-200); border-color: transparent; color: var(--blue-soft-600); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-.listing-description-translate-button:hover:not(:disabled) { background: var(--green-soft-50); color: var(--primary-dark); }
+/* A quiet outlined pill: the glyph carries the meaning, the border stays hairline, and
+   only the glyph and the pressed state take the brand colour. */
+.listing-description-translation .listing-description-translate-button { min-height: var(--control-h-xs); gap: var(--space-1); padding: 0 var(--space-3) 0 var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); box-shadow: none; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-medium); letter-spacing: .01em; }
+.listing-description-translation .listing-description-translate-button .ms { color: var(--color-primary); font-size: var(--text-lg); }
+.listing-description-translation .listing-description-translate-button:hover:not(:disabled) { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.listing-description-translation .listing-description-translate-button[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
 .listing-description-translate-error { max-width: 230px; margin: 0; color: var(--red-900); font-size: var(--text-xs); line-height: 1.35; text-align: left; }
 
 .listing-detail-description h2 {
@@ -5997,9 +6001,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     height: 21px;
   }
 
-  .nav-search:has(.nav-search-filter) { grid-template-columns: 30px minmax(0, 1fr) var(--control-h-lg); padding-right: var(--space-2); }
-
+  /* The filter button takes the grid cell the hamburger used to have, left of the logo. */
   .nav-search-filter {
+    grid-area: menu;
+    justify-self: start;
     width: var(--control-h-lg);
     height: var(--control-h-lg);
     display: inline-grid;
@@ -6008,7 +6013,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     border: 0;
     border-radius: var(--radius-circle);
     background: transparent;
-    color: var(--color-primary);
+    color: var(--color-ink);
     font-size: var(--text-3xl);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -8721,7 +8726,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-gallery-lightbox-arrow.is-next { right: 12px; }
   .listing-gallery-lightbox-count { bottom: 18px; }
 
-  .listing-detail-mobile-meta { display: block; margin: 17px 20px 0; padding-bottom: 20px; border-bottom: 1px solid var(--neutral-300); }
+  .listing-detail-mobile-meta { display: block; margin: 17px 20px 0; padding-bottom: 0; border-bottom: 0; }
   .listing-detail-mobile-dots { display: flex; justify-content: center; gap: 12px; margin: 0 0 23px; }
   .listing-detail-mobile-meta.has-photo-grid .listing-detail-mobile-dots { display: none; }
   .listing-detail-mobile-meta.has-photo-stack .listing-detail-mobile-dots { display: none; }
@@ -15035,4 +15040,113 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .policy-document { padding: var(--space-4); }
   .policy-document h2 { font-size: var(--text-lg); }
   .policy-document p, .policy-document li { font-size: var(--text-md); }
+}
+/* ---------------------------------------------------------------------------
+   Service profile type scale. The profile had drifted a size or two under the
+   other detail pages (Market, Community) — labels at 11px, values at 12px, tabs
+   at 11px. It now reads on the same scale: 20px title, 16px body and section
+   headings, 14px values and meta, 12px labels. One block, every breakpoint, so
+   the phone overrides above no longer pull it back down.
+   --------------------------------------------------------------------------- */
+.service-profile-page .service-profile-hero-copy h1 { font-size: var(--text-2xl); }
+.service-profile-page .service-profile-hero-copy > p:first-child,
+.service-profile-page .service-profile-back,
+.service-profile-page .service-profile-rating,
+.service-profile-page .service-profile-keyfacts,
+.service-profile-page .service-profile-tabs a { font-size: var(--text-md); }
+.service-profile-page .service-profile-service-title,
+.service-profile-page .service-profile-summary,
+.service-profile-page .service-profile-eyebrow,
+.service-profile-page .service-profile-section h2 { font-size: var(--text-lg); }
+.service-profile-page .service-profile-business-details dt,
+.service-profile-page .service-profile-area-details dt,
+.service-profile-page .service-profile-price-table thead th,
+.service-profile-page .service-profile-area-chips span,
+.service-profile-page .service-profile-review-overview small,
+.service-profile-page .service-profile-review-distribution small,
+.service-profile-page .service-profile-review-distribution > div > span:first-child i,
+.service-profile-page .service-profile-review-list article header time,
+.service-profile-page .service-profile-contact-header span:not(.service-profile-contact-logo) { font-size: var(--text-sm); }
+.service-profile-page .service-profile-business-details dd,
+.service-profile-page .service-profile-area-details dd,
+.service-profile-page .service-profile-price-table tbody th,
+.service-profile-page .service-profile-price-table tbody td,
+.service-profile-page .service-profile-price-table td,
+.service-profile-page .service-profile-review-list article header strong,
+.service-profile-page .service-profile-review-list article p,
+.service-profile-page .service-profile-review-empty,
+.service-profile-page .service-profile-review-stars,
+.service-profile-page .service-profile-map span,
+.service-profile-page .service-profile-contact p { font-size: var(--text-md); }
+
+/* ---------------------------------------------------------------------------
+   Listing action panel (phones). Under the description, one card for what the
+   viewer can do: a buyer offers or chats, a seller marks sold, edits, bumps or
+   deletes. Tablet and desktop keep the summary rail and never see it.
+   --------------------------------------------------------------------------- */
+.listing-action-panel { display: none; }
+
+@media (max-width: 767.98px) {
+  .listing-action-panel {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-5) var(--space-5) 0;
+    padding: var(--space-4);
+    border: 1px solid var(--color-line-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+  /* Outlined glyphs throughout: the icon font fills them unless told otherwise. */
+  .listing-action-panel .ms:not(.ms-favorite) { --icon-fill: 0; }
+  .listing-action-panel-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .listing-action-panel-header > span { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); }
+  .listing-action-panel-header > span .ms { color: var(--color-ink); font-size: var(--text-lg); }
+
+  .listing-action-panel .listing-action-primary { gap: var(--space-2); border-radius: var(--radius-sm); background: var(--color-primary-strong); box-shadow: var(--shadow-xs); color: var(--neutral-50); font-size: var(--text-lg); font-weight: var(--weight-regular); }
+  .listing-action-panel .listing-action-primary.is-seller { background: var(--success-500); }
+  .listing-action-panel .listing-action-primary .ms { color: inherit; font-size: var(--text-xl); }
+  .listing-action-panel .listing-action-primary:disabled { opacity: .7; }
+
+  .listing-action-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .listing-action-panel.is-buyer .listing-action-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .listing-action-panel.is-seller .listing-action-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  /* Four tiles share the width, so the labels step down a size to stay whole. */
+  .listing-action-panel.is-seller .listing-action-tile { padding-inline: var(--space-1); font-size: var(--text-xs); }
+  .listing-action-tile { position: relative; min-width: 0; min-height: var(--control-h-2xl); display: grid; justify-items: center; align-content: center; gap: var(--space-1); padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
+  .listing-action-tile span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .listing-action-tile .ms { color: var(--color-ink); font-size: var(--text-xl); }
+  .listing-action-tile.is-accent { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-strong); }
+  .listing-action-tile.is-accent .ms { color: inherit; }
+  .listing-action-tile:disabled { cursor: default; opacity: .6; }
+
+  /* Saved keeps the app's heart colour on a soft rose tile; copied turns the tile
+     green for as long as the check is showing. Both outrank the ink defaults above. */
+  .listing-action-tile.is-saved { border-color: var(--rose-250); background: var(--rose-soft-100); color: var(--rose-750); }
+  .listing-action-tile.is-saved .ms-favorite { color: var(--rose-600); }
+  .listing-action-tile.is-copied { border-color: var(--success-500); background: var(--success-100); color: var(--success-700); }
+  .listing-action-tile.is-copied .ms { color: var(--success-500); }
+
+  /* Motion: controls lift on hover and press back down. Only where a pointer can
+     hover, and not at all for people who ask for less motion. */
+  .listing-action-panel .listing-action-primary,
+  .listing-action-tile { transition: transform 180ms cubic-bezier(.2, .8, .2, 1), box-shadow 180ms ease, border-color 160ms ease, background-color 160ms ease, color 160ms ease; }
+  .listing-action-tile .ms { transition: transform 180ms cubic-bezier(.2, .8, .2, 1); }
+  .listing-action-tile:active:not(:disabled),
+  .listing-action-panel .listing-action-primary:active:not(:disabled) { transform: scale(.97); }
+  @media (hover: hover) {
+    .listing-action-tile:hover:not(:disabled) { border-color: var(--color-primary); box-shadow: var(--shadow-sm, 0 6px 14px rgb(0 0 0 / .08)); transform: translateY(calc(var(--space-1) * -.5)); }
+    .listing-action-tile:hover:not(:disabled) .ms { transform: scale(1.18); }
+    .listing-action-tile.is-saved:hover:not(:disabled) { border-color: var(--rose-600); }
+    .listing-action-tile.is-copied:hover:not(:disabled) { border-color: var(--success-500); }
+    .listing-action-panel .listing-action-primary:hover:not(:disabled) { box-shadow: 0 8px 18px rgb(0 0 0 / .18); filter: brightness(1.08); transform: translateY(calc(var(--space-1) * -.5)); }
+    .listing-action-delete:hover { text-decoration: underline; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .listing-action-tile, .listing-action-tile .ms, .listing-action-panel .listing-action-primary { transition: none; }
+    .listing-action-tile:hover:not(:disabled), .listing-action-tile:hover:not(:disabled) .ms, .listing-action-panel .listing-action-primary:hover:not(:disabled) { transform: none; }
+  }
+  .listing-action-tile-badge { position: absolute; top: calc(var(--space-2) * -1 + var(--space-1)); right: var(--space-2); min-width: var(--space-5); height: var(--space-5); display: grid; place-items: center; padding: 0 var(--space-1); border-radius: var(--radius-pill); background: var(--red-650); color: var(--neutral-50); font-size: var(--text-xs); font-weight: var(--weight-bold); }
+
+  .listing-action-delete { justify-self: center; display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; background: transparent; color: var(--color-danger); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
+  .listing-action-delete .ms { color: inherit; font-size: var(--text-lg); }
 }

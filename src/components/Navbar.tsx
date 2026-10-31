@@ -17,6 +17,7 @@ import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
+const LISTING_ACTION_DOCK = false;
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
@@ -574,7 +575,10 @@ export function Navbar() {
     { id: "profile", label: t("myPage"), icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen || isOnDashboard, badge: unreadBadge },
   ];
 
-  const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
+  // The listing page keeps the standard dock; its offer, chat, share and save live in
+  // the action panel under the description. Set LISTING_ACTION_DOCK to true to bring
+  // back the dock that swapped to Market home, Message, Make offer, Copy link, Save.
+  const listingDockItems: MobileDockItem[] | null = !LISTING_ACTION_DOCK || !isListingDetail || !listingDockConfig ? null : [
     { id: "home", label: t("listingDockMarketHome"), icon: "home", href: "/market" },
     { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
@@ -631,6 +635,11 @@ export function Navbar() {
       <Suspense fallback={null}><SearchQuerySync onQueryChange={setSearchQuery} onCommunityCategoryChange={setCommunityCategory} /></Suspense>
       <header className="site-header">
       <div className="site-nav global-shell">
+        {/* Phones only: sits left of the logo and opens the browse drawer (areas, categories, filters). */}
+        <button className="nav-search-filter" type="button" aria-label={locale === "ko" ? "지역, 카테고리, 필터" : "Areas, categories and filters"} onClick={openMobileCategories}>
+          <i className="ms ms-menu" aria-hidden="true" />
+        </button>
+
         <Link className="site-logo" href="/" aria-label="Tada home">
           <img src="/images/logo.png" alt="Tada" />
         </Link>
@@ -646,9 +655,6 @@ export function Navbar() {
               <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
               <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-          </button>
-          <button className="nav-search-filter" type="button" aria-label={locale === "ko" ? "지역, 카테고리, 필터" : "Areas, categories and filters"} onClick={openMobileCategories}>
-            <i className="ms ms-tune" aria-hidden="true" />
           </button>
           {isMarket && isSearchSuggestionsOpen && trendingSearches.length > 0 ? (
             <div className="nav-search-suggestions" id="trending-searches" role="listbox" aria-label="Popular searches">

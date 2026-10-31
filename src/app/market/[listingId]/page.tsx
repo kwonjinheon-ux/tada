@@ -231,14 +231,19 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     : 0;
 
   if (listing) {
-    const [relatedListings, { data: savedListing }] = await Promise.all([
+    const isOwner = Boolean(user && user.id === listing.ownerId);
+    const [relatedListings, { data: savedListing }, unreadMessageCount] = await Promise.all([
       getRelatedListings(listing, supabase, user?.id),
       user ? supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle() : Promise.resolve({ data: null }),
+      // The seller's action panel shows how many messages on this listing are still unread.
+      user && isOwner
+        ? supabase.from("market_messages").select("id, market_conversations!inner(listing_id)", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null).eq("market_conversations.listing_id", listing.id).then(({ count }) => count ?? 0)
+        : Promise.resolve(0),
     ]);
     const { data: savedRelatedListings } = user && relatedListings.length
       ? await supabase.from("market_wishlist").select("listing_id").eq("user_id", user.id).in("listing_id", relatedListings.map(({ id }) => id))
       : { data: [] };
-    return <MarketDetailShell><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={Boolean(user && user.id === listing.ownerId)} descriptionTextSizeStep={descriptionTextSizeStep} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></MarketDetailShell>;
+    return <MarketDetailShell><ListingDetailClient listing={listing} initialIsSaved={Boolean(savedListing)} isOwner={isOwner} descriptionTextSizeStep={descriptionTextSizeStep} unreadMessageCount={unreadMessageCount} /><RelatedListings listings={relatedListings} savedListingIds={(savedRelatedListings ?? []).map(({ listing_id }) => listing_id)} /></MarketDetailShell>;
   }
 
   // A garage/moving sale or a $2–$10 deal doesn't live in market_listings — fall back
