@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -28,11 +28,31 @@ type AuthorMenuProps = {
 export function CommunityCommentAuthorMenu({ authorId, name, avatarUrl, avatarClassName = "listing-comment-avatar", menuClassName = "community-comment-author-menu", trigger, otherHref, otherLabel, otherIcon = "ms-forum", extraItems }: AuthorMenuProps) {
   const { locale } = useLanguage();
   const menuRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [placement, setPlacement] = useState<"below" | "above">("below");
   const ko = locale === "ko";
   const profileHref = `/market/sellers/${authorId}`;
   const postsHref = otherHref ?? `/community/members/${authorId}`;
   const close = () => setOpen(false);
+
+  // The menu hangs below the photo. When it would run past the bottom of the screen — or under
+  // the dock — it opens upward instead, so no row is ever cut off. Decided before paint.
+  useLayoutEffect(() => {
+    if (!open) { setPlacement("below"); return; }
+    const popover = popoverRef.current;
+    const trigger = menuRef.current?.firstElementChild;
+    if (!popover || !trigger) return;
+    const triggerBox = trigger.getBoundingClientRect();
+    const dock = document.querySelector<HTMLElement>(".mobile-bottom-dock");
+    const dockTop = dock && getComputedStyle(dock).display !== "none" ? dock.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
+    const bottomEdge = Math.min(window.visualViewport?.height ?? window.innerHeight, dockTop);
+    const topEdge = Math.max(0, document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 0);
+    const spaceBelow = bottomEdge - triggerBox.bottom;
+    const spaceAbove = triggerBox.top - topEdge;
+    const needed = popover.offsetHeight + 8;
+    setPlacement(needed > spaceBelow && spaceAbove > spaceBelow ? "above" : "below");
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +72,7 @@ export function CommunityCommentAuthorMenu({ authorId, name, avatarUrl, avatarCl
     <button type="button" className="community-comment-author-trigger" aria-label={ko ? `${name} 프로필 메뉴 열기` : `Open ${name}'s profile menu`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
       {trigger ?? <Avatar src={avatarUrl} name={name} className={avatarClassName} initials="double" />}
     </button>
-    {open ? <div className="community-comment-author-popover menu-motion" role="menu">
+    {open ? <div ref={popoverRef} className={`community-comment-author-popover menu-motion ${placement === "above" ? "is-above" : ""}`} role="menu">
       <Link href={profileHref} role="menuitem" onClick={close}><i className="ms ms-person" aria-hidden="true" />{ko ? "프로필 보기" : "View profile"}</Link>
       <Link href={postsHref} role="menuitem" onClick={close}><i className={`ms ${otherIcon}`} aria-hidden="true" />{otherLabel ?? (ko ? "다른 글 보기" : "View other posts")}</Link>
       {extraItems?.(close)}

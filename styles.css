@@ -9167,6 +9167,10 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
    (the post author) out of its right. */
 .community-comment-author-menu .community-comment-author-popover { transform-origin: top left; }
 .community-detail-author-menu .community-comment-author-popover { right: 0; left: auto; }
+/* Out of room below, the menu opens upward and grows out of the photo's top edge instead. */
+.community-comment-author-popover.is-above { top: auto; bottom: calc(100% - 1px); }
+.community-comment-author-menu .community-comment-author-popover.is-above { transform-origin: bottom left; }
+.community-detail-author-menu .community-comment-author-popover.is-above { transform-origin: bottom right; }
 .community-comment-author-popover a:hover, .community-comment-author-popover a:focus-visible,
 .community-comment-author-popover button:hover:not(:disabled), .community-comment-author-popover button:focus-visible { background: var(--color-surface-soft); outline: none; }
 .community-comment-author-popover a i,
