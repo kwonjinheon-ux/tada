@@ -1,13 +1,14 @@
 import { marketMessageRequestSchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
+import { getServerUserId } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { consumeMarketRateLimit } from "@/lib/market/safety";
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return apiFailure("UNAVAILABLE", "Messaging is unavailable right now.", 503);
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiFailure("UNAUTHORIZED", "Please log in to send a message.", 401);
+  const userId = await getServerUserId();
+  if (!userId) return apiFailure("UNAUTHORIZED", "Please log in to send a message.", 401);
   const rateLimit = await consumeMarketRateLimit(supabase, "message");
   if (!rateLimit.allowed) {
     return rateLimit.reason === "unavailable"
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     .from("market_messages")
     // The database trigger verifies participation and derives the real recipient.
     // This avoids an extra conversation lookup on every message send.
-    .insert({ conversation_id: conversationId, sender_id: user.id, recipient_id: user.id, body })
+    .insert({ conversation_id: conversationId, sender_id: userId, recipient_id: userId, body })
     .select("id,conversation_id,sender_id,recipient_id,body,created_at,read_at")
     .single();
   if (error || !message) {

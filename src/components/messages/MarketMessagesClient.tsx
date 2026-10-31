@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationBulkResponseSchema, marketMessageResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import type { ConversationSummary, MarketMessage, MarketThread, TradeOffer } from "@/lib/market/messaging";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { Button } from "@/components/ui/Button";
@@ -14,55 +15,28 @@ import { TradeReviewDialog } from "@/components/market/TradeReviewDialog";
 import { useLanguage } from "@/components/LanguageProvider";
 import { BackToMyPage } from "@/components/layout/NavigationHistory";
 
-export type ConversationSummary = {
-  id: string;
-  listing: { id: string; title: string; price: string; imageUrl: string | null };
-  counterpart: { id: string; name: string; avatarUrl: string | null };
-  lastMessagePreview: string | null;
-  lastMessageAt: string | null;
-  unreadCount: number;
-  role: "buying" | "selling";
-  archivedAt: string | null;
-};
-
-export type MarketMessage = {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  recipientId: string;
-  body: string;
-  createdAt: string;
-  readAt: string | null;
-  isPending?: boolean;
-};
-
-export type TradeOffer = {
-  id: string;
-  conversationId: string;
-  listingId: string;
-  buyerId: string;
-  sellerId: string;
-  amountCents: number;
-  note: string | null;
-  status: "pending" | "accepted" | "declined" | "cancelled" | "completed";
-  createdAt: string;
-  respondedAt: string | null;
-  completedAt: string | null;
-  reviewedAt: string | null;
-};
+export type { ConversationSummary, MarketMessage, TradeOffer };
 
 type Props = {
   conversations: ConversationSummary[];
   selectedConversationId: string | null;
-  initialMessages: MarketMessage[];
-  initialOffers: TradeOffer[];
+  initialThread: MarketThread | null;
   currentUserId: string;
   variant?: "current" | "v0";
 };
 
+/** A conversation's messages and offers as held on this screen. */
+type ClientThread = MarketThread & { isLoaded: boolean };
+
 type ConversationFilter = "all" | "unread" | "buying" | "selling" | "archived";
 
 const CONVERSATION_FILTERS: ConversationFilter[] = ["all", "unread", "buying", "selling", "archived"];
+const NO_MESSAGES: MarketMessage[] = [];
+const NO_OFFERS: TradeOffer[] = [];
+/** A thread read this recently is shown as is rather than read again on open. */
+const THREAD_FRESH_MS = 3000;
+/** How many of the newest conversations are read ahead once the inbox is idle. */
+const READ_AHEAD_COUNT = 3;
 
 // Archived conversations live in their own tab: every other filter describes the
 // inbox, so they would otherwise reappear in the list the user filed them out of.
@@ -92,17 +66,26 @@ function formatOfferAmount(amountCents: number) {
   return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD", maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2 }).format(amountCents / 100);
 }
 
-export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId, initialMessages, initialOffers, currentUserId, variant = "current" }: Props) {
+/** A fresh read of a thread, keeping what this screen knows that the read cannot: messages still being sent and ones that landed after it was taken. */
+function mergeThread(current: ClientThread | undefined, fetched: MarketThread): ClientThread {
+  if (!current) return { ...fetched, isLoaded: true };
+  const fetchedIds = new Set(fetched.messages.map((message) => message.id));
+  const newestFetched = fetched.messages.at(-1)?.createdAt ?? "";
+  const kept = current.messages.filter((message) => !fetchedIds.has(message.id) && (message.isPending || message.createdAt > newestFetched));
+  return { messages: kept.length ? [...fetched.messages, ...kept] : fetched.messages, offers: fetched.offers, isLoaded: true };
+}
+
+export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId: initialSelectedConversationId, initialThread, currentUserId, variant = "current" }: Props) {
   const { t, locale } = useLanguage();
   const ko = locale === "ko";
   const isV0 = variant === "v0";
   const messagesHref = isV0 ? "/market/dashboard/messages-v0" : "/market/dashboard/messages";
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [conversations, setConversations] = useState(initialConversations);
-  const [messages, setMessages] = useState(initialMessages);
-  const [offers, setOffers] = useState(initialOffers);
+  const [threads, setThreads] = useState<Record<string, ClientThread>>(() => initialSelectedConversationId && initialThread ? { [initialSelectedConversationId]: { ...initialThread, isLoaded: true } } : {});
+  const [threadErrorId, setThreadErrorId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
-  const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [updatingOfferId, setUpdatingOfferId] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
@@ -121,11 +104,18 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const [reviewOffer, setReviewOffer] = useState<TradeOffer | null>(null);
   const threadBodyRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
-  const sendingRef = useRef(false);
+  const threadRequestsRef = useRef(new Map<string, Promise<MarketThread | null>>());
+  const threadLoadedAtRef = useRef(new Map<string, number>(initialSelectedConversationId && initialThread ? [[initialSelectedConversationId, Date.now()]] : []));
+  const inboxRequestRef = useRef<Promise<void> | null>(null);
+  // The open conversation follows the address bar, so choosing one is a history entry
+  // rather than a page load: the list and every thread already read stay on screen.
+  const requestedConversationId = searchParams.get("conversation");
+  const selectedConversationId = requestedConversationId && conversations.some((conversation) => conversation.id === requestedConversationId) ? requestedConversationId : null;
   const selectedConversationIdRef = useRef(selectedConversationId);
-  const offersRef = useRef(offers);
-  const refreshFrameRef = useRef<number | null>(null);
   const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedConversationId) ?? null, [conversations, selectedConversationId]);
+  const selectedThread = selectedConversationId ? threads[selectedConversationId] : undefined;
+  const messages = selectedThread?.messages ?? NO_MESSAGES;
+  const offers = selectedThread?.offers ?? NO_OFFERS;
   const hasSelectedConversation = Boolean(selectedConversation);
   const visibleConversations = useMemo(() => conversations.filter((conversation) => matchesFilter(conversation, filter)), [conversations, filter]);
   const totalUnreadCount = useMemo(() => conversations.reduce((total, conversation) => total + conversation.unreadCount, 0), [conversations]);
@@ -156,24 +146,23 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   };
 
   useEffect(() => {
-    setConversations(initialConversations);
-  }, [initialConversations]);
-
-  useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
-
-  useEffect(() => {
-    setOffers(initialOffers);
-  }, [initialOffers]);
-
-  useEffect(() => {
-    offersRef.current = offers;
-  }, [offers]);
-
-  useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
+
+  // Choosing a conversation here never reloads the page, so new props mean the screen
+  // was reached again from elsewhere (a notification, a listing): take what it carries.
+  const hasSeenProps = useRef(false);
+  useEffect(() => {
+    if (!hasSeenProps.current) {
+      hasSeenProps.current = true;
+      return;
+    }
+    setConversations(initialConversations);
+    if (initialSelectedConversationId && initialThread) {
+      threadLoadedAtRef.current.set(initialSelectedConversationId, Date.now());
+      setThreads((current) => ({ ...current, [initialSelectedConversationId]: mergeThread(current[initialSelectedConversationId], initialThread) }));
+    }
+  }, [initialConversations, initialSelectedConversationId, initialThread]);
 
   useEffect(() => {
     const threadBody = threadBodyRef.current;
@@ -183,14 +172,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     });
     return () => window.cancelAnimationFrame(frame);
   }, [messages, offers]);
-
-  useEffect(() => {
-    router.prefetch(messagesHref);
-  }, [router, messagesHref]);
-
-  useEffect(() => () => {
-    if (refreshFrameRef.current !== null) window.cancelAnimationFrame(refreshFrameRef.current);
-  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -246,11 +227,85 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     };
   }, []);
 
+  // Change one conversation's thread. A thread that has not been read yet is left
+  // alone unless `create` is set: a half-built one would pass for the whole thing.
+  const patchThread = useCallback((conversationId: string, update: (thread: ClientThread) => ClientThread, create = false) => {
+    setThreads((current) => {
+      const existing = current[conversationId];
+      if (!existing && !create) return current;
+      return { ...current, [conversationId]: update(existing ?? { messages: [], offers: [], isLoaded: false }) };
+    });
+  }, []);
+
+  const requestThread = useCallback((conversationId: string) => {
+    const inFlight = threadRequestsRef.current.get(conversationId);
+    if (inFlight) return inFlight;
+    const request = fetch(`/api/market/messages/${conversationId}`, { cache: "no-store" })
+      .then(async (response) => response.ok ? (await response.json() as { data?: MarketThread }).data ?? null : null)
+      .catch(() => null)
+      .finally(() => threadRequestsRef.current.delete(conversationId));
+    threadRequestsRef.current.set(conversationId, request);
+    return request;
+  }, []);
+
+  // Read a thread into place. `force` re-reads one that was read a moment ago.
+  const loadThread = useCallback(async (conversationId: string, force = false) => {
+    const loadedAt = threadLoadedAtRef.current.get(conversationId);
+    if (!force && loadedAt && Date.now() - loadedAt < THREAD_FRESH_MS) return;
+    const fetched = await requestThread(conversationId);
+    if (!fetched) {
+      if (conversationId === selectedConversationIdRef.current) setThreadErrorId(conversationId);
+      return;
+    }
+    threadLoadedAtRef.current.set(conversationId, Date.now());
+    setThreadErrorId((current) => current === conversationId ? null : current);
+    setThreads((current) => ({ ...current, [conversationId]: mergeThread(current[conversationId], fetched) }));
+  }, [requestThread]);
+
+  // Re-read the inbox in place; the open conversation stays read.
+  const refreshInbox = useCallback(() => {
+    if (inboxRequestRef.current) return inboxRequestRef.current;
+    const request = fetch("/api/market/inbox", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const fresh = (await response.json() as { data?: { conversations: ConversationSummary[] } }).data?.conversations;
+        if (!fresh) return;
+        setConversations(fresh.map((conversation) => conversation.id === selectedConversationIdRef.current ? { ...conversation, unreadCount: 0 } : conversation));
+      })
+      .catch(() => undefined)
+      .finally(() => { inboxRequestRef.current = null; });
+    inboxRequestRef.current = request;
+    return request;
+  }, []);
+
+  const selectConversation = (conversationId: string | null) => {
+    if (conversationId === selectedConversationIdRef.current) return;
+    window.history.pushState(null, "", conversationId ? `${messagesHref}?conversation=${conversationId}` : messagesHref);
+  };
+
+  // Warm a thread before it is opened, from hover, focus or the first touch.
+  const prefetchThread = (conversationId: string) => {
+    if (!threads[conversationId]) void loadThread(conversationId);
+  };
+
   useEffect(() => {
     if (!selectedConversationId) return;
     void fetch(`/api/market/messages/${selectedConversationId}/read`, { method: "PATCH" }).catch(() => undefined);
-    setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, unreadCount: 0 } : conversation));
-  }, [selectedConversationId]);
+    setConversations((current) => current.some((conversation) => conversation.id === selectedConversationId && conversation.unreadCount) ? current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, unreadCount: 0 } : conversation) : current);
+    void loadThread(selectedConversationId);
+  }, [selectedConversationId, loadThread]);
+
+  // With the inbox on screen, the newest conversations are read in the background so
+  // the first tap on one opens it at once.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      initialConversations
+        .filter((conversation) => !conversation.archivedAt)
+        .slice(0, READ_AHEAD_COUNT)
+        .forEach((conversation) => { if (conversation.id !== selectedConversationIdRef.current) void loadThread(conversation.id); });
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [initialConversations, loadThread]);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -262,48 +317,45 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const refreshConversationList = () => {
-      if (refreshFrameRef.current !== null) return;
-      refreshFrameRef.current = window.requestAnimationFrame(() => {
-        refreshFrameRef.current = null;
-        router.refresh();
-      });
+    // Everything that may have been missed while the screen was hidden or offline.
+    const catchUp = () => {
+      void refreshInbox();
+      const openId = selectedConversationIdRef.current;
+      if (openId) void loadThread(openId, true);
     };
 
     const handleIncomingMessage = (payload: { new: unknown }) => {
       const row = payload.new as { id: string; conversation_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
       if (!row.id || !row.conversation_id || !row.body || !row.created_at) return;
       const incoming: MarketMessage = { id: row.id, conversationId: row.conversation_id, senderId: row.sender_id, recipientId: row.recipient_id, body: row.body, createdAt: row.created_at, readAt: row.read_at };
-      if (incoming.conversationId === selectedConversationIdRef.current) {
-        setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
-        void fetch(`/api/market/messages/${incoming.conversationId}/read`, { method: "PATCH" }).catch(() => undefined);
-      }
+      const isActiveConversation = incoming.conversationId === selectedConversationIdRef.current;
+      patchThread(incoming.conversationId, (thread) => thread.messages.some((message) => message.id === incoming.id) ? thread : { ...thread, messages: [...thread.messages, incoming] });
+      if (isActiveConversation) void fetch(`/api/market/messages/${incoming.conversationId}/read`, { method: "PATCH" }).catch(() => undefined);
       setConversations((current) => {
-        const conversation = current.find((item) => item.id === incoming.conversationId);
-        if (!conversation) {
-          refreshConversationList();
+        if (!current.some((item) => item.id === incoming.conversationId)) {
+          void refreshInbox();
           return current;
         }
-        const isActiveConversation = incoming.conversationId === selectedConversationIdRef.current;
         return current.map((item) => item.id === incoming.conversationId ? { ...item, lastMessagePreview: incoming.body, lastMessageAt: incoming.createdAt, unreadCount: isActiveConversation ? 0 : item.unreadCount + 1 } : item);
       });
     };
 
     const handleReadReceiptUpdate = (payload: { new: unknown }) => {
       const row = payload.new as { id: string; conversation_id: string; read_at: string | null };
-      if (!row.id || !row.conversation_id || row.conversation_id !== selectedConversationIdRef.current) return;
-      setMessages((current) => current.map((message) => message.id === row.id ? { ...message, readAt: row.read_at } : message));
+      if (!row.id || !row.conversation_id) return;
+      patchThread(row.conversation_id, (thread) => ({ ...thread, messages: thread.messages.map((message) => message.id === row.id ? { ...message, readAt: row.read_at } : message) }));
     };
 
     const handleIncomingOffer = (payload: { new: unknown }) => {
       const row = payload.new as { id: string; conversation_id: string; listing_id: string; buyer_id: string; seller_id: string; amount_cents: number; note: string | null; status: TradeOffer["status"]; created_at: string; responded_at: string | null; completed_at: string | null };
       if (!row.id || !row.conversation_id || !row.status) return;
-      const previous = offersRef.current.find((offer) => offer.id === row.id);
-      const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at, reviewedAt: previous?.reviewedAt ?? null };
-      if (incoming.conversationId === selectedConversationIdRef.current) setOffers((current) => current.some((offer) => offer.id === incoming.id) ? current.map((offer) => offer.id === incoming.id ? incoming : offer) : [...current, incoming]);
+      patchThread(row.conversation_id, (thread) => {
+        const previous = thread.offers.find((offer) => offer.id === row.id);
+        const incoming: TradeOffer = { id: row.id, conversationId: row.conversation_id, listingId: row.listing_id, buyerId: row.buyer_id, sellerId: row.seller_id, amountCents: row.amount_cents, note: row.note, status: row.status, createdAt: row.created_at, respondedAt: row.responded_at, completedAt: row.completed_at, reviewedAt: previous?.reviewedAt ?? null };
+        return { ...thread, offers: previous ? thread.offers.map((offer) => offer.id === incoming.id ? incoming : offer) : [...thread.offers, incoming] };
+      });
       setConversations((current) => {
-        if (current.some((conversation) => conversation.id === incoming.conversationId)) return current;
-        refreshConversationList();
+        if (!current.some((conversation) => conversation.id === row.conversation_id)) void refreshInbox();
         return current;
       });
     };
@@ -321,7 +373,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             if (!isActive) return;
             if (status === "SUBSCRIBED") {
               reconnectAttempt = 0;
-              if (hasConnectedBefore) refreshConversationList();
+              if (hasConnectedBefore) catchUp();
               hasConnectedBefore = true;
               return;
             }
@@ -335,13 +387,13 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
             }
           });
       } catch {
-        // Realtime unavailable in this environment; the page still works via server-rendered data and refresh-on-focus below.
+        // Realtime unavailable in this environment; the page still works from what was read and the catch-up on focus below.
       }
     };
     connect();
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") refreshConversationList();
+      if (document.visibilityState === "visible") catchUp();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -351,12 +403,8 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (channel) void supabase.removeChannel(channel).catch(() => undefined);
     };
-  }, [currentUserId, router]);
+  }, [currentUserId, loadThread, patchThread, refreshInbox]);
 
-  const openConversation = (conversationId: string) => {
-    if (conversationId === selectedConversationIdRef.current) return;
-    router.push(`${messagesHref}?conversation=${conversationId}`);
-  };
   const updateOffer = async (offer: TradeOffer, action: "accept" | "decline" | "cancel" | "complete") => {
     if (updatingOfferId) return;
     setUpdatingOfferId(offer.id);
@@ -373,7 +421,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
         return;
       }
       const nextOffer: TradeOffer = { id: payload.offer.id, conversationId: payload.offer.conversation_id, listingId: payload.offer.listing_id, buyerId: payload.offer.buyer_id, sellerId: payload.offer.seller_id, amountCents: payload.offer.amount_cents, note: payload.offer.note, status: payload.offer.status, createdAt: payload.offer.created_at, respondedAt: payload.offer.responded_at, completedAt: payload.offer.completed_at, reviewedAt: offer.reviewedAt };
-      setOffers((current) => current.map((item) => item.id === nextOffer.id ? nextOffer : item));
+      patchThread(offer.conversationId, (thread) => ({ ...thread, offers: thread.offers.map((item) => item.id === nextOffer.id ? nextOffer : item) }));
       if (action === "complete") setReviewOffer(nextOffer);
     } catch {
       setOfferError(currentKo ? "제안 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach offers right now. Please try again.");
@@ -387,16 +435,15 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     setBulkError(null);
     const readAt = new Date().toISOString();
     const previousConversations = conversations;
-    const previousMessages = messages;
+    const previousThreads = threads;
     setConversations((current) => current.map((conversation) => conversation.unreadCount ? { ...conversation, unreadCount: 0 } : conversation));
-    setMessages((current) => current.map((message) => message.recipientId === currentUserId && !message.readAt ? { ...message, readAt } : message));
+    setThreads((current) => Object.fromEntries(Object.entries(current).map(([id, thread]) => [id, { ...thread, messages: thread.messages.map((message) => message.recipientId === currentUserId && !message.readAt ? { ...message, readAt } : message) }])));
     try {
       const response = await fetch("/api/market/messages/read-all", { method: "PATCH" });
       if (!response.ok) throw new Error("Unable to mark messages as read.");
-      router.refresh();
     } catch {
       setConversations(previousConversations);
-      setMessages(previousMessages);
+      setThreads(previousThreads);
       setBulkError(currentKo ? "메시지를 읽음 처리하지 못했어요. 다시 시도해 주세요." : "Unable to mark messages as read. Please try again.");
     } finally {
       setIsMarkingAllRead(false);
@@ -435,8 +482,8 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       apply(result.data.conversationIds);
       exitSelection();
       // The thread pane is showing a conversation that may no longer be in view.
-      if (selectedConversationId && result.data.conversationIds.includes(selectedConversationId)) router.push(messagesHref);
-      else router.refresh();
+      if (selectedConversationId && result.data.conversationIds.includes(selectedConversationId)) selectConversation(null);
+      else void refreshInbox();
     } catch {
       setBulkError(failureMessage);
     } finally {
@@ -503,21 +550,24 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       }
       setIsOfferDialogOpen(false);
       setOfferNote("");
-      router.refresh();
+      void refreshInbox();
+      void loadThread(selectedConversation.id, true);
     } catch {
       setOfferDialogError(currentKo ? "제안 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach the offers service. Please try again.");
     } finally {
       setIsSubmittingOffer(false);
     }
   };
+  // Every message is shown the moment it is sent and answered in place when the server
+  // confirms it, so sending again while one is still on its way never has to wait.
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const body = draft.trim();
-    if (!body || !selectedConversationId || sendingRef.current) return;
-    sendingRef.current = true;
+    const conversationId = selectedConversationId;
+    if (!body || !conversationId) return;
     const optimisticMessage: MarketMessage = {
       id: `pending-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now()}`,
-      conversationId: selectedConversationId,
+      conversationId,
       senderId: currentUserId,
       recipientId: selectedConversation?.counterpart.id ?? "",
       body,
@@ -525,33 +575,31 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       readAt: null,
       isPending: true,
     };
-    setMessages((current) => [...current, optimisticMessage]);
-    setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: body, lastMessageAt: optimisticMessage.createdAt } : conversation));
+    patchThread(conversationId, (thread) => ({ ...thread, messages: [...thread.messages, optimisticMessage] }), true);
+    setConversations((current) => current.map((conversation) => conversation.id === conversationId ? { ...conversation, lastMessagePreview: body, lastMessageAt: optimisticMessage.createdAt } : conversation));
     setDraft("");
-    setIsSending(true);
     setSendError(null);
+    const restoreDraft = () => setDraft((current) => current ? `${body}\n${current}` : body);
+    const dropPending = () => patchThread(conversationId, (thread) => ({ ...thread, messages: thread.messages.filter((item) => item.id !== optimisticMessage.id) }));
     try {
-      const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: selectedConversationId, body }) });
+      const response = await fetch("/api/market/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId, body }) });
       const result = await readApiResponse(response, marketMessageResponseSchema);
       if (!result.data) {
         setSendError(currentKo ? "메시지를 보내지 못했어요. 다시 시도해 주세요." : result.error?.message ?? "Unable to send your message.");
-        setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
-        setDraft(body);
+        dropPending();
+        restoreDraft();
         return;
       }
       const message: MarketMessage = result.data;
-      setMessages((current) => {
-        const withoutOptimistic = current.filter((item) => item.id !== optimisticMessage.id);
-        return withoutOptimistic.some((item) => item.id === message.id) ? withoutOptimistic : [...withoutOptimistic, message];
+      patchThread(conversationId, (thread) => {
+        const alreadyHere = thread.messages.some((item) => item.id === message.id);
+        return { ...thread, messages: thread.messages.flatMap((item) => item.id === optimisticMessage.id ? alreadyHere ? [] : [message] : [item]) };
       });
-      setConversations((current) => current.map((conversation) => conversation.id === selectedConversationId ? { ...conversation, lastMessagePreview: message.body, lastMessageAt: message.createdAt } : conversation));
+      setConversations((current) => current.map((conversation) => conversation.id === conversationId ? { ...conversation, lastMessagePreview: message.body, lastMessageAt: message.createdAt } : conversation));
     } catch {
-      setMessages((current) => current.filter((item) => item.id !== optimisticMessage.id));
-      setDraft(body);
+      dropPending();
+      restoreDraft();
       setSendError(currentKo ? "메시지 서비스에 연결하지 못했어요. 다시 시도해 주세요." : "Unable to reach the messaging service. Please try again.");
-    } finally {
-      sendingRef.current = false;
-      setIsSending(false);
     }
   };
 
@@ -630,7 +678,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
 
         {bulkError ? <p className="messages-bulk-error" role="alert">{bulkError}</p> : null}
         <div className="messages-conversation-list">
-          {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId && !isSelecting ? "is-active" : ""} ${isSelecting ? "is-selectable" : ""} ${selectedIds.includes(conversation.id) ? "is-selected" : ""}`} type="button" key={conversation.id} aria-pressed={isSelecting ? selectedIds.includes(conversation.id) : undefined} onClick={() => isSelecting ? toggleSelection(conversation.id) : openConversation(conversation.id)}>
+          {visibleConversations.length ? visibleConversations.map((conversation) => <button className={`messages-conversation ${conversation.id === selectedConversationId && !isSelecting ? "is-active" : ""} ${isSelecting ? "is-selectable" : ""} ${selectedIds.includes(conversation.id) ? "is-selected" : ""}`} type="button" key={conversation.id} aria-pressed={isSelecting ? selectedIds.includes(conversation.id) : undefined} onPointerEnter={() => prefetchThread(conversation.id)} onFocus={() => prefetchThread(conversation.id)} onClick={() => isSelecting ? toggleSelection(conversation.id) : selectConversation(conversation.id)}>
             {isSelecting ? <span className="messages-conversation-check" aria-hidden="true"><i className={`ms ${selectedIds.includes(conversation.id) ? "ms-check-box" : "ms-check-box-outline-blank"}`} /></span> : null}
             {conversation.listing.imageUrl
               ? <Image className="messages-listing-thumbnail" src={conversation.listing.imageUrl} alt="" width={52} height={52} />
@@ -652,7 +700,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
       <section className="messages-thread-panel" aria-label={currentKo ? "대화" : "Conversation"}>
         {selectedConversation ? <>
           <header className="messages-thread-header">
-            <Link className="messages-mobile-back" href={messagesHref} aria-label={currentKo ? "대화 목록으로 돌아가기" : "Back to conversations"}><i className="ms ms-arrow-back" aria-hidden="true" /></Link>
+            <Link className="messages-mobile-back" href={messagesHref} onClick={(event) => { event.preventDefault(); selectConversation(null); }} aria-label={currentKo ? "대화 목록으로 돌아가기" : "Back to conversations"}><i className="ms ms-arrow-back" aria-hidden="true" /></Link>
             <a href={`/market/${selectedConversation.listing.id}`} className="messages-listing-context">
               {selectedConversation.listing.imageUrl ? <Image src={selectedConversation.listing.imageUrl} alt="" width={48} height={48} /> : <i className="ms ms-image" aria-hidden="true" />}
               <span><b>{selectedConversation.listing.title}</b><small>{selectedConversation.listing.price}</small></span>
@@ -665,15 +713,16 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
           </header>
           <div className="messages-thread-body" ref={threadBodyRef}>
             {offerError ? <p className="trade-offer-error" role="alert">{offerError}</p> : null}
+            {threadErrorId === selectedConversationId && !selectedThread?.isLoaded ? <p className="trade-offer-error" role="alert">{currentKo ? "대화를 불러오지 못했어요. " : "Unable to load this conversation. "}<button type="button" onClick={() => { setThreadErrorId(null); void loadThread(selectedConversation.id, true); }}>{currentKo ? "다시 시도" : "Try again"}</button></p> : null}
             {offers.length ? offers.map((offer) => {
               const isBuyer = offer.buyerId === currentUserId;
               const isSeller = offer.sellerId === currentUserId;
               const isUpdating = updatingOfferId === offer.id;
               return <article className={`trade-offer-card status-${offer.status}`} key={offer.id}><div><span>{isV0 ? offer.status : offerStatusCopy[offer.status]}</span><strong>{formatOfferAmount(offer.amountCents)}</strong></div>{offer.note ? <p>{offer.note}</p> : null}<small>{offerHintCopy[offer.status]}</small><footer>{offer.status === "pending" && isSeller ? <><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "accept")}>{currentKo ? "수락" : "Accept"}</button><button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "decline")}>{currentKo ? "거절" : "Decline"}</button></> : null}{offer.status === "pending" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "cancel")}>{currentKo ? "제안 취소" : "Cancel offer"}</button> : null}{offer.status === "accepted" && isBuyer ? <button type="button" disabled={isUpdating} onClick={() => void updateOffer(offer, "complete")}>{currentKo ? "거래 완료 확인" : "Confirm trade complete"}</button> : null}{offer.status === "completed" && isBuyer && !offer.reviewedAt ? <button type="button" onClick={() => setReviewOffer(offer)}>{currentKo ? "판매자 평가" : "Rate seller"}</button> : null}{offer.status === "completed" && isBuyer && offer.reviewedAt ? <span>{currentKo ? "판매자 평가 완료" : "Seller reviewed"}</span> : null}{offer.status === "accepted" && isSeller ? <span>{currentKo ? "구매자의 거래 완료 확인을 기다리고 있어요" : "Waiting for buyer confirmation"}</span> : null}</footer></article>;
             }) : null}
-            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt, isV0 ? "en" : locale)}</time>{message.senderId === currentUserId ? <i className={`ms ${message.readAt ? "ms-done-all" : "ms-check"}`} aria-label={message.readAt ? currentKo ? "읽음" : "Read" : currentKo ? "보냄" : "Sent"} /> : null}</span></article>) : !offers.length ? <div className="messages-thread-empty"><i className="ms ms-handshake" aria-hidden="true" /><strong>{currentKo ? "대화를 시작해 보세요" : "Start the conversation"}</strong><span>{currentKo ? "상품 상태나 수령 시간·장소를 물어보세요." : "Ask about the item, pickup, or delivery details."}</span></div> : null}
+            {messages.length ? messages.map((message) => <article className={`message-bubble ${message.senderId === currentUserId ? "is-mine" : ""}`} key={message.id}><p>{message.body}</p><span><time suppressHydrationWarning>{formatMessageTime(message.createdAt, isV0 ? "en" : locale)}</time>{message.senderId === currentUserId ? <i className={`ms ${message.readAt ? "ms-done-all" : "ms-check"}`} aria-label={message.readAt ? currentKo ? "읽음" : "Read" : currentKo ? "보냄" : "Sent"} /> : null}</span></article>) : !offers.length && selectedThread?.isLoaded ? <div className="messages-thread-empty"><i className="ms ms-handshake" aria-hidden="true" /><strong>{currentKo ? "대화를 시작해 보세요" : "Start the conversation"}</strong><span>{currentKo ? "상품 상태나 수령 시간·장소를 물어보세요." : "Ask about the item, pickup, or delivery details."}</span></div> : null}
           </div>
-          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>{isV0 ? "Purchase" : currentKo ? "가격 제안" : "Make offer"}</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={currentKo ? "메시지 입력" : "Write a message..."} aria-label={currentKo ? "메시지 입력" : "Write a message"} rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim() || isSending} aria-label={currentKo ? "메시지 보내기" : "Send message"}><i className="ms ms-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
+          <form className="messages-composer" onSubmit={sendMessage}>{selectedConversation.role === "buying" ? <button className="messages-offer-button" type="button" onClick={openOfferDialog}>{isV0 ? "Purchase" : currentKo ? "가격 제안" : "Make offer"}</button> : null}<textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={currentKo ? "메시지 입력" : "Write a message..."} aria-label={currentKo ? "메시지 입력" : "Write a message"} rows={1} maxLength={2000} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={!draft.trim()} aria-label={currentKo ? "메시지 보내기" : "Send message"}><i className="ms ms-send" aria-hidden="true" /></button>{sendError ? <p role="alert">{sendError}</p> : null}</form>
         </> : <div className="messages-select-empty"><i className="ms ms-forum" aria-hidden="true" /><h2>{isV0 ? "Select a conversation" : ko ? "대화를 선택해 주세요" : "Select a conversation"}</h2><p>{isV0 ? "Your messages about marketplace listings will appear here." : ko ? "상품과 약속에 관한 대화를 한곳에서 확인할 수 있어요." : "Pick a conversation to see the item, next steps and messages together."}</p>{!isV0 && !conversations.length ? <Link className="ui-button ui-button--secondary ui-button--sm" href="/market">{ko ? "동네 상품 보기" : "Browse local items"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link> : null}</div>}
       </section>
 
@@ -691,7 +740,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
           </div>
         </section>
       </DialogOverlay> : null}
-      {reviewOffer && selectedConversation ? <TradeReviewDialog offerId={reviewOffer.id} sellerName={selectedConversation.counterpart.name} onClose={() => setReviewOffer(null)} onSubmitted={() => { setOffers((current) => current.map((offer) => offer.id === reviewOffer.id ? { ...offer, reviewedAt: new Date().toISOString() } : offer)); setReviewOffer(null); router.refresh(); }} /> : null}
+      {reviewOffer && selectedConversation ? <TradeReviewDialog offerId={reviewOffer.id} sellerName={selectedConversation.counterpart.name} onClose={() => setReviewOffer(null)} onSubmitted={() => { patchThread(reviewOffer.conversationId, (thread) => ({ ...thread, offers: thread.offers.map((offer) => offer.id === reviewOffer.id ? { ...offer, reviewedAt: new Date().toISOString() } : offer) })); setReviewOffer(null); }} /> : null}
     </main>
   );
 }

@@ -38,11 +38,12 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refreshes an expired session and checks the token against the project keys
+  // locally, instead of asking the auth server on every request.
+  const { data } = await supabase.auth.getClaims();
+  const isSignedIn = Boolean(data?.claims.sub);
 
-  if (!user && protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
+  if (!isSignedIn && protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
