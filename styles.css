@@ -523,7 +523,7 @@ a {
   background: var(--neutral-150);
 }
 
-/* Phones only: opens the browse drawer (areas, categories, filters). */
+/* Phones only: the header button left of the logo that opens the browse drawer. */
 .nav-search-filter {
   display: none;
 }
@@ -3860,8 +3860,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
 
 .listing-detail-description .text-size-section-header { justify-content: flex-start; gap: 10px; }
 .listing-description-translation { display: grid; justify-items: start; gap: 6px; }
-.listing-description-translate-button { min-height: var(--control-h-xs); padding: 0 12px; border-radius: var(--radius-pill); background: var(--neutral-200); border-color: transparent; color: var(--blue-soft-600); font-size: var(--text-sm); font-weight: var(--weight-regular); }
-.listing-description-translate-button:hover:not(:disabled) { background: var(--green-soft-50); color: var(--primary-dark); }
+/* A quiet outlined pill: the glyph carries the meaning, the border stays hairline, and
+   only the glyph and the pressed state take the brand colour. */
+.listing-description-translation .listing-description-translate-button { min-height: var(--control-h-xs); gap: var(--space-1); padding: 0 var(--space-3) 0 var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); box-shadow: none; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: var(--weight-medium); letter-spacing: .01em; }
+.listing-description-translation .listing-description-translate-button .ms { color: var(--color-primary); font-size: var(--text-lg); }
+.listing-description-translation .listing-description-translate-button:hover:not(:disabled) { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.listing-description-translation .listing-description-translate-button[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
 .listing-description-translate-error { max-width: 230px; margin: 0; color: var(--red-900); font-size: var(--text-xs); line-height: 1.35; text-align: left; }
 
 .listing-detail-description h2 {
@@ -5997,9 +6001,10 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     height: 21px;
   }
 
-  .nav-search:has(.nav-search-filter) { grid-template-columns: 30px minmax(0, 1fr) var(--control-h-lg); padding-right: var(--space-2); }
-
+  /* The filter button takes the grid cell the hamburger used to have, left of the logo. */
   .nav-search-filter {
+    grid-area: menu;
+    justify-self: start;
     width: var(--control-h-lg);
     height: var(--control-h-lg);
     display: inline-grid;
@@ -6008,7 +6013,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     border: 0;
     border-radius: var(--radius-circle);
     background: transparent;
-    color: var(--color-primary);
+    color: var(--color-ink);
     font-size: var(--text-3xl);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;

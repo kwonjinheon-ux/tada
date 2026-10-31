@@ -80,7 +80,6 @@
 .ms-flag::before { content: "\f0c6"; }
 .ms-flight-takeoff::before { content: "\e905"; }
 .ms-format-list-numbered::before { content: "\e242"; }
-.ms-format-size::before { content: "\e245"; }
 .ms-forum::before { content: "\e8af"; }
 .ms-gavel::before { content: "\e90e"; }
 .ms-grid-view::before { content: "\e9b0"; }
@@ -111,6 +110,7 @@
 .ms-logout::before { content: "\e9ba"; }
 .ms-mail::before { content: "\e159"; }
 .ms-map::before { content: "\e55b"; }
+.ms-menu::before { content: "\e5d2"; }
 .ms-menu-book::before { content: "\ea19"; }
 .ms-monitor-heart::before { content: "\eaa2"; }
 .ms-more-horiz::before { content: "\e5d3"; }
@@ -160,12 +160,12 @@
 .ms-stroller::before { content: "\f1ae"; }
 .ms-thumb-up::before { content: "\f577"; }
 .ms-touch-app::before { content: "\e913"; }
+.ms-translate::before { content: "\e8e2"; }
 .ms-tune::before { content: "\e429"; }
 .ms-tv::before { content: "\e63b"; }
 .ms-verified::before { content: "\ef76"; }
 .ms-verified-user::before { content: "\f013"; }
 .ms-visibility::before { content: "\e8f4"; }
-.ms-visibility-off::before { content: "\e8f5"; }
 .ms-warehouse::before { content: "\ebb8"; }
 .ms-warning::before { content: "\f083"; }
 .ms-weekend::before { content: "\e16b"; }
