@@ -470,6 +470,33 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         <div className="listing-detail-mobile-location-row"><span><i className="ms ms-location-on" aria-hidden="true" /> {listing.location}</span><div className="listing-detail-mobile-stats"><span><i className="ms ms-visibility" aria-hidden="true" /> {new Intl.NumberFormat("en-NZ").format(viewCount)}</span><time>{listing.createdAt}</time></div></div>
       </section>
 
+      {!isBargainListing ? <ListingActionPanel
+        mode={isOwner ? "seller" : "buyer"}
+        price={listing.price}
+        isSold={listingStatus === "sold"}
+        isLinkCopied={isLinkCopied}
+        unreadCount={unreadMessageCount}
+        isOpeningMessage={isOpeningMessage}
+        isMarkingSold={isMarkingSold}
+        isBumping={isBumping}
+        isBumped={isBumped}
+        isSaved={isSaved}
+        isPopping={isPopping}
+        heartParticles={heartParticles}
+        onSave={() => void saveListing()}
+        onSaveAnimationEnd={stopPopping}
+        onOffer={openOfferDialog}
+        onMessage={isOwner ? () => router.push("/market/dashboard/messages") : () => void openConversation()}
+        onMessageIntent={prepareMessaging}
+        onShare={() => void shareListing()}
+        onMarkSold={() => void markAsSold()}
+        onEdit={editListing}
+        onBump={() => void bumpListing()}
+        onDelete={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}
+      /> : null}
+      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+      </section> : null}
       <TextSizeSection
         className="listing-detail-description"
         title={t("listingDescription")}
@@ -496,34 +523,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           </aside>
         ) : null}
       </TextSizeSection>
-      {!isBargainListing ? <ListingActionPanel
-        mode={isOwner ? "seller" : "buyer"}
-        price={listing.price}
-        isSold={listingStatus === "sold"}
-        isLinkCopied={isLinkCopied}
-        unreadCount={unreadMessageCount}
-        isOpeningMessage={isOpeningMessage}
-        isMarkingSold={isMarkingSold}
-        isBumping={isBumping}
-        isBumped={isBumped}
-        isSaved={isSaved}
-        isPopping={isPopping}
-        heartParticles={heartParticles}
-        onSave={() => void saveListing()}
-        onSaveAnimationEnd={stopPopping}
-        onOffer={openOfferDialog}
-        onMessage={isOwner ? () => router.push("/market/dashboard/messages") : () => void openConversation()}
-        onMessageIntent={prepareMessaging}
-        onShare={() => void shareListing()}
-        onMarkSold={() => void markAsSold()}
-        onEdit={editListing}
-        onBump={() => void bumpListing()}
-        onDelete={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}
-      /> : null}
       <AdSlot placement="product_detail_middle" />
-      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
-      </section> : null}
 
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />
       {!isBargainListing ? <AdSlot placement="product_detail_bottom" /> : null}
