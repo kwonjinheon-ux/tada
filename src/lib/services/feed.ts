@@ -28,6 +28,7 @@ type ServiceRow = {
   suburbs: string[] | null;
   rating: number;
   review_count: number;
+  created_at: string;
   price_from: number | null;
   price_unit: string | null;
   service_listing_photos: Array<{ storage_path: string; display_order: number; photo_kind: string | null }> | null;
@@ -65,7 +66,7 @@ export async function loadServicesFeed(supabase: SupabaseClient, query: Services
   const mainLocation = query.mainLocation?.trim() || "";
   const subLocation = query.subLocation?.trim() || "";
 
-  let listingsRequest = supabase.from("service_listings").select(LISTING_COLUMNS).order("created_at", { ascending: false });
+  let listingsRequest = supabase.from("service_listings").select(LISTING_COLUMNS).eq("status", "published").order("created_at", { ascending: false });
   if (category) listingsRequest = listingsRequest.eq("category_slug", category);
 
   // The listings and the viewer are independent; the saved set needs the viewer.
@@ -98,7 +99,7 @@ export async function loadServicesFeed(supabase: SupabaseClient, query: Services
         isOwner: row.owner_id === user?.id,
         isSaved: savedServiceIds.has(row.id),
         category: row.category_slug as ServiceCategoryId,
-        badges: row.rating >= 4.5 ? ["highlyRated"] : ["new"],
+        badges: row.review_count > 0 && row.rating >= 4.5 ? ["highlyRated"] : [],
         provider: row.provider_name,
         businessName: row.business_name ?? row.provider_name,
         email: row.email ?? undefined,
@@ -106,15 +107,14 @@ export async function loadServicesFeed(supabase: SupabaseClient, query: Services
         streetAddress: row.street_address ?? undefined,
         phone: row.phone,
         providerType: row.provider_type === "business" ? "businesses" : "individuals",
-        availability: "this-week",
         rating: Number(row.rating),
         reviewCount: row.review_count,
         image: (cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined) ?? "/images/home/journey-services.png",
         logo: (logoPhoto?.storage_path ? signedByPath.get(logoPhoto.storage_path) : undefined) ?? undefined,
         description: row.description ?? undefined,
-        // Placeholder until the listing row carries its own verification
-        // column; only this line changes once the flag is stored.
-        isVerified: true,
+        // Verification is not yet stored for service listings. Never infer it.
+        isVerified: false,
+        createdAt: row.created_at,
         location: row.service_areas?.[0] ?? "New Zealand",
         serviceAreas: row.service_areas ?? [],
         suburbs: row.suburbs ?? [],

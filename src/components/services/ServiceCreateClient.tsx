@@ -48,7 +48,7 @@ export function ServiceCreateClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [errorDialog, setErrorDialog] = useState<string | null>(null);
-  const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", availability: "all", verified: false, highlyRated: false, fastResponder: false });
+  const [sidebarFilters, setSidebarFilters] = useState<ServiceFilterState>({ providerType: "all", highlyRated: false });
   const [serviceArea, setServiceArea] = useState("Hamilton");
   const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>(["Hamilton"]);
   const [suburb, setSuburb] = useState("");

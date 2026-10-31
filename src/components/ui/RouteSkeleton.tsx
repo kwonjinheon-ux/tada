@@ -147,19 +147,14 @@ export function RouteSkeleton({ variant = "browse" }: { variant?: "browse" | "co
       <BrowseRailSkeleton />
       <section className="market-results services-results">
         <BrowseIntroSkeleton />
+        <div className="services-discovery-tools" aria-hidden="true"><span className="route-skeleton-field" /><span className="route-skeleton-field" /></div>
         <MobileRailSkeleton cells={12} className="services-mobile-category-rail" />
         <div className="services-category-grid" aria-hidden="true">
           {Array.from({ length: 12 }, (_, tile) => <div className="services-category" key={tile}><span className="route-skeleton-field route-skeleton-glyph" /><span className="route-skeleton-line" /></div>)}
         </div>
-        <BrowseToolbarSkeleton chips={2} />
-        <section className="services-sponsor-banner" aria-hidden="true">
-          <div className="services-sponsor-copy"><span className="route-skeleton-line" /><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></div>
-          <ul><li><span className="route-skeleton-line" /></li><li><span className="route-skeleton-line" /></li><li><span className="route-skeleton-line" /></li></ul>
-          <span className="route-skeleton-tile" />
-          <span className="route-skeleton-field route-skeleton-toggle" />
-        </section>
+        <BrowseToolbarSkeleton chips={4} />
         <div className="services-card-grid" aria-hidden="true">
-          {Array.from({ length: 6 }, (_, card) => <article className="route-skeleton-card ui-card" key={card}><div className="route-skeleton-tile" /><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /></article>)}
+          {Array.from({ length: 6 }, (_, card) => <article className="services-listing ui-card" key={card}><div className="services-listing-media route-skeleton-tile" /><div className="services-listing-body"><span className="route-skeleton-line is-title" /><span className="route-skeleton-line" /><span className="route-skeleton-line" /></div></article>)}
         </div>
       </section>
       <aside className="services-side-rail" aria-hidden="true">

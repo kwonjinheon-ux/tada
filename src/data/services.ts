@@ -13,7 +13,7 @@ export type ServiceListing = {
   provider: string;
   phone: string;
   providerType: "individuals" | "businesses";
-  availability: "today" | "this-week";
+  availability?: "today" | "this-week";
   rating: number;
   reviewCount: number;
   /** The provider's representative photo — the card's main image. */
@@ -28,9 +28,9 @@ export type ServiceListing = {
   streetAddress?: string;
   /** The provider's own introduction, clamped to two lines on the card. */
   description?: string;
-  /** Trust mark beside the provider name. Falls back to the `verified` badge
-   *  until `service_listings` carries its own verification column. */
+  /** Trust mark only when the listing has a verified source. */
   isVerified?: boolean;
+  createdAt?: string;
   location?: string;
   /** The regions the provider works in, and the suburbs within them. The card
    *  shows the first area; the rail filters on the whole list. */
@@ -100,8 +100,8 @@ export const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
 
 const serviceCopy = {
   en: {
-    heroTitle: "Hire a local pro.",
-    heroDescription: "Compare reviews, then contact them direct.",
+    heroTitle: "Services",
+    heroDescription: "Find local help and compare real reviews.",
     filters: "Filters",
     serviceType: "Service type",
     allCategories: "All categories",
@@ -172,8 +172,8 @@ const serviceCopy = {
     closeFilters: "Close service filters",
   },
   ko: {
-    heroTitle: "동네 전문가를 부르세요.",
-    heroDescription: "후기를 비교하고 바로 연락하세요.",
+    heroTitle: "서비스",
+    heroDescription: "가까운 이웃의 서비스를 찾고 후기를 비교해 보세요.",
     filters: "필터",
     serviceType: "서비스 종류",
     allCategories: "전체 카테고리",
