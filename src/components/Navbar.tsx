@@ -255,13 +255,13 @@ export function Navbar() {
     };
   }, [pathname]);
 
-  // Phones only: the search row slides away once the reader is a quarter of the way down the page
+  // Phones only: the search row slides away once the reader is 15% of the way down the page
   // and comes back on the first upward scroll, so it is out of the way while reading and one flick
   // from use. The class sits on <html>; styles.css moves the sticky header, so nothing reflows.
   useEffect(() => {
     const root = document.documentElement;
     const phone = window.matchMedia("(max-width: 767.98px)");
-    const HIDE_AFTER = 0.25;
+    const HIDE_AFTER = 0.15;
     const IGNORE_BELOW = 6;
     let lastY = window.scrollY;
     let frame: number | null = null;
