@@ -34,6 +34,8 @@ out against the **layout** viewport, and the layout viewport does not shrink for
 the keyboard — it only gets panned. Drop the offset and the panel spans the whole
 screen with its composer hidden behind the keyboard.
 
+**The bottom dock stays.** The phone dock is on every screen, messages included, so the shell and an open thread end above it: both heights subtract `--messages-dock-height` (`64px` plus the safe-area inset). While the keyboard is up the dock is hidden and the variable drops to `0px` on `<html>.messages-keyboard-open`, so the composer still sits directly on the keyboard.
+
 **A blank strip above the header is not an offset bug.** Measure it: if it is the
 height of the site header, the keyboard-open class simply never applied and the
 top inset never went to zero. Fix the detection, not the offset. Getting this
