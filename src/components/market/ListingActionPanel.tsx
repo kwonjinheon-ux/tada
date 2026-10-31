@@ -49,7 +49,6 @@ export function ListingActionPanel({ mode, isSold, isLinkCopied, unreadCount = 0
   </button>;
 
   return <section className={`listing-action-panel is-${mode}`} aria-label={t(isSeller ? "listingPanelSeller" : "listingPanelBuyer")}>
-    {isSeller ? <header className="listing-action-panel-header"><span><i className="ms ms-person" aria-hidden="true" /> {t("listingPanelSeller")}</span></header> : null}
     {isSeller
       ? <Button size="lg" block className="listing-action-primary is-seller" onClick={onMarkSold} disabled={isSold || isMarkingSold}><i className="ms ms-check" aria-hidden="true" /> {isSold ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</Button>
       : <Button size="lg" block className="listing-action-primary" onClick={onOffer}><i className="ms ms-sell" aria-hidden="true" /> {t("listingOfferAction")}</Button>}
