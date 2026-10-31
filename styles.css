@@ -5982,6 +5982,20 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     background: var(--neutral-50);
   }
 
+  /* Reading down the page folds the search row away (see the scroll effect in Navbar.tsx);
+     the first flick back up unfolds it. The row's height is animated, so the header gets
+     shorter and the page follows it. Scroll anchoring is off for the same reason: the browser
+     would otherwise "correct" the scroll position for the shrinking header, read as an upward
+     scroll, and unfold the row again. Once folded the field leaves the tab order. */
+  html { overflow-anchor: none; }
+  .site-header .site-nav { grid-template-rows: 58px auto auto; transition: row-gap 220ms cubic-bezier(.2, .8, .2, 1); }
+  .site-nav .nav-search { height: var(--control-h-2xl); transition: height 220ms cubic-bezier(.2, .8, .2, 1), min-height 220ms cubic-bezier(.2, .8, .2, 1), opacity 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, visibility 0s; }
+  html.site-search-hidden .site-header .site-nav { row-gap: 0; }
+  html.site-search-hidden .site-nav .nav-search { height: 0; min-height: 0; border-width: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: height 220ms cubic-bezier(.2, .8, .2, 1), min-height 220ms cubic-bezier(.2, .8, .2, 1), opacity 160ms ease, visibility 0s linear 220ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .site-header .site-nav, .site-nav .nav-search, html.site-search-hidden .site-nav .nav-search { transition: none; }
+  }
+
   .site-nav {
     position: relative;
     grid-template-columns: 38px minmax(0, 1fr) 38px 38px 38px;

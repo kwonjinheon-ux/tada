@@ -256,6 +256,44 @@ export function Navbar() {
     };
   }, [pathname]);
 
+  // Phones only: the search row slides away once the reader is a quarter of the way down the page
+  // and comes back on the first upward scroll, so it is out of the way while reading and one flick
+  // from use. The class sits on <html>; styles.css moves the sticky header, so nothing reflows.
+  useEffect(() => {
+    const root = document.documentElement;
+    const phone = window.matchMedia("(max-width: 767.98px)");
+    const HIDE_AFTER = 0.25;
+    const IGNORE_BELOW = 6;
+    let lastY = window.scrollY;
+    let frame: number | null = null;
+
+    const update = () => {
+      frame = null;
+      if (!phone.matches) {
+        root.classList.remove("site-search-hidden");
+        return;
+      }
+      const y = Math.max(0, window.scrollY);
+      const delta = y - lastY;
+      const range = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      if (y <= 8 || delta < -IGNORE_BELOW) root.classList.remove("site-search-hidden");
+      else if (delta > IGNORE_BELOW && y / range >= HIDE_AFTER) root.classList.add("site-search-hidden");
+      if (Math.abs(delta) > IGNORE_BELOW || y <= 8) lastY = y;
+    };
+    const onScroll = () => { if (frame === null) frame = window.requestAnimationFrame(update); };
+
+    root.classList.remove("site-search-hidden");
+    lastY = window.scrollY;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    phone.addEventListener("change", update);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      phone.removeEventListener("change", update);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      root.classList.remove("site-search-hidden");
+    };
+  }, [pathname]);
+
   useEffect(() => {
     const hasMobileDock = !authlessRoutes.has(pathname);
     document.body.classList.toggle("has-mobile-bottom-dock", hasMobileDock);
