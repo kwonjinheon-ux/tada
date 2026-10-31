@@ -19,14 +19,15 @@ export default async function MarketMessagesPage({ searchParams }: { searchParam
   const supabase = await createServerSupabaseClient();
   if (!supabase) return <div className="dashboard-content messages-unavailable">Messaging is unavailable right now.</div>;
 
-  // The requested thread is read alongside the inbox; row-level security returns
-  // nothing for a conversation the user is not part of, and the client only opens
-  // a thread that appears in their inbox.
+  // Opened on one chat, the page carries just that chat and its messages so it can
+  // show at once; the rest of the inbox is read by the screen afterwards. Row-level
+  // security returns nothing for a conversation the user is not part of, and the
+  // client only opens a thread that appears in their inbox.
   const [conversations, initialThread] = await Promise.all([
-    loadInbox(supabase, userId),
+    loadInbox(supabase, userId, requestedConversationId),
     requestedConversationId ? loadThread(supabase, userId, requestedConversationId) : Promise.resolve(null),
   ]);
   const selectedConversationId = requestedConversationId && conversations.some((conversation) => conversation.id === requestedConversationId) ? requestedConversationId : null;
 
-  return <MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialThread={selectedConversationId ? initialThread : null} currentUserId={userId} />;
+  return <MarketMessagesClient conversations={conversations} selectedConversationId={selectedConversationId} initialThread={selectedConversationId ? initialThread : null} isInboxPartial={Boolean(requestedConversationId)} currentUserId={userId} />;
 }

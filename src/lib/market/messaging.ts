@@ -72,16 +72,27 @@ export async function loadThread(supabase: SupabaseClient, userId: string, conve
   };
 }
 
-/** The inbox: every conversation the user is still part of, with the other member, the item and the unread count. */
-export async function loadInbox(supabase: SupabaseClient, userId: string): Promise<ConversationSummary[]> {
+/**
+ * The inbox: every conversation the user is still part of, with the other member, the item
+ * and the unread count. Pass `onlyConversationId` to build just that one, which is all a
+ * screen opened on a single chat needs to show it at once.
+ */
+export async function loadInbox(supabase: SupabaseClient, userId: string, onlyConversationId?: string): Promise<ConversationSummary[]> {
+  let conversationQuery = supabase
+    .from("market_conversations")
+    .select("id,listing_id,buyer_id,seller_id,last_message_preview,last_message_at")
+    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
+  let stateQuery = supabase.from("market_conversation_states").select("conversation_id,archived_at,deleted_at").eq("user_id", userId);
+  let unreadQuery = supabase.from("market_messages").select("conversation_id").eq("recipient_id", userId).is("read_at", null);
+  if (onlyConversationId) {
+    conversationQuery = conversationQuery.eq("id", onlyConversationId);
+    stateQuery = stateQuery.eq("conversation_id", onlyConversationId);
+    unreadQuery = unreadQuery.eq("conversation_id", onlyConversationId);
+  }
   const [{ data: rawConversations }, { data: rawStates }, { data: unreadRows }] = await Promise.all([
-    supabase
-      .from("market_conversations")
-      .select("id,listing_id,buyer_id,seller_id,last_message_preview,last_message_at")
-      .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-      .order("last_message_at", { ascending: false, nullsFirst: false }),
-    supabase.from("market_conversation_states").select("conversation_id,archived_at,deleted_at").eq("user_id", userId),
-    supabase.from("market_messages").select("conversation_id").eq("recipient_id", userId).is("read_at", null),
+    conversationQuery.order("last_message_at", { ascending: false, nullsFirst: false }),
+    stateQuery,
+    unreadQuery,
   ]);
   // Archive and delete are per-participant, so the inbox is the intersection of
   // the conversations the user is in and the state rows they own.

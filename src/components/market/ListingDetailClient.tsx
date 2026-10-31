@@ -197,6 +197,14 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     }
   };
 
+  // Client navigation opens the chat without reloading the app. If it stalls (it has on
+  // some phones) the page is loaded outright instead, unless the reader has moved on.
+  const goToConversation = (path: string) => {
+    const from = window.location.pathname;
+    router.push(path);
+    window.setTimeout(() => { if (window.location.pathname === from) window.location.assign(path); }, 4000);
+  };
+
   const openConversation = async () => {
     if (isOpeningMessage) return;
     setIsOpeningMessage(true);
@@ -217,12 +225,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         return;
       }
       const conversationPath = `/market/dashboard/messages?conversation=${result.data.conversationId}`;
-      router.prefetch(conversationPath);
-      if (window.matchMedia("(max-width: 767.98px)").matches) {
-        window.location.assign(conversationPath);
-        return;
-      }
-      router.push(conversationPath);
+      goToConversation(conversationPath);
     } catch {
       setMessageError("Unable to reach messaging right now. Please try again.");
     } finally {
@@ -289,11 +292,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         return;
       }
       const conversationPath = `/market/dashboard/messages?conversation=${payload.conversationId}`;
-      if (window.matchMedia("(max-width: 767.98px)").matches) {
-        window.location.assign(conversationPath);
-        return;
-      }
-      router.push(conversationPath);
+      goToConversation(conversationPath);
     } catch {
       setOfferError("Unable to reach offers right now. Please try again.");
     } finally {

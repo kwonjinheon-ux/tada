@@ -1,5 +1,6 @@
 import { marketConversationRequestSchema } from "@/contracts/api";
 import { apiFailure, apiSuccess } from "@/lib/api/response";
+import { getServerUserId } from "@/lib/auth-server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { consumeMarketRateLimit } from "@/lib/market/safety";
 
@@ -9,14 +10,8 @@ export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return apiFailure("UNAVAILABLE", "Messaging is unavailable right now.", 503);
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiFailure("UNAUTHORIZED", "Please log in to message the seller.", 401);
-  const rateLimit = await consumeMarketRateLimit(supabase, "conversation");
-  if (!rateLimit.allowed) {
-    return rateLimit.reason === "unavailable"
-      ? apiFailure("UNAVAILABLE", "Unable to start this conversation right now. Please try again in a moment.", 503)
-      : apiFailure("RATE_LIMITED", "Too many conversation requests. Please try again in a minute.", 429);
-  }
+  const userId = await getServerUserId();
+  if (!userId) return apiFailure("UNAUTHORIZED", "Please log in to message the seller.", 401);
 
   const parsed = marketConversationRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiFailure("BAD_REQUEST", "A valid listing is required.", 400);
@@ -24,16 +19,23 @@ export async function POST(request: Request) {
 
   const [{ data: listing, error: listingError }, { data: existing }] = await Promise.all([
     supabase.from("market_listings").select("owner_id").eq("id", listingId).maybeSingle(),
-    supabase.from("market_conversations").select("id").eq("listing_id", listingId).eq("buyer_id", user.id).maybeSingle(),
+    supabase.from("market_conversations").select("id").eq("listing_id", listingId).eq("buyer_id", userId).maybeSingle(),
   ]);
   const sellerId = (listing as ListingRow | null)?.owner_id;
   if (listingError || !sellerId) return apiFailure("NOT_FOUND", "This listing is not available for messaging.", 404);
-  if (sellerId === user.id) return apiFailure("BAD_REQUEST", "You cannot message yourself about this listing.", 400);
+  if (sellerId === userId) return apiFailure("BAD_REQUEST", "You cannot message yourself about this listing.", 400);
+  // Reopening a conversation is not starting one, so only a new one is rate limited.
   if (existing?.id) return apiSuccess({ conversationId: existing.id, created: false });
+  const rateLimit = await consumeMarketRateLimit(supabase, "conversation");
+  if (!rateLimit.allowed) {
+    return rateLimit.reason === "unavailable"
+      ? apiFailure("UNAVAILABLE", "Unable to start this conversation right now. Please try again in a moment.", 503)
+      : apiFailure("RATE_LIMITED", "Too many conversation requests. Please try again in a minute.", 429);
+  }
 
   const { data: conversation, error } = await supabase
     .from("market_conversations")
-    .insert({ listing_id: listingId, buyer_id: user.id, seller_id: sellerId })
+    .insert({ listing_id: listingId, buyer_id: userId, seller_id: sellerId })
     .select("id")
     .single();
 
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
       .from("market_conversations")
       .select("id")
       .eq("listing_id", listingId)
-      .eq("buyer_id", user.id)
+      .eq("buyer_id", userId)
       .maybeSingle();
     if (duplicate?.id) return apiSuccess({ conversationId: duplicate.id, created: false });
     return apiFailure("INTERNAL", "Unable to open a conversation right now.", 500);

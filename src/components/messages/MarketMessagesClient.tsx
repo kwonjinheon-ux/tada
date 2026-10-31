@@ -21,6 +21,8 @@ type Props = {
   conversations: ConversationSummary[];
   selectedConversationId: string | null;
   initialThread: MarketThread | null;
+  /** The page came with only the open conversation; the rest of the inbox is read after it shows. */
+  isInboxPartial?: boolean;
   currentUserId: string;
   variant?: "current" | "v0";
 };
@@ -75,7 +77,7 @@ function mergeThread(current: ClientThread | undefined, fetched: MarketThread): 
   return { messages: kept.length ? [...fetched.messages, ...kept] : fetched.messages, offers: fetched.offers, isLoaded: true };
 }
 
-export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId: initialSelectedConversationId, initialThread, currentUserId, variant = "current" }: Props) {
+export function MarketMessagesClient({ conversations: initialConversations, selectedConversationId: initialSelectedConversationId, initialThread, isInboxPartial = false, currentUserId, variant = "current" }: Props) {
   const { t, locale } = useLanguage();
   const ko = locale === "ko";
   const isV0 = variant === "v0";
@@ -84,6 +86,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   const searchParams = useSearchParams();
   const [conversations, setConversations] = useState(initialConversations);
   const [threads, setThreads] = useState<Record<string, ClientThread>>(() => initialSelectedConversationId && initialThread ? { [initialSelectedConversationId]: { ...initialThread, isLoaded: true } } : {});
+  const [isInboxLoading, setIsInboxLoading] = useState(isInboxPartial);
   const [threadErrorId, setThreadErrorId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
@@ -148,21 +151,6 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
-
-  // Choosing a conversation here never reloads the page, so new props mean the screen
-  // was reached again from elsewhere (a notification, a listing): take what it carries.
-  const hasSeenProps = useRef(false);
-  useEffect(() => {
-    if (!hasSeenProps.current) {
-      hasSeenProps.current = true;
-      return;
-    }
-    setConversations(initialConversations);
-    if (initialSelectedConversationId && initialThread) {
-      threadLoadedAtRef.current.set(initialSelectedConversationId, Date.now());
-      setThreads((current) => ({ ...current, [initialSelectedConversationId]: mergeThread(current[initialSelectedConversationId], initialThread) }));
-    }
-  }, [initialConversations, initialSelectedConversationId, initialThread]);
 
   useEffect(() => {
     const threadBody = threadBodyRef.current;
@@ -278,6 +266,38 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
     return request;
   }, []);
 
+  // Choosing a conversation here never reloads the page, so new props mean the screen
+  // was reached again from elsewhere (a notification, a listing): take what it carries.
+  const hasSeenProps = useRef(false);
+  useEffect(() => {
+    if (!hasSeenProps.current) {
+      hasSeenProps.current = true;
+      return;
+    }
+    if (isInboxPartial) {
+      // Only the open chat arrived: put it in the list and read the rest.
+      setConversations((current) => [...initialConversations, ...current.filter((conversation) => !initialConversations.some((incoming) => incoming.id === conversation.id))]);
+      void refreshInbox();
+    } else {
+      setConversations(initialConversations);
+    }
+    if (initialSelectedConversationId && initialThread) {
+      threadLoadedAtRef.current.set(initialSelectedConversationId, Date.now());
+      setThreads((current) => ({ ...current, [initialSelectedConversationId]: mergeThread(current[initialSelectedConversationId], initialThread) }));
+    }
+  }, [initialConversations, initialSelectedConversationId, initialThread, isInboxPartial, refreshInbox]);
+
+  // A page that opened on one chat fills in the rest of the inbox once it is showing.
+  useEffect(() => {
+    if (!isInboxPartial) return;
+    void refreshInbox().finally(() => setIsInboxLoading(false));
+  }, [isInboxPartial, refreshInbox]);
+
+  const conversationsRef = useRef(conversations);
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
   const selectConversation = (conversationId: string | null) => {
     if (conversationId === selectedConversationIdRef.current) return;
     window.history.pushState(null, "", conversationId ? `${messagesHref}?conversation=${conversationId}` : messagesHref);
@@ -299,13 +319,13 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
   // the first tap on one opens it at once.
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      initialConversations
+      conversationsRef.current
         .filter((conversation) => !conversation.archivedAt)
         .slice(0, READ_AHEAD_COUNT)
         .forEach((conversation) => { if (conversation.id !== selectedConversationIdRef.current) void loadThread(conversation.id); });
     }, 1200);
     return () => window.clearTimeout(timer);
-  }, [initialConversations, loadThread]);
+  }, [isInboxLoading, loadThread]);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -691,7 +711,7 @@ export function MarketMessagesClient({ conversations: initialConversations, sele
                 {conversation.unreadCount ? <b aria-label={currentKo ? `읽지 않은 메시지 ${conversation.unreadCount}개` : `${conversation.unreadCount} unread`}>{conversation.unreadCount}</b> : null}
               </span>
             </span>
-          </button>) : conversations.length
+          </button>) : isInboxLoading ? null : conversations.length
             ? <div className="messages-empty-list"><i className={`ms ${filter === "archived" ? "ms-archive" : "ms-sms"}`} aria-hidden="true" /><strong>{isV0 ? filter === "unread" ? "No unread messages" : filter === "archived" ? "Nothing archived" : filter === "buying" ? "Nothing you're buying" : "Nothing you're selling" : emptyFilterCopy[filter].title}</strong><span>{isV0 ? filter === "unread" ? "You're all caught up." : filter === "archived" ? "Archived conversations are kept for 60 days, then deleted." : "Switch to All to see your other conversations." : emptyFilterCopy[filter].hint}</span></div>
             : <div className="messages-empty-list"><i className="ms ms-sms" aria-hidden="true" /><strong>{isV0 ? "No messages yet" : ko ? "아직 메시지가 없어요" : "No messages yet"}</strong><span>{isV0 ? "Start a conversation from any listing." : ko ? "관심 있는 상품에서 판매자에게 먼저 물어보세요." : "Find a local item and ask the seller a question."}</span>{!isV0 ? <Link className="ui-button ui-button--primary ui-button--sm" href="/market">{ko ? "마켓 둘러보기" : "Explore Market"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link> : null}</div>}
         </div>
