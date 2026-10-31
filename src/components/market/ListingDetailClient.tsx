@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { marketConversationResponseSchema, marketWishlistResponseSchema } from "@/contracts/api";
 import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/components/SaveHeartBurst";
 import { ListingComments } from "@/components/market/ListingComments";
+import { ListingActionPanel } from "@/components/market/ListingActionPanel";
 import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
 import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
 import { Avatar } from "@/components/ui/Avatar";
@@ -58,13 +59,15 @@ type ListingDetailClientProps = {
   initialIsSaved?: boolean;
   isOwner?: boolean;
   descriptionTextSizeStep?: number;
+  /** Unread messages waiting on this listing, for the seller's action panel. */
+  unreadMessageCount?: number;
   /** Reuse the Market detail surface for Bargain listings without crossing data domains. */
   space?: "market" | "bargain";
 };
 
 type BargainOffer = { id: string; buyer_id: string; amount_cents: number; note: string | null; status: string; created_at: string };
 
-export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, space = "market" }: ListingDetailClientProps) {
+export function ListingDetailClient({ listing, initialIsSaved = false, isOwner = false, descriptionTextSizeStep = 0, unreadMessageCount = 0, space = "market" }: ListingDetailClientProps) {
   const router = useRouter();
   const { locale, t } = useLanguage();
   const isBargainListing = space === "bargain";
@@ -91,6 +94,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [isMarkingSold, setIsMarkingSold] = useState(false);
   const [listingStatus, setListingStatus] = useState(listing.status);
   const [isSellerOnline, setIsSellerOnline] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const [isBumping, setIsBumping] = useState(false);
+  const [isBumped, setIsBumped] = useState(false);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
   const { paragraphs: prose, unconfirmed } = useMemo(() => splitUnconfirmedDetails(paragraphs), [paragraphs]);
   const [isUnconfirmedOpen, setIsUnconfirmedOpen] = useState(false);
@@ -182,6 +188,8 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     try {
       await copyCurrentPageLink();
       window.dispatchEvent(new Event("listing-share-copied"));
+      setIsLinkCopied(true);
+      window.setTimeout(() => setIsLinkCopied(false), 1_800);
     } catch {
       setMessageError(t("listingCopyLinkFailed"));
     }
@@ -315,6 +323,26 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     if (!isBargainListing) router.prefetch("/market/dashboard/messages");
   };
   const editListing = () => router.push(`${listingHomePath}/${listing.id}/edit`);
+  // Bumping is the dashboard's "Relist": the listing moves back to the top of the feed.
+  const bumpListing = async () => {
+    if (isBumping || listingStatus !== "available") return;
+    setIsBumping(true);
+    setMessageError(null);
+    try {
+      const response = await fetch(`/api/market/listings/${listing.id}`, { method: "POST" });
+      const payload = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) {
+        setMessageError(payload?.error ?? "Unable to bump this listing right now.");
+        return;
+      }
+      setIsBumped(true);
+      window.setTimeout(() => setIsBumped(false), 2_400);
+    } catch {
+      setMessageError("Unable to bump this listing right now.");
+    } finally {
+      setIsBumping(false);
+    }
+  };
   const markAsSold = async () => {
     if (isMarkingSold || listingStatus === "sold") return;
     setIsMarkingSold(true);
@@ -465,6 +493,25 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           </aside>
         ) : null}
       </TextSizeSection>
+      {!isBargainListing ? <ListingActionPanel
+        mode={isOwner ? "seller" : "buyer"}
+        price={listing.price}
+        isSold={listingStatus === "sold"}
+        isLinkCopied={isLinkCopied}
+        unreadCount={unreadMessageCount}
+        isOpeningMessage={isOpeningMessage}
+        isMarkingSold={isMarkingSold}
+        isBumping={isBumping}
+        isBumped={isBumped}
+        onOffer={openOfferDialog}
+        onMessage={isOwner ? () => router.push("/market/dashboard/messages") : () => void openConversation()}
+        onMessageIntent={prepareMessaging}
+        onShare={() => void shareListing()}
+        onMarkSold={() => void markAsSold()}
+        onEdit={editListing}
+        onBump={() => void bumpListing()}
+        onDelete={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}
+      /> : null}
       <AdSlot placement="product_detail_middle" />
       {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
         <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
