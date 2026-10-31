@@ -15268,9 +15268,6 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   }
   /* Outlined glyphs throughout: the icon font fills them unless told otherwise. */
   .listing-action-panel .ms:not(.ms-favorite) { --icon-fill: 0; }
-  .listing-action-panel-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-  .listing-action-panel-header > span { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); }
-  .listing-action-panel-header > span .ms { color: var(--color-ink); font-size: var(--text-lg); }
 
   .listing-action-panel .listing-action-primary { gap: var(--space-2); border-radius: var(--radius-sm); background: var(--color-primary-strong); box-shadow: var(--shadow-xs); color: var(--neutral-50); font-size: var(--text-lg); font-weight: var(--weight-regular); }
   .listing-action-panel .listing-action-primary.is-seller { background: var(--success-500); }
