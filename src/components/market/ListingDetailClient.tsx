@@ -95,6 +95,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const [listingStatus, setListingStatus] = useState(listing.status);
   const [isSellerOnline, setIsSellerOnline] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const linkCopiedTimer = useRef<number | null>(null);
   const [isBumping, setIsBumping] = useState(false);
   const [isBumped, setIsBumped] = useState(false);
   const paragraphs = useMemo(() => descriptionParagraphs(listing.description), [listing.description]);
@@ -189,7 +190,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       await copyCurrentPageLink();
       window.dispatchEvent(new Event("listing-share-copied"));
       setIsLinkCopied(true);
-      window.setTimeout(() => setIsLinkCopied(false), 1_800);
+      // Two seconds of "copied", then the tile goes back to "Copy link"; a second tap restarts the count.
+      if (linkCopiedTimer.current) window.clearTimeout(linkCopiedTimer.current);
+      linkCopiedTimer.current = window.setTimeout(() => setIsLinkCopied(false), 2_000);
     } catch {
       setMessageError(t("listingCopyLinkFailed"));
     }

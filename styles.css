@@ -15288,6 +15288,33 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-action-tile.is-accent { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-strong); }
   .listing-action-tile.is-accent .ms { color: inherit; }
   .listing-action-tile:disabled { cursor: default; opacity: .6; }
+
+  /* Saved keeps the app's heart colour on a soft rose tile; copied turns the tile
+     green for as long as the check is showing. Both outrank the ink defaults above. */
+  .listing-action-tile.is-saved { border-color: var(--rose-250); background: var(--rose-soft-100); color: var(--rose-750); }
+  .listing-action-tile.is-saved .ms-favorite { color: var(--rose-600); }
+  .listing-action-tile.is-copied { border-color: var(--success-500); background: var(--success-100); color: var(--success-700); }
+  .listing-action-tile.is-copied .ms { color: var(--success-500); }
+
+  /* Motion: controls lift on hover and press back down. Only where a pointer can
+     hover, and not at all for people who ask for less motion. */
+  .listing-action-panel .listing-action-primary,
+  .listing-action-tile { transition: transform 180ms cubic-bezier(.2, .8, .2, 1), box-shadow 180ms ease, border-color 160ms ease, background-color 160ms ease, color 160ms ease; }
+  .listing-action-tile .ms { transition: transform 180ms cubic-bezier(.2, .8, .2, 1); }
+  .listing-action-tile:active:not(:disabled),
+  .listing-action-panel .listing-action-primary:active:not(:disabled) { transform: scale(.97); }
+  @media (hover: hover) {
+    .listing-action-tile:hover:not(:disabled) { border-color: var(--color-primary); box-shadow: var(--shadow-sm, 0 6px 14px rgb(0 0 0 / .08)); transform: translateY(calc(var(--space-1) * -.5)); }
+    .listing-action-tile:hover:not(:disabled) .ms { transform: scale(1.18); }
+    .listing-action-tile.is-saved:hover:not(:disabled) { border-color: var(--rose-600); }
+    .listing-action-tile.is-copied:hover:not(:disabled) { border-color: var(--success-500); }
+    .listing-action-panel .listing-action-primary:hover:not(:disabled) { box-shadow: 0 8px 18px rgb(0 0 0 / .18); filter: brightness(1.08); transform: translateY(calc(var(--space-1) * -.5)); }
+    .listing-action-delete:hover { text-decoration: underline; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .listing-action-tile, .listing-action-tile .ms, .listing-action-panel .listing-action-primary { transition: none; }
+    .listing-action-tile:hover:not(:disabled), .listing-action-tile:hover:not(:disabled) .ms, .listing-action-panel .listing-action-primary:hover:not(:disabled) { transform: none; }
+  }
   .listing-action-tile-badge { position: absolute; top: calc(var(--space-2) * -1 + var(--space-1)); right: var(--space-2); min-width: var(--space-5); height: var(--space-5); display: grid; place-items: center; padding: 0 var(--space-1); border-radius: var(--radius-pill); background: var(--red-650); color: var(--neutral-50); font-size: var(--text-xs); font-weight: var(--weight-bold); }
 
   .listing-action-delete { justify-self: center; display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-h-md); padding: 0 var(--space-3); border: 0; background: transparent; color: var(--color-danger); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
