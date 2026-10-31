@@ -321,9 +321,14 @@ export function Navbar() {
       // iOS Chrome keeps its browser controls outside the visual viewport.
       // Reserve that covered area while visible, then let the dock use the
       // newly available space as the controls collapse on scroll.
+      //
+      // Two things move the visual viewport without any browser control covering the page, and
+      // neither may lift the dock: the rubber band at the top (pull to refresh) pushes `offsetTop`
+      // below zero, and pinch zoom shrinks the visible height. Both made the dock float up.
       const layoutViewportHeight = document.documentElement.clientHeight;
-      const visibleViewportBottom = visualViewport.offsetTop + visualViewport.height;
-      const next = `${Math.max(0, Math.round(layoutViewportHeight - visibleViewportBottom))}px`;
+      const isZoomed = visualViewport.scale > 1.01;
+      const visibleViewportBottom = Math.max(0, visualViewport.offsetTop) + visualViewport.height;
+      const next = isZoomed ? "0px" : `${Math.max(0, Math.round(layoutViewportHeight - visibleViewportBottom))}px`;
 
       // This drives the `bottom` of the dock and the listing action bar. Writing
       // it when nothing moved invalidates style on every scroll frame.
