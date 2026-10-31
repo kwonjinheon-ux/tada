@@ -263,8 +263,18 @@ export function Navbar() {
     const phone = window.matchMedia("(max-width: 767.98px)");
     const HIDE_AFTER = 0.15;
     const IGNORE_BELOW = 6;
+    const SETTLE_MS = 320;
     let lastY = window.scrollY;
     let frame: number | null = null;
+    let settleUntil = 0;
+
+    const setHidden = (hidden: boolean) => {
+      if (root.classList.contains("site-search-hidden") === hidden) return;
+      root.classList.toggle("site-search-hidden", hidden);
+      // Folding or unfolding changes the page height, which can clamp the scroll position while
+      // the row animates. Those moves are the layout's, not the reader's, so they are ignored.
+      settleUntil = performance.now() + SETTLE_MS;
+    };
 
     const update = () => {
       frame = null;
@@ -272,12 +282,24 @@ export function Navbar() {
         root.classList.remove("site-search-hidden");
         return;
       }
-      const y = Math.max(0, window.scrollY);
-      const delta = y - lastY;
+      // On iOS the position can be negative or past the end during the rubber band.
+      const y = window.scrollY;
       const range = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      if (y <= 8 || delta < -IGNORE_BELOW) root.classList.remove("site-search-hidden");
-      else if (delta > IGNORE_BELOW && y / range >= HIDE_AFTER) root.classList.add("site-search-hidden");
-      if (Math.abs(delta) > IGNORE_BELOW || y <= 8) lastY = y;
+      const delta = y - lastY;
+      if (y <= 8) {
+        setHidden(false);
+        lastY = Math.max(0, y);
+        return;
+      }
+      // At the bottom the rubber band overshoots and springs back, which reads as scrolling up and
+      // used to unfold the row, change the page height and bounce the bottom of the page again.
+      if (y >= range - 2 || performance.now() < settleUntil) {
+        lastY = y;
+        return;
+      }
+      if (delta < -IGNORE_BELOW) setHidden(false);
+      else if (delta > IGNORE_BELOW && y / range >= HIDE_AFTER) setHidden(true);
+      if (Math.abs(delta) > IGNORE_BELOW) lastY = y;
     };
     const onScroll = () => { if (frame === null) frame = window.requestAnimationFrame(update); };
 
