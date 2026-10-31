@@ -11,6 +11,8 @@ type DashboardMenuItemsProps = {
   isAdmin: boolean;
   onNavigate: () => void;
   onSignOut: () => void;
+  /** A row that opens the language picker from inside the profile menu. */
+  languageItem?: { label: string; value: string; onOpen: () => void };
 };
 
 const badgeLabel = (count: number) => (count > 99 ? "99+" : String(count));
@@ -24,6 +26,7 @@ export function DashboardMenuItems({
   isAdmin,
   onNavigate,
   onSignOut,
+  languageItem,
 }: DashboardMenuItemsProps) {
   const { t, locale } = useLanguage();
   const isMobile = variant === "mobile";
@@ -67,6 +70,13 @@ export function DashboardMenuItems({
           <span className={labelClassName}>{t("adminCentre")}</span>
           {!isMobile ? <i className="ms ms-chevron-right desktop-dashboard-chevron" aria-hidden="true" /> : null}
         </Link>
+      ) : null}
+      {languageItem ? (
+        <button className={`${itemClassName} profile-menu-language`} type="button" aria-haspopup="dialog" onClick={languageItem.onOpen}>
+          <i className="ms ms-language" aria-hidden="true" />
+          <span className={labelClassName}>{languageItem.label}</span>
+          <span className="profile-menu-value">{languageItem.value}</span>
+        </button>
       ) : null}
       <button className={logoutClassName} type="button" onClick={onSignOut}>
         <i className="ms ms-logout" aria-hidden="true" /> {t("logOut")}
