@@ -2457,6 +2457,14 @@ a {
   padding: 13px 14px 14px;
 }
 
+/* Market listing cards gain height through both the media panel and the
+   breathing room below it; the homepage and detail recommendations keep
+   their own compact card proportions. */
+.market-listings-grid:not(.is-list-view) .product-media { aspect-ratio: 10 / 9; }
+.market-listings-grid:not(.is-list-view) .product-body { padding-block: var(--space-6); }
+.market-listings-grid:not(.is-list-view) .product-body strong { font-size: var(--text-xl); }
+.market-listings-grid:not(.is-list-view) .product-body h2 { font-size: var(--text-md); }
+
 .product-body strong {
   color: var(--primary-dark);
   font-size: var(--text-2xl);
@@ -2702,6 +2710,10 @@ a {
     --save-button-size: 32px;
   }
 
+  .market-listings-grid:not(.is-list-view) .product-body { padding-block: var(--space-5); }
+  .market-listings-grid:not(.is-list-view) .product-body strong { font-size: var(--text-lg); }
+  .market-listings-grid:not(.is-list-view) .product-body h2 { font-size: var(--text-base); }
+
 }
 
 @media (min-width: 768px) {
@@ -2717,6 +2729,9 @@ a {
     min-height: 0;
     max-height: 118px;
   }
+
+  .market-listings-grid.is-list-view .product-card { min-height: calc(118px * 1.2); }
+  .market-listings-grid.is-list-view .product-media { height: calc(118px * 1.2); max-height: calc(118px * 1.2); }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2791,6 +2806,9 @@ a {
 .product-grid.is-list-view .product-body p {
   font-size: var(--text-sm);
 }
+
+.market-listings-grid.is-list-view .product-body strong,
+.market-listings-grid.is-list-view .product-body h2 { font-size: var(--text-md); }
 
 /* Centred while the next page loads, so the feed does not grow a band of empty
    space at the bottom just to hold a message. Fixed and click-through: the
@@ -7148,6 +7166,9 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     width: var(--list-thumb);
     height: var(--list-thumb);
   }
+
+  .market-listings-grid.is-list-view .product-card { min-height: calc(var(--list-thumb) * 1.2); }
+  .market-listings-grid.is-list-view .product-media { height: calc(var(--list-thumb) * 1.2); }
 
   .product-grid.is-list-view .save-button {
     align-self: center;

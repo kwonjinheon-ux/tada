@@ -332,7 +332,7 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
 
         <AdSlot placement="market_top" />
 
-        {feed.listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+        {feed.listings.length ? <div className={`product-grid market-listings-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
           {feed.listings.flatMap((listing, index) => [
             <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedListingIdSet.has(listing.id)} />,
             (index === 7 || (index > 7 && (index - 7) % 12 === 0)) ? <AdSlot key={`ad-${listing.id}`} placement={urlSearchQuery ? "search_feed" : "market_feed"} /> : null,

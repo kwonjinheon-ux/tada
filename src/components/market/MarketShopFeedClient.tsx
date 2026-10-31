@@ -118,7 +118,7 @@ export function MarketShopFeedClient({ shopType, basePath, listings, savedListin
         sortDisplay="chips"
         resultsLabel={locale === "ko" ? `${listings.length}개 매물` : `Showing ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
       />
-      {listings.length ? <div className={`product-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
+      {listings.length ? <div className={`product-grid market-listings-grid ${viewMode === "list" ? "is-list-view" : ""}`}>
         {listings.map((listing, index) => <ProductCard key={listing.id} listing={listing} priority={index === 0} initialIsSaved={savedIdSet.has(listing.id)} listingHref={`/market/${listing.id}`} wishlistEndpoint="/api/bargain/wishlist" />)}
       </div> : <div className="market-search-empty" role="status"><i className="ms ms-sell" aria-hidden="true" /><strong>{t(emptyLabelKeys[shopType])}</strong><span>{t("marketTryAnother")}</span></div>}
       <ListPagination page={page} totalPages={totalPages} label={t("marketListingPages")} />
