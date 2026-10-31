@@ -6723,8 +6723,12 @@ img.listing-detail-seller-avatar { object-fit: cover; }
     --mobile-dock-control-size: 56px;
     position: fixed !important;
     right: 0;
-    bottom: var(--mobile-viewport-bottom-inset, 0px);
+    bottom: 0;
     left: 0;
+    /* Browser chrome that covers the page bottom (iOS Chrome, an open keyboard) lifts the dock
+       by this inset. It is a transform, not `bottom`: the compositor animates it, so the dock
+       glides instead of snapping each time the toolbar shows or hides. */
+    transform: translateY(calc(var(--mobile-viewport-bottom-inset, 0px) * -1));
     z-index: 1000;
     width: 100%;
     max-width: none;

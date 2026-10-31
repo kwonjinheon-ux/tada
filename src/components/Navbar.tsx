@@ -306,7 +306,11 @@ export function Navbar() {
     const mobileQuery = window.matchMedia("(max-width: 767.98px)");
     const visualViewport = window.visualViewport;
 
-    let animationFrame: number | null = null;
+    // The browser toolbar animates for a few hundred milliseconds and reports a new viewport on
+    // every frame of it. Following each report made the dock chase the toolbar in small jumps, so
+    // the inset is applied once the viewport has been still for a moment, and the dock's own
+    // transform transition does the gliding.
+    let settleTimer: number | null = null;
 
     const updateMobileViewportInset = () => {
       if (!mobileQuery.matches || !visualViewport) {
@@ -328,8 +332,8 @@ export function Navbar() {
     };
 
     const scheduleMobileViewportInsetUpdate = () => {
-      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(updateMobileViewportInset);
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(updateMobileViewportInset, 90);
     };
 
     updateMobileViewportInset();
@@ -339,7 +343,7 @@ export function Navbar() {
     mobileQuery.addEventListener("change", scheduleMobileViewportInsetUpdate);
 
     return () => {
-      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
       visualViewport?.removeEventListener("resize", scheduleMobileViewportInsetUpdate);
       visualViewport?.removeEventListener("scroll", scheduleMobileViewportInsetUpdate);
       window.removeEventListener("resize", scheduleMobileViewportInsetUpdate);
@@ -352,7 +356,7 @@ export function Navbar() {
     const root = document.documentElement;
     const mobileQuery = window.matchMedia("(max-width: 767.98px)");
     const visualViewport = window.visualViewport;
-    let animationFrame: number | null = null;
+    let settleTimer: number | null = null;
 
     const updateMobileDockClearance = () => {
       if (!mobileQuery.matches) {
@@ -366,9 +370,10 @@ export function Navbar() {
         return;
       }
 
-      const dockRect = dock.getBoundingClientRect();
-      const dockBottomInset = Math.max(0, Math.round(window.innerHeight - dockRect.bottom));
-      const next = `${Math.ceil(dockRect.height + dockBottomInset + 32)}px`;
+      // Read the lift from the variable that drives it rather than from the dock's rectangle: the
+      // dock glides to its new place, and a rectangle measured mid-glide is a number nobody asked for.
+      const dockBottomInset = Math.max(0, Math.round(parseFloat(root.style.getPropertyValue("--mobile-viewport-bottom-inset")) || 0));
+      const next = `${Math.ceil(dock.offsetHeight + dockBottomInset + 32)}px`;
 
       // Compare against what is actually set rather than a cached number, so
       // the value is still restored if anything else clears the property.
@@ -376,9 +381,10 @@ export function Navbar() {
       root.style.setProperty("--mobile-dock-content-clearance", next);
     };
 
+    // After the inset effect above has settled, so the lift it just applied is the one measured.
     const scheduleMobileDockClearanceUpdate = () => {
-      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(updateMobileDockClearance);
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(updateMobileDockClearance, 140);
     };
 
     scheduleMobileDockClearanceUpdate();
@@ -393,7 +399,7 @@ export function Navbar() {
     mobileQuery.addEventListener("change", scheduleMobileDockClearanceUpdate);
 
     return () => {
-      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
       visualViewport?.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
       window.removeEventListener("resize", scheduleMobileDockClearanceUpdate);
       window.removeEventListener("orientationchange", scheduleMobileDockClearanceUpdate);
