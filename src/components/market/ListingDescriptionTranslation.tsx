@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { useLanguage } from "@/components/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 import { readApiResponse } from "@/lib/api/client";
 
@@ -14,12 +13,9 @@ const translationResponseSchema = z.object({
 type ListingDescriptionTranslationProps = {
   description: string;
   onChange: (translation: string | null) => void;
-  /** "chip" is the phone layout's quiet pill under the text, in the reader's language. */
-  variant?: "button" | "chip";
 };
 
-export function ListingDescriptionTranslation({ description, onChange, variant = "button" }: ListingDescriptionTranslationProps) {
-  const { t } = useLanguage();
+export function ListingDescriptionTranslation({ description, onChange }: ListingDescriptionTranslationProps) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [isShowingTranslation, setIsShowingTranslation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,14 +59,10 @@ export function ListingDescriptionTranslation({ description, onChange, variant =
     }
   };
 
-  const label = isLoading ? t("listingTranslating") : isShowingTranslation ? t("listingShowOriginal") : t("listingTranslate");
-
-  return <div className={`listing-description-translation ${variant === "chip" ? "is-chip" : ""}`}>
-    {variant === "chip"
-      ? <button type="button" className="listing-description-translate-chip" disabled={isLoading} onClick={() => void handleTranslate()}>{label}</button>
-      : <Button variant="secondary" size="sm" className="listing-description-translate-button" disabled={isLoading} onClick={() => void handleTranslate()}>
-        {isLoading ? "Translating..." : isShowingTranslation ? "Show original" : "Translate"}
-      </Button>}
+  return <div className="listing-description-translation">
+    <Button variant="secondary" size="sm" className="listing-description-translate-button" disabled={isLoading} onClick={() => void handleTranslate()}>
+      {isLoading ? "Translating..." : isShowingTranslation ? "Show original" : "Translate"}
+    </Button>
     {error ? <p className="listing-description-translate-error" role="alert">{error}</p> : null}
   </div>;
 }

@@ -17,7 +17,6 @@ import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
-const LEGACY_LISTING_DOCK = false;
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
@@ -575,10 +574,7 @@ export function Navbar() {
     { id: "profile", label: t("myPage"), icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen || isOnDashboard, badge: unreadBadge },
   ];
 
-  // The listing page now carries its own bottom bar above the standard dock, so
-  // the dock keeps its usual five items there. Set LEGACY_LISTING_DOCK to bring
-  // back the old action dock (home, message, offer, share, save).
-  const listingDockItems: MobileDockItem[] | null = !LEGACY_LISTING_DOCK || !isListingDetail || !listingDockConfig ? null : [
+  const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
     { id: "home", label: t("listingDockMarketHome"), icon: "home", href: "/market" },
     { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
