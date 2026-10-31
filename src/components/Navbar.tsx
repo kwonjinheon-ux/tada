@@ -17,6 +17,7 @@ import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
+const LISTING_ACTION_DOCK = false;
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
@@ -574,7 +575,10 @@ export function Navbar() {
     { id: "profile", label: t("myPage"), icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen || isOnDashboard, badge: unreadBadge },
   ];
 
-  const listingDockItems: MobileDockItem[] | null = !isListingDetail || !listingDockConfig ? null : [
+  // The listing page keeps the standard dock; its offer, chat, share and save live in
+  // the action panel under the description. Set LISTING_ACTION_DOCK to true to bring
+  // back the dock that swapped to Market home, Message, Make offer, Copy link, Save.
+  const listingDockItems: MobileDockItem[] | null = !LISTING_ACTION_DOCK || !isListingDetail || !listingDockConfig ? null : [
     { id: "home", label: t("listingDockMarketHome"), icon: "home", href: "/market" },
     { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
     listingDockConfig.isOwner
