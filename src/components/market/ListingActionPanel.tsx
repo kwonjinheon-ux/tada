@@ -41,20 +41,31 @@ export function ListingActionPanel({ mode, isSold, isLinkCopied, unreadCount = 0
   const { t } = useLanguage();
   const isSeller = mode === "seller";
   const shareTile = <button type="button" className={`listing-action-tile ${isLinkCopied ? "is-copied" : ""}`} onClick={onShare}><i className={`ms ${isLinkCopied ? "ms-check" : "ms-link"}`} aria-hidden="true" /><span aria-live="polite">{isLinkCopied ? t("listingLinkCopiedShort") : t("listingCopyLinkShort")}</span></button>;
-  const saveTile = <button type="button" className={`listing-action-tile ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} aria-pressed={isSaved} onClick={onSave} onAnimationEnd={(event) => { if (event.currentTarget === event.target) onSaveAnimationEnd?.(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /><span>{isSaved ? t("listingUnsave") : t("listingSave")}</span></button>;
   const messageTile = <button type="button" className="listing-action-tile" onPointerEnter={onMessageIntent} onFocus={onMessageIntent} onClick={onMessage} disabled={isOpeningMessage}>
     <i className="ms ms-chat-bubble" aria-hidden="true" />
     {unreadCount > 0 ? <b className="listing-action-tile-badge" aria-label={`${unreadCount}`}>{unreadCount > 99 ? "99+" : unreadCount}</b> : null}
     <span>{isOpeningMessage ? t("listingOpeningChat") : t("listingMessage")}</span>
   </button>;
 
-  return <section className={`listing-action-panel is-${mode}`} aria-label={t(isSeller ? "listingPanelSeller" : "listingPanelBuyer")}>
+  // Buyer: one row, as on the desktop summary — offer, message, save, share. The save and share
+  // buttons are round and carry no text; their labels are for assistive technology.
+  if (!isSeller) {
+    const saveLabel = isSaved ? t("listingUnsave") : t("listingSave");
+    const shareLabel = isLinkCopied ? t("listingLinkCopiedShort") : t("listingCopyLinkShort");
+    return <section className="listing-action-panel is-buyer" aria-label={t("listingPanelBuyer")}>
+      <Button size="lg" className="listing-action-primary" onClick={onOffer}><i className="ms ms-sell" aria-hidden="true" /> {t("listingOfferAction")}</Button>
+      <button type="button" className="listing-action-pill" onPointerEnter={onMessageIntent} onFocus={onMessageIntent} onClick={onMessage} disabled={isOpeningMessage}><i className="ms ms-chat-bubble" aria-hidden="true" /><span>{isOpeningMessage ? t("listingOpeningChat") : t("listingMessage")}</span></button>
+      <button type="button" className={`listing-action-round ${saveFeedbackClasses.root} ${isSaved ? saveFeedbackClasses.saved : ""} ${isPopping ? saveFeedbackClasses.popping : ""}`} aria-label={saveLabel} title={saveLabel} aria-pressed={isSaved} onClick={onSave} onAnimationEnd={(event) => { if (event.currentTarget === event.target) onSaveAnimationEnd?.(); }}><SaveHeartIcon isSaved={isSaved} particles={heartParticles} /></button>
+      <button type="button" className={`listing-action-round ${isLinkCopied ? "is-copied" : ""}`} aria-label={shareLabel} title={shareLabel} onClick={onShare}><i className={`ms ${isLinkCopied ? "ms-check" : "ms-share"}`} aria-hidden="true" /></button>
+    </section>;
+  }
+
+  return <section className={`listing-action-panel is-${mode}`} aria-label={t("listingPanelSeller")}>
     {isSeller
       ? <Button size="lg" block className="listing-action-primary is-seller" onClick={onMarkSold} disabled={isSold || isMarkingSold}><i className="ms ms-check" aria-hidden="true" /> {isSold ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</Button>
       : <Button size="lg" block className="listing-action-primary" onClick={onOffer}><i className="ms ms-sell" aria-hidden="true" /> {t("listingOfferAction")}</Button>}
     <div className="listing-action-tiles">
       {messageTile}
-      {isSeller ? null : saveTile}
       {isSeller ? <button type="button" className="listing-action-tile" onClick={onEdit} disabled={isSold}><i className="ms ms-edit" aria-hidden="true" /><span>{t("listingEditPost")}</span></button> : null}
       {shareTile}
       {isSeller ? <button type="button" className="listing-action-tile is-accent" onClick={onBump} disabled={isSold || isBumping}><i className={`ms ${isBumped ? "ms-check" : "ms-arrow-upward"}`} aria-hidden="true" /><span>{isBumped ? t("listingBumped") : t("listingBump")}</span></button> : null}
