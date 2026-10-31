@@ -205,11 +205,6 @@ export const marketplaceKeywordCount = new Set(
   ]).map((keyword) => keyword.trim().toLocaleLowerCase()),
 ).size;
 
-export const marketplaceKeywordSummary = {
-  total: marketplaceKeywordCount,
-  tradeMeImported: tradeMeMappedKeywordCount,
-};
-
 export function getSubcategories(mainCategory: string) {
   return marketplaceCategories.find((category) => category.value === mainCategory)?.subcategories ?? [];
 }

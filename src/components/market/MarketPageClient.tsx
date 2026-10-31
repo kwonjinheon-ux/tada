@@ -16,7 +16,7 @@ import { marketFeedResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 import type { Listing } from "@/data/listings";
 import type { MainLocation } from "@/data/nzLocations";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { loadBrowserSupabaseClient } from "@/lib/supabase/load-client";
 import { useProfileMainLocation } from "@/lib/market/useProfileMainLocation";
 import { searchWithProfileArea } from "@/lib/market/starting-area";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -182,9 +182,10 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
   }, [basePath, router, searchParams]);
 
   useEffect(() => {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      if (!supabase) return;
+    let isMounted = true;
+    let teardown: (() => void) | undefined;
+    void loadBrowserSupabaseClient().then((supabase) => {
+      if (!isMounted || !supabase) return;
       let refreshFrame: number | null = null;
       const channel = supabase
         .channel("market-listing-status-live")
@@ -199,13 +200,15 @@ export function MarketPageClient({ shopType = "secondhand", basePath = "/market"
           });
         })
         .subscribe();
-      return () => {
+      teardown = () => {
         if (refreshFrame !== null) window.cancelAnimationFrame(refreshFrame);
         void supabase.removeChannel(channel).catch(() => undefined);
       };
-    } catch {
-      return;
-    }
+    }).catch(() => undefined);
+    return () => {
+      isMounted = false;
+      teardown?.();
+    };
   }, []);
 
   useEffect(() => {

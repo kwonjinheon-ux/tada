@@ -5,7 +5,7 @@ import { createBearerSupabaseClient, createServerSupabaseClient } from "@/lib/su
 import { getSignedStorageImage } from "@/lib/supabase/storage-image";
 import { containsProhibitedPublicContent, prohibitedPublicContentMessage } from "@/lib/safety/prohibited-content";
 
-const fallbackImage = "/images/home/journey-market.png";
+const fallbackImage = "/images/home/journey-market.webp";
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(date));

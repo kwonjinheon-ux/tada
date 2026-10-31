@@ -6,22 +6,19 @@ import { type CSSProperties, FormEvent, Suspense, useEffect, useRef, useState } 
 import { MobileDrawerBackdrop } from "@/components/MobileDrawer";
 import { DashboardMenuItems } from "@/components/dashboard/DashboardMenuItems";
 import { languageOptions, translateForLocale, type SupportedLocale, useLanguage } from "@/components/LanguageProvider";
-import { createHeartParticles, SaveHeartBurst, saveFeedbackClasses, type HeartParticle } from "@/components/SaveHeartBurst";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { MobileDock, type MobileDockItem } from "@/components/ui/MobileDock";
 import { MobileCreateMenu, type CreateMenuSection } from "@/components/layout/MobileCreateMenu";
 import { communityCreateHref } from "@/components/community/CommunityFilterSidebar";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { loadBrowserSupabaseClient } from "@/lib/supabase/load-client";
 import { marketSearchTermsResponseSchema } from "@/contracts/api";
 import { readApiResponse } from "@/lib/api/client";
 
 const authlessRoutes = new Set(["/login", "/signup"]);
-const LISTING_ACTION_DOCK = false;
 declare global {
   interface Window {
     __tadaOnlineMemberIds?: string[];
-    __tadaListingDockConfig?: { isOwner: boolean; isSaved: boolean };
   }
 }
 
@@ -67,12 +64,6 @@ export function Navbar() {
   const [communityCategory, setCommunityCategory] = useState<string | null>(null);
   const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [isSearchSuggestionsOpen, setIsSearchSuggestionsOpen] = useState(false);
-  const [listingDockConfig, setListingDockConfig] = useState<{ isOwner: boolean; isSaved: boolean } | null>(null);
-  const [dockHeartParticles, setDockHeartParticles] = useState<HeartParticle[]>([]);
-  const [isDockHeartPopping, setIsDockHeartPopping] = useState(false);
-  const [isListingShareCopied, setIsListingShareCopied] = useState(false);
-  const dockHeartTimer = useRef<number | null>(null);
-  const shareCopiedTimer = useRef<number | null>(null);
   const desktopProfileButtonRef = useRef<HTMLButtonElement>(null);
   const [desktopPopoverPosition, setDesktopPopoverPosition] = useState<{ top: number; right: number } | null>(null);
   const { locale, setLocale, t } = useLanguage();
@@ -106,22 +97,11 @@ export function Navbar() {
   } as CSSProperties : undefined;
 
   useEffect(() => {
-    const showCopiedState = () => {
-      setIsListingShareCopied(true);
-      if (shareCopiedTimer.current) window.clearTimeout(shareCopiedTimer.current);
-      shareCopiedTimer.current = window.setTimeout(() => setIsListingShareCopied(false), 2_000);
-    };
-    window.addEventListener("listing-share-copied", showCopiedState);
-    return () => {
-      window.removeEventListener("listing-share-copied", showCopiedState);
-      if (shareCopiedTimer.current) window.clearTimeout(shareCopiedTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) { setIsAuthReady(true); return; }
     let isMounted = true;
+    let teardown: (() => void) | undefined;
+    void loadBrowserSupabaseClient().then((supabase) => {
+    if (!isMounted) return;
+    if (!supabase) { setIsAuthReady(true); return; }
     let syncPromise: Promise<void> | null = null;
 
     const syncUser = () => {
@@ -173,17 +153,24 @@ export function Navbar() {
     };
     window.addEventListener("profile-avatar-updated", updateAvatar);
 
-    return () => {
-      isMounted = false;
+    teardown = () => {
       listener.subscription.unsubscribe();
       window.removeEventListener("profile-avatar-updated", updateAvatar);
+    };
+    });
+
+    return () => {
+      isMounted = false;
+      teardown?.();
     };
   }, []);
 
   useEffect(() => {
     if (!userId) return;
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
+    let isMounted = true;
+    let teardown: (() => void) | undefined;
+    void loadBrowserSupabaseClient().then((supabase) => {
+    if (!isMounted || !supabase) return;
     const refreshUnreadCount = async () => {
       const { count } = await supabase
         .from("market_messages")
@@ -213,13 +200,17 @@ export function Navbar() {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "market_notifications", filter: `user_id=eq.${userId}` }, queueNotificationRefresh)
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "market_notifications" }, queueNotificationRefresh)
       .subscribe();
-    return () => { if (notificationRefreshTimer) clearTimeout(notificationRefreshTimer); void supabase.removeChannel(channel).catch(() => undefined); };
+    teardown = () => { if (notificationRefreshTimer) clearTimeout(notificationRefreshTimer); void supabase.removeChannel(channel).catch(() => undefined); };
+    });
+    return () => { isMounted = false; teardown?.(); };
   }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
+    let isMounted = true;
+    let teardown: (() => void) | undefined;
+    void loadBrowserSupabaseClient().then((supabase) => {
+    if (!isMounted || !supabase) return;
 
     const channel = supabase.channel("tada-member-presence", { config: { presence: { key: userId } } });
     const publishPresence = () => {
@@ -240,12 +231,14 @@ export function Navbar() {
         }
       });
 
-    return () => {
+    teardown = () => {
       window.__tadaOnlineMemberIds = undefined;
       window.dispatchEvent(new Event("tada-member-presence"));
       void channel.untrack().catch(() => undefined);
       void supabase.removeChannel(channel).catch(() => undefined);
     };
+    });
+    return () => { isMounted = false; teardown?.(); };
   }, [userId]);
 
   useEffect(() => {
@@ -458,17 +451,6 @@ export function Navbar() {
   }, [isDesktopDashboardOpen, isLanguageMenuOpen, isCreateMenuOpen]);
 
   useEffect(() => {
-    const syncListingDock = () => setListingDockConfig(window.__tadaListingDockConfig ?? null);
-    window.addEventListener("listing-mobile-dock-config", syncListingDock);
-    syncListingDock();
-    return () => window.removeEventListener("listing-mobile-dock-config", syncListingDock);
-  }, [pathname]);
-
-  useEffect(() => () => {
-    if (dockHeartTimer.current) window.clearTimeout(dockHeartTimer.current);
-  }, []);
-
-  useEffect(() => {
     const closeDashboardDrawer = () => setIsDashboardMenuOpen(false);
     window.addEventListener("mobile-category-menu-request", closeDashboardDrawer);
     return () => {
@@ -556,7 +538,6 @@ export function Navbar() {
     community: communityCreateHref(isCommunity ? communityCategory : null),
     services: "/services/create",
   };
-  const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const isSignedIn = Boolean(userEmail);
   // Language lives in the profile menu at every screen size; this row opens the picker from there.
@@ -578,7 +559,7 @@ export function Navbar() {
 
     setLocale(nextLocale);
     setLanguageStatus("");
-    const supabase = createBrowserSupabaseClient();
+    const supabase = await loadBrowserSupabaseClient();
     if (!supabase) {
       setLanguageStatus(translateForLocale("languageSavedDevice", nextLocale));
       return;
@@ -607,7 +588,7 @@ export function Navbar() {
   };
 
   const handleSignOut = async () => {
-    const supabase = createBrowserSupabaseClient();
+    const supabase = await loadBrowserSupabaseClient();
     if (!supabase) return;
 
     const { error } = await supabase.auth.signOut({ scope: "local" });
@@ -622,19 +603,6 @@ export function Navbar() {
     setIsDesktopDashboardOpen(false);
   };
 
-  const triggerListingDockAction = (action: "message" | "offer" | "share" | "save" | "edit" | "delete") => {
-    if (action === "save") {
-      setIsDockHeartPopping(true);
-      setDockHeartParticles(createHeartParticles());
-      if (dockHeartTimer.current) window.clearTimeout(dockHeartTimer.current);
-      dockHeartTimer.current = window.setTimeout(() => {
-        setDockHeartParticles([]);
-        setIsDockHeartPopping(false);
-      }, 1_050);
-    }
-    window.dispatchEvent(new CustomEvent("listing-mobile-dock-action", { detail: action }));
-  };
-
   const unreadBadge = unreadMessageCount > 99 ? "99+" : unreadMessageCount > 0 ? String(unreadMessageCount) : undefined;
   const isOnDashboard = pathname.startsWith(dashboardBase);
   const standardDockItems: MobileDockItem[] = [
@@ -644,21 +612,6 @@ export function Navbar() {
     { id: "services", label: t("services"), icon: "services", href: "/services", active: isServices && !isPostAd },
     // Messages now live under My page, so their unread count rides on its icon.
     { id: "profile", label: t("myPage"), icon: "profile", onClick: openMobileDashboard, active: isDashboardMenuOpen || isOnDashboard, badge: unreadBadge },
-  ];
-
-  // The listing page keeps the standard dock; its offer, chat, share and save live in
-  // the action panel under the description. Set LISTING_ACTION_DOCK to true to bring
-  // back the dock that swapped to Market home, Message, Make offer, Copy link, Save.
-  const listingDockItems: MobileDockItem[] | null = !LISTING_ACTION_DOCK || !isListingDetail || !listingDockConfig ? null : [
-    { id: "home", label: t("listingDockMarketHome"), icon: "home", href: "/market" },
-    { id: "message", label: t("listingDockMessageSeller"), icon: "message", onClick: () => triggerListingDockAction("message") },
-    listingDockConfig.isOwner
-      ? { id: "edit", label: t("listingDockEdit"), icon: "edit", onClick: () => triggerListingDockAction("edit"), variant: "offer" }
-      : { id: "offer", label: t("listingDockOffer"), icon: "offer", onClick: () => triggerListingDockAction("offer"), variant: "offer" },
-    { id: "share", label: isListingShareCopied ? t("listingDockLinkCopied") : t("listingDockCopyLink"), icon: isListingShareCopied ? "check" : "share", onClick: () => triggerListingDockAction("share") },
-    listingDockConfig.isOwner
-      ? { id: "delete", label: t("listingDelete"), icon: "delete", onClick: () => triggerListingDockAction("delete") }
-      : { id: "save", label: listingDockConfig.isSaved ? t("listingUnsave") : t("listingSave"), icon: "heart", solidIcon: listingDockConfig.isSaved, active: listingDockConfig.isSaved, pressed: listingDockConfig.isSaved, variant: "save", className: `${saveFeedbackClasses.root} ${listingDockConfig.isSaved ? saveFeedbackClasses.saved : ""} ${isDockHeartPopping ? saveFeedbackClasses.popping : ""}`, onClick: () => triggerListingDockAction("save"), overlay: <SaveHeartBurst particles={dockHeartParticles} /> },
   ];
 
   /** The header's filter button opens the browse drawer of the section you are
@@ -901,8 +854,8 @@ export function Navbar() {
           </nav>
         </DialogOverlay>
       ) : null}
-      {isCreateMenuOpen && !listingDockItems ? <MobileCreateMenu id="mobile-create-menu" ko={locale === "ko"} current={createSection} hrefs={createHrefs} onClose={() => setIsCreateMenuOpen(false)} /> : null}
-      <MobileDock items={listingDockItems ?? standardDockItems} />
+      {isCreateMenuOpen ? <MobileCreateMenu id="mobile-create-menu" ko={locale === "ko"} current={createSection} hrefs={createHrefs} onClose={() => setIsCreateMenuOpen(false)} /> : null}
+      <MobileDock items={standardDockItems} />
     </>
   );
 }

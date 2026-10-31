@@ -316,4 +316,3 @@ export const communityPostFeedResponseSchema = z.object({
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>;
 export type ApiFailure = z.infer<typeof apiFailureSchema>;
-export type MarketMessageResponse = z.infer<typeof marketMessageResponseSchema>;

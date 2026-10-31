@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { MainLocation } from "@/data/nzLocations";
 import { loadProfileLocation } from "@/lib/market/profile-main-location";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { loadBrowserSupabaseClient } from "@/lib/supabase/load-client";
 
 type UseProfileMainLocationOptions = {
   hasMainLocationInUrl: boolean;
@@ -28,7 +28,7 @@ export function useProfileMainLocation({ hasMainLocationInUrl, mainLocation, onR
     let cancelled = false;
 
     void (async () => {
-      const supabase = createBrowserSupabaseClient();
+      const supabase = await loadBrowserSupabaseClient();
       const { data: { user } } = await supabase?.auth.getUser() ?? { data: { user: null } };
       if (!supabase || !user) return;
       const location = await loadProfileLocation(supabase, user.id);

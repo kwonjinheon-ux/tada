@@ -63,12 +63,12 @@ export function groupBuyReference(prefix: string, sequence: number) {
 }
 
 const bakeryItems: GroupBuyItem[] = [
-  { id: "sourdough", name: "Country sourdough", note: "800g whole loaf, baked Friday morning", priceCents: 1200, unitLabel: "per loaf", limitPerPerson: 4, image: "/images/home/journey-market.png", imageAlt: "A round sourdough loaf", orderedCount: 34 },
+  { id: "sourdough", name: "Country sourdough", note: "800g whole loaf, baked Friday morning", priceCents: 1200, unitLabel: "per loaf", limitPerPerson: 4, image: "/images/home/journey-market.webp", imageAlt: "A round sourdough loaf", orderedCount: 34 },
   { id: "milk-bread", name: "Hokkaido milk bread", note: "Soft white loaf, sliced on request", priceCents: 1100, unitLabel: "per loaf", limitPerPerson: 4, image: "/images/home/journey-community.png", imageAlt: "A pale milk bread loaf", orderedCount: 28 },
-  { id: "red-bean", name: "Red bean bun", note: "Pack of 4, house-made paste", priceCents: 900, unitLabel: "per pack", limitPerPerson: 6, image: "/images/home/journey-services.png", imageAlt: "Red bean buns on a tray", orderedCount: 41 },
-  { id: "garlic-baguette", name: "Garlic baguette", note: "Half baked, finish at home", priceCents: 850, unitLabel: "each", limitPerPerson: 6, image: "/images/home/journey-market.png", imageAlt: "A garlic baguette", orderedCount: 19 },
+  { id: "red-bean", name: "Red bean bun", note: "Pack of 4, house-made paste", priceCents: 900, unitLabel: "per pack", limitPerPerson: 6, image: "/images/home/journey-services.webp", imageAlt: "Red bean buns on a tray", orderedCount: 41 },
+  { id: "garlic-baguette", name: "Garlic baguette", note: "Half baked, finish at home", priceCents: 850, unitLabel: "each", limitPerPerson: 6, image: "/images/home/journey-market.webp", imageAlt: "A garlic baguette", orderedCount: 19 },
   { id: "croissant", name: "Butter croissant", note: "Pack of 6, French butter", priceCents: 1800, unitLabel: "per pack", limitPerPerson: 3, image: "/images/home/journey-community.png", imageAlt: "A tray of croissants", orderedCount: 23 },
-  { id: "cheese-scone", name: "Cheese scone", note: "Pack of 4, Kāpiti cheddar", priceCents: 1000, unitLabel: "per pack", limitPerPerson: null, image: "/images/home/journey-services.png", imageAlt: "Cheese scones", orderedCount: 12 },
+  { id: "cheese-scone", name: "Cheese scone", note: "Pack of 4, Kāpiti cheddar", priceCents: 1000, unitLabel: "per pack", limitPerPerson: null, image: "/images/home/journey-services.webp", imageAlt: "Cheese scones", orderedCount: 12 },
 ];
 
 export const groupBuys: GroupBuy[] = [
@@ -82,7 +82,7 @@ export const groupBuys: GroupBuy[] = [
     ],
     status: "closing-soon",
     referencePrefix: "BR",
-    coverImage: "/images/home/journey-market.png",
+    coverImage: "/images/home/journey-market.webp",
     coverAlt: "Fresh bread cooling on a rack",
     seller: { name: "Hamilton Home Bakery", location: "Hamilton East", phone: "021 482 1936", joinedLabel: "Hosting group buys since 2023" },
     pickup: { available: true, address: "12 Grey Street, Hamilton East", window: "Friday 3pm – 6pm", note: "Park on Grey Street and come to the side door." },
@@ -120,7 +120,7 @@ export const groupBuys: GroupBuy[] = [
     description: ["Picked Wednesday, in Hamilton Thursday."],
     status: "open",
     referencePrefix: "CB",
-    coverImage: "/images/home/journey-services.png",
+    coverImage: "/images/home/journey-services.webp",
     coverAlt: "A crate of mandarins",
     seller: { name: "Kiwi Orchard Direct", location: "Hamilton Central", phone: "021 705 4462", joinedLabel: "Hosting group buys since 2022" },
     pickup: { available: true, address: "88 Victoria Street, Hamilton Central", window: "Thursday 4pm – 7pm", note: "Loading bay at the rear." },
@@ -139,7 +139,7 @@ export const groupBuys: GroupBuy[] = [
     description: ["This round has closed. Follow the seller to hear about the next one."],
     status: "closed",
     referencePrefix: "FW",
-    coverImage: "/images/home/journey-market.png",
+    coverImage: "/images/home/journey-market.webp",
     coverAlt: "Stacked firewood",
     seller: { name: "Waikato Firewood Co", location: "Rototuna", phone: "021 668 9201", joinedLabel: "Hosting group buys since 2021" },
     pickup: { available: true, address: "40 Thomas Road, Rototuna", window: "Saturday 9am – 12pm", note: "Bring a trailer." },
@@ -162,10 +162,6 @@ export const groupBuyOrders: GroupBuyOrder[] = [
   { reference: "BR0005", buyerName: "Liam Carter", phone: "021 555 0233", fulfilment: "pickup", address: null, placedLabel: "Wed 7:58am", isPaid: false, lines: [{ itemId: "croissant", quantity: 2 }, { itemId: "cheese-scone", quantity: 1 }] },
   { reference: "BR0006", buyerName: "Mele Tupou", phone: "021 555 0277", fulfilment: "pickup", address: null, placedLabel: "Wed 4:31pm", isPaid: true, lines: [{ itemId: "red-bean", quantity: 3 }, { itemId: "garlic-baguette", quantity: 1 }] },
 ];
-
-export function findGroupBuy(id: string) {
-  return groupBuys.find((groupBuy) => groupBuy.id === id) ?? null;
-}
 
 const copy = {
   en: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { loadBrowserSupabaseClient } from "@/lib/supabase/load-client";
 import { isSupportedLocale, type SupportedLocale } from "@/lib/locales";
 
 // The list itself lives in a non-client module so the server can read it too;
@@ -205,9 +205,9 @@ export function LanguageProvider({ children, initialLocale = "en" }: { children:
       if (stored !== initialLocale) setLocaleState(stored);
     }
 
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
-    void supabase.auth.getUser().then(async ({ data }) => {
+    void loadBrowserSupabaseClient().then(async (supabase) => {
+      if (!supabase) return;
+      const { data } = await supabase.auth.getUser();
       if (!data.user) return;
       const { data: profile } = await supabase.from("profiles").select("preferred_locale").eq("id", data.user.id).maybeSingle();
       if (!validLocale(profile?.preferred_locale)) return;

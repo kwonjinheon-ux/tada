@@ -109,7 +109,7 @@ export async function loadServicesFeed(supabase: SupabaseClient, query: Services
         providerType: row.provider_type === "business" ? "businesses" : "individuals",
         rating: Number(row.rating),
         reviewCount: row.review_count,
-        image: (cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined) ?? "/images/home/journey-services.png",
+        image: (cardPhoto?.storage_path ? signedByPath.get(cardPhoto.storage_path) : undefined) ?? "/images/home/journey-services.webp",
         logo: (logoPhoto?.storage_path ? signedByPath.get(logoPhoto.storage_path) : undefined) ?? undefined,
         description: row.description ?? undefined,
         // Verification is not yet stored for service listings. Never infer it.

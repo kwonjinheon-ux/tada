@@ -47,11 +47,6 @@ export const tradeMeCategoryMappings: readonly TradeMeCategoryMapping[] = [
   { sourceCategoryNumber: "4798-", sourceCategory: "Health & beauty", tadaCategory: "health-beauty", keywords: ["health beauty", "personal care", "beauty products", "wellbeing"], leafCategoryCount: 258 },
 ];
 
-export const tradeMeMappedLeafCategoryCount = tradeMeCategoryMappings.reduce(
-  (total, mapping) => total + mapping.leafCategoryCount,
-  0,
-);
-
 export const tradeMeMappedKeywordCount = new Set(
   tradeMeCategoryMappings.flatMap((mapping) => mapping.keywords.map((keyword) => keyword.toLocaleLowerCase())),
 ).size;

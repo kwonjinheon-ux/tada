@@ -39,7 +39,7 @@ export function Index2HomeClient({ locationLabel, listings, savedListingIds, pos
   return <>
     <main className="index2-home">
       <section className="index2-hero">
-        <Image src="/images/home/hamilton-waikato-hero.png" alt="Hamilton's Waikato River and city skyline" fill priority sizes="100vw" className="index2-hero-image" />
+        <Image src="/images/home/hamilton-waikato-hero.webp" alt="Hamilton's Waikato River and city skyline" fill priority sizes="100vw" className="index2-hero-image" />
         <PageContainer className="index2-hero-content">
           <p className="index2-hero-note is-left" aria-hidden="true">{isKorean ? <>가까운 이웃과<br />더 따뜻한 동네</> : <>Local people.<br />Brighter neighbourhoods.</>}</p>
           <p className="index2-hero-note is-right" aria-hidden="true">{isKorean ? <>좋은 일은<br />우리 동네에서 시작돼요.</> : <>Good things happen<br />locally.</>}</p>
@@ -73,7 +73,7 @@ export function Index2HomeClient({ locationLabel, listings, savedListingIds, pos
 
         <div className="index2-split-grid">
           <section className="index2-free-panel ui-card" aria-labelledby="index2-free-title"><div><span className="index2-icon"><i className="ms ms-redeem" aria-hidden="true" /></span><h2 id="index2-free-title">{isKorean ? "무료 나눔" : "Free near you"}</h2><p>{isKorean ? "좋은 물건을 이웃과 나누고, 더 오래 사용하세요." : "Good stuff. Better together."}</p></div><Link className="ui-button ui-button--secondary" href="/market?price=free">{isKorean ? "무료 상품 보기" : "Browse free items"}<i className="ms ms-arrow-forward" aria-hidden="true" /></Link></section>
-          <section className="index2-service-panel ui-card" aria-labelledby="index2-service-title"><Image src="/images/home/journey-market.png" alt="" fill sizes="(max-width: 767px) 100vw, 50vw" /><div><span className="index2-icon"><i className="ms ms-warehouse" aria-hidden="true" /></span><h2 id="index2-service-title">{isKorean ? "이번 주 차고·이사 세일" : "Garage & moving sales"}</h2><p>{isKorean ? "이웃의 보물을 발견하고, 가까운 세일에 참여해 보세요." : "Treasure hunts are happening in your neighbourhood."}</p><Link href="/market/garage-sales">{isKorean ? "세일 둘러보기" : "Find sales near you"} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
+          <section className="index2-service-panel ui-card" aria-labelledby="index2-service-title"><Image src="/images/home/journey-market.webp" alt="" fill sizes="(max-width: 767px) 100vw, 50vw" /><div><span className="index2-icon"><i className="ms ms-warehouse" aria-hidden="true" /></span><h2 id="index2-service-title">{isKorean ? "이번 주 차고·이사 세일" : "Garage & moving sales"}</h2><p>{isKorean ? "이웃의 보물을 발견하고, 가까운 세일에 참여해 보세요." : "Treasure hunts are happening in your neighbourhood."}</p><Link href="/market/garage-sales">{isKorean ? "세일 둘러보기" : "Find sales near you"} <i className="ms ms-arrow-forward" aria-hidden="true" /></Link></div></section>
         </div>
 
         <section className="index2-community" aria-labelledby="index2-community-title">

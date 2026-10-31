@@ -188,7 +188,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
   const shareListing = async () => {
     try {
       await copyCurrentPageLink();
-      window.dispatchEvent(new Event("listing-share-copied"));
       setIsLinkCopied(true);
       // Two seconds of "copied", then the tile goes back to "Copy link"; a second tap restarts the count.
       if (linkCopiedTimer.current) window.clearTimeout(linkCopiedTimer.current);
@@ -393,32 +392,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
       if (!wasDeleted) setIsDeleting(false);
     }
   };
-
-  const listingDockActionsRef = useRef({ openOfferDialog, openConversation, shareListing, saveListing, editListing });
-  listingDockActionsRef.current = { openOfferDialog, openConversation, shareListing, saveListing, editListing };
-
-  useEffect(() => {
-    if (isBargainListing) return;
-    window.__tadaListingDockConfig = { isOwner, isSaved };
-    window.dispatchEvent(new Event("listing-mobile-dock-config"));
-    const handleDockAction = (event: Event) => {
-      switch ((event as CustomEvent<string>).detail) {
-        case "offer": listingDockActionsRef.current.openOfferDialog(); break;
-        case "message": void listingDockActionsRef.current.openConversation(); break;
-        case "share": void listingDockActionsRef.current.shareListing(); break;
-        case "save": void listingDockActionsRef.current.saveListing(); break;
-        case "edit": listingDockActionsRef.current.editListing(); break;
-        case "delete": setIsDeleteDialogOpen(true); break;
-        default: break;
-      }
-    };
-    window.addEventListener("listing-mobile-dock-action", handleDockAction);
-    return () => {
-      delete window.__tadaListingDockConfig;
-      window.dispatchEvent(new Event("listing-mobile-dock-config"));
-      window.removeEventListener("listing-mobile-dock-action", handleDockAction);
-    };
-  }, [isBargainListing, isOwner, isSaved]);
 
   // The seller's photo opens a menu (profile, other listings, report, block) on every real
   // listing; a bargain listing has no seller profile to open, so its photo stays plain.

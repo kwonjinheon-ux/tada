@@ -10,7 +10,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { useLanguage } from "@/components/LanguageProvider";
 import { communityPosts, type CommunityPost } from "@/data/community-posts";
 import type { Listing } from "@/data/listings";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { loadBrowserSupabaseClient } from "@/lib/supabase/load-client";
 
 const destinations = [
   { title: { ko: "마켓", en: "Market" }, description: { ko: "사고 팔고 나눠요", en: "Buy & sell locally" }, href: "/market", icon: "ms-storefront", tone: "market", comingSoon: false },
@@ -233,24 +233,31 @@ export function HomePageClient({
   const highlightedCommunityPosts = communityHighlights.length ? communityHighlights : communityPosts;
 
   useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
-    let refreshFrame: number | null = null;
-    const refreshHighlights = () => {
-      if (refreshFrame !== null) return;
-      refreshFrame = window.requestAnimationFrame(() => {
-        refreshFrame = null;
-        router.refresh();
-      });
-    };
-    const channel = supabase
-      .channel("home-community-engagement-live")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "community_posts" }, refreshHighlights)
-      .on("postgres_changes", { event: "*", schema: "public", table: "community_post_comments" }, refreshHighlights)
-      .subscribe();
+    let isMounted = true;
+    let teardown: (() => void) | undefined;
+    void loadBrowserSupabaseClient().then((supabase) => {
+      if (!isMounted || !supabase) return;
+      let refreshFrame: number | null = null;
+      const refreshHighlights = () => {
+        if (refreshFrame !== null) return;
+        refreshFrame = window.requestAnimationFrame(() => {
+          refreshFrame = null;
+          router.refresh();
+        });
+      };
+      const channel = supabase
+        .channel("home-community-engagement-live")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "community_posts" }, refreshHighlights)
+        .on("postgres_changes", { event: "*", schema: "public", table: "community_post_comments" }, refreshHighlights)
+        .subscribe();
+      teardown = () => {
+        if (refreshFrame !== null) window.cancelAnimationFrame(refreshFrame);
+        void supabase.removeChannel(channel).catch(() => undefined);
+      };
+    }).catch(() => undefined);
     return () => {
-      if (refreshFrame !== null) window.cancelAnimationFrame(refreshFrame);
-      void supabase.removeChannel(channel).catch(() => undefined);
+      isMounted = false;
+      teardown?.();
     };
   }, [router]);
 
@@ -265,7 +272,7 @@ export function HomePageClient({
               <div className="home-reference-hero-actions"><Link className="home-reference-primary" href="/market"><i className="ms ms-location-on" aria-hidden="true" />{heroNearbyAction}</Link><Link className="home-reference-secondary" href="/market/create"><i className="ms ms-add" aria-hidden="true" />{heroPostAction}</Link></div>
               <small className="home-reference-hero-trust">{heroTrust}</small>
             </div>
-            <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.png" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
+            <div className="home-reference-hero-art" aria-hidden="true"><Image src="/images/home/tada-local-life-hero.webp" alt="" fill priority sizes="(max-width: 767px) 0px, (max-width: 1279px) 48vw, 640px" /></div>
           </section>
 
           <section className="home-reference-destinations" aria-label={destinationHeading}>
@@ -316,7 +323,7 @@ export function HomePageClient({
 
           <div className="home-reference-support-grid">
             <HomeHelpPanel isKorean={isKorean} text={text} />
-            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="ms ms-work" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="ms ms-arrow-forward" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.png" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
+            <Link className="home-reference-jobs-cta ui-card" href="/jobs"><header><i className="ms ms-work" aria-hidden="true" /><span><strong>{text.jobsTitle}</strong><small>{text.jobsDescription}</small></span><em>{text.soon}</em><i className="ms ms-arrow-forward" aria-hidden="true" /></header><div className="home-reference-jobs-image"><Image src="/images/home/journey-jobs.webp" alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1279px) 46vw, 560px" /></div></Link>
           </div>
         </PageContainer>
       </main>

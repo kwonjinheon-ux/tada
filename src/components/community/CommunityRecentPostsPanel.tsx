@@ -67,7 +67,7 @@ export function CommunityRecentPostsPanel({ category = "all", mainLocation, subL
   return (
     <aside className="community-recent-panel" aria-label={heading}>
       <Link className="community-recent-ad-slot" href="/market">
-        <Image src="/images/home/journey-market.png" alt="Discover home finds on Tada Market" fill sizes="300px" />
+        <Image src="/images/home/journey-market.webp" alt="Discover home finds on Tada Market" fill sizes="300px" />
         <span className="community-recent-ad-label">Advertisement</span>
         <span className="community-recent-ad-copy"><strong>Fresh finds for your home</strong><small>Explore Tada Market</small></span>
       </Link>

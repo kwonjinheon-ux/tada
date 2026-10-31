@@ -38,7 +38,7 @@ export function DashboardAdBanner({ kind }: DashboardAdBannerProps) {
     listings: { title: ko ? "내 서비스를 이웃에게 소개해 보세요" : "Share your service with neighbours", description: ko ? "도움이 필요한 이웃이 서비스를 발견할 수 있어요." : "Help neighbours discover what you can offer.", action: ko ? "서비스 등록" : "List a service", href: "/services/create" },
     reservations: { title: ko ? "다음 동네 거래를 찾아보세요" : "Find your next local deal", description: ko ? "가까운 이웃이 새로 올린 상품을 둘러보세요." : "See what neighbours have listed nearby.", action: ko ? "마켓 둘러보기" : "Explore Market", href: "/market" },
   }[kind];
-  const image = kind === "keywords" || kind === "reservations" ? "/images/home/journey-market.png" : kind === "listings" ? "/images/home/journey-services.png" : "/images/brand/tada-wordmark.png";
+  const image = kind === "keywords" || kind === "reservations" ? "/images/home/journey-market.webp" : kind === "listings" ? "/images/home/journey-services.webp" : "/images/brand/tada-wordmark.png";
   const illustrated = kind === "keywords" || kind === "listings" || kind === "reservations";
 
   return <aside className="ui-panel account-ad-banner" aria-label={ko ? "광고" : "Advertisement"}>

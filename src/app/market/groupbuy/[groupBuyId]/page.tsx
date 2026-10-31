@@ -27,7 +27,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
   const groupBuy: GroupBuy = {
     id: data.id, title: data.title, summary: data.summary, description: data.description.split(/\n\n+/).filter(Boolean),
     status: data.status !== "open" || millisecondsUntilClose <= 0 ? "closed" : millisecondsUntilClose < 24 * 60 * 60 * 1000 ? "closing-soon" : "open",
-    referencePrefix: data.reference_prefix, coverImage: coverImage ?? "/images/home/journey-market.png", coverAlt: data.cover_image_alt ?? fallbackCover?.photo_alt ?? data.title,
+    referencePrefix: data.reference_prefix, coverImage: coverImage ?? "/images/home/journey-market.webp", coverAlt: data.cover_image_alt ?? fallbackCover?.photo_alt ?? data.title,
     seller: {
       name: sellerProfile?.display_name ?? "Tada member",
       location: [sellerProfile?.region_suburb, sellerProfile?.region_city].filter(Boolean).join(", ") || "New Zealand",
@@ -41,7 +41,7 @@ export default async function GroupBuyDetailRoute({ params }: { params: Promise<
     handoverLabel: new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.handover_at)),
     bank: { accountName: data.bank_account_name, accountNumber: data.bank_account_number }, minimumOrderCents: data.minimum_order_cents,
     participantCount: data.participant_count ?? 0,
-    items: itemRows.sort((a, b) => a.display_order - b.display_order).map((item) => ({ id: item.id, name: item.name, note: item.note, priceCents: item.price_cents, unitLabel: item.unit_label, limitPerPerson: item.limit_per_person, image: item.photo_path ? signedImages.get(item.photo_path) ?? "/images/home/journey-market.png" : "/images/home/journey-market.png", imageAlt: item.photo_alt ?? item.name, orderedCount: 0 })),
+    items: itemRows.sort((a, b) => a.display_order - b.display_order).map((item) => ({ id: item.id, name: item.name, note: item.note, priceCents: item.price_cents, unitLabel: item.unit_label, limitPerPerson: item.limit_per_person, image: item.photo_path ? signedImages.get(item.photo_path) ?? "/images/home/journey-market.webp" : "/images/home/journey-market.webp", imageAlt: item.photo_alt ?? item.name, orderedCount: 0 })),
   };
   if (!groupBuy) notFound();
   return <GroupBuyShell><GroupBuyDetailClient groupBuy={groupBuy} isOwner={user?.id === data.owner_id} /></GroupBuyShell>;

@@ -2,7 +2,6 @@
 // and its filter rail can share one source without importing each other.
 
 export type ServiceCategoryId = "cleaning" | "cleaningServices" | "moving" | "handyman" | "gardening" | "beauty" | "tutoring" | "petCare" | "auto" | "computerIt" | "realEstate" | "travelStudy";
-export type ServiceId = "sparkle-clean" | "fixit-furniture" | "math-mentors" | "moving-help" | "garden-lawn" | "beauty-services" | "happy-paws" | "auto-repair";
 export type TrustPointId = "verified" | "payments" | "support";
 export type ServiceBadge = "verified" | "highlyRated" | "topRated" | "fastResponder" | "new" | "sponsored" | "popular";
 
@@ -91,12 +90,6 @@ export function serviceBadgeLabel(badge: ServiceBadge, locale: string) {
     : { verified: "Verified", highlyRated: "Highly Rated", topRated: "Top Rated", fastResponder: "Fast Responder", new: "New", sponsored: "Sponsored", popular: "Popular" };
   return labels[badge];
 }
-
-export const trustPoints: Array<{ id: TrustPointId; icon: string }> = [
-  { id: "verified", icon: "ms-security" },
-  { id: "payments", icon: "ms-lock" },
-  { id: "support", icon: "ms-headset-mic" },
-];
 
 const serviceCopy = {
   en: {
