@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 type ListingActionPanelProps = {
   /** Who is looking: the buyer sees offer and chat, the seller sees management. */
   mode: "buyer" | "seller";
-  price: string;
   isSold: boolean;
   isLinkCopied: boolean;
   /** Unread messages waiting on this listing; only the seller's tile shows it. */
@@ -38,7 +37,7 @@ type ListingActionPanelProps = {
  * description and is hidden from tablet up, where the summary rail carries the
  * same actions.
  */
-export function ListingActionPanel({ mode, price, isSold, isLinkCopied, unreadCount = 0, isOpeningMessage = false, isMarkingSold = false, isBumping = false, isBumped = false, isSaved = false, isPopping = false, heartParticles = [], onSave, onSaveAnimationEnd, onOffer, onMessage, onMessageIntent, onShare, onMarkSold, onEdit, onBump, onDelete }: ListingActionPanelProps) {
+export function ListingActionPanel({ mode, isSold, isLinkCopied, unreadCount = 0, isOpeningMessage = false, isMarkingSold = false, isBumping = false, isBumped = false, isSaved = false, isPopping = false, heartParticles = [], onSave, onSaveAnimationEnd, onOffer, onMessage, onMessageIntent, onShare, onMarkSold, onEdit, onBump, onDelete }: ListingActionPanelProps) {
   const { t } = useLanguage();
   const isSeller = mode === "seller";
   const shareTile = <button type="button" className={`listing-action-tile ${isLinkCopied ? "is-copied" : ""}`} onClick={onShare}><i className={`ms ${isLinkCopied ? "ms-check" : "ms-link"}`} aria-hidden="true" /><span aria-live="polite">{isLinkCopied ? t("listingLinkCopiedShort") : t("listingCopyLinkShort")}</span></button>;
@@ -50,9 +49,7 @@ export function ListingActionPanel({ mode, price, isSold, isLinkCopied, unreadCo
   </button>;
 
   return <section className={`listing-action-panel is-${mode}`} aria-label={t(isSeller ? "listingPanelSeller" : "listingPanelBuyer")}>
-    <header className="listing-action-panel-header">
-      {isSeller ? <span><i className="ms ms-person" aria-hidden="true" /> {t("listingPanelSeller")}</span> : <strong>{price}</strong>}
-    </header>
+    {isSeller ? <header className="listing-action-panel-header"><span><i className="ms ms-person" aria-hidden="true" /> {t("listingPanelSeller")}</span></header> : null}
     {isSeller
       ? <Button size="lg" block className="listing-action-primary is-seller" onClick={onMarkSold} disabled={isSold || isMarkingSold}><i className="ms ms-check" aria-hidden="true" /> {isSold ? t("soldOut") : isMarkingSold ? t("listingMarkingSold") : t("listingMarkSold")}</Button>
       : <Button size="lg" block className="listing-action-primary" onClick={onOffer}><i className="ms ms-sell" aria-hidden="true" /> {t("listingOfferAction")}</Button>}

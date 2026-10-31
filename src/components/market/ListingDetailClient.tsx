@@ -472,7 +472,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
       {!isBargainListing ? <ListingActionPanel
         mode={isOwner ? "seller" : "buyer"}
-        price={listing.price}
         isSold={listingStatus === "sold"}
         isLinkCopied={isLinkCopied}
         unreadCount={unreadMessageCount}
