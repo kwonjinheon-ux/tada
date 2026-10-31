@@ -9,7 +9,7 @@ import { SaveHeartIcon, saveFeedbackClasses, useSaveHeartFeedback } from "@/comp
 import { ListingComments } from "@/components/market/ListingComments";
 import { ListingActionPanel } from "@/components/market/ListingActionPanel";
 import { ListingDescriptionTranslation } from "@/components/market/ListingDescriptionTranslation";
-import { ListingSafetyActions } from "@/components/market/ListingSafetyActions";
+import { SellerProfileMenu } from "@/components/market/SellerProfileMenu";
 import { Avatar } from "@/components/ui/Avatar";
 import { DialogOverlay } from "@/components/ui/DialogOverlay";
 import { copyCurrentPageLink } from "@/lib/share/copy-page-link";
@@ -420,6 +420,13 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
     };
   }, [isBargainListing, isOwner, isSaved]);
 
+  // The seller's photo opens a menu (profile, other listings, report, block) on every real
+  // listing; a bargain listing has no seller profile to open, so its photo stays plain.
+  const hasSellerMenu = !isBargainListing && Boolean(listing.seller.id);
+  const sellerStatus = isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline");
+  const desktopSellerAvatar = <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={sellerStatus}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-seller-avatar" /></span>;
+  const mobileSellerAvatar = <span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={sellerStatus}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span>;
+
   return (
     <main className={`listing-detail-page ${listingStatus === "sold" ? "is-sold" : ""}`}>
       <div className="listing-detail-back-row">
@@ -454,11 +461,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
 
           <section className="listing-detail-seller-card">
             <div className="listing-detail-seller">
-              <span className={`listing-detail-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-seller-avatar" /></span>
+              {hasSellerMenu ? <SellerProfileMenu listingId={listing.id} sellerId={listing.seller.id as string} name={listing.seller.name} isOwner={isOwner} trigger={desktopSellerAvatar} menuClassName="community-comment-author-menu listing-detail-seller-menu" /> : desktopSellerAvatar}
               <div><strong>{listing.seller.name}</strong><span>{ratingLabel}</span></div>
-              {!isBargainListing && listing.seller.id ? <Link className="listing-detail-seller-profile-link" href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View seller profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}
             </div>
-            {!isBargainListing && !isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} /> : null}
           </section>
         </aside>
       </div>
@@ -520,7 +525,7 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         ) : null}
       </TextSizeSection>
       {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+        <div className="listing-detail-mobile-seller-profile">{hasSellerMenu ? <SellerProfileMenu listingId={listing.id} sellerId={listing.seller.id as string} name={listing.seller.name} isOwner={isOwner} trigger={mobileSellerAvatar} menuClassName="community-comment-author-menu listing-detail-mobile-seller-menu" /> : mobileSellerAvatar}<div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div></div>
       </section> : null}
       <AdSlot placement="product_detail_middle" />
 

@@ -13,6 +13,7 @@ import { getSignedStorageImage, getSignedStorageImages } from "@/lib/supabase/st
 import { formatMarketPrice } from "@/lib/market/format-price";
 import { MARKET_LISTING_PLACEHOLDER_IMAGE } from "@/lib/market/listing-image";
 import { getBargainListingDetail } from "@/lib/bargain/get-bargain-listing-detail";
+import { LISTING_CARD_COLUMNS, listingCardsFromRows, type ListingCardRow } from "@/lib/market/listing-cards";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -36,8 +37,6 @@ type MarketListingRow = {
 };
 
 type PhotoRow = { storage_path: string | null; original_name: string | null; display_order: number };
-type RelatedListingRow = Pick<MarketListingRow, "id" | "title" | "price_cents" | "region_city" | "region_suburb" | "status">;
-type RelatedPhotoRow = { listing_id: string; storage_path: string | null; original_name: string | null; is_primary: boolean; display_order: number };
 type SellerRow = { id: string; display_name: string | null; avatar_path: string | null; rating_average?: number | string; rating_count?: number };
 
 const conditionLabels = { brand_new: "Brand new", like_new: "Like new", excellent: "Excellent", good: "Good", fair: "Fair" } as const;
@@ -174,7 +173,7 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
   if (!listing.subcategorySlug) return [];
   let query = supabase
     .from("market_listings")
-    .select("id,title,price_cents,region_city,region_suburb,status")
+    .select(LISTING_CARD_COLUMNS)
     .eq("subcategory_slug", listing.subcategorySlug)
     .eq("status", "published")
     .neq("id", listing.id);
@@ -183,36 +182,7 @@ async function getRelatedListings(listing: ListingDetail, supabase: NonNullable<
   const { data } = await query
     .order("created_at", { ascending: false })
     .limit(8);
-  const rows = (data ?? []) as RelatedListingRow[];
-  if (!rows.length) return [];
-
-  const ids = rows.map(({ id }) => id);
-  const { data: photoRows } = await supabase
-    .from("market_listing_photos")
-    .select("listing_id,storage_path,original_name,is_primary,display_order")
-    .in("listing_id", ids)
-    .order("display_order", { ascending: true });
-  const primaryPhotos = new Map<string, RelatedPhotoRow>();
-  for (const photo of (photoRows ?? []) as RelatedPhotoRow[]) {
-    if (!photo.storage_path) continue;
-    const current = primaryPhotos.get(photo.listing_id);
-    if (!current || photo.is_primary || (!current.is_primary && photo.display_order < current.display_order)) primaryPhotos.set(photo.listing_id, photo);
-  }
-  const signedImages = await getSignedStorageImages("market-listing-images", [...primaryPhotos.values()].map((photo) => photo.storage_path as string), "thumbnail");
-  // const commentCounts = await getCommentCounts(supabase, ids);
-  return rows.map((row) => {
-    const photo = primaryPhotos.get(row.id);
-    return {
-      id: row.id,
-      title: row.title,
-      price: formatMarketPrice(row.price_cents),
-      location: formatLocation(row.region_city, row.region_suburb),
-      image: photo?.storage_path ? signedImages.get(photo.storage_path) ?? MARKET_LISTING_PLACEHOLDER_IMAGE : MARKET_LISTING_PLACEHOLDER_IMAGE,
-      imageAlt: photo?.original_name ?? row.title,
-      status: row.status === "sold" ? "sold" : row.status === "pending" ? "pending" : "available",
-      // commentCount: commentCounts.get(row.id) ?? 0,
-    } satisfies Listing;
-  });
+  return listingCardsFromRows(supabase, (data ?? []) as ListingCardRow[]);
 }
 
 export default async function ListingDetailPage({ params }: { params: Promise<{ listingId: string }> }) {

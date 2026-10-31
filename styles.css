@@ -8755,7 +8755,7 @@ img.listing-detail-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-avatar { width: 52px; height: 52px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid var(--neutral-250); border-radius: var(--radius-circle); background: var(--green-soft-50); color: var(--green-700); font-size: var(--text-xl); font-weight: var(--weight-extrabold); }
   img.listing-detail-mobile-seller-avatar { object-fit: cover; }
   .listing-detail-mobile-seller-avatar-wrap .listing-detail-mobile-seller-avatar { width: 100%; height: 100%; border: 0; }
-  .listing-detail-mobile-seller-profile > div:not(.listing-detail-mobile-seller-actions) { display: grid; flex: 1; gap: 3px; min-width: 0; }
+  .listing-detail-mobile-seller-profile > div:not(.listing-detail-mobile-seller-actions):not(.listing-detail-mobile-seller-menu) { display: grid; flex: 1; gap: 3px; min-width: 0; }
   .listing-detail-mobile-seller strong { color: var(--blue-900); font-size: var(--text-lg); font-weight: var(--weight-regular); }
   .listing-detail-mobile-seller span, .listing-detail-mobile-seller small { color: var(--blue-soft-650); font-size: var(--text-sm); }
   .listing-detail-mobile-seller span i { color: var(--amber-450); }
@@ -9159,15 +9159,22 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
 .community-comment-author-trigger { display: block; padding: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: inherit; cursor: pointer; }
 .community-comment-author-trigger:focus-visible { outline: var(--ring-focus); outline-offset: 3px; }
 .community-comment-author-popover { position: absolute; top: calc(100% - 1px); left: 0; z-index: 8; display: grid; min-width: max-content; gap: 1px; padding: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); }
-.community-comment-author-popover a { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border-radius: var(--radius-sm); color: var(--color-ink); font-size: var(--text-sm); text-decoration: none; white-space: nowrap; }
+.community-comment-author-popover a,
+.community-comment-author-popover button { width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-h-md); padding: 0 var(--space-3); border-radius: var(--radius-sm); color: var(--color-ink); font-size: var(--text-sm); text-decoration: none; white-space: nowrap; }
 /* The menu hangs from the avatar: its top edge starts where the round photo ends, one
    pixel over it so the two lines meet rather than leaving a gap between them. A menu
    from the left edge (comments) grows out of its left corner, one from the right
    (the post author) out of its right. */
 .community-comment-author-menu .community-comment-author-popover { transform-origin: top left; }
 .community-detail-author-menu .community-comment-author-popover { right: 0; left: auto; }
-.community-comment-author-popover a:hover, .community-comment-author-popover a:focus-visible { background: var(--color-surface-soft); outline: none; }
-.community-comment-author-popover a i { width: 18px; color: var(--color-ink-soft); text-align: center; }
+.community-comment-author-popover a:hover, .community-comment-author-popover a:focus-visible,
+.community-comment-author-popover button:hover:not(:disabled), .community-comment-author-popover button:focus-visible { background: var(--color-surface-soft); outline: none; }
+.community-comment-author-popover a i,
+.community-comment-author-popover button i { width: 18px; color: var(--color-ink-soft); text-align: center; }
+/* The market adds report and block to the same menu; block is the one that cannot be undone. */
+.community-comment-author-popover button.is-danger, .community-comment-author-popover button.is-danger i { color: var(--color-danger); }
+.community-comment-author-popover button:disabled { cursor: default; opacity: .6; }
+.seller-profile-menu-status { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
 .community-member-posts { display: grid; gap: var(--space-5); padding-block: var(--space-6); }
 .community-member-posts-header { display: grid; gap: var(--space-3); }
 .community-member-posts-back { display: inline-flex; align-items: center; gap: var(--space-2); width: fit-content; color: var(--blue-700); font-size: var(--text-sm); font-weight: var(--weight-bold); text-decoration: none; }
