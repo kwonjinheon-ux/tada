@@ -257,7 +257,7 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
-    const hasMobileDock = !authlessRoutes.has(pathname) && !pathname.startsWith("/market/dashboard/messages");
+    const hasMobileDock = !authlessRoutes.has(pathname);
     document.body.classList.toggle("has-mobile-bottom-dock", hasMobileDock);
     return () => {
       document.body.classList.remove("has-mobile-bottom-dock");
@@ -487,7 +487,6 @@ export function Navbar() {
     services: "/services/create",
   };
   const isListingDetail = /^\/market\/[^/]+$/.test(pathname);
-  const isMessagesPage = pathname.startsWith("/market/dashboard/messages");
   const dashboardBase = `/${isJobs ? "jobs" : "market"}/dashboard`;
   const isSignedIn = Boolean(userEmail);
   const languageButtonLabel = locale === "en" ? "EN" : locale === "ko" ? "한글" : null;
@@ -821,8 +820,8 @@ export function Navbar() {
           </nav>
         </DialogOverlay>
       ) : null}
-      {!isMessagesPage && isCreateMenuOpen && !listingDockItems ? <MobileCreateMenu id="mobile-create-menu" ko={locale === "ko"} current={createSection} hrefs={createHrefs} onClose={() => setIsCreateMenuOpen(false)} /> : null}
-      {!isMessagesPage ? <MobileDock items={listingDockItems ?? standardDockItems} /> : null}
+      {isCreateMenuOpen && !listingDockItems ? <MobileCreateMenu id="mobile-create-menu" ko={locale === "ko"} current={createSection} hrefs={createHrefs} onClose={() => setIsCreateMenuOpen(false)} /> : null}
+      <MobileDock items={listingDockItems ?? standardDockItems} />
     </>
   );
 }

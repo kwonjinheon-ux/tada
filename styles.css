@@ -9065,7 +9065,12 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
      own horizontal rail. The optional category rail is hidden on this screen. */
   .listing-detail-image-count, .listing-detail-mobile-dots { display: none; }
   .listing-detail-loading { width: auto; grid-template-columns: 1fr; gap: 24px; margin: 16px 20px 90px; }.listing-detail-loading-media { min-height: 330px; }.listing-detail-loading-summary { min-height: 240px; }.listing-detail-loading-description { grid-column: auto; }
-  .dashboard-layout:has(> .messages-page) { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }
+  /* The dock stays on the messages screens, so the shell and an open thread end above it. The keyboard
+     hides the dock (see below) and the reserved height drops to zero with it. */
+  :root { --messages-dock-height: calc(64px + env(safe-area-inset-bottom)); }
+  :root.messages-keyboard-open { --messages-dock-height: 0px; }
+  .messages-keyboard-open .mobile-bottom-dock { display: none; }
+  .dashboard-layout:has(> .messages-page) { display: block; height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px) - var(--messages-dock-height, 0px)); min-height: 0; max-height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-site-header-height, 118px) - var(--messages-dock-height, 0px)); padding: 0; overflow: hidden; transform: translateY(var(--messages-viewport-offset-top, 0px)); }
   .messages-loading { min-height: calc(100vh - 112px); grid-template-columns: 1fr; }.messages-loading section:first-child { display: none; }
   .dashboard-layout:has(> .messages-page) .dashboard-sidebar { display: none; }
   .messages-page { height: 100%; min-height: 100%; display: block; }
@@ -9082,7 +9087,6 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .messages-conversation-copy small { font-size: var(--text-sm); }
   .messages-thread-panel { display: none; }
   .messages-page.has-selected-conversation .messages-list-panel { display: none; }
-  body:has(.messages-page:not(.is-v0).has-selected-conversation) .mobile-bottom-dock { display: none; }
   /* An open thread is pinned to the visual viewport rather than the document, so the header (back link,
      listing, counterpart) and the composer stay put no matter how the mobile browser pans the page.
      visualViewport height already excludes the on-screen keyboard, so the composer lands right above it.
@@ -9096,7 +9100,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
      visual viewport offset while the keyboard is opening. */
   .messages-thread-active .dashboard-layout:has(> .messages-page),
   .dashboard-layout:has(> .messages-page):has(.messages-page.has-selected-conversation) { transform: none; }
-  .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .messages-page.has-selected-conversation .messages-thread-panel { --messages-thread-top-inset: var(--messages-site-header-height, 118px); position: fixed; z-index: 30; left: 0; right: 0; top: calc(var(--messages-viewport-offset-top, 0px) + var(--messages-thread-top-inset)); height: calc(var(--messages-viewport-height, 100dvh) - var(--messages-thread-top-inset) - var(--messages-dock-height, 0px)); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* With the keyboard up the thread takes the whole visual viewport. Browsers that shrink the
      visual viewport without panning (Android Chrome) leave the sticky header sitting at layout
      top, so the panel has to outrank it here — and only here, or the header's popovers would be
@@ -9116,7 +9120,7 @@ body:has(.messages-page) { height: 100dvh; overflow: hidden; }
   .messages-page.has-selected-conversation .messages-thread-body { height: auto; min-height: 0; flex: 1 1 auto; overflow-y: auto; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .message-bubble { max-width: 86%; }
   .message-bubble p { font-size: var(--text-md); }
-  .messages-page.has-selected-conversation .messages-composer { position: relative; z-index: 1; flex: 0 0 auto; gap: 8px; padding: 12px 14px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 20px rgb(0 0 0 / 6%); }
+  .messages-page.has-selected-conversation .messages-composer { position: relative; z-index: 1; flex: 0 0 auto; gap: 8px; padding: 12px 14px; box-shadow: 0 -8px 20px rgb(0 0 0 / 6%); }
   .messages-keyboard-open .messages-page.has-selected-conversation .messages-composer { padding-bottom: 10px; }
   .messages-composer textarea { min-height: var(--control-h-xl); font-size: var(--text-lg); resize: none; }
   .messages-composer button { width: 44px; height: 44px; flex-basis: 44px; }
