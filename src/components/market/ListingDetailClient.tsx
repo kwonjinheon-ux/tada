@@ -494,9 +494,6 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         onBump={() => void bumpListing()}
         onDelete={() => { setDeleteError(null); setIsDeleteDialogOpen(true); }}
       /> : null}
-      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
-        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
-      </section> : null}
       <TextSizeSection
         className="listing-detail-description"
         title={t("listingDescription")}
@@ -523,6 +520,9 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
           </aside>
         ) : null}
       </TextSizeSection>
+      {!isBargainListing ? <section className="listing-detail-mobile-seller listing-detail-mobile-only">
+        <div className="listing-detail-mobile-seller-profile"><span className={`listing-detail-mobile-seller-avatar-wrap ${isSellerOnline ? "is-online" : "is-offline"}`} role="status" aria-label={isSellerOnline ? t("listingSellerOnline") : t("listingSellerOffline")}><Avatar src={listing.seller.avatarUrl} name={listing.seller.name} className="listing-detail-mobile-seller-avatar" /></span><div><strong>{listing.seller.name}</strong><span><i className="ms ms-star" aria-hidden="true" /> {ratingLabel}</span><small>{t("listingLocalMember")}</small></div><div className="listing-detail-mobile-seller-actions">{listing.seller.id ? <Link href={`/market/sellers/${listing.seller.id}`} aria-label="View seller profile" title="View profile"><i className="ms ms-person" aria-hidden="true" /></Link> : null}{!isOwner ? <ListingSafetyActions listingId={listing.id} sellerId={listing.ownerId} sellerProfileVariant iconOnly /> : null}</div></div>
+      </section> : null}
       <AdSlot placement="product_detail_middle" />
 
       <ListingComments listingId={listing.id} textSizeStep={descriptionTextSizeStep} space={space} />

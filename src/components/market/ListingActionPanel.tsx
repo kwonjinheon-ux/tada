@@ -63,8 +63,6 @@ export function ListingActionPanel({ mode, price, isSold, isLinkCopied, unreadCo
       {shareTile}
       {isSeller ? <button type="button" className="listing-action-tile is-accent" onClick={onBump} disabled={isSold || isBumping}><i className={`ms ${isBumped ? "ms-check" : "ms-arrow-upward"}`} aria-hidden="true" /><span>{isBumped ? t("listingBumped") : t("listingBump")}</span></button> : null}
     </div>
-    {isSeller
-      ? <button type="button" className="listing-action-delete" onClick={onDelete}><i className="ms ms-delete" aria-hidden="true" /> {t("listingDelete")}</button>
-      : <p className="listing-action-hint">{t("listingOfferHint")}</p>}
+    {isSeller ? <button type="button" className="listing-action-delete" onClick={onDelete}><i className="ms ms-delete" aria-hidden="true" /> {t("listingDelete")}</button> : null}
   </section>;
 }
