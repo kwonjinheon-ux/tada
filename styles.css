@@ -15262,7 +15262,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     gap: var(--space-3);
     margin: var(--space-5) var(--space-5) 0;
     padding: var(--space-4);
-    border-radius: var(--radius-xl);
+    border-radius: 0;
     background: var(--color-primary-soft);
   }
   /* Outlined glyphs throughout: the icon font fills them unless told otherwise. */
@@ -15271,7 +15271,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-action-panel-header > span { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); }
   .listing-action-panel-header > span .ms { color: var(--color-ink); font-size: var(--text-lg); }
 
-  .listing-action-panel .listing-action-primary { gap: var(--space-2); border-radius: var(--radius-lg); background: var(--color-primary-strong); box-shadow: var(--shadow-xs); color: var(--neutral-50); font-size: var(--text-lg); font-weight: var(--weight-regular); }
+  .listing-action-panel .listing-action-primary { gap: var(--space-2); border-radius: 0; background: var(--color-primary-strong); box-shadow: var(--shadow-xs); color: var(--neutral-50); font-size: var(--text-lg); font-weight: var(--weight-regular); }
   .listing-action-panel .listing-action-primary.is-seller { background: var(--success-500); }
   .listing-action-panel .listing-action-primary .ms { color: inherit; font-size: var(--text-xl); }
   .listing-action-panel .listing-action-primary:disabled { opacity: .7; }
@@ -15281,7 +15281,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-action-panel.is-seller .listing-action-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   /* Four tiles share the width, so the labels step down a size to stay whole. */
   .listing-action-panel.is-seller .listing-action-tile { padding-inline: var(--space-1); font-size: var(--text-xs); }
-  .listing-action-tile { position: relative; min-width: 0; min-height: var(--control-h-2xl); display: grid; justify-items: center; align-content: center; gap: var(--space-1); padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
+  .listing-action-tile { position: relative; min-width: 0; min-height: var(--control-h-2xl); display: grid; justify-items: center; align-content: center; gap: var(--space-1); padding: var(--space-2); border: 1px solid var(--color-line); border-radius: 0; background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; }
   .listing-action-tile span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .listing-action-tile .ms { color: var(--color-ink); font-size: var(--text-xl); }
   .listing-action-tile.is-accent { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-strong); }
