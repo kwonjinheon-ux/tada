@@ -503,6 +503,11 @@ export function ListingDetailClient({ listing, initialIsSaved = false, isOwner =
         isMarkingSold={isMarkingSold}
         isBumping={isBumping}
         isBumped={isBumped}
+        isSaved={isSaved}
+        isPopping={isPopping}
+        heartParticles={heartParticles}
+        onSave={() => void saveListing()}
+        onSaveAnimationEnd={stopPopping}
         onOffer={openOfferDialog}
         onMessage={isOwner ? () => router.push("/market/dashboard/messages") : () => void openConversation()}
         onMessageIntent={prepareMessaging}

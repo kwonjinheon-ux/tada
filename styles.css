@@ -15266,7 +15266,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
     background: var(--color-primary-soft);
   }
   /* Outlined glyphs throughout: the icon font fills them unless told otherwise. */
-  .listing-action-panel .ms { --icon-fill: 0; }
+  .listing-action-panel .ms:not(.ms-favorite) { --icon-fill: 0; }
   .listing-action-panel-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
   .listing-action-panel-header > span { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--text-md); font-weight: var(--weight-bold); }
   .listing-action-panel-header > span .ms { color: var(--color-ink); font-size: var(--text-lg); }
@@ -15278,6 +15278,7 @@ Every rail shows a 272px panel, matching the left rail, and sits 16px in
   .listing-action-panel .listing-action-primary:disabled { opacity: .7; }
 
   .listing-action-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .listing-action-panel.is-buyer .listing-action-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .listing-action-panel.is-seller .listing-action-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   /* Four tiles share the width, so the labels step down a size to stay whole. */
   .listing-action-panel.is-seller .listing-action-tile { padding-inline: var(--space-1); font-size: var(--text-xs); }
